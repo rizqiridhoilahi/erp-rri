@@ -68,12 +68,12 @@ export function SupplierFilters({
         <div className="grid gap-4 md:grid-cols-3">
           <div>
             <label className="mb-2 block text-sm font-medium text-gray-700">Tipe Supplier</label>
-            <Select value={form.watch('type') || ''} onValueChange={(val) => form.setValue('type', val as any)}>
+            <Select value={form.watch('type') || 'all'} onValueChange={(val) => form.setValue('type', val === 'all' ? undefined : val as any)}>
               <SelectTrigger>
                 <SelectValue placeholder="Semua tipe" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Semua tipe</SelectItem>
+                <SelectItem value="all">Semua tipe</SelectItem>
                 <SelectItem value="local">Lokal</SelectItem>
                 <SelectItem value="international">Internasional</SelectItem>
               </SelectContent>
@@ -82,12 +82,12 @@ export function SupplierFilters({
 
           <div>
             <label className="mb-2 block text-sm font-medium text-gray-700">Kota</label>
-            <Select value={form.watch('city') || ''} onValueChange={(val) => form.setValue('city', val)}>
+            <Select value={form.watch('city') || 'all'} onValueChange={(val) => form.setValue('city', val === 'all' ? '' : val)}>
               <SelectTrigger>
                 <SelectValue placeholder="Semua kota" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Semua kota</SelectItem>
+                <SelectItem value="all">Semua kota</SelectItem>
                 {cities.map((city) => (
                   <SelectItem key={city} value={city}>
                     {city}
@@ -99,12 +99,12 @@ export function SupplierFilters({
 
           <div>
             <label className="mb-2 block text-sm font-medium text-gray-700">Status</label>
-            <Select value={form.watch('status') || ''} onValueChange={(val) => form.setValue('status', val as any)}>
+            <Select value={form.watch('status') || 'all'} onValueChange={(val) => form.setValue('status', val === 'all' ? undefined : val as any)}>
               <SelectTrigger>
                 <SelectValue placeholder="Semua status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Semua status</SelectItem>
+                <SelectItem value="all">Semua status</SelectItem>
                 <SelectItem value="active">Aktif</SelectItem>
                 <SelectItem value="inactive">Tidak Aktif</SelectItem>
               </SelectContent>

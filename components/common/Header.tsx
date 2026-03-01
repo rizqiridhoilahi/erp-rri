@@ -11,6 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { NotificationBell } from '@/components/notifications/NotificationBell'
 
 interface HeaderProps {
   onMenuClick?: () => void
@@ -50,16 +51,8 @@ export function Header({ onMenuClick, username = 'User' }: HeaderProps) {
 
         {/* Right: Notifications + Profile */}
         <div className="flex items-center gap-2 md:gap-4">
-          {/* Notifications */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="relative"
-            aria-label="Notifications"
-          >
-            <Bell className="h-5 w-5 text-gray-700" />
-            <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500" />
-          </Button>
+          {/* Notifications - Integrated with NotificationBell */}
+          <NotificationBell />
 
           {/* User Profile Dropdown */}
           <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>

@@ -109,12 +109,12 @@ export function QuotationFilterComponent({
           <Label htmlFor="status" className="text-sm font-medium text-gray-700">
             Status
           </Label>
-          <Select value={filters.status || ''} onValueChange={handleStatusChange} disabled={isLoading}>
+          <Select value={filters.status || 'all'} onValueChange={(val) => handleStatusChange(val === 'all' ? '' : val)} disabled={isLoading}>
             <SelectTrigger id="status" className="mt-1">
               <SelectValue placeholder="Semua Status" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Semua Status</SelectItem>
+              <SelectItem value="all">Semua Status</SelectItem>
               <SelectItem value="draft">Draft</SelectItem>
               <SelectItem value="sent">Sent</SelectItem>
               <SelectItem value="accepted">Accepted</SelectItem>
