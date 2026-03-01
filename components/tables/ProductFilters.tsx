@@ -72,12 +72,12 @@ export function ProductFilters({
         <div className="grid gap-4 md:grid-cols-3">
           <div>
             <label className="mb-2 block text-sm font-medium text-gray-700">Category</label>
-            <Select value={form.watch('category') || ''} onValueChange={(val) => form.setValue('category', val)}>
+            <Select value={form.watch('category') || 'all'} onValueChange={(val) => form.setValue('category', val === 'all' ? '' : val)}>
               <SelectTrigger>
                 <SelectValue placeholder="All categories" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All categories</SelectItem>
+                <SelectItem value="all">All categories</SelectItem>
                 {categories.map((cat) => (
                   <SelectItem key={cat} value={cat}>
                     {cat}
@@ -89,12 +89,12 @@ export function ProductFilters({
 
           <div>
             <label className="mb-2 block text-sm font-medium text-gray-700">Brand</label>
-            <Select value={form.watch('brand') || ''} onValueChange={(val) => form.setValue('brand', val)}>
+            <Select value={form.watch('brand') || 'all'} onValueChange={(val) => form.setValue('brand', val === 'all' ? '' : val)}>
               <SelectTrigger>
                 <SelectValue placeholder="All brands" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All brands</SelectItem>
+                <SelectItem value="all">All brands</SelectItem>
                 {brands.map((brand) => (
                   <SelectItem key={brand} value={brand}>
                     {brand}
@@ -106,12 +106,12 @@ export function ProductFilters({
 
           <div>
             <label className="mb-2 block text-sm font-medium text-gray-700">Status</label>
-            <Select value={form.watch('status') || ''} onValueChange={(val) => form.setValue('status', val as any)}>
+            <Select value={form.watch('status') || 'all'} onValueChange={(val) => form.setValue('status', val === 'all' ? undefined : val as any)}>
               <SelectTrigger>
                 <SelectValue placeholder="All statuses" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All statuses</SelectItem>
+                <SelectItem value="all">All statuses</SelectItem>
                 <SelectItem value="active">Active</SelectItem>
                 <SelectItem value="inactive">Inactive</SelectItem>
                 <SelectItem value="discontinued">Discontinued</SelectItem>

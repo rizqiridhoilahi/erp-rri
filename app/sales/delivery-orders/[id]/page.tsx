@@ -6,14 +6,14 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { ArrowLeft, Download, Trash2 } from 'lucide-react'
 import Link from 'next/link'
-import { DeliveryOrder, DOLineItemResponse } from '@/lib/validations/delivery-order'
+import { DOLineItemResponse } from '@/lib/validations/delivery-order'
 import { WorkflowStatusBadge, WorkflowTimeline } from '@/components/sales/WorkflowStatusBadge'
 import { DocumentPreview } from '@/components/sales/DocumentUploadField'
 
 export default function DeliveryOrderDetailPage() {
   const router = useRouter()
   const params = useParams()
-  const id = params.id as string
+  const id = params?.id as string
 
   const [deliveryOrder, setDeliveryOrder] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -21,6 +21,8 @@ export default function DeliveryOrderDetailPage() {
   const [showTimeline, setShowTimeline] = useState(false)
 
   useEffect(() => {
+    if (!id) return
+    
     const fetchDeliveryOrder = async () => {
       try {
         const response = await fetch(`/api/delivery-orders/${id}`)
@@ -39,6 +41,7 @@ export default function DeliveryOrderDetailPage() {
   }, [id, router])
 
   const handleDelete = async () => {
+    if (!id) return
     if (!confirm('Yakin ingin menghapus Delivery Order ini?')) return
 
     setIsDeleting(true)
@@ -95,34 +98,19 @@ export default function DeliveryOrderDetailPage() {
   const timeline = [
     {
       label: 'Draft',
-      status:
-        deliveryOrder.status === 'draft'
-          ? 'current'
-          : deliveryOrder.status
-            ? 'completed'
-            : 'upcoming',
+      status: (deliveryOrder.status === 'draft' ? 'current' : ['ready', 'in-transit', 'delivered'].includes(deliveryOrder.status) ? 'completed' : 'upcoming') as 'completed' | 'current' | 'upcoming',
     },
     {
       label: 'Siap Kirim',
-      status:
-        deliveryOrder.status === 'ready'
-          ? 'current'
-          : ['in-transit', 'delivered'].includes(deliveryOrder.status)
-            ? 'completed'
-            : 'upcoming',
+      status: (deliveryOrder.status === 'ready' ? 'current' : ['in-transit', 'delivered'].includes(deliveryOrder.status) ? 'completed' : 'upcoming') as 'completed' | 'current' | 'upcoming',
     },
     {
       label: 'Dalam Pengiriman',
-      status:
-        deliveryOrder.status === 'in-transit'
-          ? 'current'
-          : deliveryOrder.status === 'delivered'
-            ? 'completed'
-            : 'upcoming',
+      status: (deliveryOrder.status === 'in-transit' ? 'current' : deliveryOrder.status === 'delivered' ? 'completed' : 'upcoming') as 'completed' | 'current' | 'upcoming',
     },
     {
       label: 'Diterima',
-      status: deliveryOrder.status === 'delivered' ? 'current' : 'upcoming',
+      status: (deliveryOrder.status === 'delivered' ? 'current' : 'upcoming') as 'completed' | 'current' | 'upcoming',
     },
   ]
 
@@ -149,68 +137,62 @@ export default function DeliveryOrderDetailPage() {
               <Download className="w-4 h-4 mr-2" />
               Export PDF
             </Button>
-            <Button
-              variant="outline"
-              return (
-                <main className="min-h-screen bg-gray-50">
-                  <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                    {/* Header */}
-                    <div className="flex items-center gap-4 mb-8">
-                      <Link href="/sales/delivery-orders">
-                        <Button variant="ghost" size="sm">
-                          <ArrowLeft className="w-4 h-4" />
-                        </Button>
-                      </Link>
-                      <div>
-                        <h1 className="text-3xl font-bold text-gray-900">Detail Delivery Order</h1>
-                        <p className="text-gray-600 mt-1">DO No: {deliveryOrder?.deliveryOrderNo}</p>
-                      </div>
-                    </div>
-
-                    {/* Workflow Status */}
-                    {deliveryOrder && (
-                      <div className="mb-4">
-                        <WorkflowStatusBadge status={deliveryOrder.status} variant="delivery-order" size="md" showIcon />
-                      </div>
-                    )}
-
-                    {/* Toast feedback for actions (success/fail) */}
-                    {/* ...existing code... */}
-                  </div>
-                </main>
-              )
-                  <Button
-                    size="sm"
-                    onClick={() => handleStatusChange('ready')}
-                  >
-                    Tandai Siap Kirim
-                  </Button>
-                )}
-                {deliveryOrder.status === 'ready' && (
-                  <Button
-                    size="sm"
-                    onClick={() => handleStatusChange('in-transit')}
-                  >
-                    Kirim Sekarang
-                  </Button>
-                )}
-                {deliveryOrder.status === 'in-transit' && (
-                  <Button
-                    size="sm"
-                    onClick={() => handleStatusChange('delivered')}
-                  >
-                    Tandai Diterima
-                  </Button>
-                )}
-              </div>
-
-              {/* Timeline */}
-              <button
-                onClick={() => setShowTimeline(!showTimeline)}
-                className="text-sm text-blue-600 hover:text-blue-800"
+            {deliveryOrder.status === 'draft' && (
+              <Button
+                size="sm"
+                onClick={() => handleStatusChange('ready')}
               >
-                {showTimeline ? 'Sembunyikan' : 'Tampilkan'} Timeline
-              </button>
+                Tandai Siap Kirim
+              </Button>
+            )}
+            {deliveryOrder.status === 'ready' && (
+              <Button
+                size="sm"
+                onClick={() => handleStatusChange('in-transit')}
+              >
+                Kirim Sekarang
+              </Button>
+            )}
+            {deliveryOrder.status === 'in-transit' && (
+              <Button
+                size="sm"
+                onClick={() => handleStatusChange('delivered')}
+              >
+                Tandai Diterima
+              </Button>
+            )}
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={handleDelete}
+              disabled={isDeleting}
+            >
+              <Trash2 className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Main Content */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Status & Timeline */}
+            <Card className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <p className="text-sm text-gray-600 mb-2">Status</p>
+                  <WorkflowStatusBadge 
+                    status={deliveryOrder.status} 
+                    variant="delivery-order" 
+                    size="md" 
+                  />
+                </div>
+                <button
+                  onClick={() => setShowTimeline(!showTimeline)}
+                  className="text-sm text-blue-600 hover:text-blue-800"
+                >
+                  {showTimeline ? 'Sembunyikan' : 'Tampilkan'} Timeline
+                </button>
+              </div>
 
               {showTimeline && (
                 <div className="mt-4 pt-4 border-t border-gray-200">
@@ -250,6 +232,14 @@ export default function DeliveryOrderDetailPage() {
                   </div>
                 )}
               </div>
+              {deliveryOrder.deliveryAddress && (
+                <div>
+                  <p className="text-xs text-gray-600">Alamat Pengiriman</p>
+                  <p className="text-sm text-gray-900 mt-1">
+                    {deliveryOrder.deliveryAddress}
+                  </p>
+                </div>
+              )}
             </Card>
 
             {/* Line Items */}
@@ -329,7 +319,7 @@ export default function DeliveryOrderDetailPage() {
 
             {/* Related Orders */}
             <Card className="p-6">
-              <h3 className="text-lg font-semibold mb-4">Terkait</h3>
+              <h3 className="text-lg font-semibold mb-4">Dokumen Terkait</h3>
               <div className="space-y-2">
                 <div>
                   <p className="text-xs text-gray-600">Sales Order</p>

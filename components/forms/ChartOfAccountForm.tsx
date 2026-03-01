@@ -120,12 +120,12 @@ export function ChartOfAccountForm({
               control={control}
               name="parent_id"
               render={({ field }) => (
-                <Select value={field.value || ''} onValueChange={(val) => field.onChange(val || null)}>
+                <Select value={field.value || 'none'} onValueChange={(val) => field.onChange(val === 'none' ? null : val)}>
                   <SelectTrigger id="parent_id" disabled={isLoading}>
                     <SelectValue placeholder="Pilih akun induk (opsional)" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Tidak ada (Top Level)</SelectItem>
+                    <SelectItem value="none">Tidak ada (Top Level)</SelectItem>
                     {parentOptions.map((option) => (
                       <SelectItem key={option.id} value={option.id}>
                         {option.account_code} - {option.account_name}

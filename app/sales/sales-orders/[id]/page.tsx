@@ -4,16 +4,15 @@ import { useEffect, useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { ArrowLeft, Edit, Download, Trash2 } from 'lucide-react'
+import { ArrowLeft, Download, Trash2 } from 'lucide-react'
 import Link from 'next/link'
-import { SalesOrder, SOLineItemResponse } from '@/lib/validations/sales-order'
+import { SOLineItemResponse } from '@/lib/validations/sales-order'
 import { WorkflowStatusBadge, WorkflowTimeline } from '@/components/sales/WorkflowStatusBadge'
-import { QuotationToSOConverter } from '@/components/sales/QuotationToSOConverter'
 
 export default function SalesOrderDetailPage() {
   const router = useRouter()
   const params = useParams()
-  const id = params.id as string
+  const id = params?.id as string
 
   const [salesOrder, setSalesOrder] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -21,6 +20,8 @@ export default function SalesOrderDetailPage() {
   const [showTimeline, setShowTimeline] = useState(false)
 
   useEffect(() => {
+    if (!id) return
+    
     const fetchSalesOrder = async () => {
       try {
         const response = await fetch(`/api/sales-orders/${id}`)
@@ -95,24 +96,24 @@ export default function SalesOrderDetailPage() {
   const timeline = [
     {
       label: 'Draft',
-      status: salesOrder.status === 'draft' ? 'current' : salesOrder.status ? 'completed' : 'upcoming',
-      date: salesOrder.createdAt ? new Date(salesOrder.createdAt).toLocaleDateString('id-ID') : '',
+      status: (salesOrder.status === 'draft' ? 'current' : ['confirmed', 'in-production', 'ready', 'delivered'].includes(salesOrder.status) ? 'completed' : 'upcoming') as 'completed' | 'current' | 'upcoming',
+      date: salesOrder.createdAt ? new Date(salesOrder.createdAt).toLocaleDateString('id-ID') : undefined,
     },
     {
       label: 'Dikonfirmasi',
-      status: 
-        salesOrder.status === 'confirmed' ? 'current' : 
-        ['in-production', 'ready', 'cancelled'].includes(salesOrder.status) ? 'completed' : 'upcoming',
+      status: (salesOrder.status === 'confirmed' ? 'current' : ['in-production', 'ready', 'delivered'].includes(salesOrder.status) ? 'completed' : 'upcoming') as 'completed' | 'current' | 'upcoming',
     },
     {
       label: 'Produksi',
-      status:
-        salesOrder.status === 'in-production' ? 'current' :
-        ['ready', 'cancelled'].includes(salesOrder.status) ? 'completed' : 'upcoming',
+      status: (salesOrder.status === 'in-production' ? 'current' : ['ready', 'delivered'].includes(salesOrder.status) ? 'completed' : 'upcoming') as 'completed' | 'current' | 'upcoming',
     },
     {
       label: 'Siap',
-      status: salesOrder.status === 'ready' ? 'current' : salesOrder.status === 'ready' ? 'completed' : 'upcoming',
+      status: (salesOrder.status === 'ready' ? 'current' : salesOrder.status === 'delivered' ? 'completed' : 'upcoming') as 'completed' | 'current' | 'upcoming',
+    },
+    {
+      label: 'Diterima',
+      status: (salesOrder.status === 'delivered' ? 'current' : 'upcoming') as 'completed' | 'current' | 'upcoming',
     },
   ]
 
@@ -139,78 +140,72 @@ export default function SalesOrderDetailPage() {
             </Button>
             <Button
               variant="outline"
-              return (
-                <main className="min-h-screen bg-gray-50">
-                  <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                    {/* Header */}
-                    <div className="flex items-center gap-4 mb-8">
-                      <Link href="/sales/sales-orders">
-                        <Button variant="ghost" size="sm">
-                          <ArrowLeft className="w-4 h-4" />
-                        </Button>
-                      </Link>
-                      <div>
-                        <h1 className="text-3xl font-bold text-gray-900">Detail Sales Order</h1>
-                        <p className="text-gray-600 mt-1">SO No: {salesOrder?.salesOrderNo}</p>
-                      </div>
-                    </div>
-
-                    {/* Workflow Status */}
-                    {salesOrder && (
-                      <div className="mb-4">
-                        <WorkflowStatusBadge status={salesOrder.status} variant="sales-order" size="md" showIcon />
-                      </div>
-                    )}
-
-                    {/* Toast feedback for actions (success/fail) */}
-                    {/* ...existing code... */}
-                  </div>
-                </main>
-              )
-                  <Button
-                    size="sm"
-                    onClick={() => handleStatusChange('confirmed')}
-                  >
-                    Konfirmasi
-                  </Button>
-                )}
-                {salesOrder.status === 'confirmed' && (
-                  <Button
-                    size="sm"
-                    onClick={() => handleStatusChange('in-production')}
-                  >
-                    Mulai Produksi
-                  </Button>
-                )}
-                {salesOrder.status === 'in-production' && (
-                  <Button
-                    size="sm"
-                    onClick={() => handleStatusChange('ready')}
-                  >
-                    Tandai Siap
-                  </Button>
-                )}
-                {salesOrder.status === 'ready' && (
-                  <Button
-                    size="sm"
-                    onClick={() =>
-                      router.push(
-                        `/sales/delivery-orders/create?salesOrderId=${id}`
-                      )
-                    }
-                  >
-                    Buat DO
-                  </Button>
-                )}
-              </div>
-
-              {/* Timeline */}
-              <button
-                onClick={() => setShowTimeline(!showTimeline)}
-                className="text-sm text-blue-600 hover:text-blue-800"
+              size="sm"
+              onClick={() => handleStatusChange('confirmed')}
+              disabled={salesOrder.status !== 'draft'}
+            >
+              Konfirmasi
+            </Button>
+            {salesOrder.status === 'confirmed' && (
+              <Button
+                size="sm"
+                onClick={() => handleStatusChange('in-production')}
               >
-                {showTimeline ? 'Sembunyikan' : 'Tampilkan'} Timeline
-              </button>
+                Mulai Produksi
+              </Button>
+            )}
+            {salesOrder.status === 'in-production' && (
+              <Button
+                size="sm"
+                onClick={() => handleStatusChange('ready')}
+              >
+                Tandai Siap
+              </Button>
+            )}
+            {salesOrder.status === 'ready' && (
+              <Button
+                size="sm"
+                onClick={() =>
+                  router.push(
+                    `/sales/delivery-orders/create?salesOrderId=${id}`
+                  )
+                }
+              >
+                Buat DO
+              </Button>
+            )}
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={handleDelete}
+              disabled={isDeleting}
+            >
+              <Trash2 className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Main Content */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Status & Timeline */}
+            <Card className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <p className="text-sm text-gray-600 mb-2">Status</p>
+                  <WorkflowStatusBadge 
+                    status={salesOrder.status} 
+                    variant="sales-order" 
+                    size="md" 
+                  />
+                </div>
+                <button
+                  onClick={() => setShowTimeline(!showTimeline)}
+                  className="text-sm text-blue-600 hover:text-blue-800"
+                >
+                  {showTimeline ? 'Sembunyikan' : 'Tampilkan'} Timeline
+                </button>
+              </div>
 
               {showTimeline && (
                 <div className="mt-4 pt-4 border-t border-gray-200">
@@ -340,6 +335,21 @@ export default function SalesOrderDetailPage() {
                 )}
               </div>
             </Card>
+
+            {/* Related Documents */}
+            {salesOrder.quotationId && (
+              <Card className="p-6">
+                <h3 className="text-lg font-semibold mb-4">Dokumen Terkait</h3>
+                <div className="space-y-2">
+                  <Link
+                    href={`/sales/quotations/${salesOrder.quotationId}`}
+                    className="block text-sm text-blue-600 hover:text-blue-800"
+                  >
+                    Lihat Quotation Original
+                  </Link>
+                </div>
+              </Card>
+            )}
           </div>
         </div>
       </div>
