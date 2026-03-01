@@ -48,6 +48,8 @@ export function QuotationForm({
     })) || [{ productId: '', productName: '', quantity: 1, unitPrice: 0 }]
   )
 
+  const [useTax, setUseTax] = useState<boolean>(true)
+
   const form = useForm({
     resolver: zodResolver(quotationSchema),
     defaultValues: {
@@ -126,7 +128,7 @@ export function QuotationForm({
 
   const calculateTotals = () => {
     const subtotal = lineItems.reduce((sum, item) => sum + calculateLineTotal(item), 0)
-    const taxAmount = subtotal * 0.1 // 10% tax
+    const taxAmount = useTax ? subtotal * 0.11 : 0 // 11% tax, only if checkbox is checked
     return { subtotal, taxAmount, totalAmount: subtotal + taxAmount }
   }
 
@@ -255,7 +257,7 @@ export function QuotationForm({
             onClick={addLineItem}
             size="sm"
             variant="outline"
-            className="gap-2"
+            className="gap-2 border-green-600 text-green-700 hover:bg-green-50 hover:text-green-800"
           >
             <Plus className="w-4 h-4" />
             Tambah Item
@@ -272,8 +274,18 @@ export function QuotationForm({
 
           <div className="space-y-4">
             {lineItems.map((item, index) => (
-              <Card key={index} className="bg-gray-50">
-                <CardContent className="pt-6">
+              <Card key={index} className="bg-gray-50 relative">
+                {/* Delete Button - Top Right */}
+                <Button
+                  type="button"
+                  onClick={() => removeLineItem(index)}
+                  size="sm"
+                  variant="ghost"
+                  className="absolute top-2 right-2 text-red-500 hover:text-red-700 hover:bg-red-50 h-8 w-8 p-0"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+                <CardContent className="pt-6 pr-12">
                   <div className="grid grid-cols-1 gap-4 md:grid-cols-6">
                     {/* Product Select */}
                     <div className="md:col-span-2">
@@ -315,12 +327,14 @@ export function QuotationForm({
                     <div>
                       <Label className="text-xs">Harga/Unit *</Label>
                       <Input
-                        type="number"
-                        step="0.01"
-                        value={item.unitPrice}
-                        onChange={(e) =>
-                          updateLineItem(index, 'unitPrice', parseFloat(e.target.value))
-                        }
+                        type="text"
+                        value={item.unitPrice ? item.unitPrice.toLocaleString('id-ID') : ''}
+                        onChange={(e) => {
+                          const rawValue = e.target.value.replace(/[.,]/g, '')
+                          const numValue = parseFloat(rawValue) || 0
+                          updateLineItem(index, 'unitPrice', numValue)
+                        }}
+                        placeholder="0"
                         className="h-9 text-sm"
                       />
                     </div>
@@ -348,21 +362,10 @@ export function QuotationForm({
                         {calculateLineTotal(item).toLocaleString('id-ID', {
                           style: 'currency',
                           currency: 'IDR',
+                          minimumFractionDigits: 0,
+                          maximumFractionDigits: 0,
                         })}
                       </div>
-                    </div>
-
-                    {/* Delete Button */}
-                    <div className="md:col-span-1 flex items-end">
-                      <Button
-                        type="button"
-                        onClick={() => removeLineItem(index)}
-                        size="sm"
-                        variant="ghost"
-                        className="w-full text-red-500 hover:text-red-700 hover:bg-red-50"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
                     </div>
                   </div>
 
@@ -393,16 +396,28 @@ export function QuotationForm({
                 {subtotal.toLocaleString('id-ID', {
                   style: 'currency',
                   currency: 'IDR',
+                  minimumFractionDigits: 0,
+                  maximumFractionDigits: 0,
                 })}
               </span>
             </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-600">PPN (10%):</span>
+            <div className="flex items-center justify-between text-sm">
+              <label className="flex items-center gap-2 text-gray-600 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={useTax}
+                  onChange={(e) => setUseTax(e.target.checked)}
+                  className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                />
+                PPN (11%)
+              </label>
               <span className="font-medium">
-                {taxAmount.toLocaleString('id-ID', {
+                {useTax ? taxAmount.toLocaleString('id-ID', {
                   style: 'currency',
                   currency: 'IDR',
-                })}
+                  minimumFractionDigits: 0,
+                  maximumFractionDigits: 0,
+                }) : '-'}
               </span>
             </div>
             <div className="flex justify-between text-lg border-t pt-2">
@@ -411,6 +426,8 @@ export function QuotationForm({
                 {totalAmount.toLocaleString('id-ID', {
                   style: 'currency',
                   currency: 'IDR',
+                  minimumFractionDigits: 0,
+                  maximumFractionDigits: 0,
                 })}
               </span>
             </div>
@@ -425,16 +442,17 @@ export function QuotationForm({
           variant="outline"
           onClick={() => reset()}
           disabled={isLoading}
+          className="border-gray-300 text-gray-700 hover:bg-gray-50"
         >
           Reset
         </Button>
         <Button
           onClick={handleSubmit(handleFormSubmit)}
           disabled={isLoading}
-          className="gap-2"
+          className="gap-2 bg-blue-600 hover:bg-blue-700 text-white"
         >
           {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
-          {quotation ? 'Update Quotation' : 'Create Quotation'}
+          {quotation ? 'Update Quotation' : 'Simpan Quotation'}
         </Button>
       </div>
     </div>

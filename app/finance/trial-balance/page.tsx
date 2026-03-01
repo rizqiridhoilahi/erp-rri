@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import { MainLayout } from '@/components/common/MainLayout';
+import { PageHeader } from '@/components/common/PageHeader';
 import { useTrialBalance } from '@/hooks/useFinance';
 import { TrialBalanceTable } from '@/components/tables/TrialBalanceTable';
 import { Label } from '@/components/ui/label';
@@ -18,7 +20,7 @@ export default function TrialBalancePage() {
   const { get, loading } = useTrialBalance();
   const [data, setData] = useState<any[]>([]);
   const [totals, setTotals] = useState({ total_debit: 0, total_credit: 0, difference: 0 });
-  const [accountType, setAccountType] = useState<string>('');
+  const [accountType, setAccountType] = useState<string>('all');
   const [showZeroBalance, setShowZeroBalance] = useState(false);
 
   // Fetch trial balance data
@@ -26,7 +28,7 @@ export default function TrialBalancePage() {
     const fetchData = async () => {
       try {
         const result = await get({
-          account_type: accountType || undefined,
+          account_type: accountType === 'all' ? undefined : accountType,
           showZeroBalance,
         });
         setData(result.data);
@@ -44,12 +46,12 @@ export default function TrialBalancePage() {
   }, [accountType, showZeroBalance, get]);
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold">Neraca Saldo (Trial Balance)</h1>
-        <p className="text-gray-600">Verifikasi bahwa debit total sama dengan kredit total</p>
-      </div>
+    <MainLayout>
+      <PageHeader
+        title="Neraca Saldo (Trial Balance)"
+        description="Verifikasi bahwa debit total sama dengan kredit total"
+      />
+      <div className="space-y-6">
 
       {/* Filters */}
       <Card>
@@ -64,7 +66,7 @@ export default function TrialBalancePage() {
                 <SelectValue placeholder="Semua Tipe Akun" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Semua Tipe Akun</SelectItem>
+                <SelectItem value="all">Semua Tipe Akun</SelectItem>
                 <SelectItem value="asset">Aktiva</SelectItem>
                 <SelectItem value="liability">Kewajiban</SelectItem>
                 <SelectItem value="equity">Modal</SelectItem>
@@ -93,5 +95,6 @@ export default function TrialBalancePage() {
       {/* Trial Balance Table */}
       <TrialBalanceTable data={data} totals={totals} isLoading={loading} />
     </div>
+    </MainLayout>
   );
 }

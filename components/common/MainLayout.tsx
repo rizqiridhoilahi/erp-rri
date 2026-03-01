@@ -19,7 +19,7 @@ export function MainLayout({ children, username = 'User' }: MainLayoutProps) {
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       {/* Main Content */}
-      <div className="flex flex-1 flex-col">
+      <div className="flex flex-1 flex-col ml-0 md:ml-64">
         {/* Header */}
         <Header
           onMenuClick={() => setSidebarOpen(!sidebarOpen)}

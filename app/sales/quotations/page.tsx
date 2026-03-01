@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { Loader2, Plus, Trash2 } from 'lucide-react'
+import { Loader2, Plus, Trash2, ArrowLeft, Home } from 'lucide-react'
 import { QuotationFilterComponent } from '@/components/tables/QuotationFilters'
 import { QuotationTable } from '@/components/tables/QuotationTable'
 import { useQuotation } from '@/hooks/useQuotation'
@@ -85,20 +85,43 @@ export default function QuotationsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Page Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Daftar Quotation</h1>
-          <p className="text-gray-600 mt-2">Kelola semua quotation penjualan Anda</p>
+    <main className="min-h-screen bg-gray-50">
+      <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Page Header */}
+        <div className="flex items-center gap-2 mb-8">
+          <Button
+            asChild
+            variant="default"
+            size="sm"
+            className="gap-1 bg-blue-600 hover:bg-blue-700 text-white"
+          >
+            <Link href="/dashboard">
+              <Home className="w-4 h-4" />
+            </Link>
+          </Button>
+          <Button
+            onClick={() => router.back()}
+            variant="default"
+            size="sm"
+            className="gap-1 bg-blue-600 hover:bg-blue-700 text-white"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Kembali
+          </Button>
         </div>
-        <Button asChild className="gap-2">
-          <Link href="/sales/quotations/create">
-            <Plus className="w-4 h-4" />
-            Buat Quotation Baru
-          </Link>
-        </Button>
-      </div>
+
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Daftar Quotation</h1>
+            <p className="text-gray-600 mt-1">Kelola semua quotation penjualan Anda</p>
+          </div>
+          <Button asChild className="gap-2">
+            <Link href="/sales/quotations/create">
+              <Plus className="w-4 h-4" />
+              Buat Quotation Baru
+            </Link>
+          </Button>
+        </div>
 
       {/* Filters */}
       <QuotationFilterComponent
@@ -180,5 +203,6 @@ export default function QuotationsPage() {
         </div>
       )}
     </div>
+    </main>
   )
 }
