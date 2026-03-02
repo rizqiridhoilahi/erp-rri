@@ -13,7 +13,7 @@ import { DeliveryOrderFormInput, DOLineItem, DocumentUpload } from '@/lib/valida
 export default function CreateDeliveryOrderPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const salesOrderId = searchParams.get('salesOrderId')
+  const salesOrderId = searchParams?.get('salesOrderId') || ''
 
   const [isLoading, setIsLoading] = useState(false)
   const [salesOrder, setSalesOrder] = useState<any>(null)

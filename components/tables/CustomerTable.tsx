@@ -18,7 +18,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Customer } from '@/types/contact'
-import { Edit, Trash2, MoreHorizontal, Eye } from 'lucide-react'
+import { Edit, Trash2, MoreHorizontal, Eye, FileText, Warehouse } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 
 interface CustomerTableProps {
@@ -69,6 +69,17 @@ export function CustomerTable({
     return labels[type] || type
   }
 
+  // Count filled storage addresses
+  const countStorageAddresses = (customer: Customer): number => {
+    let count = 0
+    if (customer.storageAddress1) count++
+    if (customer.storageAddress2) count++
+    if (customer.storageAddress3) count++
+    if (customer.storageAddress4) count++
+    if (customer.storageAddress5) count++
+    return count
+  }
+
   return (
     <div className="overflow-x-auto rounded-lg border border-gray-200">
       <Table>
@@ -87,6 +98,9 @@ export function CustomerTable({
             <TableHead>Email</TableHead>
             <TableHead>Telepon</TableHead>
             <TableHead>Kota</TableHead>
+            <TableHead>PIC</TableHead>
+            <TableHead>Kontrak</TableHead>
+            <TableHead>Gudang</TableHead>
             <TableHead>Status</TableHead>
             <TableHead className="w-12">Actions</TableHead>
           </TableRow>
@@ -94,7 +108,7 @@ export function CustomerTable({
         <TableBody>
           {customers.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={9} className="py-8 text-center text-gray-500">
+              <TableCell colSpan={12} className="py-8 text-center text-gray-500">
                 Tidak ada pelanggan ditemukan
               </TableCell>
             </TableRow>
@@ -114,6 +128,47 @@ export function CustomerTable({
                 <TableCell className="text-sm">{customer.email}</TableCell>
                 <TableCell className="text-sm">{customer.phone}</TableCell>
                 <TableCell className="text-sm">{customer.city}</TableCell>
+                {/* PIC - Only show for business type */}
+                <TableCell className="text-sm">
+                  {customer.type === 'business' && customer.picName ? (
+                    <div className="flex flex-col">
+                      <span className="text-xs font-medium">{customer.picName}</span>
+                      <span className="text-xs text-gray-500">{customer.picPhone}</span>
+                    </div>
+                  ) : (
+                    <span className="text-gray-400">-</span>
+                  )}
+                </TableCell>
+                {/* Contract Status */}
+                <TableCell className="text-sm">
+                  {customer.type === 'business' ? (
+                    customer.hasContract ? (
+                      <div className="flex items-center gap-1">
+                        <FileText className="h-3 w-3 text-green-600" />
+                        <span className="text-green-600">Ya</span>
+                      </div>
+                    ) : (
+                      <span className="text-gray-400">Tidak</span>
+                    )
+                  ) : (
+                    <span className="text-gray-400">-</span>
+                  )}
+                </TableCell>
+                {/* Storage Addresses Count */}
+                <TableCell className="text-sm">
+                  {customer.type === 'business' ? (
+                    countStorageAddresses(customer) > 0 ? (
+                      <div className="flex items-center gap-1">
+                        <Warehouse className="h-3 w-3 text-blue-600" />
+                        <span>{countStorageAddresses(customer)}</span>
+                      </div>
+                    ) : (
+                      <span className="text-gray-400">0</span>
+                    )
+                  ) : (
+                    <span className="text-gray-400">-</span>
+                  )}
+                </TableCell>
                 <TableCell>{getStatusBadge(customer.status)}</TableCell>
                 <TableCell>
                   <DropdownMenu>

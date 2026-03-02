@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/select'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Loader2, Trash2, Plus } from 'lucide-react'
+import { Loader2, Trash2, Plus, FileText, Upload } from 'lucide-react'
 import {
   quotationSchema,
   QuotationFormInput,
@@ -24,6 +24,7 @@ import {
   Quotation,
 } from '@/lib/validations/quotation'
 import { useCustomers } from '@/hooks/useCustomers'
+import { useContracts } from '@/hooks/useContracts'
 import { useProducts } from '@/hooks/useProducts'
 
 interface QuotationFormProps {
@@ -49,6 +50,12 @@ export function QuotationForm({
   )
 
   const [useTax, setUseTax] = useState<boolean>(true)
+  const [hasContract, setHasContract] = useState<boolean>(quotation?.hasContract || false)
+  const [selectedContractId, setSelectedContractId] = useState<string>(quotation?.contractId || '')
+
+  // Mock contracts data (in real app, fetch from API)
+  const [contracts, setContracts] = useState<any[]>([])
+  const [selectedContract, setSelectedContract] = useState<any>(null)
 
   const form = useForm({
     resolver: zodResolver(quotationSchema),
@@ -58,41 +65,104 @@ export function QuotationForm({
       quotationDate: quotation?.quotationDate || quotation?.quotation_date || new Date().toISOString().split('T')[0],
       validUntil: quotation?.validUntil || quotation?.valid_until || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       status: (quotation?.status || 'draft') as 'draft' | 'sent' | 'accepted' | 'rejected' | 'expired',
+      hasContract: quotation?.hasContract || false,
+      contractId: quotation?.contractId || '',
+      rfqNumber: quotation?.rfqNumber || '',
+      rfqDocumentUrl: quotation?.rfqDocumentUrl || '',
       notes: quotation?.notes || '',
       lineItems: lineItems,
     },
   })
 
-  const { control, handleSubmit, register, formState: { errors }, reset } = form
+  const { control, handleSubmit, register, formState: { errors }, reset, watch, setValue } = form
+  const customerId = watch('customerId')
 
   const [customers, setCustomers] = useState<any[]>([])
   const [products, setProducts] = useState<any[]>([])
 
+  // Get customer data with contract info
+  const { getList: getCustomers } = useCustomers()
+  const { getProducts } = useProducts()
+  const { getContractsByCustomer } = useContracts()
+  
+  // Load customers
   useEffect(() => {
     ;(async () => {
       try {
-        // Get customers from mock data
-        // Since useCustomers doesn't have getList, we'll need to fetch from the hook differently
-        // For now, let's use a simple fetch or create a getList wrapper
-        const allCustomers = ([
-          // Mock customers for demo
-          { id: '1', customerCode: 'CUST001', customerName: 'PT Demo Indonesia'},
-          { id: '2', customerCode: 'CUST002', customerName: 'CV Maju Jaya'},
-        ])
-        setCustomers(allCustomers)
-
-        // Get products similarly
-        const allProducts = ([
-          // Mock products for demo
-          { id: '1', productCode: 'PROD001', productName: 'Product A', sellingPrice: 100000 },
-          { id: '2', productCode: 'PROD002', productName: 'Product B', sellingPrice: 150000 },
-        ])
-        setProducts(allProducts)
+        const result = await getCustomers(1, 100, { sortBy: 'name', sortOrder: 'asc', status: 'active' })
+        const mappedCustomers = result.data.map((c: any) => ({
+          id: c.id,
+          customerCode: c.code,
+          customerName: c.name,
+          hasContract: c.hasContract || false,
+          picName: c.picName || '',
+          picEmail: c.picEmail || '',
+          picPhone: c.picPhone || '',
+        }))
+        setCustomers(mappedCustomers)
       } catch (error) {
-        console.error('Error loading data:', error)
+        console.error('Error loading customers:', error)
       }
     })()
-  }, [])
+  }, [getCustomers])
+
+  // Load products
+  useEffect(() => {
+    ;(async () => {
+      try {
+        const result = await getProducts(1, 100)
+        const mappedProducts = result.data.map((p: any) => ({
+          id: p.id,
+          productCode: p.code,
+          productName: p.name,
+          sellingPrice: p.sellingPrice || p.price || 0,
+        }))
+        setProducts(mappedProducts)
+      } catch (error) {
+        console.error('Error loading products:', error)
+      }
+    })()
+  }, [getProducts])
+
+  // When customer is selected, update contract info
+  useEffect(() => {
+    if (customerId) {
+      const customer = customers.find(c => c.id === customerId)
+      if (customer) {
+        setHasContract(customer.hasContract || false)
+        if (!customer.hasContract) {
+          setSelectedContractId('')
+          setSelectedContract(null)
+        }
+      }
+    }
+  }, [customerId, customers])
+
+  // Load contracts when customer is selected
+  useEffect(() => {
+    if (customerId && hasContract) {
+      ;(async () => {
+        try {
+          const result = await getContractsByCustomer(customerId)
+          setContracts(result)
+        } catch (error) {
+          console.error('Error loading contracts:', error)
+        }
+      })()
+    } else {
+      setContracts([])
+    }
+  }, [customerId, hasContract, getContractsByCustomer])
+
+  // When contract is selected, auto-fill PIC
+  useEffect(() => {
+    if (selectedContractId) {
+      const contract = contracts.find(c => c.id === selectedContractId)
+      setSelectedContract(contract || null)
+    } else {
+      setSelectedContract(null)
+    }
+  }, [selectedContractId, contracts])
 
   const addLineItem = () => {
     setLineItems([
@@ -128,7 +198,7 @@ export function QuotationForm({
 
   const calculateTotals = () => {
     const subtotal = lineItems.reduce((sum, item) => sum + calculateLineTotal(item), 0)
-    const taxAmount = useTax ? subtotal * 0.11 : 0 // 11% tax, only if checkbox is checked
+    const taxAmount = useTax ? subtotal * 0.11 : 0
     return { subtotal, taxAmount, totalAmount: subtotal + taxAmount }
   }
 
@@ -139,6 +209,8 @@ export function QuotationForm({
     data.subtotal = subtotal
     data.taxAmount = taxAmount
     data.totalAmount = totalAmount
+    data.hasContract = hasContract
+    data.contractId = selectedContractId || undefined
     await onSubmit(data)
   }
 
@@ -167,6 +239,9 @@ export function QuotationForm({
                       {customers.map((customer) => (
                         <SelectItem key={customer.id} value={customer.id}>
                           {customer.customerCode} - {customer.customerName}
+                          {customer.hasContract && (
+                            <span className="ml-2 text-green-600 text-xs">(Kontrak)</span>
+                          )}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -231,17 +306,127 @@ export function QuotationForm({
               />
             </div>
           </div>
+        </CardContent>
+      </Card>
 
-          {/* Notes */}
-          <div>
-            <Label htmlFor="notes">Catatan</Label>
-            <Textarea
-              id="notes"
-              placeholder="Tambahkan catatan untuk quotation ini..."
-              {...register('notes')}
-              className="h-24"
+      {/* Contract & RFQ Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Kontrak & RFQ</CardTitle>
+          <CardDescription>Pilih apakah quotation ini berdasarkan kontrak atau RFQ</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Contract Toggle */}
+          <div className="flex items-center gap-4 p-4 bg-blue-50 rounded-lg">
+            <input
+              type="checkbox"
+              id="hasContract"
+              checked={hasContract}
+              onChange={(e) => {
+                setHasContract(e.target.checked)
+                if (!e.target.checked) {
+                  setSelectedContractId('')
+                  setSelectedContract(null)
+                }
+              }}
+              className="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
             />
+            <div className="flex-1">
+              <Label htmlFor="hasContract" className="text-sm font-medium text-gray-900">
+                Quotation ini berdasarkan Kontrak
+              </Label>
+              <p className="text-xs text-gray-500">
+                Centang jika customer memiliki kontrak dengan kita
+              </p>
+            </div>
           </div>
+
+          {hasContract ? (
+            /* Contract Selection - Show when has contract */
+            <div className="space-y-4">
+              <div>
+                <Label>Pilih Kontrak *</Label>
+                <Select value={selectedContractId} onValueChange={setSelectedContractId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Pilih Kontrak" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {contracts
+                      .filter(c => c.customerId === customerId)
+                      .map((contract) => (
+                        <SelectItem key={contract.id} value={contract.id}>
+                          {contract.contractNumber} ({contract.startDate} - {contract.endDate})
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+                {customerId && contracts.filter(c => c.customerId === customerId).length === 0 && (
+                  <p className="text-sm text-yellow-600 mt-1">
+                    Customer ini tidak memiliki kontrak aktif
+                  </p>
+                )}
+              </div>
+
+              {/* PIC Info - Auto from Contract */}
+              {selectedContract && (
+                <div className="p-4 bg-green-50 rounded-lg border border-green-200">
+                  <div className="flex items-center gap-2 mb-2">
+                    <FileText className="h-4 w-4 text-green-600" />
+                    <span className="font-medium text-green-800">Informasi PIC (dari Kontrak)</span>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                    <div>
+                      <span className="text-gray-500">Nama PIC:</span>
+                      <p className="font-medium">{selectedContract.picName}</p>
+                    </div>
+                    <div>
+                      <span className="text-gray-500">Email:</span>
+                      <p className="font-medium">{selectedContract.picEmail || '-'}</p>
+                    </div>
+                    <div>
+                      <span className="text-gray-500">Periode:</span>
+                      <p className="font-medium">{selectedContract.startDate} - {selectedContract.endDate}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            /* RFQ Fields - Show when no contract */
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="rfqNumber">Nomor RFQ (dari Customer)</Label>
+                <Input
+                  id="rfqNumber"
+                  placeholder="Contoh: RFQ-2026-001"
+                  {...register('rfqNumber')}
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Masukkan nomor RFQ yang diberikan oleh customer
+                </p>
+              </div>
+
+              <div>
+                <Label htmlFor="rfqDocumentUrl">Dokumen RFQ</Label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    id="rfqDocumentUrl"
+                    type="url"
+                    placeholder="https://storage.supabase.co/..."
+                    {...register('rfqDocumentUrl')}
+                    className="flex-1"
+                  />
+                  <Button type="button" variant="outline" size="sm" className="gap-1">
+                    <Upload className="h-4 w-4" />
+                    Upload
+                  </Button>
+                </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  Upload dokumen RFQ ke Supabase Storage dan masukkan URL-nya
+                </p>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -432,6 +617,20 @@ export function QuotationForm({
               </span>
             </div>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Notes Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Catatan</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Textarea
+            placeholder="Tambahkan catatan untuk quotation ini..."
+            {...register('notes')}
+            className="h-24"
+          />
         </CardContent>
       </Card>
 

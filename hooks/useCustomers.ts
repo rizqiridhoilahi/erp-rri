@@ -1,105 +1,7 @@
 import { useState, useCallback } from 'react'
+import { supabase } from '@/lib/supabase-client'
 import type { Customer } from '@/types/contact'
 import type { CustomerFiltersInput } from '@/lib/validations/contact'
-
-// Mock data for customers
-const mockCustomers: Customer[] = [
-  {
-    id: '1',
-    code: 'CUST001',
-    name: 'PT Maju Jaya Indonesia',
-    type: 'business',
-    email: 'info@majujaya.com',
-    phone: '021-1234-5678',
-    address: 'Jl. Sudirman No. 123',
-    city: 'Jakarta',
-    province: 'DKI Jakarta',
-    postalCode: '12190',
-    country: 'Indonesia',
-    taxId: '12.345.678.9-123.456',
-    companyName: 'PT Maju Jaya Indonesia',
-    notes: 'Pelanggan reguler, pembayaran tepat waktu',
-    status: 'active',
-    createdAt: '2024-01-15T00:00:00Z',
-    updatedAt: '2024-01-15T00:00:00Z',
-  },
-  {
-    id: '2',
-    code: 'CUST002',
-    name: 'Budi Santoso',
-    type: 'individual',
-    email: 'budi.santoso@email.com',
-    phone: '0812-3456-7890',
-    address: 'Jl. Gatot Subroto No. 456',
-    city: 'Surabaya',
-    province: 'Jawa Timur',
-    postalCode: '60188',
-    country: 'Indonesia',
-    taxId: '',
-    companyName: '',
-    notes: 'Pembelian untuk kebutuhan pribadi',
-    status: 'active',
-    createdAt: '2024-01-20T00:00:00Z',
-    updatedAt: '2024-01-20T00:00:00Z',
-  },
-  {
-    id: '3',
-    code: 'CUST003',
-    name: 'CV Gemilang Usaha',
-    type: 'business',
-    email: 'contact@gemilang.com',
-    phone: '0274-987-6543',
-    address: 'Jl. Malioboro No. 789',
-    city: 'Yogyakarta',
-    province: 'DI Yogyakarta',
-    postalCode: '55271',
-    country: 'Indonesia',
-    taxId: '98.765.432.1-987.654',
-    companyName: 'CV Gemilang Usaha',
-    notes: 'Klien korporat, kontrak jangka panjang',
-    status: 'active',
-    createdAt: '2024-02-01T00:00:00Z',
-    updatedAt: '2024-02-01T00:00:00Z',
-  },
-  {
-    id: '4',
-    code: 'CUST004',
-    name: 'Siti Nurhaliza',
-    type: 'individual',
-    email: 'siti.nurhaliza@email.com',
-    phone: '0856-1234-5678',
-    address: 'Jl. Ahmad Yani No. 321',
-    city: 'Bandung',
-    province: 'Jawa Barat',
-    postalCode: '40172',
-    country: 'Indonesia',
-    taxId: '',
-    companyName: '',
-    notes: 'Pelanggan baru, dari referensi',
-    status: 'active',
-    createdAt: '2024-02-10T00:00:00Z',
-    updatedAt: '2024-02-10T00:00:00Z',
-  },
-  {
-    id: '5',
-    code: 'CUST005',
-    name: 'PT Sentosa Maju',
-    type: 'business',
-    email: 'sales@sentosa.co.id',
-    phone: '0341-555-6666',
-    address: 'Jl. Raya Pandaan No. 654',
-    city: 'Pandaan',
-    province: 'Jawa Timur',
-    postalCode: '67156',
-    country: 'Indonesia',
-    taxId: '11.222.333.4-555.666',
-    companyName: 'PT Sentosa Maju',
-    notes: 'Distributor regional, volume tinggi',
-    status: 'inactive',
-    createdAt: '2024-02-15T00:00:00Z',
-    updatedAt: '2024-03-01T00:00:00Z',
-  },
-]
 
 interface CustomerListResponse {
   data: Customer[]
@@ -123,58 +25,90 @@ export function useCustomers() {
       setError(null)
 
       try {
-        // Simulate API call
-        await new Promise((resolve) => setTimeout(resolve, 300))
+        // Build query
+        let query = supabase
+          .from('customers')
+          .select('*', { count: 'exact' })
+          .is('deleted_at', null)
 
-        let filtered = [...mockCustomers]
-
-        // Apply filters
+        // Apply search filter
         if (filters?.search) {
-          const searchLower = filters.search.toLowerCase()
-          filtered = filtered.filter(
-            (customer) =>
-              customer.name.toLowerCase().includes(searchLower) ||
-              customer.code.toLowerCase().includes(searchLower) ||
-              customer.email.toLowerCase().includes(searchLower)
+          const searchTerm = `%${filters.search}%`
+          query = query.or(
+            `name.ilike.${searchTerm},code.ilike.${searchTerm},email.ilike.${searchTerm}`
           )
         }
 
+        // Apply type filter
         if (filters?.type) {
-          filtered = filtered.filter((customer) => customer.type === filters.type)
+          query = query.eq('type', filters.type)
         }
 
+        // Apply city filter
         if (filters?.city) {
-          filtered = filtered.filter((customer) =>
-            customer.city.toLowerCase().includes(filters.city!.toLowerCase())
-          )
+          query = query.eq('city', filters.city)
         }
 
+        // Apply status filter
         if (filters?.status) {
-          filtered = filtered.filter((customer) => customer.status === filters.status)
+          query = query.eq('status', filters.status)
         }
 
         // Apply sorting
-        const sortBy = filters?.sortBy || 'createdAt'
+        const sortBy = filters?.sortBy || 'created_at'
         const sortOrder = filters?.sortOrder || 'desc'
-
-        filtered.sort((a, b) => {
-          let aValue: any = a[sortBy as keyof Customer]
-          let bValue: any = b[sortBy as keyof Customer]
-
-          if (aValue < bValue) return sortOrder === 'asc' ? -1 : 1
-          if (aValue > bValue) return sortOrder === 'asc' ? 1 : -1
-          return 0
-        })
+        query = query.order(sortBy, { ascending: sortOrder === 'asc' })
 
         // Apply pagination
-        const total = filtered.length
-        const totalPages = Math.ceil(total / pageSize)
         const start = (page - 1) * pageSize
-        const end = start + pageSize
-        const data = filtered.slice(start, end)
+        query = query.range(start, start + pageSize - 1)
+
+        const { data, error: supabaseError, count } = await query
+
+        if (supabaseError) throw supabaseError
+
+        const total = count || 0
+        const totalPages = Math.ceil(total / pageSize)
+
+        const customers: Customer[] = data?.map((customer) => ({
+          id: customer.id,
+          code: customer.code,
+          name: customer.name,
+          type: customer.type,
+          email: customer.email,
+          phone: customer.phone,
+          address: customer.address,
+          city: customer.city,
+          province: customer.province,
+          postalCode: customer.postal_code,
+          country: customer.country,
+          taxId: customer.tax_id,
+          taxName: customer.tax_name,
+          taxAddress: customer.tax_address,
+          companyName: customer.company_name,
+          // PIC fields (business type)
+          picName: customer.pic_name,
+          picEmail: customer.pic_email,
+          picPhone: customer.pic_phone,
+          // Storage addresses (business type)
+          storageAddress1: customer.storage_address_1,
+          storageAddress2: customer.storage_address_2,
+          storageAddress3: customer.storage_address_3,
+          storageAddress4: customer.storage_address_4,
+          storageAddress5: customer.storage_address_5,
+          // Contract fields
+          hasContract: customer.has_contract,
+          contractId: customer.contract_id,
+          contractNumber: customer.contract_number,
+          contractFileUrl: customer.contract_file_url,
+          notes: customer.notes,
+          status: customer.status,
+          createdAt: customer.created_at,
+          updatedAt: customer.updated_at,
+        })) || []
 
         return {
-          data,
+          data: customers,
           total,
           page,
           pageSize,
@@ -196,11 +130,49 @@ export function useCustomers() {
     setError(null)
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 200))
+      const { data, error: supabaseError } = await supabase
+        .from('customers')
+        .select('*')
+        .eq('id', id)
+        .single()
 
-      const customer = mockCustomers.find((c) => c.id === id)
-      return customer || null
+      if (supabaseError) throw supabaseError
+
+      if (!data) return null
+
+      return {
+        id: data.id,
+        code: data.code,
+        name: data.name,
+        type: data.type,
+        email: data.email,
+        phone: data.phone,
+        address: data.address,
+        city: data.city,
+        province: data.province,
+        postalCode: data.postal_code,
+        country: data.country,
+        taxId: data.tax_id,
+        taxName: data.tax_name,
+        taxAddress: data.tax_address,
+        companyName: data.company_name,
+        picName: data.pic_name,
+        picEmail: data.pic_email,
+        picPhone: data.pic_phone,
+        storageAddress1: data.storage_address_1,
+        storageAddress2: data.storage_address_2,
+        storageAddress3: data.storage_address_3,
+        storageAddress4: data.storage_address_4,
+        storageAddress5: data.storage_address_5,
+        hasContract: data.has_contract,
+        contractId: data.contract_id,
+        contractNumber: data.contract_number,
+        contractFileUrl: data.contract_file_url,
+        notes: data.notes,
+        status: data.status,
+        createdAt: data.created_at,
+        updatedAt: data.updated_at,
+      }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Gagal mengambil data pelanggan'
       setError(message)
@@ -210,31 +182,92 @@ export function useCustomers() {
     }
   }, [])
 
-  const create = useCallback(async (data: Omit<Customer, 'id' | 'createdAt' | 'updatedAt'>) => {
-    setLoading(true)
-    setError(null)
+  const create = useCallback(
+    async (data: Omit<Customer, 'id' | 'createdAt' | 'updatedAt'>) => {
+      setLoading(true)
+      setError(null)
 
-    try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 500))
+      try {
+        const { data: newCustomer, error: supabaseError } = await supabase
+          .from('customers')
+          .insert({
+            code: data.code,
+            name: data.name,
+            type: data.type,
+            email: data.email,
+            phone: data.phone,
+            address: data.address,
+            city: data.city,
+            province: data.province,
+            postal_code: data.postalCode,
+            country: data.country,
+            tax_id: data.taxId,
+            tax_name: data.taxName,
+            tax_address: data.taxAddress,
+            company_name: data.companyName,
+            pic_name: data.picName,
+            pic_email: data.picEmail,
+            pic_phone: data.picPhone,
+            storage_address_1: data.storageAddress1,
+            storage_address_2: data.storageAddress2,
+            storage_address_3: data.storageAddress3,
+            storage_address_4: data.storageAddress4,
+            storage_address_5: data.storageAddress5,
+            has_contract: data.hasContract,
+            contract_id: data.contractId,
+            contract_number: data.contractNumber,
+            contract_file_url: data.contractFileUrl,
+            notes: data.notes,
+            status: data.status,
+          })
+          .select()
+          .single()
 
-      const newCustomer: Customer = {
-        ...data,
-        id: `CUST_${Date.now()}`,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        if (supabaseError) throw supabaseError
+
+        return {
+          id: newCustomer.id,
+          code: newCustomer.code,
+          name: newCustomer.name,
+          type: newCustomer.type,
+          email: newCustomer.email,
+          phone: newCustomer.phone,
+          address: newCustomer.address,
+          city: newCustomer.city,
+          province: newCustomer.province,
+          postalCode: newCustomer.postal_code,
+          country: newCustomer.country,
+          taxId: newCustomer.tax_id,
+          taxName: newCustomer.tax_name,
+          taxAddress: newCustomer.tax_address,
+          companyName: newCustomer.company_name,
+          picName: newCustomer.pic_name,
+          picEmail: newCustomer.pic_email,
+          picPhone: newCustomer.pic_phone,
+          storageAddress1: newCustomer.storage_address_1,
+          storageAddress2: newCustomer.storage_address_2,
+          storageAddress3: newCustomer.storage_address_3,
+          storageAddress4: newCustomer.storage_address_4,
+          storageAddress5: newCustomer.storage_address_5,
+          hasContract: newCustomer.has_contract,
+          contractId: newCustomer.contract_id,
+          contractNumber: newCustomer.contract_number,
+          contractFileUrl: newCustomer.contract_file_url,
+          notes: newCustomer.notes,
+          status: newCustomer.status,
+          createdAt: newCustomer.created_at,
+          updatedAt: newCustomer.updated_at,
+        }
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Gagal membuat pelanggan baru'
+        setError(message)
+        throw err
+      } finally {
+        setLoading(false)
       }
-
-      mockCustomers.push(newCustomer)
-      return newCustomer
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Gagal membuat pelanggan baru'
-      setError(message)
-      throw err
-    } finally {
-      setLoading(false)
-    }
-  }, [])
+    },
+    []
+  )
 
   const update = useCallback(
     async (id: string, data: Partial<Omit<Customer, 'id' | 'createdAt' | 'updatedAt'>>) => {
@@ -242,20 +275,79 @@ export function useCustomers() {
       setError(null)
 
       try {
-        // Simulate API call
-        await new Promise((resolve) => setTimeout(resolve, 500))
+        const updateData: Record<string, any> = {}
 
-        const index = mockCustomers.findIndex((c) => c.id === id)
-        if (index === -1) throw new Error('Pelanggan tidak ditemukan')
+        if (data.code !== undefined) updateData.code = data.code
+        if (data.name !== undefined) updateData.name = data.name
+        if (data.type !== undefined) updateData.type = data.type
+        if (data.email !== undefined) updateData.email = data.email
+        if (data.phone !== undefined) updateData.phone = data.phone
+        if (data.address !== undefined) updateData.address = data.address
+        if (data.city !== undefined) updateData.city = data.city
+        if (data.province !== undefined) updateData.province = data.province
+        if (data.postalCode !== undefined) updateData.postal_code = data.postalCode
+        if (data.country !== undefined) updateData.country = data.country
+        if (data.taxId !== undefined) updateData.tax_id = data.taxId
+        if (data.taxName !== undefined) updateData.tax_name = data.taxName
+        if (data.taxAddress !== undefined) updateData.tax_address = data.taxAddress
+        if (data.companyName !== undefined) updateData.company_name = data.companyName
+        if (data.picName !== undefined) updateData.pic_name = data.picName
+        if (data.picEmail !== undefined) updateData.pic_email = data.picEmail
+        if (data.picPhone !== undefined) updateData.pic_phone = data.picPhone
+        if (data.storageAddress1 !== undefined) updateData.storage_address_1 = data.storageAddress1
+        if (data.storageAddress2 !== undefined) updateData.storage_address_2 = data.storageAddress2
+        if (data.storageAddress3 !== undefined) updateData.storage_address_3 = data.storageAddress3
+        if (data.storageAddress4 !== undefined) updateData.storage_address_4 = data.storageAddress4
+        if (data.storageAddress5 !== undefined) updateData.storage_address_5 = data.storageAddress5
+        if (data.hasContract !== undefined) updateData.has_contract = data.hasContract
+        if (data.contractId !== undefined) updateData.contract_id = data.contractId
+        if (data.contractNumber !== undefined) updateData.contract_number = data.contractNumber
+        if (data.contractFileUrl !== undefined) updateData.contract_file_url = data.contractFileUrl
+        if (data.notes !== undefined) updateData.notes = data.notes
+        if (data.status !== undefined) updateData.status = data.status
 
-        const updated: Customer = {
-          ...mockCustomers[index],
-          ...data,
-          updatedAt: new Date().toISOString(),
+        const { data: updated, error: supabaseError } = await supabase
+          .from('customers')
+          .update(updateData)
+          .eq('id', id)
+          .select()
+          .single()
+
+        if (supabaseError) throw supabaseError
+
+        return {
+          id: updated.id,
+          code: updated.code,
+          name: updated.name,
+          type: updated.type,
+          email: updated.email,
+          phone: updated.phone,
+          address: updated.address,
+          city: updated.city,
+          province: updated.province,
+          postalCode: updated.postal_code,
+          country: updated.country,
+          taxId: updated.tax_id,
+          taxName: updated.tax_name,
+          taxAddress: updated.tax_address,
+          companyName: updated.company_name,
+          picName: updated.pic_name,
+          picEmail: updated.pic_email,
+          picPhone: updated.pic_phone,
+          storageAddress1: updated.storage_address_1,
+          storageAddress2: updated.storage_address_2,
+          storageAddress3: updated.storage_address_3,
+          storageAddress4: updated.storage_address_4,
+          storageAddress5: updated.storage_address_5,
+          hasContract: updated.has_contract,
+          contractId: updated.contract_id,
+          contractNumber: updated.contract_number,
+          contractFileUrl: updated.contract_file_url,
+          notes: updated.notes,
+          status: updated.status,
+          createdAt: updated.created_at,
+          updatedAt: updated.updated_at,
         }
-
-        mockCustomers[index] = updated
-        return updated
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Gagal memperbarui pelanggan'
         setError(message)
@@ -272,13 +364,13 @@ export function useCustomers() {
     setError(null)
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 300))
+      // Soft delete
+      const { error: supabaseError } = await supabase
+        .from('customers')
+        .update({ deleted_at: new Date().toISOString() })
+        .eq('id', id)
 
-      const index = mockCustomers.findIndex((c) => c.id === id)
-      if (index === -1) throw new Error('Pelanggan tidak ditemukan')
-
-      mockCustomers.splice(index, 1)
+      if (supabaseError) throw supabaseError
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Gagal menghapus pelanggan'
       setError(message)
@@ -293,12 +385,35 @@ export function useCustomers() {
     setError(null)
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 200))
+      // Get unique cities
+      const { data: cityData } = await supabase
+        .from('customers')
+        .select('city')
+        .is('deleted_at', null)
 
-      const cities = Array.from(new Set(mockCustomers.map((c) => c.city))).sort()
-      const types = Array.from(new Set(mockCustomers.map((c) => c.type)))
-      const statuses = Array.from(new Set(mockCustomers.map((c) => c.status)))
+      const cities = cityData
+        ? [...new Set(cityData.map((c) => c.city).filter(Boolean))].sort()
+        : []
+
+      // Get unique types
+      const { data: typeData } = await supabase
+        .from('customers')
+        .select('type')
+        .is('deleted_at', null)
+
+      const types = typeData
+        ? [...new Set(typeData.map((t) => t.type).filter(Boolean))]
+        : []
+
+      // Get unique statuses
+      const { data: statusData } = await supabase
+        .from('customers')
+        .select('status')
+        .is('deleted_at', null)
+
+      const statuses = statusData
+        ? [...new Set(statusData.map((s) => s.status).filter(Boolean))]
+        : []
 
       return {
         cities,

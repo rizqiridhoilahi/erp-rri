@@ -53,139 +53,102 @@ export function ProductFilters({
   }
 
   return (
-    <Card className="p-4">
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-        {/* Search */}
-        <div>
-          <label className="mb-2 block text-sm font-medium text-gray-700">Search</label>
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+    <Card className="p-3">
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-2">
+        {/* Filters Row - Compact with all options */}
+        <div className="flex flex-wrap gap-2 items-center">
+          {/* Search */}
+          <div className="relative min-w-[180px] flex-1">
+            <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
             <Input
-              placeholder="Search products by name, code, or SKU..."
-              className="pl-10"
+              placeholder="Cari produk..."
+              className="pl-8 h-8 text-sm"
               {...form.register('search')}
             />
           </div>
-        </div>
 
-        {/* Row 1: Category, Brand, Status */}
-        <div className="grid gap-4 md:grid-cols-3">
-          <div>
-            <label className="mb-2 block text-sm font-medium text-gray-700">Category</label>
-            <Select value={form.watch('category') || 'all'} onValueChange={(val) => form.setValue('category', val === 'all' ? '' : val)}>
-              <SelectTrigger>
-                <SelectValue placeholder="All categories" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All categories</SelectItem>
-                {categories.map((cat) => (
-                  <SelectItem key={cat} value={cat}>
-                    {cat}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          {/* Category */}
+          <Select value={form.watch('category') || 'all'} onValueChange={(val) => form.setValue('category', val === 'all' ? '' : val)}>
+            <SelectTrigger className="w-full md:w-28 h-8 text-sm">
+              <SelectValue placeholder="Kategori" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Semua</SelectItem>
+              {categories.map((cat) => (
+                <SelectItem key={cat} value={cat}>
+                  {cat}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
-          <div>
-            <label className="mb-2 block text-sm font-medium text-gray-700">Brand</label>
-            <Select value={form.watch('brand') || 'all'} onValueChange={(val) => form.setValue('brand', val === 'all' ? '' : val)}>
-              <SelectTrigger>
-                <SelectValue placeholder="All brands" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All brands</SelectItem>
-                {brands.map((brand) => (
-                  <SelectItem key={brand} value={brand}>
-                    {brand}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          {/* Brand */}
+          <Select value={form.watch('brand') || 'all'} onValueChange={(val) => form.setValue('brand', val === 'all' ? '' : val)}>
+            <SelectTrigger className="w-full md:w-28 h-8 text-sm">
+              <SelectValue placeholder="Merek" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Semua</SelectItem>
+              {brands.map((brand) => (
+                <SelectItem key={brand} value={brand}>
+                  {brand}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
-          <div>
-            <label className="mb-2 block text-sm font-medium text-gray-700">Status</label>
-            <Select value={form.watch('status') || 'all'} onValueChange={(val) => form.setValue('status', val === 'all' ? undefined : val as any)}>
-              <SelectTrigger>
-                <SelectValue placeholder="All statuses" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All statuses</SelectItem>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="inactive">Inactive</SelectItem>
-                <SelectItem value="discontinued">Discontinued</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
+          {/* Status */}
+          <Select value={form.watch('status') || 'all'} onValueChange={(val) => form.setValue('status', val === 'all' ? undefined : val as any)}>
+            <SelectTrigger className="w-full md:w-24 h-8 text-sm">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Semua</SelectItem>
+              <SelectItem value="active">Aktif</SelectItem>
+              <SelectItem value="inactive">Nonaktif</SelectItem>
+            </SelectContent>
+          </Select>
 
-        {/* Row 2: Price Range */}
-        <div className="grid gap-4 md:grid-cols-2">
-          <div>
-            <label className="mb-2 block text-sm font-medium text-gray-700">Min Price (Rp)</label>
-            <Input
-              type="number"
-              placeholder="0"
-              {...form.register('minPrice', { valueAsNumber: true, setValueAs: (v) => (v === '' ? undefined : v) })}
-            />
-          </div>
-          <div>
-            <label className="mb-2 block text-sm font-medium text-gray-700">Max Price (Rp)</label>
-            <Input
-              type="number"
-              placeholder="No limit"
-              {...form.register('maxPrice', { valueAsNumber: true, setValueAs: (v) => (v === '' ? undefined : v) })}
-            />
-          </div>
-        </div>
+          {/* Sort By */}
+          <Select value={form.watch('sortBy')} onValueChange={(val) => form.setValue('sortBy', val as any)}>
+            <SelectTrigger className="w-full md:w-28 h-8 text-sm">
+              <SelectValue placeholder="Urutkan" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="createdAt">Tanggal</SelectItem>
+              <SelectItem value="name">Nama</SelectItem>
+              <SelectItem value="price">Harga</SelectItem>
+              <SelectItem value="stock">Stok</SelectItem>
+            </SelectContent>
+          </Select>
 
-        {/* Row 3: Sort */}
-        <div className="grid gap-4 md:grid-cols-2">
-          <div>
-            <label className="mb-2 block text-sm font-medium text-gray-700">Sort By</label>
-            <Select value={form.watch('sortBy')} onValueChange={(val) => form.setValue('sortBy', val as any)}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="createdAt">Date Created</SelectItem>
-                <SelectItem value="name">Name</SelectItem>
-                <SelectItem value="price">Price</SelectItem>
-                <SelectItem value="stock">Stock</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          {/* Sort Order */}
+          <Select value={form.watch('sortOrder')} onValueChange={(val) => form.setValue('sortOrder', val as any)}>
+            <SelectTrigger className="w-full md:w-24 h-8 text-sm">
+              <SelectValue placeholder="Order" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="desc">Terbaru</SelectItem>
+              <SelectItem value="asc">Terlama</SelectItem>
+            </SelectContent>
+          </Select>
 
-          <div>
-            <label className="mb-2 block text-sm font-medium text-gray-700">Order</label>
-            <Select value={form.watch('sortOrder')} onValueChange={(val) => form.setValue('sortOrder', val as any)}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="desc">Descending</SelectItem>
-                <SelectItem value="asc">Ascending</SelectItem>
-              </SelectContent>
-            </Select>
+          {/* Buttons */}
+          <div className="flex gap-1">
+            <Button type="submit" size="sm" className="h-8 gap-1">
+              <Search className="h-3 w-3" />
+              Cari
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleReset}
+              className="h-8"
+            >
+              Reset
+            </Button>
           </div>
-        </div>
-
-        {/* Buttons */}
-        <div className="flex gap-2 pt-4">
-          <Button type="submit" className="gap-2">
-            <Search className="h-4 w-4" />
-            Apply Filters
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={handleReset}
-            className="gap-2"
-          >
-            <X className="h-4 w-4" />
-            Reset
-          </Button>
         </div>
       </form>
     </Card>

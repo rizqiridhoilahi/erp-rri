@@ -5,11 +5,16 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { ArrowRight, AlertCircle, CheckCircle } from 'lucide-react'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
+import { ArrowRight, AlertCircle, CheckCircle, Info } from 'lucide-react'
 import { Quotation, QuotationLineItemResponse } from '@/lib/validations/quotation'
 import { SalesOrderFormInput } from '@/lib/validations/sales-order'
 import { WorkflowStatusBadge } from './WorkflowStatusBadge'
-import { Tooltip } from '@/components/ui/tooltip'
 
 interface QuotationToSOConverterProps {
   quotation: Quotation & { lineItems: QuotationLineItemResponse[] }
@@ -76,7 +81,7 @@ export function QuotationToSOConverter({
 
         await onConvert(salesOrderData)
         setConvertSuccess(true)
-        toast.success('Quotation berhasil dikonversi ke Sales Order!')
+        // Show success via the convertSuccess state instead of toast
         setShowConverter(false)
 
         // Reset form after 2 seconds
@@ -106,17 +111,24 @@ export function QuotationToSOConverter({
           </div>
         )}
 
-        <Button
-          onClick={() => setShowConverter(true)}
-          disabled={disabled || !canConvert}
-          size="lg"
-          className="w-full"
-        >
-          <Tooltip content="Convert this quotation to a Sales Order">
-            <ArrowRight className="w-4 h-4 mr-2" />
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                onClick={() => setShowConverter(true)}
+                disabled={disabled || !canConvert}
+                size="lg"
+                className="w-full"
+              >
+                <ArrowRight className="w-4 h-4 mr-2" />
+                Konversi ke Sales Order
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Konversi quotation ini menjadi Sales Order</p>
+            </TooltipContent>
           </Tooltip>
-          Konversi ke Sales Order
-        </Button>
+        </TooltipProvider>
 
         {!canConvert && (
           <div className="flex items-center gap-2 mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">

@@ -31,6 +31,12 @@ export const quotationSchema = z.object({
   quotationDate: z.string().min(1, 'Tanggal quotation diperlukan'),
   validUntil: z.string().min(1, 'Tanggal valid hingga diperlukan'),
   status: z.enum(['draft', 'sent', 'accepted', 'rejected', 'expired']).default('draft'),
+  // Contract & RFQ fields
+  hasContract: z.boolean().optional().default(false),
+  contractId: z.string().optional(),
+  rfqNumber: z.string().optional(),
+  rfqDocumentUrl: z.string().optional(),
+  // Line items
   lineItems: z
     .array(quotationLineItemSchema)
     .min(1, 'Minimal 1 item produk harus ditambahkan'),
@@ -74,6 +80,12 @@ export interface Quotation {
   quotationDate: string
   validUntil: string
   status: 'draft' | 'sent' | 'accepted' | 'rejected' | 'expired'
+  // Contract & RFQ fields
+  hasContract?: boolean
+  contractId?: string
+  rfqNumber?: string
+  rfqDocumentUrl?: string
+  // Financial
   subtotal: number
   taxAmount: number
   totalAmount: number

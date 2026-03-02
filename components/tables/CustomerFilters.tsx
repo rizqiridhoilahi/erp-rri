@@ -49,113 +49,97 @@ export function CustomerFilters({
   }
 
   return (
-    <Card className="p-4">
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-        {/* Search */}
-        <div>
-          <label className="mb-2 block text-sm font-medium text-gray-700">Pencarian</label>
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+    <Card className="p-3">
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-2">
+        {/* Filters Row - Compact */}
+        <div className="flex flex-wrap gap-2 items-center">
+          {/* Search */}
+          <div className="relative min-w-[180px] flex-1">
+            <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
             <Input
-              placeholder="Cari berdasarkan nama, kode, atau email..."
-              className="pl-10"
+              placeholder="Cari customer..."
+              className="pl-8 h-8 text-sm"
               {...form.register('search')}
             />
           </div>
-        </div>
 
-        {/* Row 1: Type, City, Status */}
-        <div className="grid gap-4 md:grid-cols-3">
-          <div>
-            <label className="mb-2 block text-sm font-medium text-gray-700">Tipe Pelanggan</label>
-            <Select value={form.watch('type') || 'all'} onValueChange={(val) => form.setValue('type', val === 'all' ? undefined : val as any)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Semua tipe" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Semua tipe</SelectItem>
-                <SelectItem value="individual">Perorangan</SelectItem>
-                <SelectItem value="business">Bisnis</SelectItem>
-              </SelectContent>
-            </Select>
+          {/* Type */}
+          <Select value={form.watch('type') || 'all'} onValueChange={(val) => form.setValue('type', val === 'all' ? undefined : val as any)}>
+            <SelectTrigger className="w-full md:w-32 h-8 text-sm">
+              <SelectValue placeholder="Tipe" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Semua</SelectItem>
+              <SelectItem value="individual">Perorangan</SelectItem>
+              <SelectItem value="business">Bisnis</SelectItem>
+            </SelectContent>
+          </Select>
+
+          {/* City */}
+          <Select value={form.watch('city') || 'all'} onValueChange={(val) => form.setValue('city', val === 'all' ? '' : val)}>
+            <SelectTrigger className="w-full md:w-32 h-8 text-sm">
+              <SelectValue placeholder="Kota" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Semua</SelectItem>
+              {cities.map((city) => (
+                <SelectItem key={city} value={city}>
+                  {city}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          {/* Status */}
+          <Select value={form.watch('status') || 'all'} onValueChange={(val) => form.setValue('status', val === 'all' ? undefined : val as any)}>
+            <SelectTrigger className="w-full md:w-28 h-8 text-sm">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Semua</SelectItem>
+              <SelectItem value="active">Aktif</SelectItem>
+              <SelectItem value="inactive">Nonaktif</SelectItem>
+            </SelectContent>
+          </Select>
+
+          {/* Sort By */}
+          <Select value={form.watch('sortBy')} onValueChange={(val) => form.setValue('sortBy', val as any)}>
+            <SelectTrigger className="w-full md:w-28 h-8 text-sm">
+              <SelectValue placeholder="Urutkan" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="createdAt">Tanggal</SelectItem>
+              <SelectItem value="name">Nama</SelectItem>
+            </SelectContent>
+          </Select>
+
+          {/* Sort Order */}
+          <Select value={form.watch('sortOrder')} onValueChange={(val) => form.setValue('sortOrder', val as any)}>
+            <SelectTrigger className="w-full md:w-24 h-8 text-sm">
+              <SelectValue placeholder="Order" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="desc">Terbaru</SelectItem>
+              <SelectItem value="asc">Terlama</SelectItem>
+            </SelectContent>
+          </Select>
+
+          {/* Buttons */}
+          <div className="flex gap-1">
+            <Button type="submit" size="sm" className="h-8 gap-1">
+              <Search className="h-3 w-3" />
+              Cari
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleReset}
+              className="h-8"
+            >
+              Reset
+            </Button>
           </div>
-
-          <div>
-            <label className="mb-2 block text-sm font-medium text-gray-700">Kota</label>
-            <Select value={form.watch('city') || 'all'} onValueChange={(val) => form.setValue('city', val === 'all' ? '' : val)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Semua kota" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Semua kota</SelectItem>
-                {cities.map((city) => (
-                  <SelectItem key={city} value={city}>
-                    {city}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div>
-            <label className="mb-2 block text-sm font-medium text-gray-700">Status</label>
-            <Select value={form.watch('status') || 'all'} onValueChange={(val) => form.setValue('status', val === 'all' ? undefined : val as any)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Semua status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Semua status</SelectItem>
-                <SelectItem value="active">Aktif</SelectItem>
-                <SelectItem value="inactive">Tidak Aktif</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-
-        {/* Row 2: Sort */}
-        <div className="grid gap-4 md:grid-cols-2">
-          <div>
-            <label className="mb-2 block text-sm font-medium text-gray-700">Urutkan Berdasarkan</label>
-            <Select value={form.watch('sortBy')} onValueChange={(val) => form.setValue('sortBy', val as any)}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="createdAt">Tanggal Dibuat</SelectItem>
-                <SelectItem value="name">Nama</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div>
-            <label className="mb-2 block text-sm font-medium text-gray-700">Urutan</label>
-            <Select value={form.watch('sortOrder')} onValueChange={(val) => form.setValue('sortOrder', val as any)}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="desc">Menurun</SelectItem>
-                <SelectItem value="asc">Naik</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-
-        {/* Buttons */}
-        <div className="flex gap-2 pt-4">
-          <Button type="submit" className="gap-2">
-            <Search className="h-4 w-4" />
-            Apply Filters
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={handleReset}
-            className="gap-2"
-          >
-            <X className="h-4 w-4" />
-            Reset
-          </Button>
         </div>
       </form>
     </Card>

@@ -1,7 +1,8 @@
 import { z } from 'zod'
 
 // ============ CUSTOMER SCHEMAS ============
-export const customerSchema = z.object({
+// Common fields for all customer types
+const commonFields = {
   code: z
     .string()
     .min(1, 'Kode pelanggan harus diisi')
@@ -43,6 +44,14 @@ export const customerSchema = z.object({
     .string()
     .max(50, 'NPWP maksimal 50 karakter')
     .optional(),
+  taxName: z
+    .string()
+    .max(255, 'Nama pajak maksimal 255 karakter')
+    .optional(),
+  taxAddress: z
+    .string()
+    .max(500, 'Alamat pajak maksimal 500 karakter')
+    .optional(),
   companyName: z
     .string()
     .max(255, 'Nama perusahaan maksimal 255 karakter')
@@ -52,6 +61,85 @@ export const customerSchema = z.object({
     .max(2000, 'Catatan maksimal 2000 karakter')
     .optional(),
   status: z.enum(['active', 'inactive']).default('active'),
+}
+
+// Business type specific fields
+const businessFields = {
+  // PIC (Person In Charge)
+  picName: z
+    .string()
+    .max(255, 'Nama PIC maksimal 255 karakter')
+    .optional(),
+  picEmail: z
+    .string()
+    .email('Email PIC harus valid')
+    .max(255, 'Email PIC maksimal 255 karakter')
+    .optional(),
+  picPhone: z
+    .string()
+    .max(20, 'Nomor telepon PIC maksimal 20 karakter')
+    .optional(),
+  // Storage Addresses (up to 5)
+  storageAddress1: z
+    .string()
+    .max(500, 'Alamat penyimpanan 1 maksimal 500 karakter')
+    .optional(),
+  storageAddress2: z
+    .string()
+    .max(500, 'Alamat penyimpanan 2 maksimal 500 karakter')
+    .optional(),
+  storageAddress3: z
+    .string()
+    .max(500, 'Alamat penyimpanan 3 maksimal 500 karakter')
+    .optional(),
+  storageAddress4: z
+    .string()
+    .max(500, 'Alamat penyimpanan 4 maksimal 500 karakter')
+    .optional(),
+  storageAddress5: z
+    .string()
+    .max(500, 'Alamat penyimpanan 5 maksimal 500 karakter')
+    .optional(),
+  // Contract Info
+  hasContract: z.boolean().optional(),
+  contractNumber: z
+    .string()
+    .max(100, 'Nomor kontrak maksimal 100 karakter')
+    .optional(),
+  contractFileUrl: z
+    .string()
+    .max(500, 'URL file kontrak maksimal 500 karakter')
+    .optional(),
+}
+
+export const customerSchema = z.object({
+  ...commonFields,
+  ...businessFields,
+}).superRefine((data, ctx) => {
+  // If type is business, PIC fields become required
+  if (data.type === 'business') {
+    if (!data.picName) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Nama PIC harus diisi untuk customer bisnis',
+        path: ['picName'],
+      })
+    }
+    if (!data.picEmail) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Email PIC harus diisi untuk customer bisnis',
+        path: ['picEmail'],
+      })
+    }
+    if (!data.picPhone) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Nomor telepon PIC harus diisi untuk customer bisnis',
+        path: ['picPhone'],
+      })
+    }
+  }
 })
 
 export type CustomerFormInput = z.infer<typeof customerSchema>
