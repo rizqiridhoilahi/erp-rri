@@ -28,7 +28,7 @@ export const productImportSchema = z.object({
   selling_price: z.string().refine((val) => !isNaN(Number(val)), 'Harga jual harus angka'),
   stock: z.string().refine((val) => !isNaN(Number(val)), 'Stok harus angka'),
   unit: z.string().min(1, 'Satuan wajib diisi'),
-  status: z.enum(['active', 'inactive', 'indent']).optional(),
+  status: z.enum(['stocked', 'indent']).optional(),
 })
 
 export type ProductImportRow = z.infer<typeof productImportSchema>

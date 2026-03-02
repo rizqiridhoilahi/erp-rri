@@ -1,4 +1,4 @@
-export type CustomerType = 'individual' | 'business'
+export type CustomerType = 'perorangan' | 'bisnis'
 export type SupplierType = 'local' | 'international'
 export type ContactStatus = 'active' | 'inactive'
 
@@ -144,7 +144,7 @@ export interface CustomerFilters {
   type?: CustomerType
   city?: string
   status?: ContactStatus
-  sortBy?: 'name' | 'createdAt'
+  sortBy?: 'name' | 'created_at'
   sortOrder?: 'asc' | 'desc'
 }
 
@@ -153,7 +153,7 @@ export interface SupplierFilters {
   type?: SupplierType
   city?: string
   status?: ContactStatus
-  sortBy?: 'name' | 'createdAt'
+  sortBy?: 'name' | 'created_at'
   sortOrder?: 'asc' | 'desc'
 }
 

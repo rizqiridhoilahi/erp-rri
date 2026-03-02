@@ -72,7 +72,7 @@ export function ProductForm({
           sku: '',
           barcode: '',
           image: '',
-          status: 'active',
+          status: 'stocked',
         },
   })
 

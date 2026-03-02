@@ -64,7 +64,7 @@ export const deliveryOrderFiltersSchema = z.object({
   salesOrderId: z.string().optional(),
   dateFrom: z.string().optional(),
   dateTo: z.string().optional(),
-  sortBy: z.enum(['deliveryDate', 'createdAt']).default('createdAt'),
+  sortBy: z.enum(['deliveryDate', 'created_at']).default('created_at'),
   sortOrder: z.enum(['asc', 'desc']).default('desc'),
   page: z.number().default(1),
   pageSize: z.number().default(10),

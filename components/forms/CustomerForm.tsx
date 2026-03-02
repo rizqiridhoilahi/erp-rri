@@ -73,7 +73,7 @@ export function CustomerForm({
       : {
           code: '',
           name: '',
-          type: 'individual',
+          type: 'perorangan',
           email: '',
           phone: '',
           address: '',
@@ -152,8 +152,8 @@ export function CustomerForm({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="individual">Perorangan</SelectItem>
-                    <SelectItem value="business">Bisnis</SelectItem>
+                    <SelectItem value="perorangan">Perorangan</SelectItem>
+                    <SelectItem value="bisnis">Bisnis</SelectItem>
                   </SelectContent>
                 </Select>
                 {form.formState.errors.type && (
@@ -174,7 +174,7 @@ export function CustomerForm({
               )}
             </div>
 
-            {customerType === 'business' && (
+            {customerType === 'bisnis' && (
               <div>
                 <label className="mb-2 block text-sm font-medium text-gray-700">Nama Perusahaan</label>
                 <Input
@@ -293,7 +293,7 @@ export function CustomerForm({
         </Card>
 
         {/* PIC Information - Business Type Only */}
-        {customerType === 'business' && (
+        {customerType === 'bisnis' && (
           <Card className="p-6">
             <h3 className="mb-4 font-semibold text-gray-900">Informasi PIC (Person In Charge)</h3>
             <div className="space-y-4">
@@ -346,7 +346,7 @@ export function CustomerForm({
         )}
 
         {/* Storage Addresses - Business Type Only */}
-        {customerType === 'business' && (
+        {customerType === 'bisnis' && (
           <Card className="p-6">
             <h3 className="mb-4 font-semibold text-gray-900">Alamat Penyimpanan (Gudang/Warehouse)</h3>
             <p className="mb-4 text-sm text-gray-500">
@@ -412,7 +412,7 @@ export function CustomerForm({
         )}
 
         {/* Tax Information - Business Type Only */}
-        {customerType === 'business' && (
+        {customerType === 'bisnis' && (
           <Card className="p-6">
             <h3 className="mb-4 font-semibold text-gray-900">Informasi Pajak</h3>
             <div className="space-y-4">
@@ -453,7 +453,7 @@ export function CustomerForm({
         )}
 
         {/* Contract Information - Business Type Only */}
-        {customerType === 'business' && (
+        {customerType === 'bisnis' && (
           <Card className="p-6">
             <h3 className="mb-4 font-semibold text-gray-900">Informasi Kontrak</h3>
             <div className="space-y-4">

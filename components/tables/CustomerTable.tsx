@@ -63,8 +63,8 @@ export function CustomerTable({
 
   const getTypeLabel = (type: string) => {
     const labels: Record<string, string> = {
-      individual: 'Perorangan',
-      business: 'Bisnis',
+      perorangan: 'Perorangan',
+      bisnis: 'Bisnis',
     }
     return labels[type] || type
   }
@@ -130,7 +130,7 @@ export function CustomerTable({
                 <TableCell className="text-sm">{customer.city}</TableCell>
                 {/* PIC - Only show for business type */}
                 <TableCell className="text-sm">
-                  {customer.type === 'business' && customer.picName ? (
+                  {customer.type === 'bisnis' && customer.picName ? (
                     <div className="flex flex-col">
                       <span className="text-xs font-medium">{customer.picName}</span>
                       <span className="text-xs text-gray-500">{customer.picPhone}</span>
@@ -141,7 +141,7 @@ export function CustomerTable({
                 </TableCell>
                 {/* Contract Status */}
                 <TableCell className="text-sm">
-                  {customer.type === 'business' ? (
+                  {customer.type === 'bisnis' ? (
                     customer.hasContract ? (
                       <div className="flex items-center gap-1">
                         <FileText className="h-3 w-3 text-green-600" />
@@ -156,7 +156,7 @@ export function CustomerTable({
                 </TableCell>
                 {/* Storage Addresses Count */}
                 <TableCell className="text-sm">
-                  {customer.type === 'business' ? (
+                  {customer.type === 'bisnis' ? (
                     countStorageAddresses(customer) > 0 ? (
                       <div className="flex items-center gap-1">
                         <Warehouse className="h-3 w-3 text-blue-600" />

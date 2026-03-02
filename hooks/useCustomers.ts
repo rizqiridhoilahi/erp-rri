@@ -417,7 +417,7 @@ export function useCustomers() {
 
       return {
         cities,
-        types: types as Array<'individual' | 'business'>,
+        types: types as Array<'perorangan' | 'bisnis'>,
         statuses: statuses as Array<'active' | 'inactive'>,
       }
     } catch (err) {

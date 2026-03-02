@@ -34,7 +34,7 @@ export function CustomerFilters({
       type: undefined,
       city: '',
       status: undefined,
-      sortBy: 'createdAt',
+      sortBy: 'created_at',
       sortOrder: 'desc',
     },
   })
@@ -70,8 +70,8 @@ export function CustomerFilters({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Semua</SelectItem>
-              <SelectItem value="individual">Perorangan</SelectItem>
-              <SelectItem value="business">Bisnis</SelectItem>
+              <SelectItem value="perorangan">Perorangan</SelectItem>
+              <SelectItem value="bisnis">Bisnis</SelectItem>
             </SelectContent>
           </Select>
 
@@ -108,7 +108,7 @@ export function CustomerFilters({
               <SelectValue placeholder="Urutkan" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="createdAt">Tanggal</SelectItem>
+              <SelectItem value="created_at">Tanggal</SelectItem>
               <SelectItem value="name">Nama</SelectItem>
             </SelectContent>
           </Select>

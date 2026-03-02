@@ -34,7 +34,7 @@ export function SupplierFilters({
       type: undefined,
       city: '',
       status: undefined,
-      sortBy: 'createdAt',
+      sortBy: 'created_at',
       sortOrder: 'desc',
     },
   })

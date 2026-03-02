@@ -183,7 +183,7 @@ export default function CustomerDetailPage() {
                     <div className="mt-1 text-sm font-medium text-gray-900">{customer.name}</div>
                   </div>
                 </div>
-                {customer.companyName && customer.type === 'business' && (
+                {customer.companyName && customer.type === 'bisnis' && (
                   <div>
                     <div className="text-xs font-medium uppercase text-gray-500">Nama Perusahaan</div>
                     <div className="mt-1 text-sm text-gray-900">{customer.companyName}</div>
@@ -241,7 +241,7 @@ export default function CustomerDetailPage() {
             </Card>
 
             {/* Tax Information */}
-            {customer.type === 'business' && customer.taxId && (
+            {customer.type === 'bisnis' && customer.taxId && (
               <Card className="p-6">
                 <h3 className="mb-4 font-semibold text-gray-900">Informasi Pajak</h3>
                 <div className="space-y-4">

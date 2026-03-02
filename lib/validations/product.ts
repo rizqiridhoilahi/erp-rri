@@ -31,7 +31,7 @@ export const productSchema = z.object({
     .max(100, 'SKU must be less than 100 characters'),
   barcode: z.string().max(100, 'Barcode must be less than 100 characters').optional(),
   image: z.string().url('Image must be a valid URL').optional().or(z.literal('')),
-  status: z.enum(['active', 'inactive', 'discontinued']).default('active'),
+  status: z.enum(['stocked', 'indent']).default('stocked'),
 })
 
 export type ProductFormInput = z.infer<typeof productSchema>
@@ -41,10 +41,10 @@ export const productFiltersSchema = z.object({
   search: z.string().max(255).optional(),
   category: z.string().optional(),
   brand: z.string().optional(),
-  status: z.enum(['active', 'inactive', 'discontinued']).optional(),
+  status: z.enum(['stocked', 'indent']).optional(),
   minPrice: z.number().min(0).optional(),
   maxPrice: z.number().min(0).optional(),
-  sortBy: z.enum(['name', 'price', 'stock', 'createdAt']).default('createdAt'),
+  sortBy: z.enum(['name', 'price', 'stock', 'created_at']).default('created_at'),
   sortOrder: z.enum(['asc', 'desc']).default('desc'),
 })
 

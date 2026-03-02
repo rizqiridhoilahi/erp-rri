@@ -11,7 +11,7 @@ const commonFields = {
     .string()
     .min(2, 'Nama pelanggan minimal 2 karakter')
     .max(255, 'Nama pelanggan maksimal 255 karakter'),
-  type: z.enum(['individual', 'business']),
+  type: z.enum(['perorangan', 'bisnis']),
   email: z
     .string()
     .email('Email harus valid')
@@ -116,8 +116,8 @@ export const customerSchema = z.object({
   ...commonFields,
   ...businessFields,
 }).superRefine((data, ctx) => {
-  // If type is business, PIC fields become required
-  if (data.type === 'business') {
+  // If type is bisnis, PIC fields become required
+  if (data.type === 'bisnis') {
     if (!data.picName) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
@@ -146,10 +146,10 @@ export type CustomerFormInput = z.infer<typeof customerSchema>
 
 export const customerFiltersSchema = z.object({
   search: z.string().max(255).optional(),
-  type: z.enum(['individual', 'business']).optional(),
+  type: z.enum(['perorangan', 'bisnis']).optional(),
   city: z.string().optional(),
   status: z.enum(['active', 'inactive']).optional(),
-  sortBy: z.enum(['name', 'createdAt']).default('createdAt'),
+  sortBy: z.enum(['name', 'created_at']).default('created_at'),
   sortOrder: z.enum(['asc', 'desc']).default('desc'),
 })
 
@@ -220,7 +220,7 @@ export const supplierFiltersSchema = z.object({
   type: z.enum(['local', 'international']).optional(),
   city: z.string().optional(),
   status: z.enum(['active', 'inactive']).optional(),
-  sortBy: z.enum(['name', 'createdAt']).default('createdAt'),
+  sortBy: z.enum(['name', 'created_at']).default('created_at'),
   sortOrder: z.enum(['asc', 'desc']).default('desc'),
 })
 

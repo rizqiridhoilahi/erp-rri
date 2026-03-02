@@ -28,7 +28,7 @@ export function QuotationFilterComponent({
     status: undefined,
     dateFrom: '',
     dateTo: '',
-    sortBy: 'createdAt',
+    sortBy: 'created_at',
     sortOrder: 'desc',
   })
 
@@ -74,7 +74,7 @@ export function QuotationFilterComponent({
       status: undefined,
       dateFrom: '',
       dateTo: '',
-      sortBy: 'createdAt',
+      sortBy: 'created_at',
       sortOrder: 'desc',
     }
     setFilters(cleared)

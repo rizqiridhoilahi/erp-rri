@@ -27,7 +27,7 @@ export default function CustomersPage() {
   const [totalPages, setTotalPages] = useState(0)
   const [total, setTotal] = useState(0)
   const [filters, setFilters] = useState<CustomerFiltersInput>({
-    sortBy: 'createdAt',
+    sortBy: 'created_at',
     sortOrder: 'desc',
   })
   const [pageLoading, setPageLoading] = useState(false)
@@ -76,7 +76,7 @@ export default function CustomersPage() {
 
   const handleResetFilters = () => {
     setFilters({
-      sortBy: 'createdAt',
+      sortBy: 'created_at',
       sortOrder: 'desc',
     })
     setCurrentPage(1)

@@ -38,7 +38,7 @@ export function ProductFilters({
       status: undefined,
       minPrice: undefined,
       maxPrice: undefined,
-      sortBy: 'createdAt',
+      sortBy: 'created_at',
       sortOrder: 'desc',
     },
   })

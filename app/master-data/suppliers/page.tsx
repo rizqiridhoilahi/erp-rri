@@ -27,7 +27,7 @@ export default function SuppliersPage() {
   const [totalPages, setTotalPages] = useState(0)
   const [total, setTotal] = useState(0)
   const [filters, setFilters] = useState<SupplierFiltersInput>({
-    sortBy: 'createdAt',
+    sortBy: 'created_at',
     sortOrder: 'desc',
   })
   const [pageLoading, setPageLoading] = useState(false)
@@ -76,7 +76,7 @@ export default function SuppliersPage() {
 
   const handleResetFilters = () => {
     setFilters({
-      sortBy: 'createdAt',
+      sortBy: 'created_at',
       sortOrder: 'desc',
     })
     setCurrentPage(1)

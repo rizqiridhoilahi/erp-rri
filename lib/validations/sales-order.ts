@@ -35,7 +35,7 @@ export const salesOrderSchema = z.object({
   soDate: z.string().min(1, 'Tanggal SO diperlukan'),
   deliveryDate: z.string().min(1, 'Tanggal pengiriman diperlukan'),
   deliveryAddress: z.string().optional(),
-  status: z.enum(['draft', 'confirmed', 'in-production', 'ready', 'cancelled']).default('draft'),
+  status: z.enum(['draft', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled']).default('draft'),
   lineItems: z
     .array(soLineItemSchema)
     .min(1, 'Minimal 1 item produk harus ditambahkan'),
@@ -51,12 +51,12 @@ export const salesOrderSchema = z.object({
 export const salesOrderFiltersSchema = z.object({
   search: z.string().optional(),
   status: z
-    .enum(['draft', 'confirmed', 'in-production', 'ready', 'cancelled'])
+    .enum(['draft', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'])
     .optional(),
   customerId: z.string().optional(),
   dateFrom: z.string().optional(),
   dateTo: z.string().optional(),
-  sortBy: z.enum(['soDate', 'createdAt']).default('createdAt'),
+  sortBy: z.enum(['soDate', 'created_at']).default('created_at'),
   sortOrder: z.enum(['asc', 'desc']).default('desc'),
   page: z.number().default(1),
   pageSize: z.number().default(10),

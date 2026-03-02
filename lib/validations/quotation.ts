@@ -54,7 +54,7 @@ export const quotationFiltersSchema = z.object({
   customerId: z.string().optional(),
   dateFrom: z.string().optional(),
   dateTo: z.string().optional(),
-  sortBy: z.enum(['quotationDate', 'createdAt']).default('createdAt'),
+  sortBy: z.enum(['quotationDate', 'created_at']).default('created_at'),
   sortOrder: z.enum(['asc', 'desc']).default('desc'),
   page: z.number().default(1),
   pageSize: z.number().default(10),

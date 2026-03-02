@@ -1,4 +1,4 @@
-export type ProductStatus = 'active' | 'inactive' | 'discontinued'
+export type ProductStatus = 'stocked' | 'indent'
 
 export interface Product {
   id: string
@@ -46,7 +46,7 @@ export interface ProductFilters {
   status?: ProductStatus
   minPrice?: number
   maxPrice?: number
-  sortBy?: 'name' | 'price' | 'stock' | 'createdAt'
+  sortBy?: 'name' | 'price' | 'stock' | 'created_at'
   sortOrder?: 'asc' | 'desc'
 }
 
