@@ -1,4 +1,4 @@
-import { Link } from 'next/link';
+import Link from 'next/link';
 import { supabase } from '@/lib/db/client';
 
 export default async function KontrakPage() {
@@ -68,7 +68,7 @@ export default async function KontrakPage() {
               {kontrakData.map((item) => (
                 <tr key={item.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.nama}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.customer?.nama || '-'}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.customer?.[0]?.nama || '-'}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.tanggal_mulai || '-'}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.tanggal_selesai || '-'}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">

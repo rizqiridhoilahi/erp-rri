@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, integer } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, integer, primaryKey } from "drizzle-orm/pg-core";
 
 export const documentCounter = pgTable("document_counter", {
   kodeDokumen: text("kode_dokumen").notNull(), // SPH, SJ, INV, KWT, PO, GRN, RTJ, RTB

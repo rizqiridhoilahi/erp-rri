@@ -1,0 +1,475 @@
+{
+  "configPath": "/home/ubuntu/rri/erp-rri/next.openapi.json",
+  "outputFile": "/home/ubuntu/rri/erp-rri/public/openapi.json",
+  "diagnostics": [
+    {
+      "code": "missing-path-params-type",
+      "severity": "warning",
+      "message": "Route /v1/master/barang/{id} contains path parameters id but no @pathParams type is defined.",
+      "filePath": "src/app/api/v1/master/barang/[id]/route.ts",
+      "routePath": "/v1/master/barang/{id}"
+    },
+    {
+      "code": "missing-path-params-type",
+      "severity": "warning",
+      "message": "Route /v1/master/barang/{id} contains path parameters id but no @pathParams type is defined.",
+      "filePath": "src/app/api/v1/master/barang/[id]/route.ts",
+      "routePath": "/v1/master/barang/{id}"
+    },
+    {
+      "code": "missing-path-params-type",
+      "severity": "warning",
+      "message": "Route /v1/master/barang/{id} contains path parameters id but no @pathParams type is defined.",
+      "filePath": "src/app/api/v1/master/barang/[id]/route.ts",
+      "routePath": "/v1/master/barang/{id}"
+    },
+    {
+      "code": "response-inference-unresolved",
+      "severity": "warning",
+      "message": "Could not fully infer a response schema from a return statement. Add an explicit @response tag to make the output deterministic.",
+      "filePath": "/home/ubuntu/rri/erp-rri/src/app/api/v1/master/barang/route.ts",
+      "routePath": "/v1/master/barang"
+    },
+    {
+      "code": "response-inference-unresolved",
+      "severity": "warning",
+      "message": "Could not fully infer a response schema from a return statement. Add an explicit @response tag to make the output deterministic.",
+      "filePath": "/home/ubuntu/rri/erp-rri/src/app/api/v1/master/barang/route.ts",
+      "routePath": "/v1/master/barang"
+    },
+    {
+      "code": "response-inference-unresolved",
+      "severity": "warning",
+      "message": "Could not fully infer a response schema from a return statement. Add an explicit @response tag to make the output deterministic.",
+      "filePath": "/home/ubuntu/rri/erp-rri/src/app/api/v1/master/barang/route.ts",
+      "routePath": "/v1/master/barang"
+    },
+    {
+      "code": "response-inference-unresolved",
+      "severity": "warning",
+      "message": "Could not fully infer a response schema from a return statement. Add an explicit @response tag to make the output deterministic.",
+      "filePath": "/home/ubuntu/rri/erp-rri/src/app/api/v1/master/barang/route.ts",
+      "routePath": "/v1/master/barang"
+    },
+    {
+      "code": "missing-path-params-type",
+      "severity": "warning",
+      "message": "Route /v1/master/coa/{id} contains path parameters id but no @pathParams type is defined.",
+      "filePath": "src/app/api/v1/master/coa/[id]/route.ts",
+      "routePath": "/v1/master/coa/{id}"
+    },
+    {
+      "code": "missing-path-params-type",
+      "severity": "warning",
+      "message": "Route /v1/master/coa/{id} contains path parameters id but no @pathParams type is defined.",
+      "filePath": "src/app/api/v1/master/coa/[id]/route.ts",
+      "routePath": "/v1/master/coa/{id}"
+    },
+    {
+      "code": "missing-path-params-type",
+      "severity": "warning",
+      "message": "Route /v1/master/coa/{id} contains path parameters id but no @pathParams type is defined.",
+      "filePath": "src/app/api/v1/master/coa/[id]/route.ts",
+      "routePath": "/v1/master/coa/{id}"
+    },
+    {
+      "code": "response-inference-unresolved",
+      "severity": "warning",
+      "message": "Could not fully infer a response schema from a return statement. Add an explicit @response tag to make the output deterministic.",
+      "filePath": "/home/ubuntu/rri/erp-rri/src/app/api/v1/master/coa/route.ts",
+      "routePath": "/v1/master/coa"
+    },
+    {
+      "code": "response-inference-unresolved",
+      "severity": "warning",
+      "message": "Could not fully infer a response schema from a return statement. Add an explicit @response tag to make the output deterministic.",
+      "filePath": "/home/ubuntu/rri/erp-rri/src/app/api/v1/master/coa/route.ts",
+      "routePath": "/v1/master/coa"
+    },
+    {
+      "code": "response-inference-unresolved",
+      "severity": "warning",
+      "message": "Could not fully infer a response schema from a return statement. Add an explicit @response tag to make the output deterministic.",
+      "filePath": "/home/ubuntu/rri/erp-rri/src/app/api/v1/master/coa/route.ts",
+      "routePath": "/v1/master/coa"
+    },
+    {
+      "code": "response-inference-unresolved",
+      "severity": "warning",
+      "message": "Could not fully infer a response schema from a return statement. Add an explicit @response tag to make the output deterministic.",
+      "filePath": "/home/ubuntu/rri/erp-rri/src/app/api/v1/master/coa/route.ts",
+      "routePath": "/v1/master/coa"
+    },
+    {
+      "code": "missing-path-params-type",
+      "severity": "warning",
+      "message": "Route /v1/master/customer/{id} contains path parameters id but no @pathParams type is defined.",
+      "filePath": "src/app/api/v1/master/customer/[id]/route.ts",
+      "routePath": "/v1/master/customer/{id}"
+    },
+    {
+      "code": "missing-path-params-type",
+      "severity": "warning",
+      "message": "Route /v1/master/customer/{id} contains path parameters id but no @pathParams type is defined.",
+      "filePath": "src/app/api/v1/master/customer/[id]/route.ts",
+      "routePath": "/v1/master/customer/{id}"
+    },
+    {
+      "code": "missing-path-params-type",
+      "severity": "warning",
+      "message": "Route /v1/master/customer/{id} contains path parameters id but no @pathParams type is defined.",
+      "filePath": "src/app/api/v1/master/customer/[id]/route.ts",
+      "routePath": "/v1/master/customer/{id}"
+    },
+    {
+      "code": "response-inference-unresolved",
+      "severity": "warning",
+      "message": "Could not fully infer a response schema from a return statement. Add an explicit @response tag to make the output deterministic.",
+      "filePath": "/home/ubuntu/rri/erp-rri/src/app/api/v1/master/customer/route.ts",
+      "routePath": "/v1/master/customer"
+    },
+    {
+      "code": "response-inference-unresolved",
+      "severity": "warning",
+      "message": "Could not fully infer a response schema from a return statement. Add an explicit @response tag to make the output deterministic.",
+      "filePath": "/home/ubuntu/rri/erp-rri/src/app/api/v1/master/customer/route.ts",
+      "routePath": "/v1/master/customer"
+    },
+    {
+      "code": "response-inference-unresolved",
+      "severity": "warning",
+      "message": "Could not fully infer a response schema from a return statement. Add an explicit @response tag to make the output deterministic.",
+      "filePath": "/home/ubuntu/rri/erp-rri/src/app/api/v1/master/customer/route.ts",
+      "routePath": "/v1/master/customer"
+    },
+    {
+      "code": "response-inference-unresolved",
+      "severity": "warning",
+      "message": "Could not fully infer a response schema from a return statement. Add an explicit @response tag to make the output deterministic.",
+      "filePath": "/home/ubuntu/rri/erp-rri/src/app/api/v1/master/customer/route.ts",
+      "routePath": "/v1/master/customer"
+    },
+    {
+      "code": "missing-path-params-type",
+      "severity": "warning",
+      "message": "Route /v1/master/jabatan/{id} contains path parameters id but no @pathParams type is defined.",
+      "filePath": "src/app/api/v1/master/jabatan/[id]/route.ts",
+      "routePath": "/v1/master/jabatan/{id}"
+    },
+    {
+      "code": "missing-path-params-type",
+      "severity": "warning",
+      "message": "Route /v1/master/jabatan/{id} contains path parameters id but no @pathParams type is defined.",
+      "filePath": "src/app/api/v1/master/jabatan/[id]/route.ts",
+      "routePath": "/v1/master/jabatan/{id}"
+    },
+    {
+      "code": "missing-path-params-type",
+      "severity": "warning",
+      "message": "Route /v1/master/jabatan/{id} contains path parameters id but no @pathParams type is defined.",
+      "filePath": "src/app/api/v1/master/jabatan/[id]/route.ts",
+      "routePath": "/v1/master/jabatan/{id}"
+    },
+    {
+      "code": "response-inference-unresolved",
+      "severity": "warning",
+      "message": "Could not fully infer a response schema from a return statement. Add an explicit @response tag to make the output deterministic.",
+      "filePath": "/home/ubuntu/rri/erp-rri/src/app/api/v1/master/jabatan/route.ts",
+      "routePath": "/v1/master/jabatan"
+    },
+    {
+      "code": "response-inference-unresolved",
+      "severity": "warning",
+      "message": "Could not fully infer a response schema from a return statement. Add an explicit @response tag to make the output deterministic.",
+      "filePath": "/home/ubuntu/rri/erp-rri/src/app/api/v1/master/jabatan/route.ts",
+      "routePath": "/v1/master/jabatan"
+    },
+    {
+      "code": "response-inference-unresolved",
+      "severity": "warning",
+      "message": "Could not fully infer a response schema from a return statement. Add an explicit @response tag to make the output deterministic.",
+      "filePath": "/home/ubuntu/rri/erp-rri/src/app/api/v1/master/jabatan/route.ts",
+      "routePath": "/v1/master/jabatan"
+    },
+    {
+      "code": "response-inference-unresolved",
+      "severity": "warning",
+      "message": "Could not fully infer a response schema from a return statement. Add an explicit @response tag to make the output deterministic.",
+      "filePath": "/home/ubuntu/rri/erp-rri/src/app/api/v1/master/jabatan/route.ts",
+      "routePath": "/v1/master/jabatan"
+    },
+    {
+      "code": "missing-path-params-type",
+      "severity": "warning",
+      "message": "Route /v1/master/karyawan/{id} contains path parameters id but no @pathParams type is defined.",
+      "filePath": "src/app/api/v1/master/karyawan/[id]/route.ts",
+      "routePath": "/v1/master/karyawan/{id}"
+    },
+    {
+      "code": "missing-path-params-type",
+      "severity": "warning",
+      "message": "Route /v1/master/karyawan/{id} contains path parameters id but no @pathParams type is defined.",
+      "filePath": "src/app/api/v1/master/karyawan/[id]/route.ts",
+      "routePath": "/v1/master/karyawan/{id}"
+    },
+    {
+      "code": "missing-path-params-type",
+      "severity": "warning",
+      "message": "Route /v1/master/karyawan/{id} contains path parameters id but no @pathParams type is defined.",
+      "filePath": "src/app/api/v1/master/karyawan/[id]/route.ts",
+      "routePath": "/v1/master/karyawan/{id}"
+    },
+    {
+      "code": "response-inference-unresolved",
+      "severity": "warning",
+      "message": "Could not fully infer a response schema from a return statement. Add an explicit @response tag to make the output deterministic.",
+      "filePath": "/home/ubuntu/rri/erp-rri/src/app/api/v1/master/karyawan/route.ts",
+      "routePath": "/v1/master/karyawan"
+    },
+    {
+      "code": "response-inference-unresolved",
+      "severity": "warning",
+      "message": "Could not fully infer a response schema from a return statement. Add an explicit @response tag to make the output deterministic.",
+      "filePath": "/home/ubuntu/rri/erp-rri/src/app/api/v1/master/karyawan/route.ts",
+      "routePath": "/v1/master/karyawan"
+    },
+    {
+      "code": "response-inference-unresolved",
+      "severity": "warning",
+      "message": "Could not fully infer a response schema from a return statement. Add an explicit @response tag to make the output deterministic.",
+      "filePath": "/home/ubuntu/rri/erp-rri/src/app/api/v1/master/karyawan/route.ts",
+      "routePath": "/v1/master/karyawan"
+    },
+    {
+      "code": "response-inference-unresolved",
+      "severity": "warning",
+      "message": "Could not fully infer a response schema from a return statement. Add an explicit @response tag to make the output deterministic.",
+      "filePath": "/home/ubuntu/rri/erp-rri/src/app/api/v1/master/karyawan/route.ts",
+      "routePath": "/v1/master/karyawan"
+    },
+    {
+      "code": "missing-path-params-type",
+      "severity": "warning",
+      "message": "Route /v1/master/kategori-barang/{id} contains path parameters id but no @pathParams type is defined.",
+      "filePath": "src/app/api/v1/master/kategori-barang/[id]/route.ts",
+      "routePath": "/v1/master/kategori-barang/{id}"
+    },
+    {
+      "code": "missing-path-params-type",
+      "severity": "warning",
+      "message": "Route /v1/master/kategori-barang/{id} contains path parameters id but no @pathParams type is defined.",
+      "filePath": "src/app/api/v1/master/kategori-barang/[id]/route.ts",
+      "routePath": "/v1/master/kategori-barang/{id}"
+    },
+    {
+      "code": "missing-path-params-type",
+      "severity": "warning",
+      "message": "Route /v1/master/kategori-barang/{id} contains path parameters id but no @pathParams type is defined.",
+      "filePath": "src/app/api/v1/master/kategori-barang/[id]/route.ts",
+      "routePath": "/v1/master/kategori-barang/{id}"
+    },
+    {
+      "code": "response-inference-unresolved",
+      "severity": "warning",
+      "message": "Could not fully infer a response schema from a return statement. Add an explicit @response tag to make the output deterministic.",
+      "filePath": "/home/ubuntu/rri/erp-rri/src/app/api/v1/master/kategori-barang/route.ts",
+      "routePath": "/v1/master/kategori-barang"
+    },
+    {
+      "code": "response-inference-unresolved",
+      "severity": "warning",
+      "message": "Could not fully infer a response schema from a return statement. Add an explicit @response tag to make the output deterministic.",
+      "filePath": "/home/ubuntu/rri/erp-rri/src/app/api/v1/master/kategori-barang/route.ts",
+      "routePath": "/v1/master/kategori-barang"
+    },
+    {
+      "code": "response-inference-unresolved",
+      "severity": "warning",
+      "message": "Could not fully infer a response schema from a return statement. Add an explicit @response tag to make the output deterministic.",
+      "filePath": "/home/ubuntu/rri/erp-rri/src/app/api/v1/master/kategori-barang/route.ts",
+      "routePath": "/v1/master/kategori-barang"
+    },
+    {
+      "code": "response-inference-unresolved",
+      "severity": "warning",
+      "message": "Could not fully infer a response schema from a return statement. Add an explicit @response tag to make the output deterministic.",
+      "filePath": "/home/ubuntu/rri/erp-rri/src/app/api/v1/master/kategori-barang/route.ts",
+      "routePath": "/v1/master/kategori-barang"
+    },
+    {
+      "code": "missing-path-params-type",
+      "severity": "warning",
+      "message": "Route /v1/master/kontrak/{id} contains path parameters id but no @pathParams type is defined.",
+      "filePath": "src/app/api/v1/master/kontrak/[id]/route.ts",
+      "routePath": "/v1/master/kontrak/{id}"
+    },
+    {
+      "code": "missing-path-params-type",
+      "severity": "warning",
+      "message": "Route /v1/master/kontrak/{id} contains path parameters id but no @pathParams type is defined.",
+      "filePath": "src/app/api/v1/master/kontrak/[id]/route.ts",
+      "routePath": "/v1/master/kontrak/{id}"
+    },
+    {
+      "code": "missing-path-params-type",
+      "severity": "warning",
+      "message": "Route /v1/master/kontrak/{id} contains path parameters id but no @pathParams type is defined.",
+      "filePath": "src/app/api/v1/master/kontrak/[id]/route.ts",
+      "routePath": "/v1/master/kontrak/{id}"
+    },
+    {
+      "code": "response-inference-unresolved",
+      "severity": "warning",
+      "message": "Could not fully infer a response schema from a return statement. Add an explicit @response tag to make the output deterministic.",
+      "filePath": "/home/ubuntu/rri/erp-rri/src/app/api/v1/master/kontrak/route.ts",
+      "routePath": "/v1/master/kontrak"
+    },
+    {
+      "code": "response-inference-unresolved",
+      "severity": "warning",
+      "message": "Could not fully infer a response schema from a return statement. Add an explicit @response tag to make the output deterministic.",
+      "filePath": "/home/ubuntu/rri/erp-rri/src/app/api/v1/master/kontrak/route.ts",
+      "routePath": "/v1/master/kontrak"
+    },
+    {
+      "code": "response-inference-unresolved",
+      "severity": "warning",
+      "message": "Could not fully infer a response schema from a return statement. Add an explicit @response tag to make the output deterministic.",
+      "filePath": "/home/ubuntu/rri/erp-rri/src/app/api/v1/master/kontrak/route.ts",
+      "routePath": "/v1/master/kontrak"
+    },
+    {
+      "code": "response-inference-unresolved",
+      "severity": "warning",
+      "message": "Could not fully infer a response schema from a return statement. Add an explicit @response tag to make the output deterministic.",
+      "filePath": "/home/ubuntu/rri/erp-rri/src/app/api/v1/master/kontrak/route.ts",
+      "routePath": "/v1/master/kontrak"
+    },
+    {
+      "code": "missing-path-params-type",
+      "severity": "warning",
+      "message": "Route /v1/master/pic-customer/{id} contains path parameters id but no @pathParams type is defined.",
+      "filePath": "src/app/api/v1/master/pic-customer/[id]/route.ts",
+      "routePath": "/v1/master/pic-customer/{id}"
+    },
+    {
+      "code": "missing-path-params-type",
+      "severity": "warning",
+      "message": "Route /v1/master/pic-customer/{id} contains path parameters id but no @pathParams type is defined.",
+      "filePath": "src/app/api/v1/master/pic-customer/[id]/route.ts",
+      "routePath": "/v1/master/pic-customer/{id}"
+    },
+    {
+      "code": "missing-path-params-type",
+      "severity": "warning",
+      "message": "Route /v1/master/pic-customer/{id} contains path parameters id but no @pathParams type is defined.",
+      "filePath": "src/app/api/v1/master/pic-customer/[id]/route.ts",
+      "routePath": "/v1/master/pic-customer/{id}"
+    },
+    {
+      "code": "response-inference-unresolved",
+      "severity": "warning",
+      "message": "Could not fully infer a response schema from a return statement. Add an explicit @response tag to make the output deterministic.",
+      "filePath": "/home/ubuntu/rri/erp-rri/src/app/api/v1/master/pic-customer/route.ts",
+      "routePath": "/v1/master/pic-customer"
+    },
+    {
+      "code": "response-inference-unresolved",
+      "severity": "warning",
+      "message": "Could not fully infer a response schema from a return statement. Add an explicit @response tag to make the output deterministic.",
+      "filePath": "/home/ubuntu/rri/erp-rri/src/app/api/v1/master/pic-customer/route.ts",
+      "routePath": "/v1/master/pic-customer"
+    },
+    {
+      "code": "response-inference-unresolved",
+      "severity": "warning",
+      "message": "Could not fully infer a response schema from a return statement. Add an explicit @response tag to make the output deterministic.",
+      "filePath": "/home/ubuntu/rri/erp-rri/src/app/api/v1/master/pic-customer/route.ts",
+      "routePath": "/v1/master/pic-customer"
+    },
+    {
+      "code": "response-inference-unresolved",
+      "severity": "warning",
+      "message": "Could not fully infer a response schema from a return statement. Add an explicit @response tag to make the output deterministic.",
+      "filePath": "/home/ubuntu/rri/erp-rri/src/app/api/v1/master/pic-customer/route.ts",
+      "routePath": "/v1/master/pic-customer"
+    },
+    {
+      "code": "missing-path-params-type",
+      "severity": "warning",
+      "message": "Route /v1/master/supplier/{id} contains path parameters id but no @pathParams type is defined.",
+      "filePath": "src/app/api/v1/master/supplier/[id]/route.ts",
+      "routePath": "/v1/master/supplier/{id}"
+    },
+    {
+      "code": "missing-path-params-type",
+      "severity": "warning",
+      "message": "Route /v1/master/supplier/{id} contains path parameters id but no @pathParams type is defined.",
+      "filePath": "src/app/api/v1/master/supplier/[id]/route.ts",
+      "routePath": "/v1/master/supplier/{id}"
+    },
+    {
+      "code": "missing-path-params-type",
+      "severity": "warning",
+      "message": "Route /v1/master/supplier/{id} contains path parameters id but no @pathParams type is defined.",
+      "filePath": "src/app/api/v1/master/supplier/[id]/route.ts",
+      "routePath": "/v1/master/supplier/{id}"
+    },
+    {
+      "code": "response-inference-unresolved",
+      "severity": "warning",
+      "message": "Could not fully infer a response schema from a return statement. Add an explicit @response tag to make the output deterministic.",
+      "filePath": "/home/ubuntu/rri/erp-rri/src/app/api/v1/master/supplier/route.ts",
+      "routePath": "/v1/master/supplier"
+    },
+    {
+      "code": "response-inference-unresolved",
+      "severity": "warning",
+      "message": "Could not fully infer a response schema from a return statement. Add an explicit @response tag to make the output deterministic.",
+      "filePath": "/home/ubuntu/rri/erp-rri/src/app/api/v1/master/supplier/route.ts",
+      "routePath": "/v1/master/supplier"
+    },
+    {
+      "code": "response-inference-unresolved",
+      "severity": "warning",
+      "message": "Could not fully infer a response schema from a return statement. Add an explicit @response tag to make the output deterministic.",
+      "filePath": "/home/ubuntu/rri/erp-rri/src/app/api/v1/master/supplier/route.ts",
+      "routePath": "/v1/master/supplier"
+    },
+    {
+      "code": "response-inference-unresolved",
+      "severity": "warning",
+      "message": "Could not fully infer a response schema from a return statement. Add an explicit @response tag to make the output deterministic.",
+      "filePath": "/home/ubuntu/rri/erp-rri/src/app/api/v1/master/supplier/route.ts",
+      "routePath": "/v1/master/supplier"
+    }
+  ],
+  "performance": {
+    "prepareTemplateMs": 0.1564740000000029,
+    "loadCustomFragmentsMs": 0.0009230000000570726,
+    "prepareDocumentMs": 0.15739700000005996,
+    "scanRouteFilesMs": 2.6717330000000175,
+    "deriveRoutePathMs": 0.5763520000000426,
+    "filterRouteCandidatesMs": 0.07062000000109947,
+    "sourcePrecheckMs": 1.0237170000003744,
+    "readRouteFilesMs": 0.6993890000010197,
+    "parseRouteFilesMs": 67.7718199999997,
+    "analyzeRouteFilesMs": 102.70857799999908,
+    "typescriptResponseInferenceMs": 3453.575522999999,
+    "processRouteFilesMs": 3624.761013,
+    "registerRouteMs": 5.776589000002787,
+    "getSchemaContentMs": 0,
+    "createRequestParamsMs": 0.2270330000000058,
+    "createRequestBodyMs": 0,
+    "processResponsesMs": 2.6726619999981267,
+    "createResponseSchemaMs": 0,
+    "buildOperationsMs": 6.358903000000623,
+    "sortAndMergePathsMs": 2.194532999999865,
+    "buildPathsMs": 2.194532999999865,
+    "defaultComponentsAndErrorsMs": 0.24770799999987503,
+    "mergeSchemasMs": 0.12873799999943003,
+    "finalizeDocumentMs": 4.456523999999263,
+    "totalMs": 3646.2722830000002,
+    "scanRoutesMs": 3633.7916490000007
+  }
+}

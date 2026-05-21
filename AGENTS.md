@@ -52,7 +52,10 @@
 - Format: `{KODE}/{RRI}/{YY}/{MM}/{0000}`
 - Examples: `SPH/RRI/26/05/0001`, `SJ/RRI/26/05/0001`
 - Reset automatically at year boundary
-- Implemented via `document_counter` table
+- Implemented via `document_counter` table + `increment_document_counter()` PG function
+- Usage: `import { generateDocumentNumber } from '@/lib/utils/document-number'`
+- Calls `supabase.rpc('increment_document_counter', { p_kode_dokumen, p_tahun, p_bulan })`
+- Atomically upserts & increments counter; returns formatted number string
 
 ### Storage Structure
 - `avatars/` → User profile images
@@ -71,5 +74,22 @@
 ### API Structure
 All API endpoints under `/api/v1/`:
 - `/api/v1/master/barang`
-- `/api/v1/pre-sales/quotation`
-- `/api/v1/sales/delivery-order`
+- `/api/v1/master/supplier`
+- `/api/v1/master/customer`
+- `/api/v1/master/pic-customer`
+- `/api/v1/master/coa`
+- `/api/v1/master/kontrak`
+- `/api/v1/master/kategori-barang`
+- `/api/v1/master/jabatan`
+- `/api/v1/master/karyawan`
+- `/api-docs` → Scalar UI (interactive API documentation)
+- `/openapi.json` → Raw OpenAPI spec
+
+### API Architecture
+- **API Layer**: Next.js Route Handlers at `src/app/api/v1/*`
+- **Auth**: Each API route calls `verifyAuth()` to verify Bearer JWT token
+- **DB**: Uses `supabaseAdmin` (service role key) for all DB operations
+- **Validation**: Zod schemas for request body validation
+- **Client**: Frontend uses `apiFetch()` from `@/lib/api/client` which auto-attaches auth token
+- **Docs**: OpenAPI spec auto-generated via `next-openapi-gen` CLI; served via Scalar UI at `/api-docs`
+- **Hybrid Pattern**: Server components (list pages) use direct Supabase for speed; client components (forms) use API routes for safety

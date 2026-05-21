@@ -1,4 +1,4 @@
-import { Link } from 'next/link';
+import Link from 'next/link';
 import { supabase } from '@/lib/db/client';
 
 export default async function BarangPage() {
@@ -82,7 +82,7 @@ export default async function BarangPage() {
                 <tr key={item.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.kode}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.nama}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.kategori_barang?.nama || '-'}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.kategori_barang?.[0]?.nama || '-'}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.satuan}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {item.harga_beli_default !== null ? `Rp ${Number(item.harga_beli_default).toLocaleString('id-ID')}` : '-' }

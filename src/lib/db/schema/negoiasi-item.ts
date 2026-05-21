@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, integer, real } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, real } from "drizzle-orm/pg-core";
 
 export const negoiasiItem = pgTable("negoiasi_item", {
   id: text("id").primaryKey(),

@@ -1,4 +1,4 @@
-import { Link } from 'next/link';
+import Link from 'next/link';
 import { supabase } from '@/lib/db/client';
 
 export default async function PicCustomerPage() {
@@ -31,7 +31,7 @@ export default async function PicCustomerPage() {
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Data PIC Customer</h1>
-        <Link href="/dashboard/master/pic-customer/tambah" className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition">
+        <Link href="/dashboard/pic-customer/tambah" className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition">
           Tambah PIC Customer
         </Link>
       </div>
@@ -71,7 +71,7 @@ export default async function PicCustomerPage() {
             <tbody className="bg-white divide-y divide-gray-200">
               {picData.map((item) => (
                 <tr key={item.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.customer?.nama || '-'}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.customer?.[0]?.nama || '-'}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.nama}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.jabatan || '-'}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.no_hp || '-'}</td>
@@ -87,7 +87,7 @@ export default async function PicCustomerPage() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     <Link 
-                      href={`/dashboard/master/pic-customer/${item.id}/edit`} 
+                      href={`/dashboard/pic-customer/${item.id}/edit`} 
                       className="text-blue-600 hover:text-blue-900 mr-3"
                     >
                       Edit

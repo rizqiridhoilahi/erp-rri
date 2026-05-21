@@ -1,4 +1,4 @@
-import { Link } from 'next/link';
+import Link from 'next/link';
 import { supabase } from '@/lib/db/client';
 
 export default async function CoaPage() {
@@ -10,7 +10,7 @@ export default async function CoaPage() {
       kode,
       nama,
       tipe,
-      induk!inner(nama),
+      coa!induk_id(nama),
       keterangan,
       created_at
     `)
@@ -73,7 +73,7 @@ export default async function CoaPage() {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.kode}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.nama}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.tipe}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.induk?.nama || '-'}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.coa?.[0]?.nama || '-'}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.keterangan || '-'}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
                     <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
