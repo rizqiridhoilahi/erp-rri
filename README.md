@@ -1,3 +1,5 @@
+# ERP RRI System
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
@@ -34,3 +36,44 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## Environment Variables
+
+Create a `.env` file in the root directory with the following variables:
+
+```env
+# Supabase
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url_here
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key_here
+SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key_here
+DATABASE_URL=postgresql://[user]:[password]@[host].[region].supabase.co:5432/postgres
+
+# Optional: for AI agent (if using external services)
+# OPENAI_API_KEY=your_openai_api_key
+```
+
+Copy from `.env.example` and replace the placeholder values with your actual Supabase credentials.
+
+## Database Setup
+
+This project uses Drizzle ORM with PostgreSQL via Supabase.
+
+1. Create your Supabase project at https://supabase.com
+2. Obtain your API keys from the Supabase dashboard
+3. Set up the environment variables as described above
+4. Run database migrations using Drizzle CLI (to be implemented)
+
+## Project Structure
+
+```
+src/
+├── app/                     # Next.js App Router
+├── components/              # Reusable components
+├── lib/                     # Shared libraries
+│   ├── db/                  # Database (schema, migrations, client)
+│   ├── utils/               # Utility functions
+│   └── ...                  # Other shared code
+└── types/                   # TypeScript definitions
+```
+
+Follow the guidelines in `AGENTS.md` for development best practices and conventions.
