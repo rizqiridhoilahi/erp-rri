@@ -93,3 +93,10 @@ All API endpoints under `/api/v1/`:
 - **Client**: Frontend uses `apiFetch()` from `@/lib/api/client` which auto-attaches auth token
 - **Docs**: OpenAPI spec auto-generated via `next-openapi-gen` CLI; served via Scalar UI at `/api-docs`
 - **Hybrid Pattern**: Server components (list pages) use direct Supabase for speed; client components (forms) use API routes for safety
+
+## Workflow
+After completing any changes or implementing a feature, always update:
+1. **PRD.md** — Update relevant sections (tech stack, architecture, modul, API, etc.) to reflect current state
+2. **ROADMAP.md** — Mark completed items as `[x]`, add new items if scope changed
+
+This ensures documentation stays synchronized with the actual codebase.

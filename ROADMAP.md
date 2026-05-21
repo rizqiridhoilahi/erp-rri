@@ -4,8 +4,9 @@
 - [x] Project setup (Next.js, Tailwind, Drizzle, ESLint)
 - [x] Database schema (50+ tables)
 - [x] Auth pages (login, register)
-- [x] Middleware route protection
-- [x] Dashboard layout + sidebar
+- [x] Middleware route protection (`src/middleware.ts`)
+- [x] Dashboard layout + sidebar (navigasi ke semua modul)
+- [x] Root layout (`<html><body>`) — fix route group `(dashboard)` → `dashboard/`
 - [x] Master Barang (list, tambah, edit)
 - [x] Master Supplier (list, tambah, edit)
 - [x] Master Customer (list, tambah, edit)
@@ -15,8 +16,14 @@
 - [x] Master Kategori Barang (list, tambah, edit)
 - [x] Master Jabatan (list, tambah, edit)
 - [x] Master Karyawan (list, tambah, edit)
-- [x] Document Counter auto-numbering
-- [x] API routes `/api/v1/` + OpenAPI/Scalar docs
+- [x] Document Counter auto-numbering (PostgreSQL function + TypeScript utility)
+- [x] API infrastructure: `lib/api/client.ts`, `auth.ts`, `errors.ts`, `supabase-server.ts`
+- [x] API routes `/api/v1/master/*` — 20 route handlers (GET/POST/PUT/DELETE) untuk 9 entities
+- [x] OpenAPI auto-generate (`/openapi.json`) + Scalar UI (`/api-docs`)
+- [x] Frontend refactor: all form pages use `apiFetch()` instead of direct Supabase
+- [x] Hybrid pattern: server components → direct Supabase, client components → API routes
+- [x] UI/UX Design System: shadcn/ui, color palette, typography (Lexend + Source Sans 3), icon rules
+- [x] PRD.md v4.0 — didokumentasi penuh (design system, API architecture, folder structure update)
 
 ## Fase 2 — Pre-Sales & Sales
 - [ ] RFQ (list, tambah, edit, detail)
