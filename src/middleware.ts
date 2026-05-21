@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { supabase } from './src/lib/db/client';
+import { supabase } from './lib/db/client';
 
 // This function can be marked as async if needed
 export async function middleware(request: NextRequest) {
