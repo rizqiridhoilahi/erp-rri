@@ -12,10 +12,10 @@ export default function TambahInvoicePage() {
   const today = new Date().toISOString().split('T')[0]
   const { register, handleSubmit, control, watch } = useForm<FV>({ resolver: zodResolver(schema), defaultValues: { tanggal: today, ppn_rate: 0.11, items: [{ barang_id: '', harga: 0, jumlah: 1 }] } })
   const { fields, append, remove } = useFieldArray({ control, name: 'items' })
-  const watchedItems = watch('items'); const ppnRate = watch('ppn_rate') ?? 0.11; const pphRate = watch('pph_rate')
-  const calcSubtotal = (i: { harga?: number; jumlah?: number; diskon?: number }) => (i.harga ?? 0) * (i.jumlah ?? 0) - (i.diskon ?? 0)
-  const calcPPN = (i: { harga?: number; jumlah?: number; diskon?: number }) => calcSubtotal(i) * ppnRate
-  const calcPPh = (i: { harga?: number; jumlah?: number; diskon?: number }) => pphRate ? calcSubtotal(i) * pphRate : 0
+  const watchedItems = watch('items'); const ppnRate = (watch('ppn_rate') ?? 0.11) as number; const pphRate = watch('pph_rate') as (number | undefined)
+  const calcSubtotal = (i: Record<string, unknown>) => Number(i.harga ?? 0) * Number(i.jumlah ?? 0) - Number(i.diskon ?? 0)
+  const calcPPN = (i: Record<string, unknown>) => calcSubtotal(i) * ppnRate
+  const calcPPh = (i: Record<string, unknown>) => pphRate ? calcSubtotal(i) * pphRate : 0
   const totalDpp = (watchedItems ?? []).reduce((s, i) => s + calcSubtotal(i), 0)
   const totalPPN = (watchedItems ?? []).reduce((s, i) => s + calcPPN(i), 0)
   const totalPPh = (watchedItems ?? []).reduce((s, i) => s + calcPPh(i), 0)

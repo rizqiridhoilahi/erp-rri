@@ -19,7 +19,7 @@ export default function NegosiasiAssistantPage() {
   }, [])
   const onSubmit = async (data: FV) => {
     setLoading(true)
-    try { const r = await apiFetch<{ data: Analisa }>('/api/v1/ai/negosiasi-assistant', { method: 'POST', body: JSON.stringify(data) }); setAnalisa(r.data) }
+    try { const r = await apiFetch<Analisa>('/api/v1/ai/negosiasi-assistant', { method: 'POST', body: JSON.stringify(data) }); setAnalisa(r.data) }
     catch (err) { toast.error(err instanceof Error ? err.message : 'Error') } finally { setLoading(false) }
   }
   return (

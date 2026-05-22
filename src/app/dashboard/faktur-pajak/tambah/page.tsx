@@ -10,7 +10,7 @@ type FV = z.input<typeof schema>
 export default function TambahFakturPajakPage() {
   const router = useRouter(); const [invOpts, setInvOpts] = useState<Array<{ value: string; label: string }>>([]); const [submitting, setSubmitting] = useState(false)
   const today = new Date().toISOString().split('T')[0]
-  const { register, handleSubmit, control, formState: { errors } } = useForm<FV>({ resolver: zodResolver(schema), defaultValues: { tanggal: today, items: [{ invoice_item_id: '', harga: 0, dpp: 0, ppn: 0 }] } })
+  const { register, handleSubmit, control } = useForm<FV>({ resolver: zodResolver(schema), defaultValues: { tanggal: today, items: [{ invoice_item_id: '', harga: 0, dpp: 0, ppn: 0 }] } })
   const { fields, append, remove } = useFieldArray({ control, name: 'items' })
   useEffect(() => {
     apiFetch<Array<{ id: string; nomor: string }>>('/api/v1/invoice')

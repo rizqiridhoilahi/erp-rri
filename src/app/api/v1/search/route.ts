@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { supabaseAdmin } from '@/lib/api/supabase-server'
 import { verifyAuth } from '@/lib/api/auth'
-import { badRequest, internalError } from '@/lib/api/errors'
+import { badRequest } from '@/lib/api/errors'
 
 const schema = z.object({ q: z.string().min(1) })
 
@@ -33,7 +33,8 @@ export async function POST(request: NextRequest) {
   responses.forEach((res, i) => {
     if (res.status === 'fulfilled' && res.value.data) {
       for (const row of res.value.data) {
-        const label = (row as any).nomor ?? (row as any).nama ?? (row as any).kode ?? row.id
+        const r = row as { id: string; nomor?: string; nama?: string; kode?: string }
+        const label = r.nomor ?? r.nama ?? r.kode ?? r.id
         results.push({ table: tableNames[i], id: row.id, label: `[${tableNames[i].toUpperCase()}] ${label}`, href: `/dashboard/${tableNames[i]}/${row.id}/edit` })
       }
     }

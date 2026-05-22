@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { supabase } from '@/lib/db/client';
-import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -60,7 +59,7 @@ export default function RegisterPage() {
       }
 
       setSuccess('Registration successful! Please check your email to verify your account, then login.');
-    } catch (err) {
+    } catch {
       setError('An unexpected error occurred. Please try again.');
     } finally {
       setLoading(false);

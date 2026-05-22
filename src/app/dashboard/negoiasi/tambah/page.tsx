@@ -10,7 +10,7 @@ type FV = z.input<typeof schema>
 export default function TambahNegoiasiPage() {
   const router = useRouter(); const [qtnOpts, setQtnOpts] = useState<Array<{ value: string; label: string }>>([]); const [submitting, setSubmitting] = useState(false)
   const today = new Date().toISOString().split('T')[0]
-  const { register, handleSubmit, control, formState: { errors } } = useForm<FV>({ resolver: zodResolver(schema), defaultValues: { tanggal: today, items: [{ quotation_item_id: '', harga_satuan_baru: 0 }] } })
+  const { register, handleSubmit, control } = useForm<FV>({ resolver: zodResolver(schema), defaultValues: { tanggal: today, items: [{ quotation_item_id: '', harga_satuan_baru: 0 }] } })
   const { fields, append, remove } = useFieldArray({ control, name: 'items' })
   useEffect(() => { apiFetch<Array<{ id: string; nomor: string }>>('/api/v1/quotation').then(r => setQtnOpts((r.data ?? []).map(q => ({ value: q.id, label: q.nomor })))).catch(() => toast.error('Gagal memuat data')) }, [])
   const onSubmit = async (data: FV) => {

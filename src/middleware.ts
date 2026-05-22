@@ -32,7 +32,7 @@ export async function middleware(request: NextRequest) {
         url.searchParams.set('callbackUrl', pathname);
         return NextResponse.redirect(url);
       }
-    } catch (err) {
+    } catch {
       // Redirect to login on any error
       const url = new URL('/login', request.url);
       url.searchParams.set('callbackUrl', pathname);

@@ -31,7 +31,7 @@ export function GlobalSearch() {
     const fetchData = async () => {
       if (!query || query.length < 2) { setResults([]); return }
       setSearching(true)
-      try { const r = await apiFetch<{ data: SearchResult[] }>('/api/v1/search', { method: 'POST', body: JSON.stringify({ q: query }) }); setResults(r.data ?? []) }
+      try { const r = await apiFetch<SearchResult[]>('/api/v1/search', { method: 'POST', body: JSON.stringify({ q: query }) }); setResults(r.data ?? []) }
       catch { setResults([]) }
       finally { setSearching(false) }
     }

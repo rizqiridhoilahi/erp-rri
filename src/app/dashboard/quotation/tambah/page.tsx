@@ -39,7 +39,7 @@ export default function TambahQuotationPage() {
 
   const today = new Date().toISOString().split('T')[0]
 
-  const { register, handleSubmit, control, formState: { errors }, setValue } = useForm<QtnFormValues>({
+  const { register, handleSubmit, control, formState: { errors } } = useForm<QtnFormValues>({
     resolver: zodResolver(qtnSchema),
     defaultValues: {
       tanggal: today,
@@ -74,11 +74,6 @@ export default function TambahQuotationPage() {
     } finally {
       setSubmitting(false)
     }
-  }
-
-  const calcSubtotal = (index: number) => {
-    const items = (document.querySelectorAll('input[name^="items"]'))
-    // handled server-side
   }
 
   return (

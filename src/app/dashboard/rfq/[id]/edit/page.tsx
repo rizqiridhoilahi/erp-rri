@@ -10,7 +10,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { Plus, Trash2, ArrowLeft, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -47,7 +46,7 @@ export default function EditRfqPage() {
   const [supplierOptions, setSupplierOptions] = useState<Array<{ value: string; label: string }>>([])
   const [barangOptions, setBarangOptions] = useState<Array<{ value: string; label: string; satuan: string }>>([])
 
-  const { register, handleSubmit, control, formState: { errors }, reset, setValue } = useForm<RfqFormValues>({
+  const { register, handleSubmit, control, reset, setValue } = useForm<RfqFormValues>({
     resolver: zodResolver(rfqSchema),
   })
 

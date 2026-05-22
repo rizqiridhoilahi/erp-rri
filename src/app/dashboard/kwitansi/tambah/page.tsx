@@ -8,9 +8,9 @@ const schema = z.object({ invoice_id: z.string().min(1), tanggal: z.string().min
 type FV = z.input<typeof schema>
 
 export default function TambahKwitansiPage() {
-  const router = useRouter(); const [invOpts, setInvOpts] = useState<Array<{ value: string; label: string }>>([]); const [invItemOpts, setInvItemOpts] = useState<Array<{ value: string; label: string }>>([]); const [submitting, setSubmitting] = useState(false)
+  const router = useRouter(); const [invOpts, setInvOpts] = useState<Array<{ value: string; label: string }>>([]); const [submitting, setSubmitting] = useState(false)
   const today = new Date().toISOString().split('T')[0]
-  const { register, handleSubmit, control, formState: { errors } } = useForm<FV>({ resolver: zodResolver(schema), defaultValues: { tanggal: today, items: [{ invoice_item_id: '', jumlah: 0 }] } })
+  const { register, handleSubmit, control } = useForm<FV>({ resolver: zodResolver(schema), defaultValues: { tanggal: today, items: [{ invoice_item_id: '', jumlah: 0 }] } })
   const { fields, append, remove } = useFieldArray({ control, name: 'items' })
   useEffect(() => {
     Promise.all([
@@ -22,10 +22,10 @@ export default function TambahKwitansiPage() {
   }, [])
   useEffect(() => {
     if (!fields.length) return
-    apiFetch<{ items: Array<{ id: string; harga: number; barang_id: string }> }>(`/api/v1/invoice/${fields[0]}`).then(r => {
+    apiFetch<{ items: Array<{ id: string; harga: number; barang_id: string }> }>(`/api/v1/invoice/${fields[0]}`).then(() => {
       // This will be called when invoice changes - we'll use a different approach
     }).catch(() => {})
-  }, [])
+  }, [fields])
   const onSubmit = async (data: FV) => {
     setSubmitting(true); try { await apiFetch('/api/v1/kwitansi', { method: 'POST', body: JSON.stringify(data) }); toast.success('Kwitansi berhasil!'); router.push('/dashboard/kwitansi') }
     catch (err) { toast.error(err instanceof Error ? err.message : 'Error') } finally { setSubmitting(false) }

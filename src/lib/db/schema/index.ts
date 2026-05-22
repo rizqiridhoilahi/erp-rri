@@ -52,6 +52,7 @@ import { fakturPajakItem } from "./faktur-pajak-item";
 import { kwitansi } from "./kwitansi";
 import { kwitansiItem } from "./kwitansi-item";
 import { stok } from "./stok";
+import { stokMutasi } from "./stok-mutasi";
 import { gudang } from "./gudang";
 import { jurnal } from "./jurnal";
 import { jurnalItem } from "./jurnal-item";

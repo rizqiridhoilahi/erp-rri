@@ -43,7 +43,7 @@ export default function EditBarangPage() {
         const { data } = await apiFetch<Record<string, unknown>>(`/api/v1/master/barang/${id}`);
         if (cancelled) return;
         if (data) reset(data as BarangFormValues);
-      } catch (err) { if (!cancelled) setError('Gagal memuat data barang'); }
+      } catch { if (!cancelled) setError('Gagal memuat data barang'); }
       finally { if (!cancelled) setIsLoading(false); }
     })();
     return () => { cancelled = true; };
@@ -56,7 +56,7 @@ export default function EditBarangPage() {
       await apiFetch(`/api/v1/master/barang/${id}`, { method: 'PUT', body: JSON.stringify(data) });
       setSuccess('Barang berhasil diperbarui!');
       setTimeout(() => router.push('/dashboard/master/barang'), 2000);
-    } catch (err) { setError('Terjadi kesalahan'); }
+    } catch { setError('Terjadi kesalahan'); }
     finally { setLoading(false); }
   };
 

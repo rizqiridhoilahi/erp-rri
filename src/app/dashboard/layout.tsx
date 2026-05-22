@@ -1,6 +1,6 @@
 import { ReactNode } from 'react'
 import Link from 'next/link'
-import { Home, Package, Users, Building2, UserCircle, BookOpen, FileText, FolderTree, Briefcase, Users2, Search, ShoppingCart, Landmark, Receipt, ReceiptText, BookOpenCheck, TrendingUp, TrendingDown, PieChart, Banknote, Bot, ScanLine, Lightbulb, MessageSquare, Clock, DollarSign, FileSearch, ShieldCheck, ClipboardList } from 'lucide-react'
+import { Home, Package, Users, Building2, UserCircle, BookOpen, FileText, FolderTree, Briefcase, Users2, Search, ShoppingCart, Landmark, Receipt, ReceiptText, BookOpenCheck, TrendingUp, TrendingDown, PieChart, Banknote, Bot, ScanLine, Lightbulb, MessageSquare, Clock, DollarSign, ShieldCheck, ClipboardList } from 'lucide-react'
 import { GlobalSearch } from '@/components/global-search'
 
 const menuItems = [

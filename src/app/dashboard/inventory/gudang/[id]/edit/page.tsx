@@ -6,7 +6,7 @@ import { ArrowLeft, Loader2 } from 'lucide-react'; import { toast } from 'sonner
 export default function EditGudangPage() {
   const router = useRouter(); const params = useParams(); const [submitting, setSubmitting] = useState(false); const [loading, setLoading] = useState(true)
   const [defaults, setDefaults] = useState({ nama: '', lokasi: '', keterangan: '' })
-  useEffect(() => { apiFetch<{ data: { nama: string; lokasi: string; keterangan: string } }>(`/api/v1/master/gudang/${params.id}`).then(r => { const d = r.data; setDefaults({ nama: d.nama, lokasi: d.lokasi ?? '', keterangan: d.keterangan ?? '' }) }).catch(() => toast.error('Gagal')).finally(() => setLoading(false)) }, [params.id])
+  useEffect(() => { apiFetch<{ nama: string; lokasi: string; keterangan: string }>(`/api/v1/master/gudang/${params.id}`).then(r => { const d = r.data; setDefaults({ nama: d.nama, lokasi: d.lokasi ?? '', keterangan: d.keterangan ?? '' }) }).catch(() => toast.error('Gagal')).finally(() => setLoading(false)) }, [params.id])
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault(); setSubmitting(true); const fd = new FormData(e.currentTarget)
     try { await apiFetch(`/api/v1/master/gudang/${params.id}`, { method: 'PUT', body: JSON.stringify({ nama: fd.get('nama'), lokasi: fd.get('lokasi'), keterangan: fd.get('keterangan') }) }); toast.success('Gudang diupdate!'); router.push('/dashboard/inventory/gudang') }

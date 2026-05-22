@@ -1,6 +1,12 @@
 import { Document, Page, Text, View, StyleSheet, Font } from '@react-pdf/renderer'
 
-Font.register({ family: 'Helvetica' })
+Font.register({
+  family: 'Helvetica',
+  fonts: [
+    { src: 'https://fonts.cdnfonts.com/s/29131/Helvetica.woff', fontStyle: 'normal', fontWeight: 'normal' },
+    { src: 'https://fonts.cdnfonts.com/s/29131/Helvetica-Bold.woff', fontStyle: 'normal', fontWeight: 'bold' },
+  ],
+})
 
 const styles = StyleSheet.create({
   page: { padding: 40, fontFamily: 'Helvetica', fontSize: 10 },

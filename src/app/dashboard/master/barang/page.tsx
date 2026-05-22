@@ -108,7 +108,7 @@ export default async function BarangPage() {
                       Edit
                     </Link>
                     <button 
-                      onClick={() => handleDelete(item.id)} 
+                      onClick={() => handleDelete()} 
                       className="text-red-600 hover:text-red-900"
                     >
                       Hapus
@@ -125,7 +125,7 @@ export default async function BarangPage() {
 }
 
 // This is a placeholder function since we can't have actual event handlers in server components yet
-async function handleDelete(id: string) {
+async function handleDelete() {
   if (window.confirm('Apakah Anda yakin ingin menghapus barang ini?')) {
     // In a real implementation, we would call a server action here
     alert('Delete functionality will be implemented with Server Actions');

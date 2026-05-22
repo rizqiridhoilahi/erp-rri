@@ -12,7 +12,7 @@ const statusOpts = [
 
 export default function EditNegoiasiPage() {
   const router = useRouter(); const params = useParams(); const [loading, setLoading] = useState(true); const [submitting, setSubmitting] = useState(false)
-  const { register, handleSubmit, formState: { errors }, reset } = useForm<FV>({ resolver: zodResolver(schema) })
+  const { register, handleSubmit, reset } = useForm<FV>({ resolver: zodResolver(schema) })
 
   useEffect(() => {
     apiFetch<{ id: string; status: string; keterangan: string | null }>(`/api/v1/negoiasi/${params.id}`)

@@ -8,7 +8,6 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { apiFetch } from '@/lib/api/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Plus, Trash2, ArrowLeft, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
@@ -48,7 +47,7 @@ export default function EditQuotationPage() {
   const [customerOptions, setCustomerOptions] = useState<Array<{ value: string; label: string }>>([])
   const [barangOptions, setBarangOptions] = useState<Array<{ value: string; label: string }>>([])
 
-  const { register, handleSubmit, control, formState: { errors }, reset } = useForm<QtnFormValues>({
+  const { register, handleSubmit, control, reset } = useForm<QtnFormValues>({
     resolver: zodResolver(qtnSchema),
   })
 

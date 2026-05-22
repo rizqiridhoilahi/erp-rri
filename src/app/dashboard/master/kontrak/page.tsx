@@ -88,7 +88,7 @@ export default async function KontrakPage() {
                       Edit
                     </Link>
                     <button 
-                      onClick={() => handleDelete(item.id)} 
+                      onClick={() => handleDelete()} 
                       className="text-red-600 hover:text-red-900"
                     >
                       Hapus
@@ -105,7 +105,7 @@ export default async function KontrakPage() {
 }
 
 // Placeholder function for delete
-async function handleDelete(id: string) {
+async function handleDelete() {
   if (window.confirm('Apakah Anda yakin ingin menghapus kontrak ini?')) {
     alert('Delete functionality will be implemented with Server Actions');
     window.location.reload();

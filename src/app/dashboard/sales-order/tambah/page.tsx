@@ -10,7 +10,7 @@ type FV = z.input<typeof schema>
 export default function TambahSoPage() {
   const router = useRouter(); const [poOpts, setPoOpts] = useState<Array<{ value: string; label: string }>>([]); const [barangOpts, setBarangOpts] = useState<Array<{ value: string; label: string }>>([]); const [submitting, setSubmitting] = useState(false)
   const today = new Date().toISOString().split('T')[0]
-  const { register, handleSubmit, control, formState: { errors } } = useForm<FV>({ resolver: zodResolver(schema), defaultValues: { tanggal: today, items: [{ barang_id: '', jumlah: 1, harga_satuan: 0 }] } })
+  const { register, handleSubmit, control } = useForm<FV>({ resolver: zodResolver(schema), defaultValues: { tanggal: today, items: [{ barang_id: '', jumlah: 1, harga_satuan: 0 }] } })
   const { fields, append, remove } = useFieldArray({ control, name: 'items' })
   useEffect(() => {
     Promise.all([

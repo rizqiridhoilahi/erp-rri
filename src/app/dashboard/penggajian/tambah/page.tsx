@@ -9,10 +9,10 @@ type FV = z.input<typeof schema>
 export default function TambahPenggajianPage() {
   const router = useRouter(); const [kOpts, setKOpts] = useState<Array<{ value: string; label: string }>>([]); const [submitting, setSubmitting] = useState(false)
   const now = new Date(); const defBulan = now.getMonth() + 1; const defTahun = now.getFullYear()
-  const { register, handleSubmit, watch, formState: { errors } } = useForm<FV>({ resolver: zodResolver(schema), defaultValues: { bulan: defBulan, tahun: defTahun, tunjangan: 0, potongan: 0 } })
+  const { register, handleSubmit, watch } = useForm<FV>({ resolver: zodResolver(schema), defaultValues: { bulan: defBulan, tahun: defTahun, tunjangan: 0, potongan: 0 } })
   const gajiPokok = watch('gaji_pokok', 0); const tunjangan = watch('tunjangan', 0); const potongan = watch('potongan', 0)
   const gajiBersih = Number(gajiPokok) + Number(tunjangan) - Number(potongan)
-  useEffect(() => { apiFetch<{ data: Array<{ id: string; nama: string; nik: string }> }>('/api/v1/master/karyawan').then(r => setKOpts((r.data ?? []).map(x => ({ value: x.id, label: `[${x.nik}] ${x.nama}` })))).catch(() => toast.error('Gagal')) }, [])
+  useEffect(() => { apiFetch<Array<{ id: string; nama: string; nik: string }>>('/api/v1/master/karyawan').then(r => setKOpts((r.data ?? []).map(x => ({ value: x.id, label: `[${x.nik}] ${x.nama}` })))).catch(() => toast.error('Gagal')) }, [])
   const onSubmit = async (data: FV) => {
     setSubmitting(true); try { await apiFetch('/api/v1/penggajian', { method: 'POST', body: JSON.stringify(data) }); toast.success('Penggajian berhasil!'); router.push('/dashboard/penggajian') }
     catch (err) { toast.error(err instanceof Error ? err.message : 'Error') } finally { setSubmitting(false) }

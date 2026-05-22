@@ -11,7 +11,7 @@ export interface ExtractedItem {
 // Extract text from PDF buffer using pdf-parse
 export async function extractTextFromPdf(buffer: Buffer): Promise<string> {
   try {
-    const pdfParse = (await import('pdf-parse')).default
+    const pdfParse = (await import('pdf-parse')) as unknown as (buffer: Buffer) => Promise<{ text: string }>
     const data = await pdfParse(buffer)
     return data.text
   } catch (err) {

@@ -17,7 +17,7 @@ export default function RekomendasiHargaPage() {
   }, [])
   const onSubmit = async (data: FV) => {
     setLoading(true); setSearched(false)
-    try { const r = await apiFetch<{ data: Rekomendasi }>('/api/v1/ai/rekomendasi-harga', { method: 'POST', body: JSON.stringify(data) }); setRekom(r.data); setSearched(true) }
+    try { const r = await apiFetch<Rekomendasi>('/api/v1/ai/rekomendasi-harga', { method: 'POST', body: JSON.stringify(data) }); setRekom(r.data); setSearched(true) }
     catch (err) { toast.error(err instanceof Error ? err.message : 'Error') } finally { setLoading(false) }
   }
   return (

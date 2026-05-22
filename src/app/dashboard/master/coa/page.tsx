@@ -92,7 +92,7 @@ export default async function CoaPage() {
                       Edit
                     </Link>
                     <button 
-                      onClick={() => handleDelete(item.id)} 
+                      onClick={() => handleDelete()} 
                       className="text-red-600 hover:text-red-900"
                     >
                       Hapus
@@ -109,7 +109,7 @@ export default async function CoaPage() {
 }
 
 // Placeholder function for delete
-async function handleDelete(id: string) {
+async function handleDelete() {
   if (window.confirm('Apakah Anda yakin ingin menghapus akun ini?')) {
     alert('Delete functionality will be implemented with Server Actions');
     window.location.reload();

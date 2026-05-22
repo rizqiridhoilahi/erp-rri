@@ -24,7 +24,6 @@ export async function analisaNegosiasi(
 
   if (!qItems) return null
 
-  const hargaJualAwal = qItems.harga_satuan
   const barangData = qItems.barang as unknown as { harga_beli_default: number | null } | null
   const hargaBeli = barangData?.harga_beli_default ?? 0
   const marginDiminta = hargaBeli > 0 ? (hargaDiminta - hargaBeli) / hargaBeli : 0

@@ -15,7 +15,7 @@ const loginSchema = z.object({
 type LoginFormValues = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
-  const { register, handleSubmit, formState: { errors }, reset } = useForm<LoginFormValues>({
+  const { register, handleSubmit, formState: { errors } } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
   });
 
@@ -27,7 +27,7 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      const { data: { user }, error: authError } = await supabase.auth.signInWithPassword({
+      const { error: authError } = await supabase.auth.signInWithPassword({
         email: data.email,
         password: data.password,
       });
@@ -39,7 +39,7 @@ export default function LoginPage() {
 
       // Redirect to dashboard on successful login
       redirect('/dashboard');
-    } catch (err) {
+    } catch {
       setError('An unexpected error occurred. Please try again.');
     } finally {
       setLoading(false);

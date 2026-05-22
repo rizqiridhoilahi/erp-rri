@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { supabase } from '@/lib/db/client'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { TrendingUp, TrendingDown, Package, Users, Building2, Users2, ShoppingCart, Landmark, ArrowRight } from 'lucide-react'
+import { TrendingUp, TrendingDown, Package, Users, Building2, Users2, Landmark, ArrowRight } from 'lucide-react'
 
 export default async function DashboardPage() {
   const [barang, invoice, cust, supp, karyawan, absen] = await Promise.all([

@@ -38,7 +38,7 @@ export default function TambahRfqPage() {
 
   const today = new Date().toISOString().split('T')[0]
 
-  const { register, handleSubmit, control, formState: { errors }, watch, setValue } = useForm<RfqFormValues>({
+  const { register, handleSubmit, control, formState: { errors }, setValue } = useForm<RfqFormValues>({
     resolver: zodResolver(rfqSchema),
     defaultValues: {
       tanggal: today,

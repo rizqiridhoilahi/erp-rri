@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { supabase } from '@/lib/db/client'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Plus, Eye, Pencil, Trash2 } from 'lucide-react'
+import { Plus, Pencil } from 'lucide-react'
 
 const statusLabel: Record<string, { label: string; variant: 'secondary' | 'warning' | 'success' | 'outline' }> = {
   draft: { label: 'Draft', variant: 'secondary' },

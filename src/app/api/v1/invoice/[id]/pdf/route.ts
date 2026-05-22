@@ -42,7 +42,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
         'Content-Disposition': `inline; filename="INVOICE-${inv.nomor}.pdf"`,
       },
     })
-  } catch (err) {
+  } catch {
     return internalError('Gagal generate PDF')
   }
 }

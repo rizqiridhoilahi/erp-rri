@@ -6,8 +6,8 @@ import { ArrowLeft, Loader2 } from 'lucide-react'; import { toast } from 'sonner
 export default function StokKeluarPage() {
   const router = useRouter(); const [brgOpts, setBrgOpts] = useState<Array<{ value: string; label: string }>>([]); const [gudOpts, setGudOpts] = useState<Array<{ value: string; label: string }>>([]); const [submitting, setSubmitting] = useState(false)
   useEffect(() => {
-    apiFetch<{ data: Array<{ id: string; nama: string; kode: string }> }>('/api/v1/master/barang').then(r => setBrgOpts((r.data ?? []).map(x => ({ value: x.id, label: `[${x.kode}] ${x.nama}` })))).catch(() => {})
-    apiFetch<{ data: Array<{ id: string; nama: string }> }>('/api/v1/master/gudang').then(r => setGudOpts((r.data ?? []).map(x => ({ value: x.id, label: x.nama })))).catch(() => {})
+    apiFetch<Array<{ id: string; nama: string; kode: string }>>('/api/v1/master/barang').then(r => setBrgOpts((r.data ?? []).map(x => ({ value: x.id, label: `[${x.kode}] ${x.nama}` })))).catch(() => {})
+    apiFetch<Array<{ id: string; nama: string }>>('/api/v1/master/gudang').then(r => setGudOpts((r.data ?? []).map(x => ({ value: x.id, label: x.nama })))).catch(() => {})
   }, [])
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault(); setSubmitting(true); const fd = new FormData(e.currentTarget)

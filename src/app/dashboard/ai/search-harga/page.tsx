@@ -1,6 +1,6 @@
 "use client"
-import { useState } from 'react'; import { useRouter } from 'next/navigation'; import { z } from 'zod'; import { useForm } from 'react-hook-form'; import { zodResolver } from '@hookform/resolvers/zod'
-import { apiFetch } from '@/lib/api/client'; import { Button } from '@/components/ui/button'; import { Input } from '@/components/ui/input'; import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'; import { Badge } from '@/components/ui/badge'
+import { useState } from 'react'; import { z } from 'zod'; import { useForm } from 'react-hook-form'; import { zodResolver } from '@hookform/resolvers/zod'
+import { apiFetch } from '@/lib/api/client'; import { Button } from '@/components/ui/button'; import { Input } from '@/components/ui/input'; import { Card, CardContent } from '@/components/ui/card'; import { Badge } from '@/components/ui/badge'
 import { Search, Loader2, ExternalLink, Star } from 'lucide-react'; import { toast } from 'sonner'
 
 const schema = z.object({ query: z.string().min(1, 'Barang harus diisi') })
@@ -9,8 +9,8 @@ type FV = z.input<typeof schema>
 interface SearchResult { nama: string; harga: number; toko: string; link: string; marketplace: string; rating: number | null }
 
 export default function SearchHargaPage() {
-  const router = useRouter(); const [results, setResults] = useState<SearchResult[]>([]); const [searching, setSearching] = useState(false); const [searched, setSearched] = useState(false)
-  const { register, handleSubmit, formState: { errors } } = useForm<FV>({ resolver: zodResolver(schema) })
+  const [results, setResults] = useState<SearchResult[]>([]); const [searching, setSearching] = useState(false); const [searched, setSearched] = useState(false)
+  const { register, handleSubmit } = useForm<FV>({ resolver: zodResolver(schema) })
   const onSubmit = async (data: FV) => {
     setSearching(true); setSearched(false)
     try { const r = await apiFetch<{ results: SearchResult[] }>('/api/v1/ai/search-harga', { method: 'POST', body: JSON.stringify(data) }); setResults(r.data.results); setSearched(true) }
