@@ -38,7 +38,7 @@
 - [x] DI — Delivery Instruction CRUD (list, tambah, edit) + API routes
 - [x] Sales Order CRUD (list, tambah, edit) + API routes
 - [x] Delivery Order CRUD (list, tambah, edit) + API routes
-- [ ] PDF generation (Quotation, DO, Invoice, Kwitansi) — postponed
+- [x] PDF generation (Quotation, DO, Invoice, Kwitansi)
 - [x] Sonner toast integration
 
 ## Fase 3 — Procurement & Inventory
@@ -47,7 +47,7 @@
 - [x] Purchase Receiving CRUD (list, tambah, edit) + API routes + document numbering
 - [x] GRN CRUD (list, tambah, edit) + API routes + document numbering
 - [x] Retur Pembelian CRUD (list, tambah, edit) + API routes + document numbering
-- [ ] AI Search Harga
+- [x] AI Search Harga
 - [ ] Stok Masuk / Keluar
 - [ ] Kartu Stok
 
@@ -64,7 +64,7 @@
 - [x] Migration 0007: add nomor + status to invoice, kwitansi, faktur_pajak, jurnal
 - [x] Sidebar: Finance + Laporan menu groups
 - [ ] PPN & PPh kalkulasi otomatis di Invoice
-- [ ] PDF Quotation & DO
+- [x] PDF Quotation & DO
 
 ## Fase 5 — AI Agent
 - [x] AI Search Harga (Playwright) — page + API + Playwright library + mock fallback
@@ -74,14 +74,14 @@
 - [x] AI sidebar menu group
 
 ## Fase 6 — HR, Dashboard & Laporan
-- [ ] Absensi
-- [ ] Penggajian
-- [ ] Slip Gaji
-- [ ] Dashboard Owner
+- [x] Absensi
+- [x] Penggajian
+- [x] Slip Gaji
+- [x] Dashboard Owner
 - [ ] Dashboard Manager / Sales / Procurement / Gudang / Finance
-- [ ] Export Excel / CSV
-- [ ] Audit Trail
-- [ ] Global Search
+- [x] Export Excel / CSV
+- [x] Audit Trail
+- [x] Global Search
 
 ## Fase 7 — Notifikasi & Retur
 - [ ] WhatsApp Notification

@@ -1033,9 +1033,9 @@ const nomor = await generateDocumentNumber('SPH')
 | **Fase 1** | Setup Project + Auth + Master Data + Document Counter + API Routes + OpenAPI/Scalar + UI/UX Design System | ✅ Selesai |
 | **Fase 2** | Pre-Sales (RFQ, Quotation, Negosiasi) + Sales (SO, DO) | ✅ Selesai |
 | **Fase 3** | Procurement (PR, PO, Receiving, GRN, Retur Beli) + Document Numbering | ✅ Selesai |
-| **Fase 4** | Finance (Invoice, Kwitansi, Faktur Pajak, Jurnal) + PDF Generation + Financial Reports (AR/AP Aging, Laba/Rugi, Neraca, Arus Kas) | ✅ Selesai |
+| **Fase 4** | Finance (Invoice, Kwitansi, Faktur Pajak, Jurnal) + PDF Generation (Invoice, Kwitansi, Quotation, DO, Slip Gaji) + Financial Reports (AR/AP Aging, Laba/Rugi, Neraca, Arus Kas) | ✅ Selesai |
 | **Fase 5** | AI Agent (Search Harga Playwright, OCR Kontrak, Rekomendasi Harga, Negosiasi Assistant) | ✅ Selesai |
-| **Fase 6** | HR + Dashboard + Laporan + Export + Audit Trail + Global Search | — |
+| **Fase 6** | HR (Absensi, Penggajian, Slip Gaji) + Dashboard Owner + Export Excel/CSV + Audit Trail + Global Search + PDF Quotation & DO | ✅ Selesai |
 | **Fase 7** | WhatsApp Notifikasi + Retur Penjualan + User Onboarding | — |
 | **Fase 8** | Professional polish (Dark mode, shortcuts, skeleton, print CSS) + Testing Setup + Deploy Vercel | — |
 
