@@ -61,6 +61,28 @@
   --ring: #0F172A;
 }
 
+.dark {
+  --background: #0F172A;
+  --foreground: #F1F5F9;
+  --card: #1E293B;
+  --card-foreground: #F1F5F9;
+  --popover: #1E293B;
+  --popover-foreground: #F1F5F9;
+  --primary: #F8FAFC;
+  --primary-foreground: #0F172A;
+  --secondary: #94A3B8;
+  --secondary-foreground: #0F172A;
+  --muted: #1E293B;
+  --muted-foreground: #94A3B8;
+  --accent: #38BDF8;
+  --accent-foreground: #0F172A;
+  --destructive: #F87171;
+  --destructive-foreground: #0F172A;
+  --border: #334155;
+  --input: #334155;
+  --ring: #38BDF8;
+}
+
 @layer base {
   * {
     @apply border-border;
@@ -69,4 +91,14 @@
     @apply bg-background text-foreground;
     font-family: var(--font-body);
   }
+}
+
+@media print {
+  body { background: white; color: black; }
+  @page { margin: 20mm; }
+  nav, aside, .no-print, button, [data-search-trigger], .sidebar { display: none !important; }
+  .print-only { display: block !important; }
+  main { margin: 0 !important; padding: 0 !important; max-width: none !important; }
+  table { break-inside: auto; }
+  tr { break-inside: avoid; }
 }

@@ -1066,7 +1066,7 @@ const nomor = await generateDocumentNumber('SPH')
 | **Fase 5** | AI Agent (Search Harga Playwright, OCR Kontrak, Rekomendasi Harga, Negosiasi Assistant) | ✅ Selesai |
 | **Fase 6** | HR (Absensi, Penggajian, Slip Gaji) + Dashboard Owner (Executive Command Center) + Dashboard Manager/Sales/Procurement/Gudang/Finance (role-based, future-ready) + Export Excel/CSV + Audit Trail + Global Search + PDF Quotation & DO | ✅ Selesai |
 | **Fase 7** | WhatsApp Notifikasi (Fonnte) + Retur Penjualan + User Onboarding (react-joyride) | ✅ Selesai |
-| **Fase 8** | Professional polish (Dark mode, shortcuts, skeleton, print CSS) + Testing Setup + Deploy Vercel | — |
+| **Fase 8** | Professional polish (Dark mode, shortcuts, skeleton, print CSS) + Testing Setup + Deploy Vercel | ✅ Selesai (Testing & Deploy dilewati) |
 
 ## 14. Testing Strategy
 

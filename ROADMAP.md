@@ -91,10 +91,12 @@
 - [x] WhatsApp Notification via Fonnte (utility + 4 trigger events + cron AR reminder + log page + Toaster) — Quotation, DO Dikirim, PO Supplier, AR Reminder H-7/H-3/H+1/H+7
 - [x] User Onboarding (react-joyride, 12 step tour mencakup semua modul, welcome modal + guided tour, DB field `onboarding_disabled` untuk disable/enable, tombol "Panduan" permanen di sidebar untuk replay)
 
-## Fase 8 — Polish & Production
-- [ ] Dark Mode
-- [ ] Keyboard Shortcuts
-- [ ] Loading Skeleton
-- [ ] Print-Friendly CSS
-- [ ] Testing Setup (Vitest + Playwright)
-- [ ] Deploy ke Vercel
+## Fase 8 — Polish & Production ✅
+- [x] Dark Mode — CSS variables `.dark` + ThemeProvider + lazy initializer + toggle di sidebar
+- [x] Keyboard Shortcuts — `/` fokus search, `Ctrl+N` tambah, `Ctrl+S` submit, `?` help (deferred)
+- [x] Loading Skeleton — Skeleton/TableSkeleton/FormSkeleton komponen + loading.tsx di direktori utama
+- [x] Print-Friendly CSS — `@media print` sembunyikan sidebar/nav, atur margin halaman
+- [ ] ~~Testing Setup (Vitest + Playwright)~~ — dilewati
+- [ ] ~~Deploy ke Vercel~~ — dilewati
+
+> **Catatan:** Testing Setup & Deploy ke Vercel sengaja dilewati untuk saat ini. Fokus dilanjutkan ke ROADMAP_UI/UX.md untuk enhancement UI/UX semua halaman.

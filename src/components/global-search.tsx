@@ -40,7 +40,7 @@ export function GlobalSearch() {
 
   return (
     <div ref={wrapperRef} className="relative">
-      <button onClick={() => setOpen(true)} className="flex items-center gap-2 w-full px-3 py-2 text-sm text-muted-foreground bg-muted/30 border rounded-md hover:bg-muted/50 transition-colors">
+      <button onClick={() => setOpen(true)} data-search-trigger className="flex items-center gap-2 w-full px-3 py-2 text-sm text-muted-foreground bg-muted/30 border rounded-md hover:bg-muted/50 transition-colors">
         <Search className="h-4 w-4" /><span className="flex-1 text-left">Cari...</span><kbd className="hidden sm:inline-flex text-xs px-1.5 py-0.5 bg-muted border rounded">⌘K</kbd>
       </button>
       {open && (
@@ -48,7 +48,7 @@ export function GlobalSearch() {
           <div className="bg-popover border rounded-lg shadow-lg overflow-hidden">
             <div className="flex items-center gap-2 px-3 py-2 border-b">
               <Search className="h-4 w-4 text-muted-foreground shrink-0" />
-              <input ref={inputRef} value={query} onChange={e => setQuery(e.target.value)} placeholder="Cari barang, invoice, PO..." className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground" autoFocus />
+              <input ref={inputRef} data-search-input value={query} onChange={e => setQuery(e.target.value)} placeholder="Cari barang, invoice, PO..." className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground" autoFocus />
               {searching && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
             </div>
             {results.length > 0 && <div className="max-h-60 overflow-y-auto p-1">
