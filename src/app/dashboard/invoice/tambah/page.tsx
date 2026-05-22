@@ -1,6 +1,6 @@
 "use client"
 import { useState, useEffect } from 'react'; import { useRouter } from 'next/navigation'; import { z } from 'zod'; import { useForm, useFieldArray } from 'react-hook-form'; import { zodResolver } from '@hookform/resolvers/zod'
-import { apiFetch } from '@/lib/api/client'; import { Button } from '@/components/ui/button'; import { Input } from '@/components/ui/input'; import { Textarea } from '@/components/ui/textarea'; import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { apiFetch } from '@/lib/api/client'; import { Button } from '@/components/ui/button'; import { Input } from '@/components/ui/input'; import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Plus, Trash2, ArrowLeft, Loader2 } from 'lucide-react'; import { toast } from 'sonner'
 
 const itemSchema = z.object({ barang_id: z.string().min(1), harga: z.coerce.number().positive(), jumlah: z.coerce.number().int().positive(), diskon: z.coerce.number().optional(), ppn: z.coerce.number().optional(), pph: z.coerce.number().optional(), keterangan: z.string().optional() })
@@ -10,8 +10,17 @@ type FV = z.input<typeof schema>
 export default function TambahInvoicePage() {
   const router = useRouter(); const [soOpts, setSoOpts] = useState<Array<{ value: string; label: string }>>([]); const [custOpts, setCustOpts] = useState<Array<{ value: string; label: string }>>([]); const [barangOpts, setBarangOpts] = useState<Array<{ value: string; label: string }>>([]); const [submitting, setSubmitting] = useState(false)
   const today = new Date().toISOString().split('T')[0]
-  const { register, handleSubmit, control, formState: { errors } } = useForm<FV>({ resolver: zodResolver(schema), defaultValues: { tanggal: today, ppn_rate: 0.11, items: [{ barang_id: '', harga: 0, jumlah: 1 }] } })
+  const { register, handleSubmit, control, watch } = useForm<FV>({ resolver: zodResolver(schema), defaultValues: { tanggal: today, ppn_rate: 0.11, items: [{ barang_id: '', harga: 0, jumlah: 1 }] } })
   const { fields, append, remove } = useFieldArray({ control, name: 'items' })
+  const watchedItems = watch('items'); const ppnRate = watch('ppn_rate') ?? 0.11; const pphRate = watch('pph_rate')
+  const calcSubtotal = (i: { harga?: number; jumlah?: number; diskon?: number }) => (i.harga ?? 0) * (i.jumlah ?? 0) - (i.diskon ?? 0)
+  const calcPPN = (i: { harga?: number; jumlah?: number; diskon?: number }) => calcSubtotal(i) * ppnRate
+  const calcPPh = (i: { harga?: number; jumlah?: number; diskon?: number }) => pphRate ? calcSubtotal(i) * pphRate : 0
+  const totalDpp = (watchedItems ?? []).reduce((s, i) => s + calcSubtotal(i), 0)
+  const totalPPN = (watchedItems ?? []).reduce((s, i) => s + calcPPN(i), 0)
+  const totalPPh = (watchedItems ?? []).reduce((s, i) => s + calcPPh(i), 0)
+  const grandTotal = totalDpp + totalPPN - totalPPh
+
   useEffect(() => {
     Promise.all([
       apiFetch<Array<{ id: string; nomor: string }>>('/api/v1/sales-order'),
@@ -20,7 +29,8 @@ export default function TambahInvoicePage() {
     ]).then(([so, c, b]) => { setSoOpts((so.data ?? []).map(x => ({ value: x.id, label: x.nomor }))); setCustOpts((c.data ?? []).map(x => ({ value: x.id, label: `[${x.kode}] ${x.nama}` }))); setBarangOpts((b.data ?? []).map(x => ({ value: x.id, label: `[${x.kode}] ${x.nama}` }))) }).catch(() => toast.error('Gagal'))
   }, [])
   const onSubmit = async (data: FV) => {
-    setSubmitting(true); try { await apiFetch('/api/v1/invoice', { method: 'POST', body: JSON.stringify(data) }); toast.success('Invoice berhasil!'); router.push('/dashboard/invoice') }
+    const items = data.items.map(i => ({ ...i, ppn: i.ppn ?? calcPPN(i), pph: i.pph ?? (pphRate ? calcPPh(i) : undefined) }))
+    setSubmitting(true); try { await apiFetch('/api/v1/invoice', { method: 'POST', body: JSON.stringify({ ...data, items }) }); toast.success('Invoice berhasil!'); router.push('/dashboard/invoice') }
     catch (err) { toast.error(err instanceof Error ? err.message : 'Error') } finally { setSubmitting(false) }
   }
   return (
@@ -45,18 +55,25 @@ export default function TambahInvoicePage() {
             <div key={f.id} className="p-4 border rounded-lg space-y-3"><div className="flex items-center justify-between"><span className="text-sm text-muted-foreground">Item #{i+1}</span>{fields.length > 1 && <Button type="button" variant="ghost" size="sm" onClick={() => remove(i)}><Trash2 className="h-4 w-4 text-destructive" /></Button>}</div>
               <div className="grid grid-cols-4 gap-3">
                 <div className="space-y-2"><label className="text-xs font-medium">Barang *</label>
-                  <select {...register(`items.${i}.barang_id`)} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring"><option value="">Pilih</option>{barangOpts.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}</select></div>
+                  <select {...register(`items.${i}.barang_id`)} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-backspace focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring"><option value="">Pilih</option>{barangOpts.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}</select></div>
                 <div className="space-y-2"><label className="text-xs font-medium">Harga *</label><Input type="number" step="0.01" {...register(`items.${i}.harga`)} /></div>
                 <div className="space-y-2"><label className="text-xs font-medium">Jumlah *</label><Input type="number" min="1" {...register(`items.${i}.jumlah`)} /></div>
                 <div className="space-y-2"><label className="text-xs font-medium">Diskon</label><Input type="number" step="0.01" {...register(`items.${i}.diskon`)} /></div>
               </div>
               <div className="grid grid-cols-3 gap-3">
-                <div className="space-y-2"><label className="text-xs font-medium">PPN</label><Input type="number" step="0.01" {...register(`items.${i}.ppn`)} /></div>
-                <div className="space-y-2"><label className="text-xs font-medium">PPh</label><Input type="number" step="0.01" {...register(`items.${i}.pph`)} /></div>
+                <div className="space-y-2"><label className="text-xs font-medium">PPN <span className="text-muted-foreground">(auto: {(ppnRate * 100).toFixed(0)}%)</span></label><Input type="number" step="0.01" {...register(`items.${i}.ppn`)} placeholder={calcPPN(watchedItems?.[i] ?? {}).toLocaleString('id-ID')} /></div>
+                <div className="space-y-2"><label className="text-xs font-medium">PPh {pphRate ? <span className="text-muted-foreground">({(pphRate * 100).toFixed(0)}%)</span> : ''}</label><Input type="number" step="0.01" {...register(`items.${i}.pph`)} placeholder={pphRate ? calcPPh(watchedItems?.[i] ?? {}).toLocaleString('id-ID') : '0'} /></div>
                 <div className="space-y-2"><label className="text-xs font-medium">Keterangan</label><Input {...register(`items.${i}.keterangan`)} /></div>
               </div>
             </div>
-          ))}</CardContent></Card>
+          ))}
+          <div className="border-t pt-4 space-y-1 text-sm">
+            <div className="flex justify-between"><span className="text-muted-foreground">DPP</span><span>{totalDpp.toLocaleString('id-ID')}</span></div>
+            <div className="flex justify-between"><span className="text-muted-foreground">PPN {(ppnRate * 100).toFixed(0)}%</span><span>{totalPPN.toLocaleString('id-ID')}</span></div>
+            {pphRate ? <div className="flex justify-between"><span className="text-muted-foreground">PPh {(pphRate * 100).toFixed(0)}%</span><span>-{totalPPh.toLocaleString('id-ID')}</span></div> : null}
+            <div className="flex justify-between font-bold text-base border-t pt-2"><span>Grand Total</span><span>{grandTotal.toLocaleString('id-ID')}</span></div>
+          </div>
+        </CardContent></Card>
         <div className="flex justify-end gap-3"><Button type="button" variant="outline" asChild><a href="/dashboard/invoice">Batal</a></Button>
           <Button type="submit" disabled={submitting}>{submitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}{submitting ? '...' : 'Simpan Invoice'}</Button></div>
       </form>

@@ -63,7 +63,7 @@
 - [x] Arus Kas report
 - [x] Migration 0007: add nomor + status to invoice, kwitansi, faktur_pajak, jurnal
 - [x] Sidebar: Finance + Laporan menu groups
-- [ ] PPN & PPh kalkulasi otomatis di Invoice
+- [x] PPN & PPh kalkulasi otomatis di Invoice
 - [x] PDF Quotation & DO
 - [x] Slip Gaji PDF
 

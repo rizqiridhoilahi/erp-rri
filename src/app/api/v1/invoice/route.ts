@@ -4,6 +4,7 @@ import { supabaseAdmin } from '@/lib/api/supabase-server'
 import { verifyAuth } from '@/lib/api/auth'
 import { badRequest, internalError } from '@/lib/api/errors'
 import { generateDocumentNumber } from '@/lib/utils/document-number'
+import { generateInvoiceJournal } from '@/lib/auto-jurnal'
 
 const itemSchema = z.object({
   barang_id: z.string().min(1),
@@ -52,14 +53,21 @@ export async function POST(request: NextRequest) {
   }).select().single()
   if (invError) return internalError(invError)
 
-  const items = parsed.data.items.map(item => ({
-    invoice_id: inv.id, barang_id: item.barang_id, harga: item.harga,
-    jumlah: item.jumlah, diskon: item.diskon ?? 0, ppn: item.ppn ?? null,
-    pph: item.pph ?? null, keterangan: item.keterangan ?? null,
-    created_at: now, updated_at: now,
-  }))
+  const items = parsed.data.items.map(item => {
+    const subtotal = item.harga * item.jumlah - (item.diskon ?? 0)
+    return {
+      invoice_id: inv.id, barang_id: item.barang_id, harga: item.harga,
+      jumlah: item.jumlah, diskon: item.diskon ?? 0,
+      ppn: item.ppn ?? subtotal * parsed.data.ppn_rate,
+      pph: item.pph ?? (parsed.data.pph_rate ? subtotal * parsed.data.pph_rate : null),
+      keterangan: item.keterangan ?? null,
+      created_at: now, updated_at: now,
+    }
+  })
   const { error: itemsError } = await supabaseAdmin.from('invoice_item').insert(items)
   if (itemsError) { await supabaseAdmin.from('invoice').delete().eq('id', inv.id); return internalError(itemsError) }
 
-  return NextResponse.json({ data: { ...inv, items } }, { status: 201 })
+  const jurnalResult = await generateInvoiceJournal(inv.id)
+
+  return NextResponse.json({ data: { ...inv, items, jurnal: jurnalResult.success ? jurnalResult.jurnal : null } }, { status: 201 })
 }

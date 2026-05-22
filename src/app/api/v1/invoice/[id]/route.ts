@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/api/supabase-server'
 import { verifyAuth } from '@/lib/api/auth'
 import { badRequest, notFound, internalError } from '@/lib/api/errors'
+import { generateInvoiceJournal } from '@/lib/auto-jurnal'
 
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -25,9 +26,15 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
   if (body.pph_rate !== undefined) upd.pph_rate = body.pph_rate
   upd.updated_at = new Date().toISOString()
 
+  const { data: oldInv } = await supabaseAdmin.from('invoice').select('status').eq('id', id).single()
+
   const { data, error } = await supabaseAdmin.from('invoice').update(upd).eq('id', id).select().single()
   if (error) return internalError(error)
   if (!data) return notFound('Invoice tidak ditemukan')
+
+  if (data.status === 'sent' && oldInv?.status !== 'sent') {
+    await generateInvoiceJournal(id)
+  }
 
   if (body.items) {
     await supabaseAdmin.from('invoice_item').delete().eq('invoice_id', id)
