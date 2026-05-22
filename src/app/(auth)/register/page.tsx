@@ -18,7 +18,7 @@ const registerSchema = z.object({
   name: z.string().min(2, { message: 'Nama minimal 2 karakter' }),
   email: z.string().email({ message: 'Email tidak valid' }),
   password: z.string().min(6, { message: 'Password minimal 6 karakter' }),
-  role: z.enum(['admin', 'manager', 'sales', 'procurement', 'gudang', 'finance', 'hr'], {
+  role: z.enum(['owner', 'admin', 'manager', 'sales', 'procurement', 'gudang', 'finance', 'hr'], {
     message: 'Pilih role yang valid',
   }),
 })
@@ -26,6 +26,7 @@ const registerSchema = z.object({
 type RegisterFormValues = z.infer<typeof registerSchema>
 
 const roleLabels: Record<string, string> = {
+  owner: 'Owner',
   admin: 'Admin',
   manager: 'Manager',
   sales: 'Sales',
