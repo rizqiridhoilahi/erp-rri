@@ -5,6 +5,8 @@
 - `npm run build` - Build for production
 - `npm run start` - Start production server
 - `npm run lint` - Run ESLint
+- Database migrations: Use Drizzle Kit directly (e.g., `npx drizzle-kit generate`)
+- Generate OpenAPI docs: `npx next-openapi-gen generate`
 
 ## Technology Stack
 - **Framework**: Next.js 15.5.18 (App Router)
@@ -23,6 +25,7 @@
 - `/lib` - Shared library code (database, utils, etc.)
   - `/db` - Database configuration and schemas
   - `/utils` - Utility functions
+- `/types` - TypeScript definitions
 - `/public` - Static assets
 
 ## Key Configuration Files
@@ -30,22 +33,24 @@
 - `postcss.config.mjs` - Tailwind CSS configuration
 - `eslint.config.mjs` - ESLint configuration with Next.js presets
 - `package.json` - Dependencies and scripts
+- `drizzle.config.ts` - Drizzle ORM configuration
 
 ## Database Workflow
-1. Database schema located in `/lib/db/schema/`
-2. Migrations managed via Drizzle ORM in `/lib/db/migrations/`
-3. Database client in `/lib/db/client.ts`
+1. Database schema located in `/src/lib/db/schema/`
+2. Migrations managed via Drizzle ORM (use `drizzle-kit` CLI directly)
+3. Database client in `/src/lib/db/client.ts`
 4. Required environment variables:
    - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
    - `SUPABASE_SERVICE_ROLE_KEY`
-   - `SUPABASE_ANON_KEY`
+   - `DATABASE_URL` (optional, for direct database access)
 
 ## Development Notes
 - Standard Next.js file-based routing applies
 - Tailwind CSS utility-first approach
 - Components should follow shadcn/ui patterns where applicable
 - API routes should follow `/api/v1/` versioning pattern
-- No special testing framework configured yet
+- No special testing framework configured yet (manual/testing approach varies)
 
 ## Important Conventions from PRD
 ### Document Numbering

@@ -8,6 +8,12 @@
 - **Icons:** Lucide (konsisten dengan existing)
 - **Stack:** shadcn/ui + Tailwind CSS (existing)
 
+## System Foundation
+- **DESIGN_SYSTEM.md** — single source of truth (done)
+- **Pattern Components:** PageHeader, StatusBadge, FormActions (done)
+- **CSS Variables** — completed in globals.css (done)
+- **Component Audit** — raw HTML elements identified for migration (ongoing)
+
 ## Prioritas & Halaman
 
 ### P1 — Master Data (Barang, Supplier, Customer, PIC, COA, Kontrak, Kategori, Jabatan, Karyawan)

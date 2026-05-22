@@ -6,6 +6,15 @@ import { useRouter } from 'next/navigation';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Button } from '@/components/ui/button';
+import { Loader2 } from 'lucide-react';
+import { PageHeader } from '@/components/page-header';
+import { FormActions } from '@/components/form-actions';
 
 const barangSchema = z.object({
   nama: z.string().min(2, { message: "Nama barang harus diisi" }),
@@ -22,7 +31,7 @@ type BarangFormValues = z.input<typeof barangSchema>;
 
 export default function TambahBarangPage() {
   const router = useRouter();
-  const { register, handleSubmit, formState: { errors }, reset } = useForm<BarangFormValues>({ resolver: zodResolver(barangSchema) });
+  const form = useForm<BarangFormValues>({ resolver: zodResolver(barangSchema) });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -41,78 +50,164 @@ export default function TambahBarangPage() {
     setLoading(true); setError(null); setSuccess(null);
     try {
       await apiFetch('/api/v1/master/barang', { method: 'POST', body: JSON.stringify(data) });
-      setSuccess('Barang berhasil ditambahkan!'); reset();
+      setSuccess('Barang berhasil ditambahkan!'); form.reset();
       setTimeout(() => router.push('/dashboard/master/barang'), 2000);
     } catch (err) { setError(err instanceof Error ? err.message : 'Terjadi kesalahan'); }
     finally { setLoading(false); }
   };
 
   return (
-    <div className="max-w-xl">
-      <div className="mb-6"><h1 className="text-2xl font-bold">Tambah Barang</h1></div>
-      {success && <div className="mb-4 p-4 bg-green-50 border-l-4 border-green-500"><p className="text-green-700">{success}</p></div>}
-      {error && <div className="mb-4 p-4 bg-red-50 border-l-4 border-red-500"><p className="text-red-700">{error}</p></div>}
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">Nama Barang <span className="text-red-500">*</span></label>
-            <input type="text" {...register('nama')} className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.nama ? 'border-red-500' : ''}`} />
-            {errors.nama && <p className="text-red-500 text-sm mt-1">{errors.nama.message}</p>}
+    <div className="mx-auto max-w-xl">
+      <PageHeader
+        title="Tambah Barang"
+        description="Input data barang baru"
+        actions={
+          <Button variant="outline" onClick={() => router.push('/dashboard/master/barang')}>
+            Kembali
+          </Button>
+        }
+      />
+      {success && <div className="mb-4 p-4 bg-success/10 border-l-4 border-success text-success"><p>{success}</p></div>}
+      {error && <div className="mb-4 p-4 bg-destructive/10 border-l-4 border-destructive text-destructive"><p>{error}</p></div>}
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <FormField
+            control={form.control}
+            name="nama"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Nama Barang</FormLabel>
+                <FormControl>
+                  <Input {...field} placeholder="Masukkan nama barang" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="kode"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Kode Barang</FormLabel>
+                <FormControl>
+                  <Input {...field} placeholder="Masukkan kode barang" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="kategori_id"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Kategori</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Pilih kategori" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {kategoriOptions.map(opt => (
+                      <SelectItem key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <div className="grid grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="satuan"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Satuan</FormLabel>
+                  <FormControl>
+                    <Input {...field} placeholder="pcs, kg, liter" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="stok_minimum"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Stok Minimum</FormLabel>
+                  <FormControl>
+                    <Input type="number" min="0" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Kode Barang <span className="text-red-500">*</span></label>
-            <input type="text" {...register('kode')} className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.kode ? 'border-red-500' : ''}`} />
-            {errors.kode && <p className="text-red-500 text-sm mt-1">{errors.kode.message}</p>}
+          <FormField
+            control={form.control}
+            name="spesifikasi"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Spesifikasi</FormLabel>
+                <FormControl>
+                  <Textarea {...field} rows={2} placeholder="Masukkan spesifikasi barang" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <div className="grid grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="harga_beli_default"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Harga Beli Default</FormLabel>
+                  <FormControl>
+                    <Input type="number" min="0" step="0.01" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="harga_jual_default"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Harga Jual Default</FormLabel>
+                  <FormControl>
+                    <Input type="number" min="0" step="0.01" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </div>
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-1">Kategori <span className="text-red-500">*</span></label>
-          <select {...register('kategori_id')} className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.kategori_id ? 'border-red-500' : ''}`}>
-            <option value="">Pilih Kategori</option>
-            {kategoriOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
-          </select>
-          {errors.kategori_id && <p className="text-red-500 text-sm mt-1">{errors.kategori_id.message}</p>}
-        </div>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">Satuan <span className="text-red-500">*</span></label>
-            <input type="text" {...register('satuan')} placeholder="pcs, kg, liter" className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.satuan ? 'border-red-500' : ''}`} />
-            {errors.satuan && <p className="text-red-500 text-sm mt-1">{errors.satuan.message}</p>}
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Stok Minimum</label>
-            <input type="number" min="0" {...register('stok_minimum')} className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
-          </div>
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-1">Spesifikasi</label>
-          <textarea {...register('spesifikasi')} rows={2} className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
-        </div>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">Harga Beli Default</label>
-            <input type="number" min="0" step="0.01" {...register('harga_beli_default')} className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Harga Jual Default</label>
-            <input type="number" min="0" step="0.01" {...register('harga_jual_default')} className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
-          </div>
-        </div>
-        <div className="flex items-center">
-          <label className="flex items-center text-sm font-medium">
-            <input type="checkbox" {...register('is_active')} className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" />
-            <span className="ml-2">Aktif</span>
-          </label>
-        </div>
-        <div className="pt-4">
-          <button type="submit" disabled={loading} className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:opacity-50">
-            {loading ? 'Menyimpan...' : 'Simpan Barang'}
-          </button>
-        </div>
-      </form>
-      <div className="mt-6">
-        <a href="/dashboard/master/barang" className="text-sm text-blue-600 hover:underline">Kembali ke Daftar Barang</a>
-      </div>
+          <FormField
+            control={form.control}
+            name="is_active"
+            render={({ field }) => (
+              <FormItem>
+                <div className="flex items-center gap-2">
+                  <FormControl>
+                    <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                  </FormControl>
+                  <FormLabel className="mb-0">Aktif</FormLabel>
+                </div>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormActions loading={loading} onCancel={() => router.push('/dashboard/master/barang')} />
+        </form>
+      </Form>
     </div>
   );
 }
