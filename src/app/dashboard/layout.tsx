@@ -1,6 +1,7 @@
 import { ReactNode } from 'react'
 import Link from 'next/link'
-import { Home, Package, Users, Building2, UserCircle, BookOpen, FileText, FolderTree, Briefcase, Users2, Search, ShoppingCart, Landmark, Receipt, ReceiptText, BookOpenCheck, TrendingUp, TrendingDown, PieChart, Banknote, Bot, ScanLine, Lightbulb, MessageSquare } from 'lucide-react'
+import { Home, Package, Users, Building2, UserCircle, BookOpen, FileText, FolderTree, Briefcase, Users2, Search, ShoppingCart, Landmark, Receipt, ReceiptText, BookOpenCheck, TrendingUp, TrendingDown, PieChart, Banknote, Bot, ScanLine, Lightbulb, MessageSquare, Clock, DollarSign, FileSearch, ShieldCheck, ClipboardList } from 'lucide-react'
+import { GlobalSearch } from '@/components/global-search'
 
 const menuItems = [
   { href: '/dashboard', label: 'Dashboard', icon: Home },
@@ -52,16 +53,24 @@ const menuItems = [
     { href: '/dashboard/ai/rekomendasi-harga', label: 'Rekomendasi Harga', icon: Lightbulb },
     { href: '/dashboard/ai/negosiasi-assistant', label: 'Negosiasi', icon: MessageSquare },
   ]},
+  { label: 'HR', icon: Users2, children: [
+    { href: '/dashboard/absensi', label: 'Absensi', icon: Clock },
+    { href: '/dashboard/penggajian', label: 'Penggajian', icon: DollarSign },
+  ]},
+  { label: 'System', icon: ShieldCheck, children: [
+    { href: '/dashboard/audit-log', label: 'Audit Trail', icon: ClipboardList },
+  ]},
 ]
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-screen bg-background">
       <aside className="hidden md:flex w-64 flex-col border-r bg-card">
-        <div className="p-4 border-b">
+        <div className="p-4 border-b space-y-3">
           <Link href="/dashboard" className="flex items-center space-x-3">
             <span className="text-xl font-heading font-bold text-primary">ERP RRI</span>
           </Link>
+          <GlobalSearch />
         </div>
         <nav className="flex-1 overflow-y-auto p-3 space-y-1">
           {menuItems.map((item) => {
