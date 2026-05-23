@@ -149,8 +149,8 @@
 - [ ] Negosiasi Assistant: chat-like interface
 
 ### P4 — HR (Absensi, Penggajian, Slip Gaji)
-- [ ] Absensi: kalender view kehadiran
-- [ ] Penggajian: form perhitungan gaji dengan komponen (gaji pokok, tunjangan, potongan)
+- [x] Absensi: kalender view kehadiran
+- [x] Penggajian: form perhitungan gaji dengan komponen (gaji pokok, tunjangan, potongan)
 - [ ] Slip Gaji: preview sebelum download PDF
 
 ### P4 — Dashboard (Home)

@@ -1,7 +1,7 @@
 import { supabase } from '@/lib/db/client'
 import { PageHeader } from '@/components/page-header'
 import { PeriodFilter } from '@/components/period-filter'
-import { ExportPdfButton, PreviewPdfButton } from '@/components/export-pdf-button'
+import { ExportPdfButton } from '@/components/export-pdf-button'
 import { LabaRugiChart } from '@/components/laba-rugi-chart'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 

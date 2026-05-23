@@ -14,16 +14,6 @@ function makeDateRange(tahun: string | null, bulan: string | null) {
   return { since: new Date(y, 0, 1).toISOString(), until: new Date(y, 11, 31, 23, 59, 59).toISOString() }
 }
 
-function prevPeriod(tahun: string | null, bulan: string | null) {
-  const y = tahun ? parseInt(tahun) : new Date().getFullYear()
-  if (bulan) {
-    const m = parseInt(bulan)
-    if (m === 1) return { since: new Date(y - 1, 11, 1).toISOString(), until: new Date(y - 1, 11, 31, 23, 59, 59).toISOString() }
-    return { since: new Date(y, m - 2, 1).toISOString(), until: new Date(y, m - 1, 0, 23, 59, 59).toISOString() }
-  }
-  return { since: new Date(y - 1, 0, 1).toISOString(), until: new Date(y - 1, 11, 31, 23, 59, 59).toISOString() }
-}
-
 function buildMonthlyBuckets(period: { since: string; until: string }) {
   const from = new Date(period.since)
   const to = new Date(period.until)
@@ -59,7 +49,6 @@ export async function GET(request: NextRequest) {
   const bulan = searchParams.get('bulan')
 
   const period = makeDateRange(tahun, bulan)
-  const prev = prevPeriod(tahun, bulan)
 
   const [curInvoices, curPoItems] = await Promise.all([
     supabaseAdmin.from('invoice').select('*, invoice_item!invoice_id(harga, jumlah, diskon, ppn, pph)').in('status', ['paid', 'sent']).gte('tanggal', period.since).lte('tanggal', period.until),

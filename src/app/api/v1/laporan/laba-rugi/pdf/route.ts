@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { pdf } from '@react-pdf/renderer'
 import { supabaseAdmin } from '@/lib/api/supabase-server'
 import { verifyAuth } from '@/lib/api/auth'
-import { notFound, badRequest, internalError } from '@/lib/api/errors'
+import { internalError } from '@/lib/api/errors'
 import { LaporanLabaRugiPDF } from '@/lib/pdf/laporan-laba-rugi'
 
 function makeDateRange(tahun: string | null, bulan: string | null) {

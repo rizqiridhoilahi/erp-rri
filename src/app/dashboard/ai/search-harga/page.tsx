@@ -1,7 +1,7 @@
 "use client"
 import { useState } from 'react'; import { z } from 'zod'; import { useForm } from 'react-hook-form'; import { zodResolver } from '@hookform/resolvers/zod'
 import { apiFetch } from '@/lib/api/client'; import { Button } from '@/components/ui/button'; import { Input } from '@/components/ui/input'; import { Card, CardHeader, CardContent } from '@/components/ui/card'; import { Badge } from '@/components/ui/badge'
-import { Search, Loader2, ExternalLink, Star, DollarSign, TrendingUp, TrendingDown } from 'lucide-react'; import { toast } from 'sonner'; import { Skeleton } from '@/components/ui/skeleton'
+import { Search, Loader2, ExternalLink, Star, DollarSign } from 'lucide-react'; import { toast } from 'sonner'; import { Skeleton } from '@/components/ui/skeleton'
 
 const schema = z.object({ query: z.string().min(1, 'Barang harus diisi') })
 type FV = z.input<typeof schema>
@@ -54,9 +54,6 @@ export default function SearchHargaPage() {
     }
   }
 
-  // Calculate average price for comparison
-  const averagePrice = results.reduce((sum, item) => sum + item.harga, 0) / (results.length || 1);
-  
   // Determine if price is above or below average
   const getPriceStatus = (harga: number) => {
     if (!priceComparison) return 'neutral';
