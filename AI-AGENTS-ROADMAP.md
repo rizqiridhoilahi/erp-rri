@@ -44,6 +44,12 @@ src/lib/ai/
     ├── DataAgent/
     │   ├── index.ts            # Orchestrator + handleAutomationTrigger
     │   ├── prompts.ts          # System prompt + task templates
+    │   ├── chat/               # NL-to-SQL RAG (DataAgent chat only)
+    │   │   ├── intentClassifier.ts   # Regex/keyword → intent type
+    │   │   ├── queryLibrary.ts        # 20-30 predefined SQL patterns
+    │   │   ├── queryBuilder.ts        # Build parameterized SQL
+    │   │   ├── responseFormatter.ts   # LLM format output ONLY
+    │   │   └── chatRouter.ts          # Orchestrate 3-layer flow
     │   └── tools/
     │       ├── priceRecommender.ts   # Dynamic pricing rules
     │       ├── reportSummarizer.ts    # AR aging, neraca, laba-rugi summaries
@@ -140,6 +146,68 @@ RLS Policies: User hanya bisa lihat history mereka sendiri.
 - [ ] Buat automation trigger endpoint
 - [ ] Buat `/dashboard/ai/data-agent/page.tsx`
 
+### Phase 3b: DataAgent Chat — NL-to-SQL RAG
+
+**Architectural Decision:** DataAgent chat menggunakan **NL-to-SQL** (bukan document RAG) karena data ERP sudah terstruktur di PostgreSQL/Supabase. NL-to-SQL mencegah hallucination karena LLM hanya memformat hasil, bukan menghasilkan data.
+
+```
+User Query: "Berapa total AR customer ABC yang overdue?"
+                ↓
+Layer 1: Intent Classifier (keyword/regex pattern matching)
+                ↓
+Layer 2: Query Builder → Execute SQL ke Supabase PostgreSQL
+                ↓
+Layer 3: LLM Response Formatter (format ONLY, no data generation)
+                ↓
+AI Response: "Total AR overdue customer ABC adalah Rp 150.000.000"
+```
+
+#### 3-Layer Architecture
+
+| Layer | Komponen | Responsibility |
+|-------|----------|----------------|
+| Layer 1 | `IntentClassifier` | Detect user intent dari keyword/regex (20-30 pattern) |
+| Layer 2 | `QueryBuilder` + `QueryLibrary` | Build & execute SQL ke Supabase |
+| Layer 3 | `ResponseFormatter` | LLM format jawaban dari data aktual |
+
+#### Intent Pattern Library (20-30 Patterns)
+
+| Pattern | Contoh Query | SQL Pattern |
+|---------|--------------|-------------|
+| `AR_OVERDUE` | "AR overdue customer X?" | `SELECT SUM(...) FROM invoices WHERE status = 'outstanding' AND due_date < NOW()` |
+| `STOK_RENDAH` | "Stok barang apa yang rendah?" | `SELECT * FROM barang WHERE stok < min_stok` |
+| `SUPPLIER_PERFORMANCE` | "Performance supplier X?" | `SELECT COUNT(*), SUM(total) FROM purchase WHERE supplier_id = ?` |
+| `INVOICE_STATUS` | "Status invoice 123?" | `SELECT * FROM invoices WHERE id = ?` |
+| `CUSTOMER_SUMMARY` | "Summary customer ABC?" | `SELECT * FROM customers WHERE id = ?` |
+| `REVENUE_REPORT` | "Revenue bulan ini?" | `SELECT SUM(total) FROM invoices WHERE date_trunc('month') = ?` |
+| ... | (20-30 total) | |
+
+#### Query Library Structure
+
+```
+src/lib/ai/agents/DataAgent/chat/
+├── intentClassifier.ts    # Regex/keyword matching → intent type
+├── queryLibrary.ts        # 20-30 predefined SQL patterns
+├── queryBuilder.ts        # Build parameterized SQL dari intent
+├── responseFormatter.ts   # LLM format only (NO data gen)
+└── chatRouter.ts          # Orchestrate 3-layer flow
+```
+
+#### Hallucination Prevention Guarantee
+
+```
+1. User query masuk
+2. IntentClassifier → tentukan intent type
+3. QueryBuilder → build SQL dari QueryLibrary (parameterized)
+4. Execute ke Supabase PostgreSQL → dapat RESULT SET (data aktual)
+5. LLM prompt berisi: system prompt + "ANSWER ONLY USING THIS DATA" + RESULT SET
+6. LLM hanya format output — TIDAK generate angka sendiri
+```
+
+#### Fallback Mechanism
+
+Jika SQL execution gagal → return error message ke user (bukan generate fake data).
+
 ### Phase 4: VisionAgent
 - [x] Buat `src/lib/ai/agents/VisionAgent/index.ts`
 - [x] Buat `src/lib/ai/agents/VisionAgent/prompts.ts`
@@ -214,6 +282,7 @@ const response = await client.chat.completions.create({
 | `src/lib/ai/agents/types.ts` | ✅ | Done |
 | `src/lib/ai/agents/NegoAgent/*` | ✅ | Done |
 | `src/lib/ai/agents/DataAgent/*` | ✅ | Done |
+| `src/lib/ai/agents/DataAgent/chat/*` | ⏳ | Pending (NL-to-SQL RAG) |
 | `src/lib/ai/agents/VisionAgent/*` | ✅ | Done |
 | `drizzle/0004_ai_agents_history.sql` | ✅ | Done |
 | `/api/v1/ai/agents/*` | ⏳ | Pending |
