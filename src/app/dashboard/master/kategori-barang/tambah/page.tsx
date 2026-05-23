@@ -13,6 +13,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/page-header';
 import { FormActions } from '@/components/form-actions';
+import { useUnsavedChanges } from '@/hooks/use-unsaved-changes';
+import { ConfirmLeaveDialog } from '@/components/confirm-leave-dialog';
 
 const schema = z.object({
   nama: z.string().min(2, { message: "Nama kategori harus diisi" }),
@@ -28,6 +30,7 @@ export default function TambahKategoriPage() {
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
   });
+  const { confirmLeave, showDialog, handleConfirm, handleCancel } = useUnsavedChanges(form.formState.isDirty);
 
   const onSubmit = async (data: FormValues) => {
     setLoading(true);
@@ -56,7 +59,7 @@ export default function TambahKategoriPage() {
         title="Tambah Kategori Barang"
         description="Input data kategori baru"
         actions={
-          <Button variant="outline" onClick={() => router.push('/dashboard/master/kategori-barang')}>
+          <Button variant="outline" onClick={() => confirmLeave(() => router.push('/dashboard/master/kategori-barang'))}>
             Kembali
           </Button>
         }
@@ -89,9 +92,10 @@ export default function TambahKategoriPage() {
               </FormItem>
             )}
           />
-          <FormActions loading={loading} onCancel={() => router.push('/dashboard/master/kategori-barang')} />
+          <FormActions loading={loading} onCancel={() => confirmLeave(() => router.push('/dashboard/master/kategori-barang'))} />
         </form>
       </Form>
+      <ConfirmLeaveDialog open={showDialog} onConfirm={handleConfirm} onCancel={handleCancel} />
     </div>
   );
 }

@@ -14,6 +14,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/page-header';
 import { FormActions } from '@/components/form-actions';
+import { useUnsavedChanges } from '@/hooks/use-unsaved-changes';
+import { ConfirmLeaveDialog } from '@/components/confirm-leave-dialog';
 
 const kontrakSchema = z.object({
   customerId: z.string().min(1, { message: "Customer harus dipilih" }),
@@ -34,6 +36,7 @@ export default function TambahKontrakPage() {
     resolver: zodResolver(kontrakSchema),
     defaultValues: { isActive: true },
   });
+  const { confirmLeave, showDialog, handleConfirm, handleCancel } = useUnsavedChanges(form.formState.isDirty);
 
   useEffect(() => {
     (async () => {
@@ -79,7 +82,7 @@ export default function TambahKontrakPage() {
         title="Tambah Kontrak"
         description="Input data kontrak baru"
         actions={
-          <Button variant="outline" onClick={() => router.push('/dashboard/master/kontrak')}>
+          <Button variant="outline" onClick={() => confirmLeave(() => router.push('/dashboard/master/kontrak'))}>
             Kembali
           </Button>
         }
@@ -166,9 +169,10 @@ export default function TambahKontrakPage() {
               </FormItem>
             )}
           />
-          <FormActions loading={loading} onCancel={() => router.push('/dashboard/master/kontrak')} />
+          <FormActions loading={loading} onCancel={() => confirmLeave(() => router.push('/dashboard/master/kontrak'))} />
         </form>
       </Form>
+      <ConfirmLeaveDialog open={showDialog} onConfirm={handleConfirm} onCancel={handleCancel} />
     </div>
   );
 }

@@ -14,6 +14,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/page-header';
 import { FormActions } from '@/components/form-actions';
+import { useUnsavedChanges } from '@/hooks/use-unsaved-changes';
+import { ConfirmLeaveDialog } from '@/components/confirm-leave-dialog';
 
 const picSchema = z.object({
   customerId: z.string().min(1, { message: "Customer harus dipilih" }),
@@ -35,6 +37,7 @@ export default function TambahPICCustomerPage() {
     resolver: zodResolver(picSchema),
     defaultValues: { isActive: true },
   });
+  const { confirmLeave, showDialog, handleConfirm, handleCancel } = useUnsavedChanges(form.formState.isDirty);
 
   useEffect(() => {
     (async () => {
@@ -81,7 +84,7 @@ export default function TambahPICCustomerPage() {
         title="Tambah PIC Customer"
         description="Input data PIC customer baru"
         actions={
-          <Button variant="outline" onClick={() => router.push('/dashboard/master/pic-customer')}>
+          <Button variant="outline" onClick={() => confirmLeave(() => router.push('/dashboard/master/pic-customer'))}>
             Kembali
           </Button>
         }
@@ -181,9 +184,10 @@ export default function TambahPICCustomerPage() {
               </FormItem>
             )}
           />
-          <FormActions loading={loading} onCancel={() => router.push('/dashboard/master/pic-customer')} />
+          <FormActions loading={loading} onCancel={() => confirmLeave(() => router.push('/dashboard/master/pic-customer'))} />
         </form>
       </Form>
+      <ConfirmLeaveDialog open={showDialog} onConfirm={handleConfirm} onCancel={handleCancel} />
     </div>
   );
 }

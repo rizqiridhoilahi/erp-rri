@@ -15,6 +15,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/page-header';
 import { FormActions } from '@/components/form-actions';
+import { useUnsavedChanges } from '@/hooks/use-unsaved-changes';
+import { ConfirmLeaveDialog } from '@/components/confirm-leave-dialog';
 
 const barangSchema = z.object({
   nama: z.string().min(2, { message: "Nama barang harus diisi" }),
@@ -32,6 +34,7 @@ type BarangFormValues = z.input<typeof barangSchema>;
 export default function TambahBarangPage() {
   const router = useRouter();
   const form = useForm<BarangFormValues>({ resolver: zodResolver(barangSchema) });
+  const { confirmLeave, showDialog, handleConfirm, handleCancel } = useUnsavedChanges(form.formState.isDirty);
   const [loading, setLoading] = useState(false);
   const [kategoriOptions, setKategoriOptions] = useState<Array<{ value: string; label: string }>>([]);
 
@@ -65,7 +68,7 @@ export default function TambahBarangPage() {
         title="Tambah Barang"
         description="Input data barang baru"
         actions={
-          <Button variant="outline" onClick={() => router.push('/dashboard/master/barang')}>
+          <Button variant="outline" onClick={() => confirmLeave(() => router.push('/dashboard/master/barang'))}>
             Kembali
           </Button>
         }
@@ -232,9 +235,10 @@ export default function TambahBarangPage() {
               </FormItem>
             )}
           />
-          <FormActions loading={loading} onCancel={() => router.push('/dashboard/master/barang')} />
+          <FormActions loading={loading} onCancel={() => confirmLeave(() => router.push('/dashboard/master/barang'))} />
         </form>
       </Form>
+      <ConfirmLeaveDialog open={showDialog} onConfirm={handleConfirm} onCancel={handleCancel} />
     </div>
   );
 }

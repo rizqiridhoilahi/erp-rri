@@ -14,6 +14,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/page-header';
 import { FormActions } from '@/components/form-actions';
+import { useUnsavedChanges } from '@/hooks/use-unsaved-changes';
+import { ConfirmLeaveDialog } from '@/components/confirm-leave-dialog';
 
 const supplierSchema = z.object({
   nama: z.string().min(2, { message: "Nama supplier harus diisi" }),
@@ -47,6 +49,7 @@ export default function TambahSupplierPage() {
       isActive: true,
     },
   });
+  const { confirmLeave, showDialog, handleConfirm, handleCancel } = useUnsavedChanges(form.formState.isDirty);
 
   const onSubmit = async (data: SupplierFormValues) => {
     setLoading(true);
@@ -82,7 +85,7 @@ export default function TambahSupplierPage() {
         title="Tambah Supplier"
         description="Input data supplier baru"
         actions={
-          <Button variant="outline" onClick={() => router.push('/dashboard/master/supplier')}>
+          <Button variant="outline" onClick={() => confirmLeave(() => router.push('/dashboard/master/supplier'))}>
             Kembali
           </Button>
         }
@@ -223,9 +226,10 @@ export default function TambahSupplierPage() {
               )}
             />
           </div>
-          <FormActions loading={loading} onCancel={() => router.push('/dashboard/master/supplier')} />
+          <FormActions loading={loading} onCancel={() => confirmLeave(() => router.push('/dashboard/master/supplier'))} />
         </form>
       </Form>
+      <ConfirmLeaveDialog open={showDialog} onConfirm={handleConfirm} onCancel={handleCancel} />
     </div>
   );
 }

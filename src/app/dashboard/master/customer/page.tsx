@@ -1,10 +1,18 @@
+"use client"
+
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import { supabase } from "@/lib/db/client"
 import { Button } from "@/components/ui/button"
 import { EmptyState } from "@/components/empty-state"
 import { BreadcrumbNav, BreadcrumbItem } from "@/components/breadcrumb-nav"
 import { PageHeader } from "@/components/page-header"
-import { CustomerTableRow } from "./table-row"
+import { MasterDataTable, Column } from "@/components/master-data-table"
+import { apiFetch } from "@/lib/api/client"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import { DeleteConfirmationDialog } from "@/components/delete-confirmation-dialog"
+import { Pencil, Trash2 } from "lucide-react"
+import { useRouter } from "next/navigation"
 
 const breadcrumbItems: BreadcrumbItem[] = [
   { label: "Dashboard", href: "/dashboard" },
@@ -12,94 +20,135 @@ const breadcrumbItems: BreadcrumbItem[] = [
   { label: "Customer" },
 ]
 
-export default async function CustomerPage() {
-  const { data: customerData, error } = await supabase
-    .from("customer")
-    .select(
-      `
-      id,
-      nama,
-      kode,
-      alamat,
-      kontak,
-      terms_of_payment,
-      is_active,
-      created_at
-    `
-    )
-    .order("created_at", { ascending: false })
+interface Customer {
+  id: string
+  nama: string
+  kode: string
+  alamat: string | null
+  kontak: string | null
+  terms_of_payment: string | null
+  is_active: boolean
+  created_at: string
+}
 
-  if (error) {
-    return (
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
-        <BreadcrumbNav items={breadcrumbItems} />
-        <PageHeader
-          title="Data Customer"
-          description="Error loading data"
-        />
-        <EmptyState
-          title="Gagal memuat data"
-          description={error.message}
-        />
-      </div>
-    )
+export default function CustomerPage() {
+  const router = useRouter()
+  const [data, setData] = useState<Customer[]>([])
+  const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    supabase
+      .from("customer")
+      .select(`
+        id,
+        nama,
+        kode,
+        alamat,
+        kontak,
+        terms_of_payment,
+        is_active,
+        created_at
+      `)
+      .order("created_at", { ascending: false })
+      .then(({ data: result, error: err }) => {
+        if (err) setError(err.message)
+        else setData((result || []) as Customer[])
+        setLoading(false)
+      })
+  }, [])
+
+  const handleDelete = (id: string) => async () => {
+    await apiFetch(`/api/v1/master/customer/${id}`, { method: "DELETE" })
+    setData((prev) => prev.filter((item) => item.id !== id))
   }
+
+  const statusBadge = (isActive: boolean) => (
+    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+      isActive ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"
+    }`}>
+      {isActive ? "Active" : "Non-Active"}
+    </span>
+  )
+
+  const actionButtons = (id: string, name: string) => (
+    <div className="flex items-center justify-end gap-1">
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => router.push(`/dashboard/master/customer/${id}/edit`)}
+            className="hover:bg-accent"
+          >
+            <Pencil className="h-4 w-4" />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>Edit</TooltipContent>
+      </Tooltip>
+      <DeleteConfirmationDialog
+        onConfirm={handleDelete(id)}
+        itemName={name}
+        trigger={
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-destructive hover:text-destructive hover:bg-destructive/10"
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        }
+      />
+    </div>
+  )
+
+  if (loading) return (
+    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+      <BreadcrumbNav items={breadcrumbItems} />
+      <PageHeader title="Data Customer" />
+      <div className="text-center py-12 text-muted-foreground">Memuat data...</div>
+    </div>
+  )
+
+  if (error) return (
+    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+      <BreadcrumbNav items={breadcrumbItems} />
+      <PageHeader title="Data Customer" description="Error loading data" />
+      <EmptyState title="Gagal memuat data" description={error} />
+    </div>
+  )
+
+  const columns: Column<Customer>[] = [
+    { header: "Kode", accessor: (item) => item.kode, sortKey: "kode" },
+    { header: "Nama Customer", accessor: (item) => item.nama, sortKey: "nama" },
+    { header: "Alamat", accessor: (item) => item.alamat || "-", sortKey: "alamat" },
+    { header: "Kontak", accessor: (item) => item.kontak || "-", sortKey: "kontak" },
+    { header: "Terms of Payment", accessor: (item) => item.terms_of_payment || "-", sortKey: "terms_of_payment" },
+    { header: "Status", accessor: (item) => statusBadge(item.is_active), sortKey: "is_active" },
+    { header: "Aksi", accessor: (item) => actionButtons(item.id, item.nama), className: "text-right" },
+  ]
 
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
       <BreadcrumbNav items={breadcrumbItems} />
       <PageHeader
         title="Data Customer"
-        description={`${customerData?.length || 0} customer terdaftar`}
+        description={`${data.length} customer terdaftar`}
         actions={
           <Link href="/dashboard/master/customer/tambah">
             <Button>Tambah Customer</Button>
           </Link>
         }
       />
-
-      {!customerData || customerData.length === 0 ? (
-        <EmptyState
-          title="Belum ada data customer"
-          description="Tambahkan customer pertama Anda untuk memulai."
-        />
+      {!data.length ? (
+        <EmptyState title="Belum ada data customer" description="Tambahkan customer pertama Anda untuk memulai." />
       ) : (
-        <div className="bg-card rounded-lg border overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b bg-muted/50">
-                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    Kode
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    Nama Customer
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    Alamat
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    Kontak
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    Terms of Payment
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    Aksi
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {customerData.map((item) => (
-                  <CustomerTableRow key={item.id} customer={item} />
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <MasterDataTable
+          data={data}
+          columns={columns}
+          searchFields={["nama", "kode", "alamat"]}
+          searchPlaceholder="Cari customer..."
+        />
       )}
     </div>
   )

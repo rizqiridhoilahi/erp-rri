@@ -27,7 +27,15 @@
 - **Lint:** ✅ Passed (only pre-existing warnings)
 - **Known Issue:** Next.js 15 prerenders "use client" pages — event handlers can't be serialized during static generation. Fixed by setting `export const dynamic = "force-dynamic"` in `dashboard/layout.tsx`. All dashboard pages are now dynamic, appropriate for an ERP.
 - **Reference Form:** `/dashboard/master/barang/tambah` — use as template for other forms
-- **Reference List:** `/dashboard/master/supplier` — use as template for list pages (PageHeader + shadcn Table + EmptyState + BreadcrumbNav)
+- **Reference List:** `/dashboard/master/barang` — use as template for master list pages (DataTable + search + inline actions)
+- **Master Data Enhancement:** All 9 master pages (barang, supplier, customer, PIC Customer, COA, kontrak, kategori-barang, jabatan, karyawan):
+  - [x] Search bar with real-time client-side filtering
+  - [x] Column sorting with sort direction indicator
+  - [x] Row numbering (auto-increment)
+  - [x] Responsive horizontal scroll (`overflow-x-auto`)
+  - [x] Inline action buttons (edit/delete) per row with delete confirmation
+  - [x] Reusable `MasterDataTable<T>` component with generic column configuration
+  - [x] "use client" pattern with client-side data fetching (instant search/sort)
 
 ## Design Audit — Raw HTML Element Migration
 
@@ -71,11 +79,11 @@
 - [x] Delete confirmation dialog dengan warning — using DeleteConfirmationDialog component
 - [x] Breadcrumb navigasi — using BreadcrumbNav component
 - [x] Empty state dengan ilustrasi + pesan "Belum ada data" — using EmptyState component
-- [ ] Tabel: tambahkan column sorting, filter per kolom, search bar per halaman
-- [ ] Tabel: nomor baris (row number) di kolom pertama
-- [ ] Form: cancel confirmation dialog jika ada perubahan
+- [x] Tabel: tambahkan column sorting, filter per kolom, search bar per halaman — via MasterDataTable component
+- [x] Tabel: nomor baris (row number) di kolom pertama — via MasterDataTable component
+- [x] Form: cancel confirmation dialog jika ada perubahan — via useUnsavedChanges hook + ConfirmLeaveDialog component
 - [ ] Detail page untuk setiap entity (bukan hanya edit form)
-- [ ] Responsive: tabel scroll horizontal di mobile
+- [x] Responsive: tabel scroll horizontal di mobile — via MasterDataTable + overflow-x-auto
 
 ### P2 — Pre-Sales (RFQ, Quotation, Negosiasi)
 - [ ] Quotation: preview PDF di tab/before print

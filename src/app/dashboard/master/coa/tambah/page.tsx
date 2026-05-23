@@ -14,6 +14,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/page-header';
 import { FormActions } from '@/components/form-actions';
+import { useUnsavedChanges } from '@/hooks/use-unsaved-changes';
+import { ConfirmLeaveDialog } from '@/components/confirm-leave-dialog';
 
 const coaSchema = z.object({
   kode: z.string().min(1, { message: "Kode akun harus diisi" }),
@@ -41,6 +43,7 @@ export default function TambahCOAPage() {
   const form = useForm<COAFormValues>({
     resolver: zodResolver(coaSchema),
   });
+  const { confirmLeave, showDialog, handleConfirm, handleCancel } = useUnsavedChanges(form.formState.isDirty);
 
   useEffect(() => {
     (async () => {
@@ -86,7 +89,7 @@ export default function TambahCOAPage() {
         title="Tambah Akun (COA)"
         description="Input data akun baru"
         actions={
-          <Button variant="outline" onClick={() => router.push('/dashboard/master/coa')}>
+          <Button variant="outline" onClick={() => confirmLeave(() => router.push('/dashboard/master/coa'))}>
             Kembali
           </Button>
         }
@@ -183,9 +186,10 @@ export default function TambahCOAPage() {
               </FormItem>
             )}
           />
-          <FormActions loading={loading} onCancel={() => router.push('/dashboard/master/coa')} />
+          <FormActions loading={loading} onCancel={() => confirmLeave(() => router.push('/dashboard/master/coa'))} />
         </form>
       </Form>
+      <ConfirmLeaveDialog open={showDialog} onConfirm={handleConfirm} onCancel={handleCancel} />
     </div>
   );
 }

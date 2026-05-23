@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
 import { apiFetch } from '@/lib/api/client';
 import { useRouter, usePathname } from 'next/navigation';
 import { z } from 'zod';
@@ -9,6 +8,8 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
+import { useUnsavedChanges } from '@/hooks/use-unsaved-changes';
+import { ConfirmLeaveDialog } from '@/components/confirm-leave-dialog';
 
 const kontrakSchema = z.object({
   customerId: z.string().min(1, { message: "Customer harus dipilih" }),
@@ -25,9 +26,10 @@ export default function EditKontrakPage() {
   const pathname = usePathname();
   const id = pathname.split('/').pop();
 
-  const { register, handleSubmit, formState: { errors }, reset } = useForm<KontrakFormValues>({
+  const { register, handleSubmit, formState: { errors, isDirty }, reset } = useForm<KontrakFormValues>({
     resolver: zodResolver(kontrakSchema),
   });
+  const { confirmLeave, showDialog, handleConfirm, handleCancel } = useUnsavedChanges(isDirty);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -223,13 +225,12 @@ export default function EditKontrakPage() {
 
       <div className="mt-6">
         <div className="flex justify-between items-center">
-          <Button variant="link" asChild>
-            <Link href="/dashboard/master/kontrak">
-              Kembali ke Daftar Kontrak
-            </Link>
+          <Button variant="link" onClick={() => confirmLeave(() => router.push('/dashboard/master/kontrak'))}>
+            Kembali ke Daftar Kontrak
           </Button>
         </div>
       </div>
+      <ConfirmLeaveDialog open={showDialog} onConfirm={handleConfirm} onCancel={handleCancel} />
     </div>
   );
 }
