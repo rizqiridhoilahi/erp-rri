@@ -17,10 +17,10 @@ Tanggal: 2026-05-23
 | 7 | FormSkeleton Tidak Digunakan di Page "Tambah" | MEDIUM | ✅ FIXED |
 | 8 | RFQ Page Pakai fetch langsung | MEDIUM | ✅ FIXED |
 | 9 | Badge Variants CSS Variables Non-Standard | MEDIUM | ✅ FIXED |
-| 10 | API Response Format Tidak Konsisten | LOW | ⏳ Pending |
-| 11 | Unused Ref OCR Kontrak | LOW | ✅ FIXED (see note) |
-| 12 | Finance Dashboard Hardcoded Colors | LOW | ⏳ Pending |
-| 13 | Error Boundary Tidak Dipakai | LOW | ⏳ Pending |
+| 10 | API Response Format Tidak Konsisten | LOW | ⏳ Skipped (low priority) |
+| 11 | Unused Ref OCR Kontrak | LOW | ✅ FIXED |
+| 12 | Finance Dashboard Hardcoded Colors | LOW | ✅ FIXED |
+| 13 | Error Boundary Tidak Dipakai | LOW | ✅ FIXED |
 
 ---
 

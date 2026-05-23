@@ -130,20 +130,20 @@ export default async function FinanceDashboard() {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="border-emerald-200">
+        <Card className="border-success/30">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm text-emerald-600">Piutang (AR)</CardTitle>
-            <TrendingUp className="h-4 w-4 text-emerald-600" />
+            <CardTitle className="text-sm text-success">Piutang (AR)</CardTitle>
+            <TrendingUp className="h-4 w-4 text-success" />
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-bold">{rupiah(totalPiutang)}</p>
             <p className="text-xs text-muted-foreground">{piutangCount} faktur outstanding</p>
           </CardContent>
         </Card>
-        <Card className="border-red-200">
+        <Card className="border-destructive/30">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm text-red-600">Hutang (AP)</CardTitle>
-            <TrendingDown className="h-4 w-4 text-red-600" />
+            <CardTitle className="text-sm text-destructive">Hutang (AP)</CardTitle>
+            <TrendingDown className="h-4 w-4 text-destructive" />
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-bold">{totalHutang}</p>
@@ -160,7 +160,7 @@ export default async function FinanceDashboard() {
             <p className="text-xs text-muted-foreground">transaksi</p>
           </CardContent>
         </Card>
-        <Card className={fakturPajaks.count && fakturPajaks.count > 0 ? 'border-amber-200' : ''}>
+        <Card className={fakturPajaks.count && fakturPajaks.count > 0 ? 'border-warning/30' : ''}>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm text-muted-foreground">Faktur Pajak Pending</CardTitle>
             <ReceiptText className="h-4 w-4 text-muted-foreground" />
