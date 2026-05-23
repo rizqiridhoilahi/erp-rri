@@ -1,4 +1,5 @@
 "use client"
+import Link from 'next/link'
 import { useState, useEffect } from 'react'; import { useRouter } from 'next/navigation'; import { z } from 'zod'; import { useForm } from 'react-hook-form'; import { zodResolver } from '@hookform/resolvers/zod'
 import { apiFetch } from '@/lib/api/client'; import { Button } from '@/components/ui/button'; import { Input } from '@/components/ui/input'; import { Textarea } from '@/components/ui/textarea'; import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
@@ -21,7 +22,7 @@ export default function TambahPenggajianPage() {
   }
   return (
     <div className="max-w-xl space-y-6">
-      <div className="flex items-center gap-4"><Button variant="ghost" size="icon" asChild><a href="/dashboard/penggajian"><ArrowLeft className="h-5 w-5" /></a></Button><div><h1 className="text-3xl font-heading font-bold">Tambah Penggajian</h1></div></div>
+      <div className="flex items-center gap-4"><Button variant="ghost" size="icon" asChild><Link href="/dashboard/penggajian"><ArrowLeft className="h-5 w-5" /></Link></Button><div><h1 className="text-3xl font-heading font-bold">Tambah Penggajian</h1></div></div>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6"><Card><CardHeader><CardTitle className="text-base">Data Gaji</CardTitle></CardHeader><CardContent className="space-y-4">
           <FormField control={form.control} name="karyawan_id" render={({ field }) => (
@@ -39,7 +40,7 @@ export default function TambahPenggajianPage() {
             <div className="space-y-2"><label className="text-sm font-medium">Gaji Bersih</label><Input value={gajiBersih.toLocaleString('id-ID')} disabled className="font-bold" /></div>
           </div>
           <div className="space-y-2"><label className="text-sm font-medium">Keterangan</label><Textarea {...form.register('keterangan')} rows={2} /></div>
-        </CardContent></Card><div className="flex justify-end gap-3"><Button type="button" variant="outline" asChild><a href="/dashboard/penggajian">Batal</a></Button>
+        </CardContent></Card><div className="flex justify-end gap-3"><Button type="button" variant="outline" asChild><Link href="/dashboard/penggajian">Batal</Link></Button>
           <Button type="submit" disabled={submitting}>{submitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}{submitting ? '...' : 'Simpan'}</Button></div></form>
       </Form>
     </div>

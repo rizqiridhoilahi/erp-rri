@@ -3,7 +3,7 @@ import { supabase } from '@/lib/db/client'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
-import { Plus, Pencil } from 'lucide-react'
+import { Plus, Pencil, Eye } from 'lucide-react'
 
 const statusLabel: Record<string, { label: string; variant: 'secondary' | 'warning' | 'success' | 'outline' }> = {
   draft: { label: 'Draft', variant: 'secondary' },
@@ -72,6 +72,12 @@ export default async function RfqPage() {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-1">
+                      <Button variant="ghost" size="sm" asChild>
+                        <Link href={`/dashboard/rfq/${item.id}`}>
+                          <Eye className="h-4 w-4" />
+                          <span className="sr-only">Detail</span>
+                        </Link>
+                      </Button>
                       <Button variant="ghost" size="sm" asChild>
                         <Link href={`/dashboard/rfq/${item.id}/edit`}>
                           <Pencil className="h-4 w-4" />

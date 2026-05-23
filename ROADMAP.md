@@ -35,6 +35,9 @@
 - [x] Quotation CRUD (list, tambah, edit) + API routes
 - [x] Migration all Fase 2 tables: add nomor + status
 - [x] Negosiasi CRUD (list, tambah, edit) + API routes
+- [x] Detail pages for Pre-Sales (Quotation, RFQ, Negosiasi) — status workflow visual, copy button, print PDF, activity timeline
+- [x] RFQ file upload drag & drop — FileUpload component + Supabase Storage + rfq_document table
+- [x] Negosiasi chat-like UI — bubble messages, original vs new price comparison, inline approve/reject
 - [x] Customer PO CRUD (list, tambah, edit) + API routes
 - [x] DI — Delivery Instruction CRUD (list, tambah, edit) + API routes
 - [x] Sales Order CRUD (list, tambah, edit) + API routes
@@ -48,6 +51,7 @@
 - [x] Purchase Receiving CRUD (list, tambah, edit) + API routes + document numbering
 - [x] GRN CRUD (list, tambah, edit) + API routes + document numbering
 - [x] Retur Pembelian CRUD (list, tambah, edit) + API routes + document numbering
+- [x] Detail pages for Procurement (PR, PO, Receiving, GRN, Retur) — status workflow visual, copy button, dokumen terkait, activity timeline
 - [x] AI Search Harga
 - [x] Stok Masuk / Keluar
 - [x] Kartu Stok
@@ -67,6 +71,7 @@
 - [x] PPN & PPh kalkulasi otomatis di Invoice
 - [x] PDF Quotation & DO
 - [x] Slip Gaji PDF
+- [x] Detail pages for Sales (Customer PO, SO, DO, DI) — status workflow visual, copy button, dokumen terkait, PDF print (DO)
 
 ## Fase 5 — AI Agent
 - [x] AI Search Harga (Playwright) — page + API + Playwright library + mock fallback
@@ -97,6 +102,8 @@
 - [x] Keyboard Shortcuts — `/` fokus search, `Ctrl+N` tambah, `Ctrl+S` submit, `?` help (deferred)
 - [x] Loading Skeleton — Skeleton/TableSkeleton/FormSkeleton komponen + loading.tsx di direktori utama
 - [x] Print-Friendly CSS — `@media print` sembunyikan sidebar/nav, atur margin halaman
+- [x] HTML `<a>` → Next.js `<Link>` migration — all internal navigation links across 40+ dashboard pages use `Link` instead of raw `<a>`, fixing `@next/next/no-html-link-for-pages` ESLint errors
+- [x] Build: 0 errors, 0 warnings (previously ~30 warnings + ESLint errors) — all unused imports/vars removed, all `<a>` → `<Link>`, all `any` types removed from detail pages
 - [ ] ~~Testing Setup (Vitest + Playwright)~~ — dilewati
 - [ ] ~~Deploy ke Vercel~~ — dilewati
 

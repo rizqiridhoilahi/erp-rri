@@ -1,4 +1,5 @@
 "use client"
+import Link from 'next/link'
 import { useState, useEffect } from 'react'; import { useRouter, useParams } from 'next/navigation'; import { z } from 'zod'; import { useForm } from 'react-hook-form'; import { zodResolver } from '@hookform/resolvers/zod'
 import { apiFetch } from '@/lib/api/client'; import { Button } from '@/components/ui/button'; import { Textarea } from '@/components/ui/textarea'; import { Card, CardContent } from '@/components/ui/card'
 import { ArrowLeft, Loader2 } from 'lucide-react'; import { toast } from 'sonner'
@@ -22,14 +23,14 @@ export default function EditDoPage() {
   if (loading) return <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin" /></div>
   return (
     <div className="max-w-xl space-y-6">
-      <div className="flex items-center gap-4"><Button variant="ghost" size="icon" asChild><a href="/dashboard/delivery-order"><ArrowLeft className="h-5 w-5" /></a></Button><div><h1 className="text-3xl font-heading font-bold">Edit DO</h1></div></div>
+      <div className="flex items-center gap-4"><Button variant="ghost" size="icon" asChild><Link href="/dashboard/delivery-order"><ArrowLeft className="h-5 w-5" /></Link></Button><div><h1 className="text-3xl font-heading font-bold">Edit DO</h1></div></div>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         <Card><CardContent className="space-y-4 pt-6">
           <div className="space-y-2"><label className="text-sm font-medium">Status</label>
             <select {...register('status')} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring">{statusOpts.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}</select></div>
           <div className="space-y-2"><label className="text-sm font-medium">Keterangan</label><Textarea {...register('keterangan')} rows={3} /></div>
         </CardContent></Card>
-        <div className="flex justify-end gap-3"><Button type="button" variant="outline" asChild><a href="/dashboard/delivery-order">Batal</a></Button><Button type="submit" disabled={submitting}>{submitting ? '...' : 'Update'}</Button></div>
+        <div className="flex justify-end gap-3"><Button type="button" variant="outline" asChild><Link href="/dashboard/delivery-order">Batal</Link></Button><Button type="submit" disabled={submitting}>{submitting ? '...' : 'Update'}</Button></div>
       </form>
     </div>
   )

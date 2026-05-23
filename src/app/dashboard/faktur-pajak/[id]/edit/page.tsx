@@ -1,4 +1,5 @@
 "use client"
+import Link from 'next/link'
 import { useState, useEffect } from 'react'; import { useRouter, useParams } from 'next/navigation'; import { z } from 'zod'; import { useForm } from 'react-hook-form'; import { zodResolver } from '@hookform/resolvers/zod'
 import { apiFetch } from '@/lib/api/client'; import { Button } from '@/components/ui/button'; import { Input } from '@/components/ui/input'; import { Card, CardContent } from '@/components/ui/card'
 import { ArrowLeft, Loader2 } from 'lucide-react'; import { toast } from 'sonner'
@@ -18,7 +19,7 @@ export default function EditFakturPajakPage() {
   }
   if (loading) return <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin" /></div>
   return (
-    <div className="max-w-xl space-y-6"><div className="flex items-center gap-4"><Button variant="ghost" size="icon" asChild><a href="/dashboard/faktur-pajak"><ArrowLeft className="h-5 w-5" /></a></Button><div><h1 className="text-3xl font-heading font-bold">Edit Faktur Pajak</h1></div></div>
+    <div className="max-w-xl space-y-6"><div className="flex items-center gap-4"><Button variant="ghost" size="icon" asChild><Link href="/dashboard/faktur-pajak"><ArrowLeft className="h-5 w-5" /></Link></Button><div><h1 className="text-3xl font-heading font-bold">Edit Faktur Pajak</h1></div></div>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6"><Card><CardContent className="space-y-4 pt-6">
         <div className="space-y-2"><label className="text-sm font-medium">Status</label>
           <select {...register('status')} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring">{statusOpts.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}</select></div>
@@ -28,7 +29,7 @@ export default function EditFakturPajakPage() {
           <div className="space-y-2"><label className="text-sm font-medium">PPN</label><Input type="number" step="0.01" {...register('ppn')} /></div>
           <div className="space-y-2"><label className="text-sm font-medium">PPh</label><Input type="number" step="0.01" {...register('pph')} /></div>
         </div>
-      </CardContent></Card><div className="flex justify-end gap-3"><Button type="button" variant="outline" asChild><a href="/dashboard/faktur-pajak">Batal</a></Button><Button type="submit" disabled={submitting}>{submitting ? '...' : 'Update'}</Button></div></form>
+      </CardContent></Card><div className="flex justify-end gap-3"><Button type="button" variant="outline" asChild><Link href="/dashboard/faktur-pajak">Batal</Link></Button><Button type="submit" disabled={submitting}>{submitting ? '...' : 'Update'}</Button></div></form>
     </div>
   )
 }

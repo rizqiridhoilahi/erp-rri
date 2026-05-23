@@ -55,7 +55,7 @@
 - **ALL 27 non-master list pages** now use shadcn `<Table>` ✅
 - **Master list pages** (9 pages) already use shadcn `<Table>` with table-row.tsx pattern ✅
 - **Absensi** was reference (converted earlier) ✅
-- **Converted:** delivery-order, sales-order, jurnal, invoice, kwitansi, faktur-pajak, penggajian, negoiasi, customer-po, di, grn, purchase-receiving, purchase-request, retur-pembelian, retur-penjualan, rfq, quotation, notifikasi, audit-log, inventory/gudang, inventory/stok, laporan/neraca, laporan/ar-aging, laporan/ap-aging, supplier, customer, ai/ocr-kontrak ✅
+- **Converted:** delivery-order, sales-order, jurnal, invoice, kwitansi, faktur-pajak, penggajian, negoiasi, customer-po, di, purchase-order, grn, purchase-receiving, purchase-request, retur-pembelian, retur-penjualan, rfq, quotation, notifikasi, audit-log, inventory/gudang, inventory/stok, laporan/neraca, laporan/ar-aging, laporan/ap-aging, supplier, customer, ai/ocr-kontrak ✅
 
 ## P4 — Global Components (Updates from ui-ux-pro-max)
 - [x] Toast notification position konsisten (top-right sudah)
@@ -87,33 +87,42 @@
 
 ### P2 — Pre-Sales (RFQ, Quotation, Negosiasi)
 - [ ] Quotation: preview PDF di tab/before print
-- [ ] Quotation: status workflow visual (Draft → Terkirim → Deal → Lost)
-- [ ] RFQ: file upload drag & drop
-- [ ] Negosiasi: chat-like UI untuk riwayat negosiasi
-- [ ] Timeline/activity log per dokumen
-- [ ] Print button langsung dari halaman detail
-- [ ] Nomor dokumen auto-generated — tampilkan dengan copy button
+- [x] Quotation: status workflow visual (Draft → Terkirim → Deal → Lost) — StatusWorkflow component
+- [x] RFQ: file upload drag & drop — FileUpload component with Supabase Storage
+- [x] Negosiasi: chat-like UI untuk riwayat negosiasi — bubble messages + inline approve/reject
+- [x] Timeline/activity log per dokumen — ActivityTimeline component using audit_log table
+- [x] Print button langsung dari halaman detail — Quotation detail has PDF print button
+- [x] Nomor dokumen auto-generated — tampilkan dengan copy button — CopyButton component
 
 ### P2 — Sales (Customer PO, SO, DO, Delivery Order)
-- [ ] Customer PO: status visual (Pending → Approved → In Progress → Completed)
-- [ ] DO: tracking status pengiriman visual
+- [x] Customer PO: status visual (Draft → Dikonfirmasi → Batal) — StatusWorkflow + detail page
+- [x] DO: tracking status pengiriman visual (Draft → Siap Kirim → Dikirim → Selesai) — StatusWorkflow + detail page
+- [x] Sales Order: status visual (Draft → Dikonfirmasi → Diproses → Dikirim) — StatusWorkflow + detail page
+- [x] DI: status visual (Draft → Aktif → Selesai) — StatusWorkflow + detail page
+- [x] Dokumen terkait: link ke dokumen sumber (PO → SO → DO) — di semua 4 detail pages
 - [ ] DO: barcode/QR code untuk scanning gudang
 - [ ] Auto-generate chain: tampilkan alert/notifikasi saat SO/DO auto-terbuat
-- [ ] Dokumen terkait: link ke dokumen sumber (PO → SO → DO)
 
 ### P2 — Procurement (PR, PO, Receiving, GRN, Retur)
-- [ ] PO Supplier: tampilan seperti invoice (header + line items + total)
-- [ ] Receiving: form scan barcode / input cepat
-- [ ] GRN: komparasi DO vs GRN (barang yang diterima vs dikirim)
-- [ ] Approval flow visual untuk PR/PO
-- [ ] Dashboard procurement: PR pending, PO ongoing, receiving hari ini
+- [x] PR: status visual (Draft → Disetujui/Ditolak) — StatusWorkflow + detail page
+- [x] PO Supplier: status visual (Draft → Terkirim → Dikonfirmasi) — StatusWorkflow + detail page
+- [x] PO Supplier: tampilan seperti invoice (header + line items)
+- [x] Purchase Receiving: status visual (Draft → Selesai) — StatusWorkflow + detail page
+- [x] GRN: status visual (Draft → Selesai) — StatusWorkflow + detail page
+- [x] Retur Pembelian: status visual (Draft → Dikirim → Diproses) — StatusWorkflow + detail page
+- [x] Dokumen terkait: link ke dokumen sumber (PR → PO → Receiving → GRN, PO → Retur) — di semua 5 detail pages
+- [x] PO Supplier: tampilan total per item (subtotal) — sudah ada subtotal per item + grand total
+- [x] Receiving: input cepat — auto-populate item dari PO yang dipilih
+- [x] GRN: komparasi source vs GRN (barang source, GRN qty, selisih dengan color-coding)
+- [x] Approval flow visual untuk PR/PO — inline Setujui/Tolak (PR), Kirim/Konfirmasi (PO) buttons
+- [x] Dashboard procurement: PR pending, PO ongoing, receiving hari ini — enhanced procurement dashboard
 
 ### P2 — Inventory (Gudang, Stok Masuk/Keluar, Kartu Stok)
-- [ ] Kartu Stok: timeline visual pergerakan stok
-- [ ] Stok: alert minimum stok (visual warning)
-- [ ] Stok: filter By Gudang, By Barang, rentang tanggal
-- [ ] Stok: export kartu stok ke PDF/Excel
-- [ ] Stok Masuk/Keluar: form cepat dengan auto-complete barang
+- [x] Kartu Stok: timeline visual pergerakan stok (icon color-coded per tipe mutasi, timeline with running balance)
+- [x] Stok: alert minimum stok (visual warning — Badge destructive di kolom status)
+- [x] Stok: filter By Gudang (dropdown), By Barang (search input), toggle Stok Minimum Saja
+- [x] Stok: export ke CSV
+- [x] Stok Masuk/Keluar: form cepat dengan auto-complete barang (searchable barang dropdown)
 
 ### P3 — Finance (Invoice, Kwitansi, Faktur Pajak, Jurnal)
 - [ ] Invoice: preview PDF langsung di browser

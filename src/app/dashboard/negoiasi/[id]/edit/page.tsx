@@ -1,7 +1,7 @@
 "use client"
 import { useState, useEffect } from 'react'; import { useRouter, useParams } from 'next/navigation'; import { z } from 'zod'; import { useForm } from 'react-hook-form'; import { zodResolver } from '@hookform/resolvers/zod'
 import { apiFetch } from '@/lib/api/client'; import { Button } from '@/components/ui/button'; import { Textarea } from '@/components/ui/textarea'; import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { ArrowLeft, Loader2 } from 'lucide-react'; import { toast } from 'sonner'
+import Link from 'next/link'; import { ArrowLeft, Loader2 } from 'lucide-react'; import { toast } from 'sonner'
 
 const schema = z.object({ status: z.string().optional(), keterangan: z.string().optional() })
 type FV = z.input<typeof schema>
@@ -29,7 +29,7 @@ export default function EditNegoiasiPage() {
 
   return (
     <div className="max-w-xl space-y-6">
-      <div className="flex items-center gap-4"><Button variant="ghost" size="icon" asChild><a href="/dashboard/negoiasi"><ArrowLeft className="h-5 w-5" /></a></Button>
+      <div className="flex items-center gap-4"><Button variant="ghost" size="icon" asChild><Link href="/dashboard/negoiasi"><ArrowLeft className="h-5 w-5" /></Link></Button>
         <div><h1 className="text-3xl font-heading font-bold">Edit Negosiasi</h1></div></div>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         <Card><CardHeader><CardTitle className="text-base">Update Status</CardTitle></CardHeader><CardContent className="space-y-4">
@@ -39,7 +39,7 @@ export default function EditNegoiasiPage() {
             </select></div>
           <div className="space-y-2"><label className="text-sm font-medium">Keterangan</label><Textarea {...register('keterangan')} rows={3} /></div>
         </CardContent></Card>
-        <div className="flex justify-end gap-3"><Button type="button" variant="outline" asChild><a href="/dashboard/negoiasi">Batal</a></Button>
+        <div className="flex justify-end gap-3"><Button type="button" variant="outline" asChild><Link href="/dashboard/negoiasi">Batal</Link></Button>
           <Button type="submit" disabled={submitting}>{submitting ? 'Menyimpan...' : 'Update'}</Button></div>
       </form>
     </div>

@@ -15,6 +15,7 @@ import { kontrakFile } from "./kontrak-file";
 import { rfq } from "./rfq";
 import { rfqItem } from "./rfq-item";
 import { rfqPic } from "./rfq-pic";
+import { rfqDocument } from "./rfq-document";
 import { quotation } from "./quotation";
 import { quotationItem } from "./quotation-item";
 import { quotationPic } from "./quotation-pic";
@@ -83,6 +84,7 @@ export {
   rfq,
   rfqItem,
   rfqPic,
+  rfqDocument,
   quotation,
   quotationItem,
   quotationPic,

@@ -7,7 +7,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
   const { id } = await params
   const { data: neg, error } = await supabaseAdmin.from('negoiasi').select('*, quotation!quotation_id(nomor)').eq('id', id).single()
   if (error || !neg) return notFound('Negosiasi tidak ditemukan')
-  const { data: items } = await supabaseAdmin.from('negoiasi_item').select('*, quotation_item!quotation_item_id(id)').eq('negoiasi_id', id)
+  const { data: items } = await supabaseAdmin.from('negoiasi_item').select('*, quotation_item!quotation_item_id(id, harga_satuan, diskon, jumlah, barang!barang_id(id, nama, kode, satuan))').eq('negoiasi_id', id)
   return NextResponse.json({ data: { ...neg, items: items ?? [] } })
 }
 

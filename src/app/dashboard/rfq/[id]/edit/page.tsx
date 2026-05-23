@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { useRouter, useParams } from 'next/navigation'
 import { z } from 'zod'
 import { useForm, useFieldArray } from 'react-hook-form'
@@ -129,7 +130,7 @@ export default function EditRfqPage() {
     <div className="max-w-3xl space-y-6">
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" asChild>
-          <a href="/dashboard/rfq"><ArrowLeft className="h-5 w-5" /></a>
+          <Link href="/dashboard/rfq"><ArrowLeft className="h-5 w-5" /></Link>
         </Button>
         <div>
           <h1 className="text-3xl font-heading font-bold text-foreground">Edit RFQ</h1>
@@ -242,7 +243,7 @@ export default function EditRfqPage() {
 
         <div className="flex justify-end gap-3">
           <Button type="button" variant="outline" asChild>
-            <a href="/dashboard/rfq">Batal</a>
+            <Link href="/dashboard/rfq">Batal</Link>
           </Button>
           <Button type="submit" disabled={submitting}>
             {submitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}

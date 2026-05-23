@@ -3,11 +3,9 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
-import { apiFetch } from "@/lib/api/client"
 import { DeleteConfirmationDialog } from "@/components/delete-confirmation-dialog"
 import { Button } from "@/components/ui/button"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { MoreHorizontal, Pencil, Trash2, Eye } from "lucide-react"
+import { Pencil, Trash2, Eye } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
 interface TableActionsProps {
@@ -20,7 +18,6 @@ interface TableActionsProps {
 }
 
 export function TableActions({
-  id,
   editUrl,
   viewUrl,
   onDelete,

@@ -15,6 +15,13 @@
       "when": 1779482499198,
       "tag": "0001_yielding_miracleman",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1779535959310,
+      "tag": "0002_magenta_miss_america",
+      "breakpoints": true
     }
   ]
 }

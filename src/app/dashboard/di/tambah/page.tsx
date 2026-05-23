@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'; import { useRouter } from 'next/nav
 import { apiFetch } from '@/lib/api/client'; import { Button } from '@/components/ui/button'; import { Input } from '@/components/ui/input'; import { Textarea } from '@/components/ui/textarea'; import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select'
-import { Plus, Trash2, ArrowLeft, Loader2 } from 'lucide-react'; import { toast } from 'sonner'
+import Link from 'next/link'; import { Plus, Trash2, ArrowLeft, Loader2 } from 'lucide-react'; import { toast } from 'sonner'
 
 const itemSchema = z.object({ barang_id: z.string().min(1), jumlah: z.coerce.number().int().positive(), keterangan: z.string().optional() })
 const schema = z.object({ customer_id: z.string().min(1), tanggal: z.string().min(1), keterangan: z.string().optional(), items: z.array(itemSchema).min(1) })
@@ -26,7 +26,7 @@ export default function TambahDiPage() {
   }
   return (
     <div className="max-w-3xl space-y-6">
-      <div className="flex items-center gap-4"><Button variant="ghost" size="icon" asChild><a href="/dashboard/di"><ArrowLeft className="h-5 w-5" /></a></Button>
+      <div className="flex items-center gap-4"><Button variant="ghost" size="icon" asChild><Link href="/dashboard/di"><ArrowLeft className="h-5 w-5" /></Link></Button>
         <div><h1 className="text-3xl font-heading font-bold">Tambah DI</h1><p className="text-muted-foreground mt-1">Delivery Instruction</p></div></div>
       <Form {...form}>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -68,7 +68,7 @@ export default function TambahDiPage() {
                 </div>
               </div>
             ))}</CardContent></Card>
-          <div className="flex justify-end gap-3"><Button type="button" variant="outline" asChild><a href="/dashboard/di">Batal</a></Button>
+          <div className="flex justify-end gap-3"><Button type="button" variant="outline" asChild><Link href="/dashboard/di">Batal</Link></Button>
             <Button type="submit" disabled={submitting}>{submitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}{submitting ? '...' : 'Simpan DI'}</Button></div>
         </form>
       </Form>
