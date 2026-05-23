@@ -6,6 +6,14 @@ import { useRouter } from 'next/navigation';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { toast } from 'sonner';
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
+import { PageHeader } from '@/components/page-header';
+import { FormActions } from '@/components/form-actions';
 
 const coaSchema = z.object({
   kode: z.string().min(1, { message: "Kode akun harus diisi" }),
@@ -15,7 +23,7 @@ const coaSchema = z.object({
   keterangan: z.string().optional(),
 });
 
-type COAFormValues = z.infer<typeof coaSchema>;
+type COAFormValues = z.input<typeof coaSchema>;
 
 const TIPE_OPTIONS = [
   { value: 'Asset', label: 'Asset' },
@@ -27,14 +35,12 @@ const TIPE_OPTIONS = [
 
 export default function TambahCOAPage() {
   const router = useRouter();
-  const { register, handleSubmit, formState: { errors }, reset } = useForm<COAFormValues>({
+  const [loading, setLoading] = useState(false);
+  const [parentOptions, setParentOptions] = useState<Array<{ value: string; label: string }>>([]);
+
+  const form = useForm<COAFormValues>({
     resolver: zodResolver(coaSchema),
   });
-
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
-  const [parentOptions, setParentOptions] = useState<Array<{ value: string; label: string }>>([]);
 
   useEffect(() => {
     (async () => {
@@ -52,9 +58,7 @@ export default function TambahCOAPage() {
 
   const onSubmit = async (data: COAFormValues) => {
     setLoading(true);
-    setError(null);
-    setSuccess(null);
-
+    const toastId = toast.loading('Menyimpan akun...');
     try {
       await apiFetch('/api/v1/master/coa', {
         method: 'POST',
@@ -66,135 +70,122 @@ export default function TambahCOAPage() {
           keterangan: data.keterangan || null,
         }),
       });
-
-      setSuccess('Akun berhasil ditambahkan!');
-      reset();
-
-      setTimeout(() => {
-        router.push('/dashboard/master/coa');
-      }, 2000);
+      toast.success('Akun berhasil ditambahkan!', { id: toastId });
+      form.reset();
+      setTimeout(() => router.push('/dashboard/master/coa'), 1500);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Terjadi kesalahan');
+      toast.error(err instanceof Error ? err.message : 'Terjadi kesalahan', { id: toastId });
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="max-w-xl">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold">Tambah Akun Baru</h1>
-        <p className="text-sm text-gray-500">Formulir untuk menambahkan data akun (COA) baru</p>
-      </div>
-
-      {success && (
-        <div className="mb-4 p-4 bg-green-50 border-l-4 border-green-500">
-          <p className="text-green-700">{success}</p>
-        </div>
-      )}
-
-      {error && (
-        <div className="mb-4 p-4 bg-red-50 border-l-4 border-red-500">
-          <p className="text-red-700">{error}</p>
-        </div>
-      )}
-
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <div>
-          <label htmlFor="kode" className="block text-sm font-medium mb-1">
-            Kode Akun <span className="text-red-500">*</span>
-          </label>
-          <input
-            id="kode"
-            type="text"
-            {...register('kode')}
-            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.kode ? 'border-red-500' : ''}`}
+    <div className="mx-auto max-w-xl">
+      <PageHeader
+        title="Tambah Akun (COA)"
+        description="Input data akun baru"
+        actions={
+          <Button variant="outline" onClick={() => router.push('/dashboard/master/coa')}>
+            Kembali
+          </Button>
+        }
+      />
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <div className="grid grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="kode"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Kode Akun</FormLabel>
+                  <FormControl>
+                    <Input {...field} placeholder="Contoh: 1-1100" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="tipe"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Tipe Akun</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Pilih tipe akun" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {TIPE_OPTIONS.map(opt => (
+                        <SelectItem key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+          <FormField
+            control={form.control}
+            name="nama"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Nama Akun</FormLabel>
+                <FormControl>
+                  <Input {...field} placeholder="Nama lengkap akun" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-          {errors.kode && <p className="text-red-500 text-sm mt-1">{errors.kode.message}</p>}
-        </div>
-
-        <div>
-          <label htmlFor="nama" className="block text-sm font-medium mb-1">
-            Nama Akun <span className="text-red-500">*</span>
-          </label>
-          <input
-            id="nama"
-            type="text"
-            {...register('nama')}
-            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.nama ? 'border-red-500' : ''}`}
+          <FormField
+            control={form.control}
+            name="indukId"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Akun Induk</FormLabel>
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Tidak ada (Akun Utama)" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="">Tidak Ada (Akun Utama)</SelectItem>
+                    {parentOptions.map(opt => (
+                      <SelectItem key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-          {errors.nama && <p className="text-red-500 text-sm mt-1">{errors.nama.message}</p>}
-        </div>
-
-        <div>
-          <label htmlFor="tipe" className="block text-sm font-medium mb-1">
-            Tipe Akun <span className="text-red-500">*</span>
-          </label>
-          <select
-            id="tipe"
-            {...register('tipe')}
-            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.tipe ? 'border-red-500' : ''}`}
-          >
-            <option value="">Pilih Tipe Akun</option>
-            {TIPE_OPTIONS.map(option => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-          {errors.tipe && <p className="text-red-500 text-sm mt-1">{errors.tipe.message}</p>}
-        </div>
-
-        <div>
-          <label htmlFor="indukId" className="block text-sm font-medium mb-1">
-            Akun Induk
-          </label>
-          <select
-            id="indukId"
-            {...register('indukId')}
-            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.indukId ? 'border-red-500' : ''}`}
-          >
-            <option value="">Tidak Ada (Akun Utama)</option>
-            {parentOptions.map(option => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-          {errors.indukId && <p className="text-red-500 text-sm mt-1">{errors.indukId.message}</p>}
-        </div>
-
-        <div>
-          <label htmlFor="keterangan" className="block text-sm font-medium mb-1">
-            Keterangan
-          </label>
-          <textarea
-            id="keterangan"
-            {...register('keterangan')}
-            rows={3}
-            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.keterangan ? 'border-red-500' : ''}`}
+          <FormField
+            control={form.control}
+            name="keterangan"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Keterangan</FormLabel>
+                <FormControl>
+                  <Textarea {...field} rows={3} placeholder="Keterangan tambahan" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-          {errors.keterangan && <p className="text-red-500 text-sm mt-1">{errors.keterangan.message}</p>}
-        </div>
-
-        <div className="pt-4">
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-200 focus:ring-blue-500 disabled:opacity-50"
-          >
-            {loading ? 'Menyimpan...' : 'Simpan Akun'}
-          </button>
-        </div>
-      </form>
-
-      <div className="mt-6">
-        <div className="flex justify-between items-center">
-          <a href="/dashboard/master/coa" className="text-sm text-blue-600 hover:underline">
-            Kembali ke Daftar Akun
-          </a>
-        </div>
-      </div>
+          <FormActions loading={loading} onCancel={() => router.push('/dashboard/master/coa')} />
+        </form>
+      </Form>
     </div>
   );
 }

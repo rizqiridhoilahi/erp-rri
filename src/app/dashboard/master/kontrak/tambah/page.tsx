@@ -6,6 +6,14 @@ import { useRouter } from 'next/navigation';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { toast } from 'sonner';
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Button } from '@/components/ui/button';
+import { PageHeader } from '@/components/page-header';
+import { FormActions } from '@/components/form-actions';
 
 const kontrakSchema = z.object({
   customerId: z.string().min(1, { message: "Customer harus dipilih" }),
@@ -19,14 +27,13 @@ type KontrakFormValues = z.input<typeof kontrakSchema>;
 
 export default function TambahKontrakPage() {
   const router = useRouter();
-  const { register, handleSubmit, formState: { errors }, reset } = useForm<KontrakFormValues>({
-    resolver: zodResolver(kontrakSchema),
-  });
-
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
   const [customerOptions, setCustomerOptions] = useState<Array<{ value: string; label: string }>>([]);
+
+  const form = useForm<KontrakFormValues>({
+    resolver: zodResolver(kontrakSchema),
+    defaultValues: { isActive: true },
+  });
 
   useEffect(() => {
     (async () => {
@@ -44,9 +51,7 @@ export default function TambahKontrakPage() {
 
   const onSubmit = async (data: KontrakFormValues) => {
     setLoading(true);
-    setError(null);
-    setSuccess(null);
-
+    const toastId = toast.loading('Menyimpan kontrak...');
     try {
       await apiFetch('/api/v1/master/kontrak', {
         method: 'POST',
@@ -58,128 +63,112 @@ export default function TambahKontrakPage() {
           is_active: data.isActive,
         }),
       });
-
-      setSuccess('Kontrak berhasil ditambahkan!');
-      reset();
-
-      setTimeout(() => {
-        router.push('/dashboard/master/kontrak');
-      }, 2000);
+      toast.success('Kontrak berhasil ditambahkan!', { id: toastId });
+      form.reset();
+      setTimeout(() => router.push('/dashboard/master/kontrak'), 1500);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Terjadi kesalahan');
+      toast.error(err instanceof Error ? err.message : 'Terjadi kesalahan', { id: toastId });
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="max-w-xl">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold">Tambah Kontrak Baru</h1>
-        <p className="text-sm text-gray-500">Formulir untuk menambahkan data kontrak baru</p>
-      </div>
-
-      {success && (
-        <div className="mb-4 p-4 bg-green-50 border-l-4 border-green-500">
-          <p className="text-green-700">{success}</p>
-        </div>
-      )}
-
-      {error && (
-        <div className="mb-4 p-4 bg-red-50 border-l-4 border-red-500">
-          <p className="text-red-700">{error}</p>
-        </div>
-      )}
-
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <div>
-          <label htmlFor="customerId" className="block text-sm font-medium mb-1">
-            Customer <span className="text-red-500">*</span>
-          </label>
-          <select
-            id="customerId"
-            {...register('customerId')}
-            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.customerId ? 'border-red-500' : ''}`}
-          >
-            <option value="">Pilih Customer</option>
-            {customerOptions.map(option => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-          {errors.customerId && <p className="text-red-500 text-sm mt-1">{errors.customerId.message}</p>}
-        </div>
-
-        <div>
-          <label htmlFor="nama" className="block text-sm font-medium mb-1">
-            Nama Kontrak <span className="text-red-500">*</span>
-          </label>
-          <input
-            id="nama"
-            type="text"
-            {...register('nama')}
-            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.nama ? 'border-red-500' : ''}`}
+    <div className="mx-auto max-w-xl">
+      <PageHeader
+        title="Tambah Kontrak"
+        description="Input data kontrak baru"
+        actions={
+          <Button variant="outline" onClick={() => router.push('/dashboard/master/kontrak')}>
+            Kembali
+          </Button>
+        }
+      />
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <FormField
+            control={form.control}
+            name="customerId"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Customer</FormLabel>
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Pilih customer" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {customerOptions.map(opt => (
+                      <SelectItem key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-          {errors.nama && <p className="text-red-500 text-sm mt-1">{errors.nama.message}</p>}
-        </div>
-
-        <div>
-          <label htmlFor="tanggalMulai" className="block text-sm font-medium mb-1">
-            Tanggal Mulai
-          </label>
-          <input
-            id="tanggalMulai"
-            type="date"
-            {...register('tanggalMulai')}
-            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.tanggalMulai ? 'border-red-500' : ''}`}
+          <FormField
+            control={form.control}
+            name="nama"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Nama Kontrak</FormLabel>
+                <FormControl>
+                  <Input {...field} placeholder="Nama/kode kontrak" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-          {errors.tanggalMulai && <p className="text-red-500 text-sm mt-1">{errors.tanggalMulai.message}</p>}
-        </div>
-
-        <div>
-          <label htmlFor="tanggalSelesai" className="block text-sm font-medium mb-1">
-            Tanggal Selesai
-          </label>
-          <input
-            id="tanggalSelesai"
-            type="date"
-            {...register('tanggalSelesai')}
-            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.tanggalSelesai ? 'border-red-500' : ''}`}
-          />
-          {errors.tanggalSelesai && <p className="text-red-500 text-sm mt-1">{errors.tanggalSelesai.message}</p>}
-        </div>
-
-        <div className="flex items-center">
-          <label htmlFor="isActive" className="flex items-center text-sm font-medium mb-0">
-            <input
-              id="isActive"
-              type="checkbox"
-              {...register('isActive')}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+          <div className="grid grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="tanggalMulai"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Tanggal Mulai</FormLabel>
+                  <FormControl>
+                    <Input {...field} type="date" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-            <span className="ml-2">Aktif</span>
-          </label>
-        </div>
-
-        <div className="pt-4">
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-200 focus:ring-blue-500 disabled:opacity-50"
-          >
-            {loading ? 'Menyimpan...' : 'Simpan Kontrak'}
-          </button>
-        </div>
-      </form>
-
-      <div className="mt-6">
-        <div className="flex justify-between items-center">
-          <a href="/dashboard/master/kontrak" className="text-sm text-blue-600 hover:underline">
-            Kembali ke Daftar Kontrak
-          </a>
-        </div>
-      </div>
+            <FormField
+              control={form.control}
+              name="tanggalSelesai"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Tanggal Selesai</FormLabel>
+                  <FormControl>
+                    <Input {...field} type="date" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+          <FormField
+            control={form.control}
+            name="isActive"
+            render={({ field }) => (
+              <FormItem>
+                <div className="flex items-center gap-2">
+                  <FormControl>
+                    <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                  </FormControl>
+                  <FormLabel className="mb-0">Aktif</FormLabel>
+                </div>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormActions loading={loading} onCancel={() => router.push('/dashboard/master/kontrak')} />
+        </form>
+      </Form>
     </div>
   );
 }

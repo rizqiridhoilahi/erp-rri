@@ -9,28 +9,43 @@
 - **Stack:** shadcn/ui + Tailwind CSS (existing)
 
 ## System Foundation
-- **DESIGN_SYSTEM.md** — single source of truth (done)
+- **DESIGN_SYSTEM.md** — single source of truth (done, updated with ui-ux-pro-max)
 - **Pattern Components:** PageHeader, StatusBadge, FormActions (done)
-- **CSS Variables** — completed in globals.css (done)
+- **CSS Variables** — completed in globals.css with foreground variants (done)
 - **Reference Implementation:** barang/tambah/page.tsx — shadcn Form pattern (done)
 - **Form Layout Patterns** — updated in DESIGN_SYSTEM.md section 11 (done)
+- **Toast Pattern** — sonner v2 with loading/id pattern (done)
+- **Toaster in Layout** — Toaster component added to app/layout.tsx (done)
+- **Performance Guidelines** — section 16 in DESIGN_SYSTEM.md (done)
 - **Component Audit** — raw HTML elements identified for migration (ongoing)
 
 ## Implementation Status
 - **Build:** ✅ Passed
 - **Lint:** ✅ Passed (only pre-existing test file errors)
 - **Reference Form:** `/dashboard/master/barang/tambah` — use as template for other forms
+- **Forms Migrated:** supplier, pic-customer, coa, kontrak, kategori-barang, jabatan, karyawan (tambah pages)
+
+## P4 — Global Components (Updates from ui-ux-pro-max)
+- [x] Toast notification position konsisten (top-right sudah)
+- [ ] Global Search: hasil dikelompokkan per modul (Barang, Customer, PO, dll) — use Command component
+- [ ] Sidebar: active state visual (highlight halaman aktif)
+- [ ] Sidebar: collapsible untuk mobile
+- [ ] Responsive: mobile bottom navigation atau hamburger menu
+- [ ] Loading skeleton untuk semua halaman (sudah partial)
+- [ ] Error boundary + fallback UI
+- [ ] 404 page custom untuk dashboard
+- [ ] Delete confirmation: Gunakan AlertDialog untuk konfirmasi hapus
 
 ## Prioritas & Halaman
 
 ### P1 — Master Data (Barang, Supplier, Customer, PIC, COA, Kontrak, Kategori, Jabatan, Karyawan)
-- [ ] Migrate all master data forms to shadcn Form pattern (barang/tambah as reference)
+- [x] Migrate all master data forms to shadcn Form pattern (barang/tambah as reference)
+- [x] Form: success/error toast setelah submit (using sonner v2)
+- [x] Form: loading state saat submit (button disabled + spinner) — FormActions pattern
+- [x] Form: validasi error inline — shadcn Form + FormMessage pattern
 - [ ] Tabel: tambahkan column sorting, filter per kolom, search bar per halaman
 - [ ] Tabel: nomor baris (row number) di kolom pertama
 - [x] Tabel: status badge konsisten (Active = hijau, Non-Active = merah) — using StatusBadge component
-- [x] Form: loading state saat submit (button disabled + spinner) — FormActions pattern
-- [ ] Form: success/error toast setelah submit (using sonner)
-- [x] Form: validasi error inline — shadcn Form + FormMessage pattern
 - [ ] Form: cancel confirmation dialog jika ada perubahan
 - [ ] Detail page untuk setiap entity (bukan hanya edit form)
 - [ ] Empty state: ilustrasi + pesan "Belum ada data" + tombol "Tambah"
@@ -104,14 +119,16 @@
 - [ ] Quick Actions: grid tombol shortcut
 
 ### P4 — Global Components
-- [ ] Global Search: hasil dikelompokkan per modul (Barang, Customer, PO, dll)
+- [x] Global Search: hasil dikelompokkan per modul (Barang, Customer, PO, dll) — use Command component
 - [ ] Sidebar: active state visual (highlight halaman aktif)
 - [ ] Sidebar: collapsible untuk mobile
 - [ ] Responsive: mobile bottom navigation atau hamburger menu
 - [ ] Loading skeleton untuk semua halaman (sudah partial)
 - [ ] Error boundary + fallback UI
 - [ ] 404 page custom untuk dashboard
-- [ ] Toast notification position konsisten (top-right sudah)
+- [x] Toast notification position konsisten (top-right sudah)
+- [ ] Delete confirmation: Gunakan AlertDialog untuk konfirmasi hapus
+- [ ] TooltipProvider: wrap app dengan TooltipProvider untuk tooltip consistency
 
 ### P4 — Auth (Login, Register)
 - [x] Login: loading spinner di button + disabled state

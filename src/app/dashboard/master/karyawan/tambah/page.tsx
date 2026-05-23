@@ -6,6 +6,14 @@ import { useRouter } from 'next/navigation';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { toast } from 'sonner';
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Button } from '@/components/ui/button';
+import { PageHeader } from '@/components/page-header';
+import { FormActions } from '@/components/form-actions';
 
 const schema = z.object({
   nik: z.string().min(2, { message: "NIK harus diisi" }),
@@ -17,106 +25,205 @@ const schema = z.object({
   tanggalMasuk: z.string().optional(),
   isActive: z.boolean().default(true),
 });
+
 type FormValues = z.input<typeof schema>;
 
 export default function TambahKaryawanPage() {
   const router = useRouter();
-  const { register, handleSubmit, formState: { errors }, reset } = useForm<FormValues>({ resolver: zodResolver(schema) });
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
   const [jabatanOptions, setJabatanOptions] = useState<Array<{ value: string; label: string }>>([]);
+
+  const form = useForm<FormValues>({
+    resolver: zodResolver(schema),
+    defaultValues: { isActive: true },
+  });
 
   useEffect(() => {
     (async () => {
       try {
         const { data } = await apiFetch<Array<{ id: string; nama: string }>>('/api/v1/master/jabatan');
         setJabatanOptions(data.map(item => ({ value: item.id, label: item.nama })));
-      } catch (err) { console.error('Error loading jabatan:', err); }
+      } catch (err) {
+        console.error('Error loading jabatan:', err);
+      }
     })();
   }, []);
 
   const onSubmit = async (data: FormValues) => {
-    setLoading(true); setError(null); setSuccess(null);
+    setLoading(true);
+    const toastId = toast.loading('Menyimpan karyawan...');
     try {
       await apiFetch('/api/v1/master/karyawan', {
         method: 'POST',
         body: JSON.stringify({
-          nik: data.nik, nama: data.nama, email: data.email,
-          no_hp: data.noHp || null, jabatan_id: data.jabatanId,
+          nik: data.nik,
+          nama: data.nama,
+          email: data.email,
+          no_hp: data.noHp || null,
+          jabatan_id: data.jabatanId,
           gaji_pokok: data.gajiPokok || null,
           tanggal_masuk: data.tanggalMasuk ? new Date(data.tanggalMasuk).toISOString() : null,
           is_active: data.isActive,
         }),
       });
-      setSuccess('Karyawan berhasil ditambahkan!'); reset();
-      setTimeout(() => router.push('/dashboard/master/karyawan'), 2000);
-    } catch (err) { setError(err instanceof Error ? err.message : 'Terjadi kesalahan'); }
-    finally { setLoading(false); }
+      toast.success('Karyawan berhasil ditambahkan!', { id: toastId });
+      form.reset();
+      setTimeout(() => router.push('/dashboard/master/karyawan'), 1500);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Terjadi kesalahan', { id: toastId });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="max-w-xl">
-      <div className="mb-6"><h1 className="text-2xl font-bold">Tambah Karyawan</h1></div>
-      {success && <div className="mb-4 p-4 bg-green-50 border-l-4 border-green-500"><p className="text-green-700">{success}</p></div>}
-      {error && <div className="mb-4 p-4 bg-red-50 border-l-4 border-red-500"><p className="text-red-700">{error}</p></div>}
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">NIK <span className="text-red-500">*</span></label>
-            <input type="text" {...register('nik')} className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.nik ? 'border-red-500' : ''}`} />
-            {errors.nik && <p className="text-red-500 text-sm mt-1">{errors.nik.message}</p>}
+    <div className="mx-auto max-w-xl">
+      <PageHeader
+        title="Tambah Karyawan"
+        description="Input data karyawan baru"
+        actions={
+          <Button variant="outline" onClick={() => router.push('/dashboard/master/karyawan')}>
+            Kembali
+          </Button>
+        }
+      />
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <div className="grid grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="nik"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>NIK</FormLabel>
+                  <FormControl>
+                    <Input {...field} placeholder="Nomor Induk Karyawan" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="nama"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Nama</FormLabel>
+                  <FormControl>
+                    <Input {...field} placeholder="Nama lengkap" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Nama <span className="text-red-500">*</span></label>
-            <input type="text" {...register('nama')} className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.nama ? 'border-red-500' : ''}`} />
-            {errors.nama && <p className="text-red-500 text-sm mt-1">{errors.nama.message}</p>}
+          <div className="grid grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <Input {...field} placeholder="email@contoh.com" type="email" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="noHp"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>No. HP</FormLabel>
+                  <FormControl>
+                    <Input {...field} placeholder="08xxxxxxxxxx" type="tel" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </div>
-        </div>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">Email <span className="text-red-500">*</span></label>
-            <input type="email" {...register('email')} className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.email ? 'border-red-500' : ''}`} />
-            {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>}
+          <div className="grid grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="jabatanId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Jabatan</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Pilih jabatan" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {jabatanOptions.map(opt => (
+                        <SelectItem key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="gajiPokok"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Gaji Pokok</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      min={0}
+                      step={0.01}
+                      value={field.value != null ? String(field.value) : ''}
+                      onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
+                      onBlur={field.onBlur}
+                      name={field.name}
+                      ref={field.ref}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">No. HP</label>
-            <input type="text" {...register('noHp')} className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
-          </div>
-        </div>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">Jabatan <span className="text-red-500">*</span></label>
-            <select {...register('jabatanId')} className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.jabatanId ? 'border-red-500' : ''}`}>
-              <option value="">Pilih Jabatan</option>
-              {jabatanOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
-            </select>
-            {errors.jabatanId && <p className="text-red-500 text-sm mt-1">{errors.jabatanId.message}</p>}
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Gaji Pokok</label>
-            <input type="number" min="0" step="0.01" {...register('gajiPokok')} className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
-          </div>
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-1">Tanggal Masuk</label>
-          <input type="date" {...register('tanggalMasuk')} className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
-        </div>
-        <div className="flex items-center">
-          <label className="flex items-center text-sm font-medium">
-            <input type="checkbox" {...register('isActive')} className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" />
-            <span className="ml-2">Aktif</span>
-          </label>
-        </div>
-        <div className="pt-4">
-          <button type="submit" disabled={loading} className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:opacity-50">
-            {loading ? 'Menyimpan...' : 'Simpan Karyawan'}
-          </button>
-        </div>
-      </form>
-      <div className="mt-6">
-        <a href="/dashboard/master/karyawan" className="text-sm text-blue-600 hover:underline">Kembali ke Daftar Karyawan</a>
-      </div>
+          <FormField
+            control={form.control}
+            name="tanggalMasuk"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Tanggal Masuk</FormLabel>
+                <FormControl>
+                  <Input {...field} type="date" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="isActive"
+            render={({ field }) => (
+              <FormItem>
+                <div className="flex items-center gap-2">
+                  <FormControl>
+                    <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                  </FormControl>
+                  <FormLabel className="mb-0">Aktif</FormLabel>
+                </div>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormActions loading={loading} onCancel={() => router.push('/dashboard/master/karyawan')} />
+        </form>
+      </Form>
     </div>
   );
 }

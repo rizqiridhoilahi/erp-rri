@@ -6,6 +6,14 @@ import { useRouter } from 'next/navigation';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { toast } from 'sonner';
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Button } from '@/components/ui/button';
+import { PageHeader } from '@/components/page-header';
+import { FormActions } from '@/components/form-actions';
 
 const supplierSchema = z.object({
   nama: z.string().min(2, { message: "Nama supplier harus diisi" }),
@@ -14,231 +22,210 @@ const supplierSchema = z.object({
   linkToko: z.string().optional(),
   noRekening: z.string().optional(),
   kontak: z.string().optional(),
-  termsOfPayment: z.enum(['Net 30', 'Net 60', 'Cash', 'Custom'], {
-    message: "Pilih terms of payment yang valid",
-  }).optional(),
+  termsOfPayment: z.string().optional(),
   isMarketplace: z.boolean().default(false),
   isActive: z.boolean().default(true),
 });
 
 type SupplierFormValues = z.input<typeof supplierSchema>;
 
+const TERMS_OPTIONS = [
+  { value: 'Net 30', label: 'Net 30' },
+  { value: 'Net 60', label: 'Net 60' },
+  { value: 'Cash', label: 'Cash' },
+  { value: 'Custom', label: 'Custom' },
+];
+
 export default function TambahSupplierPage() {
   const router = useRouter();
-  const { register, handleSubmit, formState: { errors }, reset } = useForm<SupplierFormValues>({
-    resolver: zodResolver(supplierSchema),
-  });
-
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
+
+  const form = useForm<SupplierFormValues>({
+    resolver: zodResolver(supplierSchema),
+    defaultValues: {
+      isMarketplace: false,
+      isActive: true,
+    },
+  });
 
   const onSubmit = async (data: SupplierFormValues) => {
     setLoading(true);
-    setError(null);
-    setSuccess(null);
-
+    const toastId = toast.loading('Menyimpan supplier...');
     try {
       await apiFetch('/api/v1/master/supplier', {
         method: 'POST',
         body: JSON.stringify({
           nama: data.nama,
           kode: data.kode,
-          nama_toko: data.namaToko,
-          link_toko: data.linkToko,
-          no_rekening: data.noRekening,
-          kontak: data.kontak,
-          terms_of_payment: data.termsOfPayment,
+          nama_toko: data.namaToko || null,
+          link_toko: data.linkToko || null,
+          no_rekening: data.noRekening || null,
+          kontak: data.kontak || null,
+          terms_of_payment: data.termsOfPayment || null,
           is_marketplace: data.isMarketplace,
           is_active: data.isActive,
         }),
       });
-
-      setSuccess('Supplier berhasil ditambahkan!');
-      reset();
-      
-      setTimeout(() => {
-        router.push('/dashboard/master/supplier');
-      }, 2000);
+      toast.success('Supplier berhasil ditambahkan!', { id: toastId });
+      form.reset();
+      setTimeout(() => router.push('/dashboard/master/supplier'), 1500);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Terjadi kesalahan');
+      toast.error(err instanceof Error ? err.message : 'Terjadi kesalahan', { id: toastId });
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="max-w-xl">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold">Tambah Supplier Baru</h1>
-        <p className="text-sm text-gray-500">Formulir untuk menambahkan data supplier baru</p>
-      </div>
-
-      {success && (
-        <div className="mb-4 p-4 bg-green-50 border-l-4 border-green-500">
-          <p className="text-green-700">{success}</p>
-        </div>
-      )}
-
-      {error && (
-        <div className="mb-4 p-4 bg-red-50 border-l-4 border-red-500">
-          <p className="text-red-700">{error}</p>
-        </div>
-      )}
-
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <div>
-          <label htmlFor="nama" className="block text-sm font-medium mb-1">
-            Nama Supplier <span className="text-red-500">*</span>
-          </label>
-          <input
-            id="nama"
-            type="text"
-            {...register('nama')}
-            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-              errors.nama ? 'border-red-500' : ''
-            }`}
+    <div className="mx-auto max-w-xl">
+      <PageHeader
+        title="Tambah Supplier"
+        description="Input data supplier baru"
+        actions={
+          <Button variant="outline" onClick={() => router.push('/dashboard/master/supplier')}>
+            Kembali
+          </Button>
+        }
+      />
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <FormField
+            control={form.control}
+            name="nama"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Nama Supplier</FormLabel>
+                <FormControl>
+                  <Input {...field} placeholder="Masukkan nama supplier" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-          {errors.nama && <p className="text-red-500 text-sm mt-1">{errors.nama.message}</p>}
-        </div>
-
-        <div>
-          <label htmlFor="kode" className="block text-sm font-medium mb-1">
-            Kode Supplier <span className="text-red-500">*</span>
-          </label>
-          <input
-            id="kode"
-            type="text"
-            {...register('kode')}
-            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-              errors.kode ? 'border-red-500' : ''
-            }`}
+          <FormField
+            control={form.control}
+            name="kode"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Kode Supplier</FormLabel>
+                <FormControl>
+                  <Input {...field} placeholder="Masukkan kode supplier" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-          {errors.kode && <p className="text-red-500 text-sm mt-1">{errors.kode.message}</p>}
-        </div>
-
-        <div>
-          <label htmlFor="namaToko" className="block text-sm font-medium mb-1">
-            Nama Toko (Marketplace)
-          </label>
-          <input
-            id="namaToko"
-            type="text"
-            {...register('namaToko')}
-            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-              errors.namaToko ? 'border-red-500' : ''
-            }`}
+          <FormField
+            control={form.control}
+            name="namaToko"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Nama Toko (Marketplace)</FormLabel>
+                <FormControl>
+                  <Input {...field} placeholder="Nama toko di marketplace" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-          {errors.namaToko && <p className="text-red-500 text-sm mt-1">{errors.namaToko.message}</p>}
-        </div>
-
-        <div>
-          <label htmlFor="linkToko" className="block text-sm font-medium mb-1">
-            Link Toko (Marketplace)
-          </label>
-          <input
-            id="linkToko"
-            type="text"
-            {...register('linkToko')}
-            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-              errors.linkToko ? 'border-red-500' : ''
-            }`}
+          <FormField
+            control={form.control}
+            name="linkToko"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Link Toko (Marketplace)</FormLabel>
+                <FormControl>
+                  <Input {...field} placeholder="https://shopee.co.id/..." type="url" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-          {errors.linkToko && <p className="text-red-500 text-sm mt-1">{errors.linkToko.message}</p>}
-        </div>
-
-        <div>
-          <label htmlFor="noRekening" className="block text-sm font-medium mb-1">
-            No. Rekening
-          </label>
-          <input
-            id="noRekening"
-            type="text"
-            {...register('noRekening')}
-            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-              errors.noRekening ? 'border-red-500' : ''
-            }`}
+          <FormField
+            control={form.control}
+            name="noRekening"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>No. Rekening</FormLabel>
+                <FormControl>
+                  <Input {...field} placeholder="Nomor rekening" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-          {errors.noRekening && <p className="text-red-500 text-sm mt-1">{errors.noRekening.message}</p>}
-        </div>
-
-        <div>
-          <label htmlFor="kontak" className="block text-sm font-medium mb-1">
-            Kontak
-          </label>
-          <input
-            id="kontak"
-            type="text"
-            {...register('kontak')}
-            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-              errors.kontak ? 'border-red-500' : ''
-            }`}
+          <FormField
+            control={form.control}
+            name="kontak"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Kontak</FormLabel>
+                <FormControl>
+                  <Input {...field} placeholder="Nomor telepon" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-          {errors.kontak && <p className="text-red-500 text-sm mt-1">{errors.kontak.message}</p>}
-        </div>
-
-        <div>
-          <label htmlFor="termsOfPayment" className="block text-sm font-medium mb-1">
-            Terms of Payment
-          </label>
-          <select
-            id="termsOfPayment"
-            {...register('termsOfPayment')}
-            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-              errors.termsOfPayment ? 'border-red-500' : ''
-            }`}
-          >
-            <option value="">Pilih Terms of Payment</option>
-            <option value="Net 30">Net 30</option>
-            <option value="Net 60">Net 60</option>
-            <option value="Cash">Cash</option>
-            <option value="Custom">Custom</option>
-          </select>
-          {errors.termsOfPayment && <p className="text-red-500 text-sm mt-1">{errors.termsOfPayment.message}</p>}
-        </div>
-
-        <div className="flex items-center">
-          <label htmlFor="isMarketplace" className="flex items-center text-sm font-medium mb-0">
-            <input
-              id="isMarketplace"
-              type="checkbox"
-              {...register('isMarketplace')}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+          <FormField
+            control={form.control}
+            name="termsOfPayment"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Terms of Payment</FormLabel>
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Pilih terms of payment" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {TERMS_OPTIONS.map(opt => (
+                      <SelectItem key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <div className="space-y-4">
+            <FormField
+              control={form.control}
+              name="isMarketplace"
+              render={({ field }) => (
+                <FormItem>
+                  <div className="flex items-center gap-2">
+                    <FormControl>
+                      <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                    </FormControl>
+                    <FormLabel className="mb-0">Supplier Marketplace (Shopee/Tokopedia)</FormLabel>
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-            <span className="ml-2">Supplier Marketplace (Shopee/Tokopedia)</span>
-          </label>
-        </div>
-
-        <div className="flex items-center mt-2">
-          <label htmlFor="isActive" className="flex items-center text-sm font-medium mb-0">
-            <input
-              id="isActive"
-              type="checkbox"
-              {...register('isActive')}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+            <FormField
+              control={form.control}
+              name="isActive"
+              render={({ field }) => (
+                <FormItem>
+                  <div className="flex items-center gap-2">
+                    <FormControl>
+                      <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                    </FormControl>
+                    <FormLabel className="mb-0">Aktif</FormLabel>
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-            <span className="ml-2">Aktif</span>
-          </label>
-        </div>
-
-        <div className="pt-4">
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-200 focus:ring-blue-500 disabled:opacity-50"
-          >
-            {loading ? 'Menyimpan...' : 'Simpan Supplier'}
-          </button>
-        </div>
-      </form>
-
-      <div className="mt-6">
-        <div className="flex justify-between items-center">
-          <a href="/dashboard/master/supplier" className="text-sm text-blue-600 hover:underline">
-            Kembali ke Daftar Supplier
-          </a>
-        </div>
-      </div>
+          </div>
+          <FormActions loading={loading} onCancel={() => router.push('/dashboard/master/supplier')} />
+        </form>
+      </Form>
     </div>
   );
 }

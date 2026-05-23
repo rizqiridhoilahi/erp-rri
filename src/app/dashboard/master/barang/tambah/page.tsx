@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { toast } from 'sonner';
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
@@ -32,8 +33,6 @@ export default function TambahBarangPage() {
   const router = useRouter();
   const form = useForm<BarangFormValues>({ resolver: zodResolver(barangSchema) });
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
   const [kategoriOptions, setKategoriOptions] = useState<Array<{ value: string; label: string }>>([]);
 
   useEffect(() => {
@@ -46,13 +45,18 @@ export default function TambahBarangPage() {
   }, []);
 
   const onSubmit = async (data: BarangFormValues) => {
-    setLoading(true); setError(null); setSuccess(null);
+    setLoading(true);
+    const toastId = toast.loading('Menyimpan barang...');
     try {
       await apiFetch('/api/v1/master/barang', { method: 'POST', body: JSON.stringify(data) });
-      setSuccess('Barang berhasil ditambahkan!'); form.reset();
-      setTimeout(() => router.push('/dashboard/master/barang'), 2000);
-    } catch (err) { setError(err instanceof Error ? err.message : 'Terjadi kesalahan'); }
-    finally { setLoading(false); }
+      toast.success('Barang berhasil ditambahkan!', { id: toastId });
+      form.reset();
+      setTimeout(() => router.push('/dashboard/master/barang'), 1500);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Terjadi kesalahan', { id: toastId });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -66,8 +70,6 @@ export default function TambahBarangPage() {
           </Button>
         }
       />
-      {success && <div className="mb-4 p-4 bg-success/10 border-l-4 border-success text-success"><p>{success}</p></div>}
-      {error && <div className="mb-4 p-4 bg-destructive/10 border-l-4 border-destructive text-destructive"><p>{error}</p></div>}
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <FormField

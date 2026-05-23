@@ -12,14 +12,20 @@ Gunakan **selalu** CSS variables, jangan hardcoded Tailwind values:
 | Token | Light | Dark | Usage |
 |-------|-------|------|-------|
 | `bg-primary` | `#0F172A` | `#F8FAFC` | Navbar, sidebar, heading utama |
+| `text-primary-foreground` | `#F8FAFC` | `#0F172A` | Text on primary bg |
 | `bg-secondary` | `#334155` | `#94A3B8` | Sub-heading |
+| `text-secondary-foreground` | `#F8FAFC` | `#0F172A` | Text on secondary bg |
 | `bg-accent` | `#0369A1` | `#38BDF8` | Tombol submit, link, aksi utama |
+| `text-accent-foreground` | `#FFFFFF` | `#0F172A` | Text on accent bg |
 | `bg-background` | `#F8FAFC` | `#0F172A` | Latar halaman |
-| `bg-card` | `#FFFFFF` | `#1E293B` | Kartu, tabel, form |
 | `text-foreground` | `#020617` | `#F1F5F9` | Body text |
 | `text-muted-foreground` | `#475569` | `#94A3B8` | Label, placeholder |
-| `bg-destructive` | `#DC2626` | `#F87171` | Hapus, error |
 | `bg-muted` | `#F1F5F9` | `#1E293B` | Table header, section bg |
+| `text-muted-foreground` | `#475569` | `#94A3B8` | Muted text |
+| `bg-card` | `#FFFFFF` | `#1E293B` | Kartu, tabel, form |
+| `text-card-foreground` | `#020617` | `#F1F5F9` | Text on card bg |
+| `bg-destructive` | `#DC2626` | `#F87171` | Hapus, error |
+| `text-destructive-foreground` | `#FFFFFF` | `#020617` | Text on destructive bg |
 | `border-border` | `#E2E8F0` | `#334155` | Garis pemisah |
 
 ### Khusus status (tidak ada di shadcn default):
@@ -82,6 +88,46 @@ Gunakan **selalu** CSS variables, jangan hardcoded Tailwind values:
 ### 3.10 Form
 ✅ Pakai react-hook-form + Zod + shadcn `<Form>`, `<FormField>`, `<FormItem>`, `<FormLabel>`, `<FormControl>`, `<FormMessage>`.
 ❌ Jangan pakai `useState` untuk form state.
+
+### 3.11 Sheet (Side Panel)
+✅ Pakai `<Sheet>`, `<SheetTrigger>`, `<SheetContent>`, `<SheetHeader>`, `<SheetTitle>`, `<SheetDescription>`.
+Gunakan untuk slide-out panels, drawer, atau side content.
+❌ Jangan pakai Dialog untuk content yang slides from side.
+
+### 3.12 Tabs
+✅ Pakai `<Tabs>`, `<TabsList>`, `<TabsTrigger>`, `<TabsContent>`.
+Gunakan untuk switching antara related content sections.
+❌ Jangan pakai custom tab implementation dengan state manual.
+
+### 3.13 AlertDialog (Destructive Confirmation)
+✅ Pakai `<AlertDialog>`, `<AlertDialogTrigger>`, `<AlertDialogContent>`, `<AlertDialogHeader>`, `<AlertDialogFooter>`, `<AlertDialogCancel>`, `<AlertDialogAction>`.
+Gunakan untuk destructive action confirmations (delete, reset, dll).
+❌ Jangan pakai Dialog untuk konfirmasi sederhana.
+
+### 3.14 DropdownMenu
+✅ Pakai `<DropdownMenu>`, `<DropdownMenuTrigger>`, `<DropdownMenuContent>`, `<DropdownMenuItem>`, `<DropdownMenuSeparator>`.
+Gunakan untuk action menus dan context menus.
+❌ Jangan pakai Popover untuk action lists.
+
+### 3.15 Tooltip
+✅ Pakai `<Tooltip>`, `<TooltipTrigger>`, `<TooltipContent>` dengan `<TooltipProvider>` wrapper.
+Gunakan untuk additional context pada icon buttons atau truncated text.
+❌ Jangan pakai title attribute untuk tooltips.
+
+### 3.16 Command (Searchable List)
+✅ Pakai `<Command>`, `<CommandInput>`, `<CommandList>`, `<CommandEmpty>`, `<CommandGroup>`, `<CommandItem>`.
+Gunakan untuk command palette, searchable lists, atau quick actions.
+❌ Jangan pakai Input dengan custom dropdown untuk search.
+
+### 3.17 Sidebar (Navigation)
+✅ Pakai `<SidebarProvider>`, `<Sidebar>`, `<SidebarHeader>`, `<SidebarContent>`, `<SidebarFooter>`, `<SidebarTrigger>`.
+Gunakan untuk main app navigation.
+❌ Jangan pakai custom sidebar implementation.
+
+### 3.18 Chart (Data Visualization)
+✅ Pakai `<ChartContainer>`, `<ChartTooltip>`, `<ChartLegend>` dengan Recharts integration.
+Gunakan untuk dashboard data visualization.
+❌ Jangan pakai Recharts components directly tanpa wrapper.
 
 ## 4. Typography
 
@@ -215,48 +261,60 @@ Untuk input type="number", jangan spread `field` langsung. Gunakan:
 - Hapus manual error passing - `FormMessage` sudah membaca dari form state
 
 ### 11.4 Loading State in Forms
-- Gunakan `Button` dengan variant `default` dan prop `disabled={loading}`
-- Tambah `Loader2` icon di dalam button saat loading
-- Form actions pattern:
-```tsx
-<Button type="submit" disabled={loading}>
-  {loading ? (
-    <>
-      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-      Menyimpan...
-    </>
-  ) : (
-    'Simpan'
-  )}
-</Button>
-```
+- Gunakan `FormActions` component untuk submit button dengan loading state
+- Pattern: `<FormActions loading={isPending} onCancel={() => router.back()} />`
+- FormActions sudah handle spinner + disabled state + cancel button
 
 ## 12. Toast/Notification Patterns
 
-### 12.1 Success Toast
+### 12.0 Toaster Component (WAJIB)
+`<Toaster />` harus di-export dari `sonner` dan diletakkan di **root layout** (app/layout.tsx), BUKAN di individual pages.
+```tsx
+// app/layout.tsx
+import { Toaster } from 'sonner'
+
+export default function RootLayout({ children }) {
+  return (
+    <html>
+      <body>
+        {children}
+        <Toaster position="top-right" richColors closeButton />
+      </body>
+    </html>
+  )
+}
+```
+
+### 12.1 Toast with Loading State (sonner v2)
 ```tsx
 import { toast } from 'sonner'
 
-toast.success('Barang berhasil ditambahkan!')
+const onSubmit = async (data: FormValues) => {
+  setLoading(true)
+  const toastId = toast.loading('Menyimpan...')
+  try {
+    await apiFetch('/api/v1/...', { method: 'POST', body: JSON.stringify(data) })
+    toast.success('Berhasil ditambahkan!', { id: toastId })
+    form.reset()
+    setTimeout(() => router.push('/...'), 1500)
+  } catch (err) {
+    toast.error(err instanceof Error ? err.message : 'Terjadi kesalahan', { id: toastId })
+  } finally {
+    setLoading(false)
+  }
+}
 ```
 
-### 12.2 Error Toast
+### 12.2 Simple Toast (no loading)
 ```tsx
-toast.error('Gagal menyimpan data')
+toast.success('Berhasil!')
+toast.error('Gagal menyimpan')
+toast.warning('Perhatikan input Anda')
 ```
 
-### 12.3 Loading Toast (untuk operasi async)
-```tsx
-const toastId = toast.loading('Memproses...')
-// setelah selesai
-toast.success(toastId, 'Berhasil!')
-// atau
-toast.error(toastId, 'Gagal!')
-```
-
-### 12.4 Position dan Durasi
+### 12.3 Position dan Durasi
 - Position: top-right (default sonner config)
-- Duration: 3000ms untuk success/error, auto-dismiss untuk loading
+- Duration: auto-dismiss (controlled by sonner)
 - Gunakan `toast.dismiss()` untuk menutup secara manual
 
 ## 13. Page Layout Patterns
@@ -349,3 +407,55 @@ import { Skeleton } from '@/components/ui/skeleton'
 - Gunakan halaman loading skeleton saat data sedang di-fetch
 - Tampilkan konten sesaat setelah data siap
 - Hindari flashing dengan menunda tampilan konten minimal 300ms
+
+## 16. Performance Guidelines
+
+### 16.1 Import Components Individually
+Import hanya component yang dibutuhkan, jangan dari index:
+```tsx
+// ✅ Good
+import { Button } from '@/components/ui/button'
+import { Dialog } from '@/components/ui/dialog'
+
+// ❌ Bad
+import { Button, Dialog, Card } from '@/components/ui'
+```
+
+### 16.2 Lazy Load Heavy Components
+Gunakan React.lazy untuk heavy dialogs atau modals:
+```tsx
+const HeavyDialog = lazy(() => import('./HeavyDialog'))
+
+<Suspense fallback={<Skeleton />}>
+  <HeavyDialog />
+</Suspense>
+```
+
+### 16.3 DataTable for Complex Tables
+Untuk tabel dengan sorting, filtering, pagination - gunakan TanStack Table:
+```tsx
+import { useReactTable } from '@tanstack/react-table'
+```
+
+### 16.4 Blocks for Scaffolding
+Gunakan shadcn/blocks untuk accelerate development:
+```bash
+npx shadcn@latest add dashboard-01
+npx shadcn@latest add login-01
+```
+
+## 17. Common Component Patterns Summary
+
+| Use Case | Component(s) |
+|----------|--------------|
+| Form input | Form + FormField + FormControl + Input |
+| Dropdown select | Select + SelectTrigger + SelectValue + SelectContent + SelectItem |
+| Loading feedback | Skeleton atau spinner (animate-pulse atau animate-spin) |
+| Inline confirmation | AlertDialog |
+| Side panel/drawer | Sheet |
+| Tabbed content | Tabs |
+| Action menu | DropdownMenu |
+| Tooltip/hint | Tooltip + TooltipProvider |
+| Toast notification | toast dari sonner (Toaster di layout) |
+| Data table | Table + TanStack Table |
+| Searchable list | Command |
