@@ -3,7 +3,7 @@ import { supabase } from '@/lib/db/client'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
-import { Plus, Pencil, Download } from 'lucide-react'
+import { Plus, Pencil, FileText } from 'lucide-react'
 
 const s: Record<string, { label: string; v: 'secondary' | 'success' | 'warning' | 'outline' }> = {
   draft: { label: 'Draft', v: 'secondary' }, paid: { label: 'Dibayar', v: 'success' }, pending: { label: 'Pending', v: 'warning' },
@@ -36,7 +36,7 @@ export default async function PenggajianPage() {
             <TableCell className="font-bold">Rp {(item.gaji_bersih ?? 0).toLocaleString('id-ID')}</TableCell>
             <TableCell><Badge variant={s[item.status]?.v ?? 'outline'}>{s[item.status]?.label ?? item.status}</Badge></TableCell>
             <TableCell className="text-right space-x-1">
-              <Button variant="ghost" size="sm" asChild><a href={`/api/v1/slip-gaji/${item.id}/pdf`} target="_blank"><Download className="h-4 w-4" /></a></Button>
+              <Button variant="ghost" size="sm" asChild><Link href={`/dashboard/penggajian/${item.id}/slip-gaji`}><FileText className="h-4 w-4" /></Link></Button>
               <Button variant="ghost" size="sm" asChild><Link href={`/dashboard/penggajian/${item.id}/edit`}><Pencil className="h-4 w-4" /></Link></Button>
             </TableCell>
           </TableRow>

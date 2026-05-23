@@ -59,7 +59,7 @@
 
 ## P4 — Global Components (Updates from ui-ux-pro-max)
 - [x] Toast notification position konsisten (top-right sudah)
-- [ ] Global Search: hasil dikelompokkan per modul (Barang, Customer, PO, dll) — use Command component
+- [x] Global Search: hasil dikelompokkan per modul (Barang, Customer, PO, dll) — use Command component
 - [ ] Sidebar: active state visual (highlight halaman aktif)
 - [ ] Sidebar: collapsible untuk mobile
 - [ ] Responsive: mobile bottom navigation atau hamburger menu
@@ -151,7 +151,7 @@
 ### P4 — HR (Absensi, Penggajian, Slip Gaji)
 - [x] Absensi: kalender view kehadiran
 - [x] Penggajian: form perhitungan gaji dengan komponen (gaji pokok, tunjangan, potongan)
-- [ ] Slip Gaji: preview sebelum download PDF
+- [x] Slip Gaji: preview sebelum download PDF
 
 ### P4 — Dashboard (Home)
 - [ ] Owner Command Center: KPI cards dengan icon + trend indicator (naik/turun)

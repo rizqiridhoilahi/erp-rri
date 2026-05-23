@@ -1,10 +1,46 @@
 "use client"
-import { useState, useRef, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Search, Loader2 } from 'lucide-react'
+import { Search, Loader2, Package, Users, FileText, ShoppingCart, Truck, DollarSign, Building2, ClipboardList } from 'lucide-react'
 import { apiFetch } from '@/lib/api/client'
+import { CommandDialog, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem, CommandSeparator } from '@/components/ui/command'
 
 interface SearchResult { table: string; id: string; label: string; href: string }
+
+const tableIcons: Record<string, React.ElementType> = {
+  barang: Package,
+  customer: Building2,
+  supplier: Truck,
+  karyawan: Users,
+  'purchase_order': ShoppingCart,
+  sales_order: FileText,
+  invoice: DollarSign,
+  quotation: ClipboardList,
+}
+
+const tableLabels: Record<string, string> = {
+  barang: 'Barang',
+  customer: 'Customer',
+  supplier: 'Supplier',
+  karyawan: 'Karyawan',
+  purchase_order: 'Purchase Order',
+  sales_order: 'Sales Order',
+  invoice: 'Invoice',
+  quotation: 'Quotation',
+  rfq: 'RFQ',
+  delivery_order: 'Delivery Order',
+  general: 'Lainnya',
+}
+
+function groupByModule(results: SearchResult[]): Record<string, SearchResult[]> {
+  const groups: Record<string, SearchResult[]> = {}
+  for (const r of results) {
+    const key = tableLabels[r.table] || tableLabels.general
+    if (!groups[key]) groups[key] = []
+    groups[key].push(r)
+  }
+  return groups
+}
 
 export function GlobalSearch() {
   const router = useRouter()
@@ -12,58 +48,99 @@ export function GlobalSearch() {
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<SearchResult[]>([])
   const [searching, setSearching] = useState(false)
-  const inputRef = useRef<HTMLInputElement>(null)
-  const wrapperRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    const handler = (e: KeyboardEvent) => { if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); setOpen(true); inputRef.current?.focus() } }
+    const handler = (e: KeyboardEvent) => { 
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') { 
+        e.preventDefault(); 
+        setOpen(true)
+      }
+    }
     document.addEventListener('keydown', handler)
     return () => document.removeEventListener('keydown', handler)
   }, [])
 
   useEffect(() => {
-    const handler = (e: MouseEvent) => { if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) setOpen(false) }
-    document.addEventListener('mousedown', handler)
-    return () => document.removeEventListener('mousedown', handler)
-  }, [])
-
-  useEffect(() => {
+    if (!open) return
     const fetchData = async () => {
       if (!query || query.length < 2) { setResults([]); return }
       setSearching(true)
-      try { const r = await apiFetch<SearchResult[]>('/api/v1/search', { method: 'POST', body: JSON.stringify({ q: query }) }); setResults(r.data ?? []) }
+      try { 
+        const r = await apiFetch<SearchResult[]>('/api/v1/search', { method: 'POST', body: JSON.stringify({ q: query }) }); 
+        setResults(r.data ?? []) 
+      }
       catch { setResults([]) }
       finally { setSearching(false) }
     }
-    fetchData()
-  }, [query])
+    const debounce = setTimeout(fetchData, 300)
+    return () => clearTimeout(debounce)
+  }, [query, open])
+
+  const handleSelect = (href: string) => {
+    router.push(href)
+    setOpen(false)
+    setQuery('')
+  }
+
+  const groupedResults = groupByModule(results)
 
   return (
-    <div ref={wrapperRef} className="relative">
-      <button onClick={() => setOpen(true)} data-search-trigger className="flex items-center gap-2 w-full px-3 py-2 text-sm text-muted-foreground bg-muted/30 border rounded-md hover:bg-muted/50 transition-colors">
+    <>
+      <button 
+        onClick={() => setOpen(true)} 
+        data-search-trigger 
+        className="flex items-center gap-2 w-full px-3 py-2 text-sm text-muted-foreground bg-muted/30 border rounded-md hover:bg-muted/50 transition-colors"
+      >
         <Search className="h-4 w-4" /><span className="flex-1 text-left">Cari...</span><kbd className="hidden sm:inline-flex text-xs px-1.5 py-0.5 bg-muted border rounded">⌘K</kbd>
       </button>
-      {open && (
-        <div className="absolute top-full left-0 right-0 mt-1 z-50">
-          <div className="bg-popover border rounded-lg shadow-lg overflow-hidden">
-            <div className="flex items-center gap-2 px-3 py-2 border-b">
-              <Search className="h-4 w-4 text-muted-foreground shrink-0" />
-              <input ref={inputRef} data-search-input value={query} onChange={e => setQuery(e.target.value)} placeholder="Cari barang, invoice, PO..." className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground" autoFocus />
-              {searching && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+      
+      <CommandDialog open={open} onOpenChange={setOpen}>
+        <CommandInput 
+          value={query} 
+          onValueChange={setQuery} 
+          placeholder="Ketik untuk mencari..." 
+        />
+        <CommandList>
+          {searching && (
+            <div className="py-6 text-center text-sm text-muted-foreground">
+              <Loader2 className="h-6 w-6 animate-spin mx-auto mb-2" />
+              Mencari...
             </div>
-            {results.length > 0 && <div className="max-h-60 overflow-y-auto p-1">
-              {results.map((r, i) => (
-                <button key={i} onClick={() => { router.push(r.href); setOpen(false); setQuery('') }}
-                  className="flex items-center gap-2 w-full px-3 py-2 text-sm rounded-md hover:bg-accent text-left">
-                  <span className="text-xs font-mono text-muted-foreground uppercase">{r.table}</span>
-                  <span className="flex-1 truncate">{r.label}</span>
-                </button>
+          )}
+          {!searching && query.length >= 2 && results.length === 0 && (
+            <CommandEmpty>Tidak ada hasil untuk &ldquo;{query}&rdquo;</CommandEmpty>
+          )}
+          {!searching && results.length > 0 && (
+            <>
+              {Object.entries(groupedResults).map(([module, items]) => (
+                <CommandGroup key={module} heading={module} className="capitalize">
+                  {items.map((item, i) => {
+                    const Icon = tableIcons[item.table] || FileText
+                    return (
+                      <CommandItem 
+                        key={`${item.id}-${i}`} 
+                        value={item.href}
+                        onSelect={() => handleSelect(item.href)}
+                        className="flex items-center gap-3 cursor-pointer"
+                      >
+                        <Icon className="h-4 w-4 text-muted-foreground" />
+                        <div className="flex-1 min-w-0">
+                          <p className="truncate font-medium">{item.label}</p>
+                          <p className="text-xs text-muted-foreground truncate">{item.table}</p>
+                        </div>
+                      </CommandItem>
+                    )
+                  })}
+                </CommandGroup>
               ))}
-            </div>}
-            {query.length >= 2 && !searching && results.length === 0 && <p className="text-xs text-muted-foreground p-3">Tidak ada hasil</p>}
-          </div>
-        </div>
-      )}
-    </div>
+              <CommandSeparator />
+              <div className="p-2 text-xs text-muted-foreground text-center">
+                Tekan Enter untuk memilih, Esc untuk menutup
+              </div>
+            </>
+          )}
+        </CommandList>
+      </CommandDialog>
+    </>
   )
 }
