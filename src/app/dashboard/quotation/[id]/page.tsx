@@ -6,7 +6,7 @@ import { apiFetch } from "@/lib/api/client"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Loader2, Printer, Pencil, Trash2 } from "lucide-react"
+import { Loader2, Eye, Download, Pencil, Trash2, FileText } from "lucide-react"
 import { CopyButton } from "@/components/copy-button"
 import { StatusWorkflow } from "@/components/status-workflow"
 import { PageHeader } from "@/components/page-header"
@@ -91,14 +91,23 @@ export default function QuotationDetailPage() {
   const grandTotal = subtotal - totalDiskon + totalPpn
 
   return (
-    <div className="mx-auto max-w-4xl px-4 sm:px-6 py-8 space-y-6">
+    <div className="mx-auto max-w-4xl px-4 sm:px-6 py-8 space-y-6 print:space-y-4">
       <PageHeader
         title="Detail Quotation"
         description={`${data.nomor} - ${data.customer?.nama || ""}`}
         actions={
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => router.push("/dashboard/quotation")}>Kembali</Button>
-            <Button variant="outline" asChild><a href={`/api/v1/quotation/${id}/pdf`} target="_blank"><Printer className="h-4 w-4 mr-2" />Cetak PDF</a></Button>
+            <Button variant="outline" asChild>
+              <a href={`/api/v1/quotation/${id}/pdf`} target="_blank" rel="noopener noreferrer">
+                <Eye className="h-4 w-4 mr-2" />Preview PDF
+              </a>
+            </Button>
+            <Button variant="outline" asChild>
+              <a href={`/api/v1/quotation/${id}/pdf`} download>
+                <Download className="h-4 w-4 mr-2" />Download PDF
+              </a>
+            </Button>
             <Button variant="outline" onClick={() => router.push(`/dashboard/quotation/${id}/edit`)}><Pencil className="h-4 w-4 mr-2" />Edit</Button>
             <DeleteConfirmationDialog
               onConfirm={handleDelete}
@@ -201,6 +210,23 @@ export default function QuotationDetailPage() {
           <ActivityTimeline tableName="quotation" recordId={id!} />
         </CardContent>
       </Card>
+
+      <div className="flex justify-end gap-2 print:hidden">
+        <Button variant="outline" asChild>
+          <a href={`/api/v1/quotation/${id}/pdf`} target="_blank" rel="noopener noreferrer">
+            <FileText className="h-4 w-4 mr-2" />Cetak PDF
+          </a>
+        </Button>
+        <Button asChild>
+          <a href={`/dashboard/quotation/${id}/edit`}>
+            <Pencil className="h-4 w-4 mr-2" />Edit Quotation
+          </a>
+        </Button>
+      </div>
+
+      <div className="hidden print:block text-xs text-muted-foreground text-center pt-4 border-t mt-8">
+        Dicetak pada {new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+      </div>
     </div>
   )
 }

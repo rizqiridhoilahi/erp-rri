@@ -86,7 +86,7 @@
 - [x] Responsive: tabel scroll horizontal di mobile — via MasterDataTable + overflow-x-auto
 
 ### P2 — Pre-Sales (RFQ, Quotation, Negosiasi)
-- [ ] Quotation: preview PDF di tab/before print
+- [x] Quotation: preview PDF di tab (Preview PDF + Download PDF buttons, print-friendly layout, cetak PDF di bottom)
 - [x] Quotation: status workflow visual (Draft → Terkirim → Deal → Lost) — StatusWorkflow component
 - [x] RFQ: file upload drag & drop — FileUpload component with Supabase Storage
 - [x] Negosiasi: chat-like UI untuk riwayat negosiasi — bubble messages + inline approve/reject
@@ -101,7 +101,7 @@
 - [x] DI: status visual (Draft → Aktif → Selesai) — StatusWorkflow + detail page
 - [x] Dokumen terkait: link ke dokumen sumber (PO → SO → DO) — di semua 4 detail pages
 - [ ] DO: barcode/QR code untuk scanning gudang
-- [ ] Auto-generate chain: tampilkan alert/notifikasi saat SO/DO auto-terbuat
+- [x] Auto-generate chain: ketika Customer PO dikonfirmasi → SO auto-terbuat (items di-copy dari PO), ketika SO diproses → DO auto-terbuat (items di-copy dari SO). Notifikasi toast + tombol "Lihat SO/DO" yang navigasi ke detail dokumen baru
 
 ### P2 — Procurement (PR, PO, Receiving, GRN, Retur)
 - [x] PR: status visual (Draft → Disetujui/Ditolak) — StatusWorkflow + detail page
@@ -135,11 +135,11 @@
 - [x] Dashboard finance: AR/AP ringkasan (grouped bar chart + per-bucket breakdown) + cashflow mini-chart (6-month area chart revenue vs expense)
 
 ### P3 — Laporan (AR Aging, AP Aging, Laba/Rugi, Neraca, Arus Kas)
-- [ ] Chart visual (gunakan recharts atau chart.js — yang sudah ada di project)
-- [ ] Filter periode (bulan/tahun/quarted)
-- [ ] Export PDF (bukan cuma Excel)
-- [ ] Print-friendly layout untuk semua laporan
-- [ ] Comparative period (bulan ini vs bulan lalu)
+- [x] Chart visual — recharts BarChart (Laba/Rugi revenue vs COGS), PieChart (Neraca aset/liabilitas/ekuitas), AreaChart (Arus Kas pemasukan/pengeluaran)
+- [x] Filter periode — PeriodFilter shared component: tahun + bulan/kuartal dropdown, URL search params driven
+- [x] Export PDF — ExportPdfButton client component: downloads PDF via `/api/v1/laporan/[type]/pdf?download=1` API route with full report data (KPI ringkasan, rincian per bulan, grand total)
+- [x] Print-friendly layout — `print:shadow-none print:border` on Cards, hidden sidebar on print, print watermark
+- [x] Comparative period — bulan ini vs bulan lalu for all Laporan pages (KPI comparison cards with diff + percentage)
 
 ### P3 — AI Agent (Search Harga, OCR, Rekomendasi, Negosiasi Assistant)
 - [ ] AI Search: loading skeleton untuk scraping (progress: mencari di Shopee...)
