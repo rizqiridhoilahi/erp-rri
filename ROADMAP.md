@@ -4,7 +4,7 @@
 - [x] Project setup (Next.js, Tailwind, Drizzle, ESLint)
 - [x] Database schema (50+ tables)
 - [x] Auth pages (login, register)
-- [x] Middleware route protection (`src/middleware.ts`)
+- [x] Client-side auth (AuthProvider + AuthGuardClient) — avoids middleware hanging issues
 - [x] Dashboard layout + sidebar (navigasi ke semua modul)
 - [x] Root layout (`<html><body>`) — fix route group `(dashboard)` → `dashboard/`
 - [x] Master Barang (list, tambah, edit)
@@ -24,6 +24,7 @@
 - [x] Hybrid pattern: server components → direct Supabase, client components → API routes
 - [x] UI/UX Design System: shadcn/ui, color palette, typography (Lexend + Source Sans 3), icon rules
 - [x] PRD.md v4.0 — didokumentasi penuh (design system, API architecture, folder structure update)
+- [x] Master data pages UI update: BreadcrumbNav + PageHeader + EmptyState + table-row pattern (supplier, barang, customer, pic-customer, coa, kontrak, kategori-barang, jabatan, karyawan)
 
 ## Fase 2 — Pre-Sales & Sales
 - [x] shadcn/ui initialization + base components (Button, Input, Card, Table, Badge, Select, Dialog, Form, Tabs, Checkbox, DropdownMenu, Separator, Textarea)

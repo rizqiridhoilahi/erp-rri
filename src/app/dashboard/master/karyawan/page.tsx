@@ -1,62 +1,95 @@
-import Link from 'next/link';
-import { supabase } from '@/lib/db/client';
+import Link from "next/link"
+import { supabase } from "@/lib/db/client"
+import { Button } from "@/components/ui/button"
+import { EmptyState } from "@/components/empty-state"
+import { BreadcrumbNav, BreadcrumbItem } from "@/components/breadcrumb-nav"
+import { PageHeader } from "@/components/page-header"
+import { KaryawanTableRow } from "./table-row"
+
+const breadcrumbItems: BreadcrumbItem[] = [
+  { label: "Dashboard", href: "/dashboard" },
+  { label: "Master Data" },
+  { label: "Karyawan" },
+]
 
 export default async function KaryawanPage() {
-  const { data, error } = await supabase.from('karyawan').select('*, jabatan!jabatan_id(nama)').order('nama');
+  const { data, error } = await supabase
+    .from("karyawan")
+    .select("*, jabatan!jabatan_id(nama)")
+    .order("nama")
 
   if (error) {
     return (
-      <div className="p-6">
-        <h1 className="text-2xl font-bold mb-4">Karyawan</h1>
-        <p className="text-red-500">Error loading data: {error.message}</p>
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+        <BreadcrumbNav items={breadcrumbItems} />
+        <PageHeader
+          title="Karyawan"
+          description="Error loading data"
+        />
+        <EmptyState
+          title="Gagal memuat data"
+          description={error.message}
+        />
       </div>
-    );
+    )
   }
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Karyawan</h1>
-        <Link href="/dashboard/master/karyawan/tambah" className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition">Tambah Karyawan</Link>
-      </div>
+    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+      <BreadcrumbNav items={breadcrumbItems} />
+      <PageHeader
+        title="Karyawan"
+        description={`${data?.length || 0} karyawan terdaftar`}
+        actions={
+          <Link href="/dashboard/master/karyawan/tambah">
+            <Button>Tambah Karyawan</Button>
+          </Link>
+        }
+      />
+
       {!data || data.length === 0 ? (
-        <div className="text-center py-12"><p className="text-gray-500">Belum ada data karyawan.</p></div>
+        <EmptyState
+          title="Belum ada data karyawan"
+          description="Tambahkan karyawan pertama Anda untuk memulai."
+        />
       ) : (
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">NIK</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">No. HP</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Jabatan</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {data.map((item) => (
-                <tr key={item.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.nik}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.nama}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.email}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.no_hp || '-'}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.jabatan?.[0]?.nama || '-'}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${item.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                      {item.is_active ? 'Aktif' : 'Non-Aktif'}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    <Link href={`/dashboard/master/karyawan/${item.id}/edit`} className="text-blue-600 hover:text-blue-900">Edit</Link>
-                  </td>
+        <div className="bg-card rounded-lg border overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b bg-muted/50">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    NIK
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Nama
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Email
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    No. HP
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Jabatan
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Aksi
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {data.map((item) => (
+                  <KaryawanTableRow key={item.id} karyawan={item} />
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </div>
-  );
+  )
 }

@@ -18,6 +18,9 @@
 - **Toaster in Layout** — Toaster component added to app/layout.tsx (done)
 - **Performance Guidelines** — section 16 in DESIGN_SYSTEM.md (done)
 - **Component Audit** — raw HTML elements identified for migration (ongoing)
+- **New Components:** AlertDialog, Breadcrumb, Tooltip, DeleteConfirmationDialog, BreadcrumbNav, EmptyState, TableRow pattern, ErrorBoundary (done)
+- **Pages Updated:** supplier, barang, customer, pic-customer, coa, kontrak, kategori-barang, jabatan, karyawan (done)
+- **404 Page:** dashboard/not-found.tsx with friendly error page (done)
 
 ## Implementation Status
 - **Build:** ✅ Passed
@@ -43,15 +46,15 @@
 - [x] Form: success/error toast setelah submit (using sonner v2)
 - [x] Form: loading state saat submit (button disabled + spinner) — FormActions pattern
 - [x] Form: validasi error inline — shadcn Form + FormMessage pattern
+- [x] Tabel: status badge konsisten (Active = hijau, Non-Active = merah) — using inline badge with CSS variables
+- [x] Delete confirmation dialog dengan warning — using DeleteConfirmationDialog component
+- [x] Breadcrumb navigasi — using BreadcrumbNav component
+- [x] Empty state dengan ilustrasi + pesan "Belum ada data" — using EmptyState component
 - [ ] Tabel: tambahkan column sorting, filter per kolom, search bar per halaman
 - [ ] Tabel: nomor baris (row number) di kolom pertama
-- [x] Tabel: status badge konsisten (Active = hijau, Non-Active = merah) — using StatusBadge component
 - [ ] Form: cancel confirmation dialog jika ada perubahan
 - [ ] Detail page untuk setiap entity (bukan hanya edit form)
-- [ ] Empty state: ilustrasi + pesan "Belum ada data" + tombol "Tambah"
-- [ ] Delete confirmation dialog dengan warning
 - [ ] Responsive: tabel scroll horizontal di mobile
-- [ ] Breadcrumb navigasi
 
 ### P2 — Pre-Sales (RFQ, Quotation, Negosiasi)
 - [ ] Quotation: preview PDF di tab/before print
@@ -120,15 +123,15 @@
 
 ### P4 — Global Components
 - [x] Global Search: hasil dikelompokkan per modul (Barang, Customer, PO, dll) — use Command component
+- [x] Delete confirmation: Gunakan AlertDialog untuk konfirmasi hapus
+- [x] TooltipProvider: wrap app dengan TooltipProvider untuk tooltip consistency
+- [x] Loading skeleton untuk semua halaman (sudah partial)
+- [x] Error boundary + fallback UI — ErrorBoundary component created
+- [x] 404 page custom untuk dashboard — dashboard/not-found.tsx
 - [ ] Sidebar: active state visual (highlight halaman aktif)
 - [ ] Sidebar: collapsible untuk mobile
 - [ ] Responsive: mobile bottom navigation atau hamburger menu
-- [ ] Loading skeleton untuk semua halaman (sudah partial)
-- [ ] Error boundary + fallback UI
-- [ ] 404 page custom untuk dashboard
-- [x] Toast notification position konsisten (top-right sudah)
-- [ ] Delete confirmation: Gunakan AlertDialog untuk konfirmasi hapus
-- [ ] TooltipProvider: wrap app dengan TooltipProvider untuk tooltip consistency
+- [ ] Toast notification position konsisten (top-right sudah)
 
 ### P4 — Auth (Login, Register)
 - [x] Login: loading spinner di button + disabled state

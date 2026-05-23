@@ -1,60 +1,83 @@
-import Link from 'next/link';
-import { supabase } from '@/lib/db/client';
+import Link from "next/link"
+import { supabase } from "@/lib/db/client"
+import { Button } from "@/components/ui/button"
+import { EmptyState } from "@/components/empty-state"
+import { BreadcrumbNav, BreadcrumbItem } from "@/components/breadcrumb-nav"
+import { PageHeader } from "@/components/page-header"
+import { KategoriBarangTableRow } from "./table-row"
+
+const breadcrumbItems: BreadcrumbItem[] = [
+  { label: "Dashboard", href: "/dashboard" },
+  { label: "Master Data" },
+  { label: "Kategori Barang" },
+]
 
 export default async function KategoriBarangPage() {
   const { data, error } = await supabase
-    .from('kategori_barang')
-    .select('*')
-    .order('nama');
+    .from("kategori_barang")
+    .select("*")
+    .order("nama")
 
   if (error) {
     return (
-      <div className="p-6">
-        <h1 className="text-2xl font-bold mb-4">Kategori Barang</h1>
-        <p className="text-red-500">Error loading data: {error.message}</p>
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+        <BreadcrumbNav items={breadcrumbItems} />
+        <PageHeader
+          title="Kategori Barang"
+          description="Error loading data"
+        />
+        <EmptyState
+          title="Gagal memuat data"
+          description={error.message}
+        />
       </div>
-    );
+    )
   }
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Kategori Barang</h1>
-        <Link href="/dashboard/master/kategori-barang/tambah" className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition">
-          Tambah Kategori
-        </Link>
-      </div>
+    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+      <BreadcrumbNav items={breadcrumbItems} />
+      <PageHeader
+        title="Kategori Barang"
+        description={`${data?.length || 0} kategori terdaftar`}
+        actions={
+          <Link href="/dashboard/master/kategori-barang/tambah">
+            <Button>Tambah Kategori</Button>
+          </Link>
+        }
+      />
 
       {!data || data.length === 0 ? (
-        <div className="text-center py-12">
-          <p className="text-gray-500">Belum ada data kategori. Silakan tambah kategori pertama.</p>
-        </div>
+        <EmptyState
+          title="Belum ada data kategori"
+          description="Tambahkan kategori pertama Anda untuk memulai."
+        />
       ) : (
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Keterangan</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {data.map((item) => (
-                <tr key={item.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.nama}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.keterangan || '-'}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <Link href={`/dashboard/master/kategori-barang/${item.id}/edit`} className="text-blue-600 hover:text-blue-900">
-                      Edit
-                    </Link>
-                  </td>
+        <div className="bg-card rounded-lg border overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b bg-muted/50">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Nama
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Keterangan
+                  </th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Aksi
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {data.map((item) => (
+                  <KategoriBarangTableRow key={item.id} kategori={item} />
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </div>
-  );
+  )
 }

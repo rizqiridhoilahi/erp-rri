@@ -886,24 +886,51 @@ const nomor = await generateDocumentNumber('SPH')
 3. Return formatted string: `{KODE}/RRI/{YY}/{MM}/{0000}`
 4. Counter di-reset otomatis setiap tahun/bulan berganti
 
-#### 12.2.6 Middleware (Route Protection)
+#### 12.2.6 Authentication Architecture
 
-**File:** `src/middleware.ts` — ditempatkan di `src/` (bukan root project, karena Next.js 15 dengan `src/` directory).
+**Pattern: Client-Side Auth with Supabase Auth**
 
+ERP RRI uses **client-side authentication** via Supabase Auth with an `AuthProvider` context:
+
+| File | Fungsi |
+|------|--------|
+| `src/lib/hooks/use-auth.tsx` | Auth context provider + `useAuth` hook — wraps `onAuthStateChange` listener |
+| `src/app/dashboard/auth-guard-client.tsx` | `AuthGuardClient` — client component that checks `isAuthenticated`, shows loading spinner, redirects to `/login` if not authenticated |
+| `src/app/dashboard/layout.tsx` | Dashboard layout wraps with `AuthGuardClient` for route protection |
+| `src/app/(auth)/login/page.tsx` | Uses `router.push('/dashboard')` after successful `signInWithPassword` |
+
+**Why Client-Side Auth instead of Middleware:**
+- Previous middleware approach used `supabase.auth.getUser()` which made network calls that could timeout
+- This caused the Node.js server to hang at 120% CPU when many requests came in
+- Client-side auth with `onAuthStateChange` is event-driven and doesn't block the server
+
+**Security Note:**
+- Supabase stores tokens in httpOnly cookies (NOT localStorage)
+- `onAuthStateChange` detects valid sessions from cookies
+- API routes still verify JWT via `verifyAuth()` — security maintained
+- For production with multiple users, RLS policies can be added at the database level
+
+**Auth Flow:**
+```
+Login page → signInWithPassword() → onAuthStateChange detects SIGNED_IN 
+  → router.push('/dashboard') → AuthGuardClient checks isAuthenticated 
+  → shows dashboard if authenticated, redirects to /login if not
+```
+
+**Middleware (simplified):**
 ```typescript
-// Matcher: semua path kecuali _next/static, _next/image, favicon.ico, public, login, register, api
+// src/middleware.ts — only redirects root to login, no auth checks
 export const config = {
   matcher: ['/((?!_next/static|_next/image|favicon.ico|public|login|register|api).*)'],
 }
+// No auth logic here — delegated to AuthGuardClient
 ```
 
-**Behavior:**
-- `/` → Redirect ke `/login`
-- `/dashboard/*` → Cek cookie `sb-access-token` → jika tidak ada, redirect ke `/login`
-- `/login`, `/register` → Public (bypass middleware)
-- `/api/*` → Public (bypass middleware, auth di-handle oleh `verifyAuth()` di route handler)
-
-**PENTING:** Middleware harus di `src/middleware.ts`, bukan di root project. Jika di root, Next.js 15 dengan `src/` directory tidak akan mendeteksinya.
+**Key Implementation Details:**
+- `AuthProvider` combines React Context with Supabase's `onAuthStateChange` 
+- `AuthGuardClient` is a client component that uses the auth context to protect routes
+- Loading state shows spinner while checking authentication
+- Automatic redirect to `/login` when session is invalid
 
 ### 12.3 Struktur Database (Tabel)
 

@@ -1,7 +1,7 @@
 import { ReactNode } from 'react'
 import type { Metadata } from 'next'
 import { Lexend, Source_Sans_3 } from 'next/font/google'
-import { Toaster } from 'sonner'
+import { Providers } from '@/components/providers'
 import './globals.css'
 
 const lexend = Lexend({
@@ -41,8 +41,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         />
       </head>
       <body>
-        {children}
-        <Toaster position="top-right" richColors closeButton />
+        <Providers>{children}</Providers>
       </body>
     </html>
   )

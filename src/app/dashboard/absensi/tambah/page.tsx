@@ -1,4 +1,5 @@
 "use client"
+
 import { useState, useEffect } from 'react'; import { useRouter } from 'next/navigation'; import { z } from 'zod'; import { useForm } from 'react-hook-form'; import { zodResolver } from '@hookform/resolvers/zod'
 import { apiFetch } from '@/lib/api/client'; import { Button } from '@/components/ui/button'; import { Input } from '@/components/ui/input'; import { Textarea } from '@/components/ui/textarea'; import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ArrowLeft, Loader2 } from 'lucide-react'; import { toast } from 'sonner'
@@ -18,7 +19,7 @@ export default function TambahAbsensiPage() {
   }
   return (
     <div className="max-w-xl space-y-6">
-      <div className="flex items-center gap-4"><Button variant="ghost" size="icon" asChild><a href="/dashboard/absensi"><ArrowLeft className="h-5 w-5" /></a></Button><div><h1 className="text-3xl font-heading font-bold">Tambah Absensi</h1></div></div>
+      <div className="flex items-center gap-4"><Button variant="ghost" size="icon" onClick={() => router.push('/dashboard/absensi')}><ArrowLeft className="h-5 w-5" /></Button><div><h1 className="text-3xl font-heading font-bold">Tambah Absensi</h1></div></div>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6"><Card><CardHeader><CardTitle className="text-base">Data Kehadiran</CardTitle></CardHeader><CardContent className="space-y-4">
         <div className="space-y-2"><label className="text-sm font-medium">Karyawan *</label>
           <select {...register('karyawan_id')} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring"><option value="">Pilih</option>{kOpts.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}</select></div>
@@ -28,7 +29,7 @@ export default function TambahAbsensiPage() {
             <select {...register('status')} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring">{statusOpts.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}</select></div>
         </div>
         <div className="space-y-2"><label className="text-sm font-medium">Keterangan</label><Textarea {...register('keterangan')} rows={2} /></div>
-      </CardContent></Card><div className="flex justify-end gap-3"><Button type="button" variant="outline" asChild><a href="/dashboard/absensi">Batal</a></Button>
+      </CardContent></Card><div className="flex justify-end gap-3"><Button type="button" variant="outline" onClick={() => router.push('/dashboard/absensi')}>Batal</Button>
         <Button type="submit" disabled={submitting}>{submitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}{submitting ? '...' : 'Simpan'}</Button></div></form>
     </div>
   )

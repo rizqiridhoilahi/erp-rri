@@ -1,11 +1,22 @@
-import Link from 'next/link';
-import { supabase } from '@/lib/db/client';
+import Link from "next/link"
+import { supabase } from "@/lib/db/client"
+import { Button } from "@/components/ui/button"
+import { EmptyState } from "@/components/empty-state"
+import { BreadcrumbNav, BreadcrumbItem } from "@/components/breadcrumb-nav"
+import { PageHeader } from "@/components/page-header"
+import { KontrakTableRow } from "./table-row"
+
+const breadcrumbItems: BreadcrumbItem[] = [
+  { label: "Dashboard", href: "/dashboard" },
+  { label: "Master Data" },
+  { label: "Kontrak" },
+]
 
 export default async function KontrakPage() {
-  // Fetch kontrak data from database
   const { data: kontrakData, error } = await supabase
-    .from('kontrak')
-    .select(`
+    .from("kontrak")
+    .select(
+      `
       id,
       nama,
       customer!inner(nama),
@@ -13,101 +24,79 @@ export default async function KontrakPage() {
       tanggal_selesai,
       is_active,
       created_at
-    `)
-    .order('created_at', { ascending: false });
+    `
+    )
+    .order("created_at", { ascending: false })
 
   if (error) {
-    console.error('Error fetching kontrak:', error);
     return (
-      <div className="p-6">
-        <h1 className="text-2xl font-bold mb-4">Data Kontrak</h1>
-        <p className="text-red-500">Error loading data: {error.message}</p>
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+        <BreadcrumbNav items={breadcrumbItems} />
+        <PageHeader
+          title="Data Kontrak"
+          description="Error loading data"
+        />
+        <EmptyState
+          title="Gagal memuat data"
+          description={error.message}
+        />
       </div>
-    );
+    )
   }
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Data Kontrak</h1>
-        <Link href="/dashboard/master/kontrak/tambah" className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition">
-          Tambah Kontrak
-        </Link>
-      </div>
+    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+      <BreadcrumbNav items={breadcrumbItems} />
+      <PageHeader
+        title="Data Kontrak"
+        description={`${kontrakData?.length || 0} kontrak terdaftar`}
+        actions={
+          <Link href="/dashboard/master/kontrak/tambah">
+            <Button>Tambah Kontrak</Button>
+          </Link>
+        }
+      />
 
       {!kontrakData || kontrakData.length === 0 ? (
-        <div className="text-center py-12">
-          <p className="text-gray-500">Belum ada data kontrak. Silakan tambah kontrak pertama.</p>
-        </div>
+        <EmptyState
+          title="Belum ada data kontrak"
+          description="Tambahkan kontrak pertama Anda untuk memulai."
+        />
       ) : (
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Nama Kontrak
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Customer
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Tanggal Mulai
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Tanggal Selesai
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Aksi
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {kontrakData.map((item) => (
-                <tr key={item.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.nama}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.customer?.[0]?.nama || '-'}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.tanggal_mulai || '-'}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.tanggal_selesai || '-'}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                      item.is_active 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-red-100 text-red-800'
-                    }`}>
-                      {item.is_active ? 'Active' : 'Non-Active'}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <Link 
-                      href={`/dashboard/master/kontrak/${item.id}/edit`} 
-                      className="text-blue-600 hover:text-blue-900 mr-3"
-                    >
-                      Edit
-                    </Link>
-                    <button 
-                      onClick={() => handleDelete()} 
-                      className="text-red-600 hover:text-red-900"
-                    >
-                      Hapus
-                    </button>
-                  </td>
+        <div className="bg-card rounded-lg border overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b bg-muted/50">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Nama Kontrak
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Customer
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Tanggal Mulai
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Tanggal Selesai
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Aksi
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {kontrakData.map((item) => (
+                  <KontrakTableRow key={item.id} kontrak={item} />
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </div>
-  );
-}
-
-// Placeholder function for delete
-async function handleDelete() {
-  if (window.confirm('Apakah Anda yakin ingin menghapus kontrak ini?')) {
-    alert('Delete functionality will be implemented with Server Actions');
-    window.location.reload();
-  }
+  )
 }

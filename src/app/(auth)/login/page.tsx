@@ -55,7 +55,8 @@ export default function LoginPage() {
       }
 
       console.log('Login successful, authData:', authData)
-      console.log('Pushing to /dashboard')
+      console.log('Redirecting to /dashboard')
+
       router.push('/dashboard')
     } catch (err) {
       console.error('Catch error:', err)
