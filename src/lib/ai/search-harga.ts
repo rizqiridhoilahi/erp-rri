@@ -9,8 +9,15 @@ export interface SearchResult {
   rating: number | null
 }
 
+export interface PriceComparison {
+  hargaTerendah: number
+  hargaTertinggi: number
+  hargaRataRata: number
+  jumlahSeller: number
+}
+
 // Real Playwright scraping - designed to run on VPS with Chrome
-export async function searchMarketplacePlaywright(query: string): Promise<SearchResult[]> {
+export async function searchMarketplacePlaywright(query: string): Promise<{ results: SearchResult[], priceComparison: PriceComparison }> {
   let browser = null
   try {
     const { chromium } = await import('playwright')
@@ -54,25 +61,57 @@ export async function searchMarketplacePlaywright(query: string): Promise<Search
       results.push(...shopeeItems)
     } catch { /* shopee failed */ }
 
-    return results
+    if (results.length === 0) {
+      throw new Error('No results found')
+    }
+
+    // Calculate price comparison
+    const prices = results.map(r => r.harga).filter(price => price > 0)
+    if (prices.length === 0) {
+      throw new Error('No valid prices found')
+    }
+
+    const priceComparison: PriceComparison = {
+      hargaTerendah: Math.min(...prices),
+      hargaTertinggi: Math.max(...prices),
+      hargaRataRata: Math.round(prices.reduce((sum, price) => sum + price, 0) / prices.length),
+      jumlahSeller: prices.length
+    }
+
+    return { results, priceComparison }
   } catch (err) {
     console.error('Playwright search failed:', err)
-    return []
+    throw err
   } finally {
     if (browser) await browser.close()
   }
 }
 
 // Fallback mock data for demo when Playwright is unavailable
-export function getMockResults(query: string): SearchResult[] {
+export function getMockResults(query: string): { results: SearchResult[], priceComparison: PriceComparison } {
+  const basePrice = 50000 + Math.floor(Math.random() * 20000)
+  const priceVariation = Math.floor(Math.random() * 15000)
+  
   const items = [
-    { nama: `${query} - Standar Grade A`, harga: 50000 + Math.floor(Math.random() * 10000), toko: 'Toko Elektrik Jaya', marketplace: 'Tokopedia', rating: 4.8 },
-    { nama: `${query} - Original`, harga: 55000 + Math.floor(Math.random() * 15000), toko: 'Supplier Teknik', marketplace: 'Tokopedia', rating: 4.5 },
-    { nama: `${query} - Premium Quality`, harga: 62000 + Math.floor(Math.random() * 12000), toko: 'Grosir Listrik', marketplace: 'Shopee', rating: 4.9 },
-    { nama: `${query} - Termurah`, harga: 45000 + Math.floor(Math.random() * 8000), toko: 'Toko Murah', marketplace: 'Shopee', rating: 4.2 },
-    { nama: `${query} - Grade B`, harga: 38000 + Math.floor(Math.random() * 7000), toko: 'Second Store', marketplace: 'Tokopedia', rating: 4.0 },
+    { nama: `${query} - Standar Grade A`, harga: basePrice - priceVariation/2, toko: 'Toko Elektrik Jaya', marketplace: 'Tokopedia', rating: 4.8 },
+    { nama: `${query} - Original`, harga: basePrice, toko: 'Supplier Teknik', marketplace: 'Tokopedia', rating: 4.5 },
+    { nama: `${query} - Premium Quality`, harga: basePrice + priceVariation/2, toko: 'Grosir Listrik', marketplace: 'Shopee', rating: 4.9 },
+    { nama: `${query} - Termurah`, harga: basePrice - priceVariation, toko: 'Toko Murah', marketplace: 'Shopee', rating: 4.2 },
+    { nama: `${query} - Grade B`, harga: basePrice - priceVariation*1.5, toko: 'Second Store', marketplace: 'Tokopedia', rating: 4.0 },
   ]
-  return items.map(item => ({ ...item, link: `https://www.${item.marketplace.toLowerCase()}.co.id/search?q=${encodeURIComponent(query)}` }))
+  
+  const prices = items.map(item => item.harga)
+  const priceComparison: PriceComparison = {
+    hargaTerendah: Math.min(...prices),
+    hargaTertinggi: Math.max(...prices),
+    hargaRataRata: Math.round(prices.reduce((sum, price) => sum + price, 0) / prices.length),
+    jumlahSeller: prices.length
+  }
+  
+  return {
+    results: items.map(item => ({ ...item, link: `https://www.${item.marketplace.toLowerCase()}.co.id/search?q=${encodeURIComponent(query)}` })),
+    priceComparison
+  }
 }
 
 export async function saveSearchResults(userId: string, query: string, results: SearchResult[]) {

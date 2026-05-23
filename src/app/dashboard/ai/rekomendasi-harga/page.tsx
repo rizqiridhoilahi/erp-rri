@@ -1,7 +1,8 @@
 "use client"
 import { useState, useEffect } from 'react'; import { z } from 'zod'; import { useForm } from 'react-hook-form'; import { zodResolver } from '@hookform/resolvers/zod'
 import { apiFetch } from '@/lib/api/client'; import { Button } from '@/components/ui/button'; import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'; import { Loader2, Lightbulb } from 'lucide-react'; import { toast } from 'sonner'
+import { Badge } from '@/components/ui/badge'; import { Loader2, Lightbulb, TrendingUp, TrendingDown, DollarSign, Loader } from 'lucide-react'; import { toast } from 'sonner'
+import { Skeleton } from '@/components/ui/skeleton'
 
 const schema = z.object({ barang_id: z.string().min(1) })
 type FV = z.input<typeof schema>

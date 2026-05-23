@@ -3,7 +3,7 @@ import { z } from 'zod'
 import { supabaseAdmin } from '@/lib/api/supabase-server'
 import { verifyAuth } from '@/lib/api/auth'
 import { badRequest, internalError } from '@/lib/api/errors'
-import { searchMarketplacePlaywright, getMockResults, saveSearchResults, SearchResult } from '@/lib/ai/search-harga'
+import { searchMarketplacePlaywright, getMockResults, saveSearchResults, SearchResult, PriceComparison } from '@/lib/ai/search-harga'
 
 const schema = z.object({ query: z.string().min(1, 'Query harus diisi') })
 
@@ -15,18 +15,25 @@ export async function POST(request: NextRequest) {
   const parsed = schema.safeParse(body)
   if (!parsed.success) return badRequest(parsed.error.issues.map(e => e.message).join(', '))
 
-  let results: SearchResult[] = []
+  let searchResult: { results: SearchResult[]; priceComparison: PriceComparison } | undefined
   try {
-    results = await searchMarketplacePlaywright(parsed.data.query)
+    searchResult = await searchMarketplacePlaywright(parsed.data.query)
   } catch { /* fallback to mock */ }
 
-  if (results.length === 0) {
-    results = getMockResults(parsed.data.query)
+  if (!searchResult) {
+    searchResult = getMockResults(parsed.data.query)
   }
 
   try {
-    const historyId = await saveSearchResults(auth.user!.id, parsed.data.query, results)
-    return NextResponse.json({ data: { history_id: historyId, query: parsed.data.query, results } })
+    const historyId = await saveSearchResults(auth.user!.id, parsed.data.query, searchResult.results)
+    return NextResponse.json({ 
+      data: { 
+        history_id: historyId, 
+        query: parsed.data.query, 
+        results: searchResult.results,
+        priceComparison: searchResult.priceComparison
+      } 
+    })
   } catch (err) {
     return internalError(err instanceof Error ? err.message : 'Gagal menyimpan')
   }
