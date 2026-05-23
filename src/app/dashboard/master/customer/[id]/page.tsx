@@ -12,46 +12,40 @@ import { EmptyState } from "@/components/empty-state"
 const breadcrumbItems: BreadcrumbItem[] = [
   { label: "Dashboard", href: "/dashboard" },
   { label: "Master Data" },
-  { label: "Supplier", href: "/dashboard/master/supplier" },
-  { label: "Detail Supplier" },
+  { label: "Customer", href: "/dashboard/master/customer" },
+  { label: "Detail Customer" },
 ]
 
-interface Supplier {
+interface Customer {
   id: string
   nama: string
   kode: string
-  nama_toko: string | null
-  link_toko: string | null
-  no_rekening: string | null
+  alamat: string | null
   kontak: string | null
   terms_of_payment: string | null
-  is_marketplace: boolean
   is_active: boolean
   created_at: string
 }
 
-export default function DetailSupplierPage() {
+export default function DetailCustomerPage() {
   const router = useRouter()
   const pathname = usePathname()
   const id = pathname.split("/").pop()
-  const [data, setData] = useState<Supplier | null>(null)
+  const [data, setData] = useState<Customer | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     if (!id) return
     supabase
-      .from("supplier")
+      .from("customer")
       .select(`
         id,
         nama,
         kode,
-        nama_toko,
-        link_toko,
-        no_rekening,
+        alamat,
         kontak,
         terms_of_payment,
-        is_marketplace,
         is_active,
         created_at
       `)
@@ -59,7 +53,7 @@ export default function DetailSupplierPage() {
       .single()
       .then(({ data: result, error: err }) => {
         if (err) setError(err.message)
-        else setData(result as Supplier)
+        else setData(result as Customer)
         setLoading(false)
       })
   }, [id])
@@ -69,14 +63,6 @@ export default function DetailSupplierPage() {
       isActive ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"
     }`}>
       {isActive ? "Active" : "Non-Active"}
-    </span>
-  )
-
-  const marketplaceBadge = (isMarketplace: boolean) => (
-    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-      isMarketplace ? "bg-accent/10 text-accent" : "bg-muted text-muted-foreground"
-    }`}>
-      {isMarketplace ? "Ya" : "Tidak"}
     </span>
   )
 
@@ -101,14 +87,14 @@ export default function DetailSupplierPage() {
     <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-8">
       <BreadcrumbNav items={breadcrumbItems} />
       <PageHeader
-        title={data.nama || "Detail Supplier"}
+        title={data.nama || "Detail Customer"}
         description="Informasi lengkap"
         actions={
           <div className="flex gap-2">
-            <Button variant="outline" onClick={() => router.push("/dashboard/master/supplier")}>
+            <Button variant="outline" onClick={() => router.push("/dashboard/master/customer")}>
               Kembali
             </Button>
-            <Button onClick={() => router.push(`/dashboard/master/supplier/${id}/edit`)}>
+            <Button onClick={() => router.push(`/dashboard/master/customer/${id}/edit`)}>
               Edit
             </Button>
           </div>
@@ -122,26 +108,12 @@ export default function DetailSupplierPage() {
               <p className="text-sm font-medium">{data.kode}</p>
             </div>
             <div>
-              <label className="block text-sm font-medium text-muted-foreground mb-1">Nama Supplier</label>
+              <label className="block text-sm font-medium text-muted-foreground mb-1">Nama Customer</label>
               <p className="text-sm font-medium">{data.nama}</p>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-muted-foreground mb-1">Nama Toko</label>
-              <p className="text-sm font-medium">{data.nama_toko || "-"}</p>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-muted-foreground mb-1">Link Toko</label>
-              <p className="text-sm font-medium">
-                {data.link_toko ? (
-                  <a href={data.link_toko} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
-                    {data.link_toko}
-                  </a>
-                ) : "-"}
-              </p>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-muted-foreground mb-1">No. Rekening</label>
-              <p className="text-sm font-medium">{data.no_rekening || "-"}</p>
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-muted-foreground mb-1">Alamat</label>
+              <p className="text-sm font-medium">{data.alamat || "-"}</p>
             </div>
             <div>
               <label className="block text-sm font-medium text-muted-foreground mb-1">Kontak</label>
@@ -150,10 +122,6 @@ export default function DetailSupplierPage() {
             <div>
               <label className="block text-sm font-medium text-muted-foreground mb-1">Terms of Payment</label>
               <p className="text-sm font-medium">{data.terms_of_payment || "-"}</p>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-muted-foreground mb-1">Marketplace</label>
-              <p className="text-sm">{marketplaceBadge(data.is_marketplace)}</p>
             </div>
             <div>
               <label className="block text-sm font-medium text-muted-foreground mb-1">Status</label>

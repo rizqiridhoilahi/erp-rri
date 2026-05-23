@@ -9,8 +9,6 @@ import { Loader2 } from "lucide-react"
 import { BreadcrumbNav, BreadcrumbItem } from "@/components/breadcrumb-nav"
 import { PageHeader } from "@/components/page-header"
 import { EmptyState } from "@/components/empty-state"
-import { apiFetch } from "@/lib/api/client"
-
 const breadcrumbItems: BreadcrumbItem[] = [
   { label: "Dashboard", href: "/dashboard" },
   { label: "Master Data" },
@@ -65,12 +63,6 @@ export default function DetailBarangPage() {
         setLoading(false)
       })
   }, [id])
-
-  const handleDelete = async () => {
-    if (!id) return
-    await apiFetch(`/api/v1/master/barang/${id}`, { method: "DELETE" })
-    router.push("/dashboard/master/barang")
-  }
 
   const formatCurrency = (value: number | null) => {
     if (value === null) return "-"

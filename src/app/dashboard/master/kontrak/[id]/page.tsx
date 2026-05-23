@@ -12,46 +12,38 @@ import { EmptyState } from "@/components/empty-state"
 const breadcrumbItems: BreadcrumbItem[] = [
   { label: "Dashboard", href: "/dashboard" },
   { label: "Master Data" },
-  { label: "Supplier", href: "/dashboard/master/supplier" },
-  { label: "Detail Supplier" },
+  { label: "Kontrak", href: "/dashboard/master/kontrak" },
+  { label: "Detail Kontrak" },
 ]
 
-interface Supplier {
+interface Kontrak {
   id: string
   nama: string
-  kode: string
-  nama_toko: string | null
-  link_toko: string | null
-  no_rekening: string | null
-  kontak: string | null
-  terms_of_payment: string | null
-  is_marketplace: boolean
+  customer: { nama: string }[]
+  tanggal_mulai: string | null
+  tanggal_selesai: string | null
   is_active: boolean
   created_at: string
 }
 
-export default function DetailSupplierPage() {
+export default function DetailKontrakPage() {
   const router = useRouter()
   const pathname = usePathname()
   const id = pathname.split("/").pop()
-  const [data, setData] = useState<Supplier | null>(null)
+  const [data, setData] = useState<Kontrak | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     if (!id) return
     supabase
-      .from("supplier")
+      .from("kontrak")
       .select(`
         id,
         nama,
-        kode,
-        nama_toko,
-        link_toko,
-        no_rekening,
-        kontak,
-        terms_of_payment,
-        is_marketplace,
+        customer!inner(nama),
+        tanggal_mulai,
+        tanggal_selesai,
         is_active,
         created_at
       `)
@@ -59,24 +51,25 @@ export default function DetailSupplierPage() {
       .single()
       .then(({ data: result, error: err }) => {
         if (err) setError(err.message)
-        else setData(result as Supplier)
+        else setData(result as Kontrak)
         setLoading(false)
       })
   }, [id])
+
+  const formatDate = (date: string | null) => {
+    if (!date) return "-"
+    return new Date(date).toLocaleDateString("id-ID", {
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+    })
+  }
 
   const statusBadge = (isActive: boolean) => (
     <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
       isActive ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"
     }`}>
       {isActive ? "Active" : "Non-Active"}
-    </span>
-  )
-
-  const marketplaceBadge = (isMarketplace: boolean) => (
-    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-      isMarketplace ? "bg-accent/10 text-accent" : "bg-muted text-muted-foreground"
-    }`}>
-      {isMarketplace ? "Ya" : "Tidak"}
     </span>
   )
 
@@ -101,14 +94,14 @@ export default function DetailSupplierPage() {
     <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-8">
       <BreadcrumbNav items={breadcrumbItems} />
       <PageHeader
-        title={data.nama || "Detail Supplier"}
+        title={data.nama || "Detail Kontrak"}
         description="Informasi lengkap"
         actions={
           <div className="flex gap-2">
-            <Button variant="outline" onClick={() => router.push("/dashboard/master/supplier")}>
+            <Button variant="outline" onClick={() => router.push("/dashboard/master/kontrak")}>
               Kembali
             </Button>
-            <Button onClick={() => router.push(`/dashboard/master/supplier/${id}/edit`)}>
+            <Button onClick={() => router.push(`/dashboard/master/kontrak/${id}/edit`)}>
               Edit
             </Button>
           </div>
@@ -117,47 +110,25 @@ export default function DetailSupplierPage() {
       <Card>
         <CardContent className="pt-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-muted-foreground mb-1">Kode</label>
-              <p className="text-sm font-medium">{data.kode}</p>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-muted-foreground mb-1">Nama Supplier</label>
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-muted-foreground mb-1">Nama Kontrak</label>
               <p className="text-sm font-medium">{data.nama}</p>
             </div>
             <div>
-              <label className="block text-sm font-medium text-muted-foreground mb-1">Nama Toko</label>
-              <p className="text-sm font-medium">{data.nama_toko || "-"}</p>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-muted-foreground mb-1">Link Toko</label>
-              <p className="text-sm font-medium">
-                {data.link_toko ? (
-                  <a href={data.link_toko} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
-                    {data.link_toko}
-                  </a>
-                ) : "-"}
-              </p>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-muted-foreground mb-1">No. Rekening</label>
-              <p className="text-sm font-medium">{data.no_rekening || "-"}</p>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-muted-foreground mb-1">Kontak</label>
-              <p className="text-sm font-medium">{data.kontak || "-"}</p>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-muted-foreground mb-1">Terms of Payment</label>
-              <p className="text-sm font-medium">{data.terms_of_payment || "-"}</p>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-muted-foreground mb-1">Marketplace</label>
-              <p className="text-sm">{marketplaceBadge(data.is_marketplace)}</p>
+              <label className="block text-sm font-medium text-muted-foreground mb-1">Customer</label>
+              <p className="text-sm font-medium">{data.customer?.[0]?.nama || "-"}</p>
             </div>
             <div>
               <label className="block text-sm font-medium text-muted-foreground mb-1">Status</label>
               <p className="text-sm">{statusBadge(data.is_active)}</p>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-muted-foreground mb-1">Tanggal Mulai</label>
+              <p className="text-sm font-medium">{formatDate(data.tanggal_mulai)}</p>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-muted-foreground mb-1">Tanggal Selesai</label>
+              <p className="text-sm font-medium">{formatDate(data.tanggal_selesai)}</p>
             </div>
             <div>
               <label className="block text-sm font-medium text-muted-foreground mb-1">Dibuat Pada</label>

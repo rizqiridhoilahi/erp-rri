@@ -82,7 +82,7 @@
 - [x] Tabel: tambahkan column sorting, filter per kolom, search bar per halaman — via MasterDataTable component
 - [x] Tabel: nomor baris (row number) di kolom pertama — via MasterDataTable component
 - [x] Form: cancel confirmation dialog jika ada perubahan — via useUnsavedChanges hook + ConfirmLeaveDialog component
-- [ ] Detail page untuk setiap entity (bukan hanya edit form)
+- [x] Detail page untuk setiap entity (bukan hanya edit form) — 9 detail pages created
 - [x] Responsive: tabel scroll horizontal di mobile — via MasterDataTable + overflow-x-auto
 
 ### P2 — Pre-Sales (RFQ, Quotation, Negosiasi)

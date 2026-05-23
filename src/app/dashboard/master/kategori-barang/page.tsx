@@ -11,7 +11,7 @@ import { MasterDataTable, Column } from "@/components/master-data-table"
 import { apiFetch } from "@/lib/api/client"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { DeleteConfirmationDialog } from "@/components/delete-confirmation-dialog"
-import { Pencil, Trash2 } from "lucide-react"
+import { Eye, Pencil, Trash2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 
 const breadcrumbItems: BreadcrumbItem[] = [
@@ -52,6 +52,19 @@ export default function KategoriBarangPage() {
 
   const actionButtons = (id: string, name: string) => (
     <div className="flex items-center justify-end gap-1">
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => router.push(`/dashboard/master/kategori-barang/${id}`)}
+            className="hover:bg-accent"
+          >
+            <Eye className="h-4 w-4" />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>Lihat Detail</TooltipContent>
+      </Tooltip>
       <Tooltip>
         <TooltipTrigger asChild>
           <Button
