@@ -62,5 +62,5 @@ export async function GET(request: NextRequest) {
   }
 
   const result = await autoSuggestBarang(parsed.data.query, parsed.data.customer_id, parsed.data.limit)
-  return NextResponse.json({ data: result })
+  return NextResponse.json({ data: { result } })
 }

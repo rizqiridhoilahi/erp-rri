@@ -42,5 +42,5 @@ export async function GET(request: NextRequest) {
   const minPo = parseInt(searchParams.get('min_po') ?? '1', 10)
 
   const result = await rekomendasiSupplier(barangId, minPo)
-  return NextResponse.json({ data: result })
+  return NextResponse.json({ data: { result } })
 }

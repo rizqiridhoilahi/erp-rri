@@ -56,5 +56,5 @@ export async function GET(request: NextRequest) {
 
   const result = await getPriceTrend(parsed.data.barang_id, parsed.data.bulan)
   if (!result) return notFound('Barang tidak ditemukan')
-  return NextResponse.json({ data: result })
+  return NextResponse.json({ data: { result } })
 }

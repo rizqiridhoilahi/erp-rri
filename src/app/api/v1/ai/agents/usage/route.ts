@@ -159,7 +159,8 @@ export async function GET(request: NextRequest) {
     topUsers = topUsers.filter(u => u.user_id.toLowerCase().includes(searchUser.toLowerCase()))
   }
 
-  return NextResponse.json({
+return NextResponse.json({
+  data: {
     total: {
       nego: negoCount ?? 0,
       data: dataCount ?? 0,
@@ -169,5 +170,6 @@ export async function GET(request: NextRequest) {
     daily,
     byTaskType,
     topUsers,
-  })
+  }
+})
 }

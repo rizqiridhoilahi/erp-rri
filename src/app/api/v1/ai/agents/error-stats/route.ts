@@ -115,7 +115,8 @@ export async function GET(request: NextRequest) {
 
   const topErrors = await getTopErrors(fromDate, toDate)
 
-  return NextResponse.json({
+return NextResponse.json({
+  data: {
     period: { from: fromDate, to: toDate },
     agents: {
       nego,
@@ -124,8 +125,8 @@ export async function GET(request: NextRequest) {
       automation,
     },
     topErrors,
-  })
-}
+  }
+})
 
 async function getTopErrors(
   fromDate: string,
@@ -165,11 +166,12 @@ async function getTopErrors(
     }
   }
 
-  return Array.from(errorMap.entries())
-    .map(([key, count]) => {
-      const [agent, ...errorParts] = key.split(':')
-      return { agent, error: errorParts.join(':'), count }
-    })
-    .sort((a, b) => b.count - a.count)
-    .slice(0, 20)
+   return Array.from(errorMap.entries())
+      .map(([key, count]) => {
+        const [agent, ...errorParts] = key.split(':')
+        return { agent, error: errorParts.join(':'), count }
+      })
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 20);
+}
 }
