@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { supabaseAdmin } from '@/lib/api/supabase-server'
 import { verifyAuthWithRole } from '@/lib/api/role-guard'
-import { badRequest, notFound } from '@/lib/api/errors'
+import { badRequest, notFound, internalError } from '@/lib/api/errors'
 import { ROLES } from '@/types/role'
 
 const updateUserSchema = z.object({
