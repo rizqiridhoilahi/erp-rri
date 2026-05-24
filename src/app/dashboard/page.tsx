@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { supabase } from '@/lib/db/client'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { TrendingUp, TrendingDown, Package, Users, Building2, Users2, FileText, ShoppingCart, DollarSign, ClipboardList, AlertTriangle, Clock, Bot, Receipt, Banknote, Truck, ArrowUpRight, ArrowDownRight } from 'lucide-react'
+import { TrendingUp, TrendingDown, Package, Users, Building2, Users2, FileText, ShoppingCart, DollarSign, ClipboardList, AlertTriangle, Clock, Bot, Receipt, Banknote, Truck, ArrowUpRight, ArrowDownRight, Inbox } from 'lucide-react'
 import ManagerDashboard from '@/components/dashboards/manager'
 import SalesDashboard from '@/components/dashboards/sales'
 import ProcurementDashboard from '@/components/dashboards/procurement'
@@ -12,6 +12,7 @@ import GudangDashboard from '@/components/dashboards/gudang'
 import FinanceDashboard from '@/components/dashboards/finance'
 import { StatusBadge } from '@/components/status-badge'
 import { RevenueChart } from '@/components/revenue-chart'
+import { PageHeader } from '@/components/page-header'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -38,17 +39,21 @@ type Stat = { label: string; value: string | number; icon: typeof Package; color
 
 function StatCard({ label, value, icon: Icon, color, subtitle, trend, trendLabel }: Stat) {
   return (
-    <Card className={color ? 'border-border' : ''}>
-      <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className={`text-sm ${color ? 'text-foreground' : 'text-muted-foreground'}`}>{label}</CardTitle>
-        <Icon className={`h-4 w-4 ${color ? 'text-foreground' : 'text-muted-foreground'}`} />
+    <Card className={`overflow-hidden border-t-2 border-t-[#A1A1AA] shadow-[0_1px_3px_rgba(0,0,0,0.05),0_10px_15px_-3px_rgba(0,0,0,0.01),0_4px_6px_-4px_rgba(0,0,0,0.01)] ${color ? '' : ''}`}>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className={`text-sm font-semibold uppercase tracking-wider ${color ? 'text-foreground' : 'text-muted-foreground'}`}>
+          {label}
+        </CardTitle>
+        <div className={`rounded-full p-2 ${color ? 'bg-[#0000FF]/10 text-[#0000FF]' : 'bg-muted text-muted-foreground'}`}>
+          <Icon className="h-4 w-4" />
+        </div>
       </CardHeader>
       <CardContent>
-        <div className="flex items-end justify-between">
-          <div>
-            <p className="text-2xl font-bold">{typeof value === 'number' ? value.toLocaleString('id-ID') : value}</p>
-            {subtitle && <p className="text-xs text-muted-foreground mt-0.5">{subtitle}</p>}
-          </div>
+        <div className="text-2xl font-bold font-heading tracking-tight text-foreground">
+          {typeof value === 'number' ? value.toLocaleString('id-ID') : value}
+        </div>
+        <div className="flex items-center justify-between mt-1">
+          {subtitle && <p className="text-xs text-muted-foreground">{subtitle}</p>}
           {trend !== undefined && (
             <div className={`flex items-center gap-0.5 text-xs font-medium ${trend >= 0 ? 'text-success' : 'text-destructive'}`}>
               {trend >= 0 ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
@@ -143,19 +148,9 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-heading font-bold">Executive Command Center</h1>
-          <p className="text-muted-foreground mt-1">Overview bisnis — {new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</p>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" asChild><a href="/api/v1/export?table=barang" target="_blank">Export Barang</a></Button>
-          <Button variant="outline" size="sm" asChild><a href="/api/v1/export?table=invoice" target="_blank">Export Invoice</a></Button>
-        </div>
-      </div>
 
       <section>
-        <h2 className="text-lg font-heading font-semibold mb-3 flex items-center gap-2"><DollarSign className="h-5 w-5 text-muted-foreground" />Revenue & Profit</h2>
+         <h2 className="text-lg font-heading font-semibold tracking-tight mb-3 flex items-center gap-2"><DollarSign className="h-5 w-5 text-muted-foreground" />Revenue & Profit</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
            <StatCard label="Revenue Bulan Ini" value={`Rp ${revenueBulanIni.toLocaleString('id-ID')}`} icon={TrendingUp} color="success" subtitle={`${(kwitansis.data ?? []).length} kwitansi`} trend={revenueTrend} trendLabel="vs last month" />
            <StatCard label="Piutang (AR)" value={`Rp ${totalPiutang.toLocaleString('id-ID')}`} icon={Banknote} color="warning" subtitle={`${piutangCount} faktur outstanding`} />
@@ -177,7 +172,7 @@ export default async function DashboardPage() {
       </section>
 
       <section>
-        <h2 className="text-lg font-heading font-semibold mb-3 flex items-center gap-2"><ShoppingCart className="h-5 w-5 text-muted-foreground" />Sales Pipeline</h2>
+         <h2 className="text-lg font-heading font-semibold tracking-tight mb-3 flex items-center gap-2"><ShoppingCart className="h-5 w-5 text-muted-foreground" />Sales Pipeline</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-0 rounded-lg border overflow-hidden">
           {[
             { label: 'Quotation', count: rfq.count ?? 0, sub: 'RFQ dikirim ke supplier', icon: FileText, bg: 'bg-muted' },
@@ -210,7 +205,7 @@ export default async function DashboardPage() {
       </section>
 
       <section>
-        <h2 className="text-lg font-heading font-semibold mb-3 flex items-center gap-2"><Package className="h-5 w-5 text-muted-foreground" />Procurement</h2>
+         <h2 className="text-lg font-heading font-semibold tracking-tight mb-3 flex items-center gap-2"><Package className="h-5 w-5 text-muted-foreground" />Procurement</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard label="PR Aktif" value={prCount} icon={ClipboardList} color={prCount > 0 ? 'amber' : undefined} subtitle="Menunggu diproses" />
           <StatCard label="PO Terbuka" value={poCount} icon={FileText} color={poCount > 0 ? 'amber' : undefined} subtitle="Belum dikirim / dikonfirmasi" />
@@ -220,7 +215,7 @@ export default async function DashboardPage() {
       </section>
 
       <section>
-        <h2 className="text-lg font-heading font-semibold mb-3 flex items-center gap-2"><Banknote className="h-5 w-5 text-muted-foreground" />Inventory</h2>
+         <h2 className="text-lg font-heading font-semibold tracking-tight mb-3 flex items-center gap-2"><Banknote className="h-5 w-5 text-muted-foreground" />Inventory</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard label="Total Barang" value={barangsStok.count ?? 0} icon={Package} />
           <StatCard label="Total Stok" value={totalStok.toLocaleString('id-ID')} icon={Building2} subtitle="Unit tersedia" />
@@ -231,14 +226,14 @@ export default async function DashboardPage() {
 
       {prCount > 0 || poCount > 0 || (fakturPajaks.count ?? 0) > 0 || lowStockItems.length > 0 ? (
         <section>
-          <h2 className="text-lg font-heading font-semibold mb-3 flex items-center gap-2 text-destructive"><AlertTriangle className="h-5 w-5 text-destructive" />Butuh Tindakan</h2>
+          <h2 className="text-lg font-heading font-semibold tracking-tight mb-3 flex items-center gap-2 text-destructive"><AlertTriangle className="h-5 w-5 text-destructive" />Butuh Tindakan</h2>
           <Card>
             <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-3 p-4">
-              {prCount > 0 && <Button variant="outline" className="justify-start h-auto py-3" asChild><Link href="/dashboard/purchase-request"><ClipboardList className="h-4 w-4 mr-2 text-warning" />{prCount} PR perlu diproses</Link></Button>}
-              {poCount > 0 && <Button variant="outline" className="justify-start h-auto py-3" asChild><Link href="/dashboard/purchase-order"><FileText className="h-4 w-4 mr-2 text-warning" />{poCount} PO perlu tindakan</Link></Button>}
-              {(fakturPajaks.count ?? 0) > 0 && <Button variant="outline" className="justify-start h-auto py-3" asChild><Link href="/dashboard/faktur-pajak"><Receipt className="h-4 w-4 mr-2 text-warning" />{fakturPajaks.count} Faktur Pajak perlu diterbitkan</Link></Button>}
-              {lowStockItems.length > 0 && <Button variant="outline" className="justify-start h-auto py-3" asChild><Link href="/dashboard/inventory/stok"><AlertTriangle className="h-4 w-4 mr-2 text-destructive" />{lowStockItems.length} barang stok kosong</Link></Button>}
-              {(dos.count ?? 0) > 0 && <Button variant="outline" className="justify-start h-auto py-3" asChild><Link href="/dashboard/delivery-order"><Package className="h-4 w-4 mr-2 text-muted-foreground" />{dos.count} DO perlu dikirim</Link></Button>}
+               {prCount > 0 && <Button variant="default" className="justify-start h-auto py-3 bg-gradient-to-b from-[#0000FF] to-[#0000D9] shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_1px_2px_rgba(0,0,0,0.1)] hover:opacity-95" asChild><Link href="/dashboard/purchase-request"><ClipboardList className="h-4 w-4 mr-2" />{prCount} PR perlu diproses</Link></Button>}
+               {poCount > 0 && <Button variant="outline" className="justify-start h-auto py-3" asChild><Link href="/dashboard/purchase-order"><FileText className="h-4 w-4 mr-2 text-warning" />{poCount} PO perlu tindakan</Link></Button>}
+               {(fakturPajaks.count ?? 0) > 0 && <Button variant="outline" className="justify-start h-auto py-3" asChild><Link href="/dashboard/faktur-pajak"><Receipt className="h-4 w-4 mr-2 text-warning" />{fakturPajaks.count} Faktur Pajak perlu diterbitkan</Link></Button>}
+               {lowStockItems.length > 0 && <Button variant="outline" className="justify-start h-auto py-3" asChild><Link href="/dashboard/inventory/stok"><AlertTriangle className="h-4 w-4 mr-2 text-destructive" />{lowStockItems.length} barang stok kosong</Link></Button>}
+               {(dos.count ?? 0) > 0 && <Button variant="ghost" className="justify-start h-auto py-3" asChild><Link href="/dashboard/delivery-order"><Package className="h-4 w-4 mr-2 text-muted-foreground" />{dos.count} DO perlu dikirim</Link></Button>}
             </CardContent>
           </Card>
         </section>
@@ -248,39 +243,44 @@ export default async function DashboardPage() {
         <Card>
           <CardHeader><CardTitle className="text-base flex items-center gap-2"><Clock className="h-4 w-4 text-muted-foreground" />Aktivitas Terbaru</CardTitle></CardHeader>
           <CardContent>
-            {!recentItems.length ? <p className="text-sm text-muted-foreground">Belum ada aktivitas.</p> :
-            <div className="space-y-1">{recentItems.map(item => (
-              <Link key={item.id + item.label} href={item.href} className="flex items-center justify-between py-2 px-2 rounded-md hover:bg-muted/50 transition-colors">
-                <div className="flex items-center gap-3">
-                  <span className="text-xs px-1.5 py-0.5 rounded bg-muted font-medium text-muted-foreground min-w-[7rem]">{item.label}</span>
-                  <p className="text-sm font-medium">{item.nomor}</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-muted-foreground">{new Date(item.tanggal).toLocaleDateString('id-ID')}</span>
-                  <StatusBadge status={item.status} />
-                </div>
-              </Link>
-            ))}</div>}
+             {!recentItems.length ? (
+               <div className="text-center py-12 border border-dashed rounded-lg bg-muted/20">
+                 <Inbox className="mx-auto h-8 w-8 text-muted-foreground/60 mb-2" />
+                 <p className="text-sm font-medium text-muted-foreground">Belum ada aktivitas terkini</p>
+               </div>
+             ) :
+             <div className="space-y-1">{recentItems.map(item => (
+               <Link key={item.id + item.label} href={item.href} className="flex items-center justify-between py-2 px-2 rounded-md hover:bg-muted/50 transition-colors">
+                 <div className="flex items-center gap-3">
+                   <span className="text-xs px-1.5 py-0.5 rounded bg-muted font-medium text-muted-foreground min-w-[7rem]">{item.label}</span>
+                   <p className="text-sm font-medium">{item.nomor}</p>
+                 </div>
+                 <div className="flex items-center gap-2">
+                   <span className="text-xs text-muted-foreground">{new Date(item.tanggal).toLocaleDateString('id-ID')}</span>
+                   <StatusBadge status={item.status} />
+                 </div>
+               </Link>
+             ))}</div>}
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader><CardTitle className="text-base">Akses Cepat</CardTitle></CardHeader>
           <CardContent className="grid grid-cols-2 gap-2">
-            {[
-              { href: '/dashboard/absensi/tambah', label: 'Input Absensi', icon: Users2 },
-              { href: '/dashboard/penggajian/tambah', label: 'Input Gaji', icon: DollarSign },
-              { href: '/dashboard/invoice/tambah', label: 'Buat Invoice', icon: Receipt },
-              { href: '/dashboard/kwitansi/tambah', label: 'Buat Kwitansi', icon: Banknote },
-              { href: '/dashboard/quotation/tambah', label: 'Buat Quotation', icon: FileText },
-              { href: '/dashboard/purchase-order/tambah', label: 'Buat PO', icon: ShoppingCart },
-              { href: '/dashboard/sales-order/tambah', label: 'Buat SO', icon: DollarSign },
-              { href: '/dashboard/ai/search-harga', label: 'Search Harga', icon: Bot },
-            ].map(item => (
-              <Button key={item.href} variant="outline" className="justify-start h-auto py-3" asChild>
-                <Link href={item.href}><item.icon className="h-4 w-4 mr-2" />{item.label}</Link>
-              </Button>
-            ))}
+           {[
+             { href: '/dashboard/absensi/tambah', label: 'Input Absensi', icon: Users2 },
+             { href: '/dashboard/penggajian/tambah', label: 'Input Gaji', icon: DollarSign },
+             { href: '/dashboard/invoice/tambah', label: 'Buat Invoice', icon: Receipt },
+             { href: '/dashboard/kwitansi/tambah', label: 'Buat Kwitansi', icon: Banknote },
+             { href: '/dashboard/quotation/tambah', label: 'Buat Quotation', icon: FileText },
+             { href: '/dashboard/purchase-order/tambah', label: 'Buat PO', icon: ShoppingCart },
+             { href: '/dashboard/sales-order/tambah', label: 'Buat SO', icon: DollarSign },
+             { href: '/dashboard/ai/search-harga', label: 'Search Harga', icon: Bot },
+           ].map(item => (
+             <Button key={item.href} variant="ghost" className="justify-start h-auto py-3" asChild>
+               <Link href={item.href}><item.icon className="h-4 w-4 mr-2" />{item.label}</Link>
+             </Button>
+           ))}
           </CardContent>
         </Card>
       </div>
@@ -288,20 +288,20 @@ export default async function DashboardPage() {
       <Card>
         <CardHeader><CardTitle className="text-base">Modul</CardTitle></CardHeader>
         <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-2">
-          {[
-            { href: '/dashboard/master/barang', label: 'Master Barang' },
-            { href: '/dashboard/master/supplier', label: 'Supplier' },
-            { href: '/dashboard/master/customer', label: 'Customer' },
-            { href: '/dashboard/master/karyawan', label: 'Karyawan' },
-            { href: '/dashboard/laporan/laba-rugi', label: 'Laba/Rugi' },
-            { href: '/dashboard/laporan/neraca', label: 'Neraca' },
-            { href: '/dashboard/laporan/ar-aging', label: 'AR Aging' },
-            { href: '/dashboard/laporan/arus-kas', label: 'Arus Kas' },
-          ].map(item => (
-            <Button key={item.href} variant="ghost" className="justify-start h-auto py-2" asChild>
-              <Link href={item.href}>{item.label}</Link>
-            </Button>
-          ))}
+           {[
+             { href: '/dashboard/master/barang', label: 'Master Barang' },
+             { href: '/dashboard/master/supplier', label: 'Supplier' },
+             { href: '/dashboard/master/customer', label: 'Customer' },
+             { href: '/dashboard/master/karyawan', label: 'Karyawan' },
+             { href: '/dashboard/laporan/laba-rugi', label: 'Laba/Rugi' },
+             { href: '/dashboard/laporan/neraca', label: 'Neraca' },
+             { href: '/dashboard/laporan/ar-aging', label: 'AR Aging' },
+             { href: '/dashboard/laporan/arus-kas', label: 'Arus Kas' },
+           ].map(item => (
+             <Button key={item.href} variant="ghost" className="justify-start h-auto py-2 text-sm font-medium" asChild>
+               <Link href={item.href}>{item.label}</Link>
+             </Button>
+           ))}
         </CardContent>
       </Card>
     </div>

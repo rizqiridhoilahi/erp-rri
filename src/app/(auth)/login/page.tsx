@@ -99,17 +99,17 @@ export default function LoginPage() {
          </>
        )}
        
-        {/* Luxury header */}
-        <div className="absolute top-8 left-0 right-0 flex justify-center">
-          <div className="flex items-center gap-3 bg-card/80 backdrop-blur-sm px-6 py-3 rounded-full shadow-lg border border-border/50">
-       <img
-        src="/logo/logo-rri-bg-transparan.png"
-        alt="RRI"
-        className="mx-auto h-8 w-auto"
-      />
-            <span className="text-xl font-heading font-bold text-primary">ERP RRI</span>
-          </div>
-        </div>
+         {/* Luxury header */}
+         <div className="absolute top-8 left-0 right-0 flex justify-center">
+           <div className="flex items-center gap-3 bg-card/80 backdrop-blur-sm px-6 py-3 rounded-full shadow-lg border border-border/50">
+             <img
+               src="/logo/logo-rri-bg-transparan.png"
+               alt="RRI"
+               className="h-8 w-auto"
+             />
+             <span className="text-xl font-heading font-bold text-primary">ERP RRI</span>
+           </div>
+         </div>
        
        {/* Login card */}
         <Card className="w-full max-w-md border-0 shadow-2xl sm:border sm:shadow-xl bg-card/80 backdrop-blur-sm border border-border/50">
@@ -218,25 +218,29 @@ export default function LoginPage() {
              )}
            </div>
 
-              <Button
-                type="submit"
-                disabled={loading || showSkeleton}
-                className="w-full h-12 text-base font-semibold rounded-lg bg-gradient-to-b from-[#0000FF] to-[#0000D9] shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_1px_2px_rgba(0,0,0,0.1)] hover:opacity-95 transition-all duration-200 hover:scale-[1.02]"
-                size="lg"
-              >
-               {loading ? 'Memproses...' : 'Masuk'}
-             </Button>
+               <Button
+                 type="submit"
+                 disabled={loading || showSkeleton}
+                 className="w-full h-12 text-base font-semibold rounded-lg bg-gradient-to-b from-[#0000FF] to-[#0000D9] shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_1px_2px_rgba(0,0,0,0.1)] hover:opacity-95 transition-all duration-200"
+               >
+                {loading ? 'Memproses...' : 'Masuk'}
+              </Button>
            </form>
          )}
        </CardContent>
-       <CardFooter className="flex-col space-y-4 pt-2">
-         {!showSkeleton && (
-           <div className="text-sm text-muted-foreground text-center w-full flex items-center justify-center gap-1">
-             <ShieldCheck className="h-4 w-4 text-muted-foreground" />
-             Sistem terlindungi dengan enkripsi end-to-end
-           </div>
-         )}
-       </CardFooter>
+        <CardFooter className="flex-col space-y-4 pt-2">
+          {!showSkeleton && (
+            <>
+              <div className="text-sm text-muted-foreground text-center w-full flex items-center justify-center gap-1">
+                <ShieldCheck className="h-4 w-4 text-muted-foreground" />
+                Sistem terlindungi dengan enkripsi end-to-end
+              </div>
+              <div className="text-xs text-muted-foreground/60 text-center">
+                Sistem ERP LPP RRI — Terintegrasi & Aman
+              </div>
+            </>
+          )}
+        </CardFooter>
      </Card>
     </div>
        </>
