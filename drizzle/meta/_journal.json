@@ -50,6 +50,13 @@
       "when": 1779638497627,
       "tag": "0006_broad_the_fury",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1779652021858,
+      "tag": "0007_add_audit_log_user_fk",
+      "breakpoints": true
     }
   ]
 }
