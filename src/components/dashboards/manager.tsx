@@ -19,17 +19,13 @@ export default async function ManagerDashboard() {
     <div className="space-y-6">
       <div><h1 className="text-3xl font-heading font-bold">Dashboard Manager</h1><p className="text-muted-foreground mt-1">Overview operasional & approval</p></div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className={pr.count && pr.count > 0 ? 'border-amber-200' : ''}>
-          <CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-sm text-muted-foreground">PR Pending Approval</CardTitle><ClipboardList className="h-4 w-4 text-muted-foreground" /></CardHeader>
-          <CardContent><p className="text-2xl font-bold">{pr.count ?? 0}</p></CardContent></Card>
-        <Card className={po.count && po.count > 0 ? 'border-amber-200' : ''}>
-          <CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-sm text-muted-foreground">PO Pending Approval</CardTitle><FileCheck className="h-4 w-4 text-muted-foreground" /></CardHeader>
-          <CardContent><p className="text-2xl font-bold">{po.count ?? 0}</p></CardContent></Card>
-        <Card><CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-sm text-muted-foreground">Sales Order Aktif</CardTitle><ShoppingCart className="h-4 w-4 text-muted-foreground" /></CardHeader>
-          <CardContent><p className="text-2xl font-bold">{so.count ?? 0}</p></CardContent></Card>
-        <Card><CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-sm text-muted-foreground">Kontrak Aktif</CardTitle><FileText className="h-4 w-4 text-muted-foreground" /></CardHeader>
-          <CardContent><p className="text-2xl font-bold">{kontrak.count ?? 0}</p></CardContent></Card>
-        <Card className="border-emerald-200"><CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-sm text-emerald-600">Piutang Outstanding</CardTitle><TrendingUp className="h-4 w-4 text-emerald-600" /></CardHeader>
+        <Card className={pr.count && pr.count > 0 ? 'border-warning/50' : ''}>
+           <CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-sm text-muted-foreground">PR Pending Approval</CardTitle><ClipboardList className="h-4 w-4 text-muted-foreground" /></CardHeader>
+           <CardContent><p className="text-2xl font-bold">{pr.count ?? 0}</p></CardContent></Card>
+         <Card className={po.count && po.count > 0 ? 'border-warning/50' : ''}>
+           <CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-sm text-muted-foreground">PO Pending Approval</CardTitle><FileCheck className="h-4 w-4 text-muted-foreground" /></CardHeader>
+           <CardContent><p className="text-2xl font-bold">{po.count ?? 0}</p></CardContent></Card>
+         <Card className="border-success/50"><CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-sm text-success">Piutang Outstanding</CardTitle><TrendingUp className="h-4 w-4 text-success" /></CardHeader>
           <CardContent><p className="text-2xl font-bold">Rp {totalPiutang.toLocaleString('id-ID')}</p><p className="text-xs text-muted-foreground">{invoices.count ?? 0} faktur</p></CardContent></Card>
         <Card><CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-sm text-muted-foreground">Karyawan Aktif</CardTitle><Users className="h-4 w-4 text-muted-foreground" /></CardHeader>
           <CardContent><p className="text-2xl font-bold">{karyawan.count ?? 0}</p></CardContent></Card>

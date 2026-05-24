@@ -3,23 +3,22 @@ import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer'
 const styles = StyleSheet.create({
   page: { padding: 40, fontFamily: 'Helvetica', fontSize: 10 },
   header: { marginBottom: 24 },
-  title: { fontSize: 18, fontWeight: 'bold', color: '#0F172A', marginBottom: 4 },
-  subtitle: { fontSize: 10, color: '#64748B', marginBottom: 4 },
-  section: { marginBottom: 16 },
-  sectionTitle: { fontSize: 11, fontWeight: 'bold', color: '#0F172A', marginBottom: 6, borderBottomWidth: 1, borderBottomColor: '#E2E8F0', paddingBottom: 4 },
-  row: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 4 },
-  label: { fontSize: 9, color: '#64748B' },
-  value: { fontSize: 9, color: '#0F172A', fontWeight: 'bold' },
-  table: { borderWidth: 1, borderColor: '#E2E8F0', marginTop: 8 },
-  tableHeader: { flexDirection: 'row', backgroundColor: '#F8FAFC', borderBottomWidth: 1, padding: '6 8' },
-  tableHeaderCell: { flex: 1, fontSize: 8, fontWeight: 'bold', color: '#64748B' },
-  tableRow: { flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: '#F1F5F9', padding: '6 8' },
-  tableCell: { flex: 1, fontSize: 8, color: '#0F172A' },
-  totalSection: { marginTop: 16, alignItems: 'flex-end' },
-  totalRow: { flexDirection: 'row', padding: '3 0' },
-  totalLabel: { fontSize: 9, color: '#64748B', width: 100 },
-  totalValue: { fontSize: 9, fontWeight: 'bold', width: 100, textAlign: 'right' },
-  grandTotal: { fontSize: 11, fontWeight: 'bold', color: '#0F172A', marginTop: 6, borderTopWidth: 2, borderTopColor: '#0F172A', paddingTop: 6 },
+   title: { fontSize: 18, fontWeight: 'bold', color: 'hsl(var(--foreground))', marginBottom: 4 },
+   subtitle: { fontSize: 10, color: 'hsl(var(--muted-foreground))', marginBottom: 4 },
+   sectionTitle: { fontSize: 11, fontWeight: 'bold', color: 'hsl(var(--foreground))', marginBottom: 6, borderBottomWidth: 1, borderBottomColor: 'hsl(var(--border))', paddingBottom: 4 },
+   row: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 4 },
+   label: { fontSize: 9, color: 'hsl(var(--muted-foreground))' },
+   value: { fontSize: 9, color: 'hsl(var(--foreground))', fontWeight: 'bold' },
+   table: { borderWidth: 1, borderColor: 'hsl(var(--border))', marginTop: 8 },
+   tableHeader: { flexDirection: 'row', backgroundColor: 'hsl(var(--muted))', borderBottomWidth: 1, borderBottomColor: 'hsl(var(--border))', padding: '6 8' },
+   tableHeaderCell: { flex: 1, fontSize: 8, fontWeight: 'bold', color: 'hsl(var(--muted-foreground))' },
+   tableRow: { flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: 'hsl(var(--border))', padding: '6 8' },
+   tableCell: { flex: 1, fontSize: 8, color: 'hsl(var(--foreground))' },
+   totalSection: { marginTop: 16, alignItems: 'flex-end' },
+   totalRow: { flexDirection: 'row', padding: '3 0' },
+   totalLabel: { fontSize: 9, color: 'hsl(var(--muted-foreground))', width: 100 },
+   totalValue: { fontSize: 9, fontWeight: 'bold', width: 100, textAlign: 'right' },
+   grandTotal: { fontSize: 11, fontWeight: 'bold', color: 'hsl(var(--foreground))', marginTop: 6, borderTopWidth: 2, borderTopColor: 'hsl(var(--primary))', paddingTop: 6 },
   footer: { position: 'absolute', bottom: 30, left: 40, right: 40, textAlign: 'center', fontSize: 8, color: '#94A3B8', borderTopWidth: 1, borderTopColor: '#E2E8F0', paddingTop: 10 },
 })
 
@@ -43,16 +42,16 @@ export function FakturPajakPDF({ data }: { data: FakturPajakData }) {
           <Text style={styles.title}>Faktur Pajak</Text>
           <Text style={styles.subtitle}>No. {data.nomor}</Text>
           <Text style={styles.subtitle}>Tanggal: {new Date(data.tanggal).toLocaleDateString('id-ID')}</Text>
-        </View>
-        <View style={styles.section}>
+         </View>
+        <View>
           <Text style={styles.sectionTitle}>Data Transaksi</Text>
           <View style={styles.row}><Text style={styles.label}>Customer / Supplier</Text><Text style={styles.value}>{data.customerNama ?? data.supplierNama ?? '-'}</Text></View>
           <View style={styles.row}><Text style={styles.label}>DPP</Text><Text style={styles.value}>Rp {data.dpp.toLocaleString('id-ID')}</Text></View>
           <View style={styles.row}><Text style={styles.label}>PPN (11%)</Text><Text style={styles.value}>Rp {data.ppn.toLocaleString('id-ID')}</Text></View>
           {data.pph != null && <View style={styles.row}><Text style={styles.label}>PPh</Text><Text style={styles.value}>Rp {data.pph.toLocaleString('id-ID')}</Text></View>}
-        </View>
+         </View>
         {data.items && data.items.length > 0 && (
-          <View style={styles.section}>
+          <View>
             <Text style={styles.sectionTitle}>Detail Item</Text>
             <View style={styles.table}>
               <View style={styles.tableHeader}>

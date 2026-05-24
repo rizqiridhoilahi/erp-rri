@@ -62,8 +62,8 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   return (
     <Ctx.Provider value={{ startTour }}>
       {showWelcome && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 p-8 text-center space-y-6">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-card rounded-xl shadow-2xl max-w-md w-full mx-4 p-8 text-center space-y-6">
             <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
               <span className="text-3xl font-heading font-bold text-primary">ERP</span>
             </div>
@@ -76,7 +76,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
             <div className="space-y-3">
               <button
                 onClick={handleWelcomeStart}
-                className="w-full bg-primary text-white rounded-lg py-2.5 font-medium hover:bg-primary/90 transition-colors"
+                className="w-full bg-primary text-primary-foreground rounded-lg py-2.5 font-medium hover:bg-primary/90 transition-colors"
               >
                 Mulai Tur
               </button>
@@ -108,23 +108,23 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
         }}
         styles={{
           arrow: { color: '#FFFFFF' },
-          buttonPrimary: {
-            backgroundColor: '#0369A1',
-            borderRadius: '8px',
-            fontSize: '14px',
-            padding: '8px 16px',
-          },
-          buttonBack: {
-            color: '#475569',
-            fontSize: '14px',
-          },
-          buttonSkip: {
-            color: '#94a3b8',
-            fontSize: '14px',
-          },
-          overlay: { backgroundColor: 'rgba(0, 0, 0, 0.4)' },
-          tooltipContainer: { textAlign: 'left' },
-          tooltip: { backgroundColor: '#FFFFFF', borderRadius: '12px', padding: '20px' },
+           buttonPrimary: {
+             backgroundColor: 'hsl(var(--primary))',
+             borderRadius: '8px',
+             fontSize: '14px',
+             padding: '8px 16px',
+           },
+           buttonBack: {
+             color: 'hsl(var(--muted-foreground))',
+             fontSize: '14px',
+           },
+           buttonSkip: {
+             color: 'hsl(var(--muted-foreground))',
+             fontSize: '14px',
+           },
+           overlay: { backgroundColor: 'bg-black/40' },
+           tooltipContainer: { textAlign: 'left' },
+           tooltip: { backgroundColor: 'hsl(var(--card))', borderRadius: '12px', padding: '20px' },
           tooltipContent: { color: '#020617', fontSize: '14px', lineHeight: '1.5' },
           tooltipTitle: { color: '#020617', fontSize: '18px', fontWeight: 600 },
         }}

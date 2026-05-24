@@ -3,19 +3,18 @@ import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer'
 const styles = StyleSheet.create({
   page: { padding: 40, fontFamily: 'Helvetica', fontSize: 10 },
   header: { marginBottom: 24 },
-  title: { fontSize: 18, fontWeight: 'bold', color: '#0F172A', marginBottom: 4 },
-  subtitle: { fontSize: 10, color: '#64748B', marginBottom: 4 },
-  section: { marginBottom: 16 },
-  sectionTitle: { fontSize: 11, fontWeight: 'bold', color: '#0F172A', marginBottom: 6, borderBottomWidth: 1, borderBottomColor: '#E2E8F0', paddingBottom: 4 },
-  row: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 3 },
-  label: { fontSize: 9, color: '#64748B' },
-  value: { fontSize: 9, color: '#0F172A' },
-  table: { borderWidth: 1, borderColor: '#E2E8F0', marginTop: 8 },
-  tableHeader: { flexDirection: 'row', backgroundColor: '#F8FAFC', borderBottomWidth: 1, padding: '6 8' },
-  tableHeaderCell: { flex: 1, fontSize: 8, fontWeight: 'bold', color: '#64748B' },
-  tableRow: { flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: '#F1F5F9', padding: '6 8' },
-  tableCell: { flex: 1, fontSize: 8, color: '#0F172A' },
-  footer: { position: 'absolute', bottom: 30, left: 40, right: 40, textAlign: 'center', fontSize: 8, color: '#94A3B8', borderTopWidth: 1, borderTopColor: '#E2E8F0', paddingTop: 10 },
+   title: { fontSize: 18, fontWeight: 'bold', color: 'hsl(var(--foreground))', marginBottom: 4 },
+   subtitle: { fontSize: 10, color: 'hsl(var(--muted-foreground))', marginBottom: 4 },
+   sectionTitle: { fontSize: 11, fontWeight: 'bold', color: 'hsl(var(--foreground))', marginBottom: 6, borderBottomWidth: 1, borderBottomColor: 'hsl(var(--border))', paddingBottom: 4 },
+   row: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 3 },
+   label: { fontSize: 9, color: 'hsl(var(--muted-foreground))' },
+   value: { fontSize: 9, color: 'hsl(var(--foreground))' },
+   table: { borderWidth: 1, borderColor: 'hsl(var(--border))', marginTop: 8 },
+   tableHeader: { flexDirection: 'row', backgroundColor: 'hsl(var(--muted))', borderBottomWidth: 1, borderBottomColor: 'hsl(var(--border))', padding: '6 8' },
+   tableHeaderCell: { flex: 1, fontSize: 8, fontWeight: 'bold', color: 'hsl(var(--muted-foreground))' },
+   tableRow: { flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: 'hsl(var(--border))', padding: '6 8' },
+   tableCell: { flex: 1, fontSize: 8, color: 'hsl(var(--foreground))' },
+   footer: { position: 'absolute', bottom: 30, left: 40, right: 40, textAlign: 'center', fontSize: 8, color: 'hsl(var(--muted-foreground))', borderTopWidth: 1, borderTopColor: 'hsl(var(--border))', paddingTop: 10 },
 })
 
 interface DokumenUmumData {
@@ -37,20 +36,9 @@ export function DokumenUmumPDF({ data }: { data: DokumenUmumData }) {
           <Text style={styles.title}>{data.judul}</Text>
           <Text style={styles.subtitle}>No. {data.nomor}</Text>
           <Text style={styles.subtitle}>Tanggal: {new Date(data.tanggal).toLocaleDateString('id-ID')}</Text>
-        </View>
-        {data.infoRows.length > 0 && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Informasi</Text>
-            {data.infoRows.map((row, i) => (
-              <View key={i} style={styles.row}>
-                <Text style={styles.label}>{row.label}</Text>
-                <Text style={styles.value}>{row.value}</Text>
-              </View>
-            ))}
-          </View>
-        )}
+         </View>
         {data.items.length > 0 && (
-          <View style={styles.section}>
+          <View>
             <Text style={styles.sectionTitle}>Item</Text>
             <View style={styles.table}>
               <View style={styles.tableHeader}>

@@ -1,0 +1,70 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 249 98% 98%;
+    --foreground: 222 90% 6%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 90% 6%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 90% 6%;
+    --primary: 224 100% 50%; /* #0000FF */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 17% 96%; /* #F3F4F6 */
+    --secondary-foreground: 220 30% 10%; /* #111827 */
+    --muted: 210 17% 96%; /* #F3F4F6 */
+    --muted-foreground: 215 14% 51%; /* #6B7280 */
+    --accent: 0 0% 63%; /* #A1A1AA */
+    --accent-foreground: 220 30% 10%; /* #111827 */
+    --destructive: 0 72% 63%; /* #EF4444 */
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 13% 91%; /* #E5E7EB */
+    --input: 220 13% 91%; /* #E5E7EB */
+    --ring: 224 100% 50%; /* #0000FF */
+    --radius: 0.5rem;
+    --success: 142 71% 45%; /* #22C55E */
+    --success-foreground: 0 0% 100%;
+    --warning: 33 93% 50%; /* #F59E0B */
+    --warning-foreground: 220 30% 10%; /* #111827 */
+  }
+
+  .dark {
+    --background: 220 30% 9%; /* #111827 */
+    --foreground: 210 20% 98%; /* #F9FAFB */
+    --card: 220 26% 11%; /* #1F2937 */
+    --card-foreground: 210 20% 98%; /* #F9FAFB */
+    --popover: 220 26% 11%; /* #1F2937 */
+    --popover-foreground: 210 20% 98%; /* #F9FAFB */
+    --primary: 212 90% 53%; /* #3B82F6 */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 217 19% 27%; /* #374151 */
+    --secondary-foreground: 210 20% 98%; /* #F9FAFB */
+    --muted: 217 19% 27%; /* #374151 */
+    --muted-foreground: 215 14% 63%; /* #9CA3AF */
+    --accent: 0 0% 45%; /* #71717A */
+    --accent-foreground: 210 20% 98%; /* #F9FAFB */
+    --destructive: 0 72% 72%; /* #F87171 */
+    --destructive-foreground: 220 30% 10%; /* #111827 */
+    --border: 217 19% 27%; /* #374151 */
+    --input: 217 19% 27%; /* #374151 */
+    --ring: 212 90% 53%; /* #3B82F6 */
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "kern", "liga", "tnum";
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading;
+  }
+  p, span, div, label, input, textarea, button {
+    @apply font-body;
+  }
+}

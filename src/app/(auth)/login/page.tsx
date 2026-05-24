@@ -7,7 +7,7 @@ import { supabase } from '@/lib/db/client'
 import { z } from 'zod'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Eye, EyeOff, LogIn, ShieldCheck, Sparkles } from 'lucide-react'
+import { Eye, EyeOff, ShieldCheck } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -24,7 +24,7 @@ type LoginFormValues = z.infer<typeof loginSchema>
 // Shimmer animation for loading skeleton
 const shimmerStyle = `
   .shimmer {
-    background: linear-gradient(90deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.2) 20%, rgba(255,255,255,0.1) 40%, rgba(255,255,255,0.1) 100%);
+    background: linear-gradient(90deg, bg-white/10 0%, bg-white/20 20%, bg-white/10 40%, bg-white/10 100%);
     background-size: 200% 100%;
     animation: shimmer 1.5s infinite;
   }
@@ -87,39 +87,47 @@ export default function LoginPage() {
    return (
      <>
        <style jsx global>{shimmerStyle}</style>
-       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center p-4 relative overflow-hidden">
+        <div className="min-h-screen bg-gradient-to-br from-background/80 to-background/90 flex items-center justify-center p-4 relative overflow-hidden">
        {/* Decorative elements */}
        {mounted && (
          <>
-           <div className="absolute top-10 left-10 w-32 h-32 bg-accent/10 rounded-full blur-3xl opacity-30"></div>
-           <div className="absolute bottom-20 right-20 w-48 h-48 bg-accent/10 rounded-full blur-3xl opacity-20"></div>
-           <div className="absolute top-1/2 left-1/4 w-2 h-2 bg-amber-400 rounded-full"></div>
-           <div className="absolute top-1/3 right-1/3 w-1 h-1 bg-amber-300 rounded-full"></div>
+          <div className="absolute top-10 left-10 w-32 h-32 bg-primary/10 rounded-full blur-3xl opacity-30"></div>
+            <div className="absolute bottom-20 right-20 w-48 h-48 bg-accent/10 rounded-full blur-3xl opacity-20"></div>
+            <div className="absolute top-1/2 left-1/4 w-2 h-2 bg-accent rounded-full"></div>
+            <div className="absolute top-1/3 right-1/3 w-1 h-1 bg-primary/50 rounded-full"></div>
          </>
        )}
        
-       {/* Luxury header */}
-       <div className="absolute top-8 left-0 right-0 flex justify-center">
-         <div className="flex items-center gap-2 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm px-6 py-3 rounded-full shadow-lg border border-white/20 dark:border-gray-700/50">
-           <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-             <LogIn className="h-5 w-5 text-primary-foreground" />
-           </div>
-           <span className="text-xl font-heading font-bold text-primary">ERP RRI</span>
-         </div>
-       </div>
+        {/* Luxury header */}
+        <div className="absolute top-8 left-0 right-0 flex justify-center">
+          <div className="flex items-center gap-3 bg-card/80 backdrop-blur-sm px-6 py-3 rounded-full shadow-lg border border-border/50">
+            <img
+              src="/logo/logo-rri-bg-transparan.png"
+              alt="Logo RRI"
+              className="h-8 w-auto"
+              loading="eager"
+            />
+            <span className="text-xl font-heading font-bold text-primary">ERP RRI</span>
+          </div>
+        </div>
        
        {/* Login card */}
-       <Card className="w-full max-w-md border-0 shadow-2xl sm:border sm:shadow-xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-white/20 dark:border-gray-700/50">
+        <Card className="w-full max-w-md border-0 shadow-2xl sm:border sm:shadow-xl bg-card/80 backdrop-blur-sm border border-border/50">
          <CardHeader className="space-y-3 pb-6 text-center">
-           <div className="flex justify-center mb-4">
-             <div className="p-3 bg-accent/10 rounded-full">
-               <Sparkles className="h-8 w-8 text-accent" />
-             </div>
-           </div>
-           <CardTitle className="text-3xl font-heading font-bold text-primary">Selamat Datang</CardTitle>
-           <CardDescription className="text-muted-foreground">
-             Masukkan kredensial untuk mengakses dashboard profesional
-           </CardDescription>
+            <div className="flex justify-center mb-4">
+              <div className="p-3 bg-accent/10 rounded-full">
+                <img
+                  src="/logo/logo-rri-bg-transparan.png"
+                  alt="Logo RRI"
+                  className="h-10 w-auto"
+                  loading="eager"
+                />
+              </div>
+            </div>
+            <CardTitle className="text-3xl font-heading font-bold text-primary tracking-tight">Selamat Datang</CardTitle>
+            <CardDescription className="text-muted-foreground">
+              Masukkan kredensial untuk mengakses dashboard profesional
+            </CardDescription>
          </CardHeader>
          <CardContent>
            {showSkeleton ? (
@@ -149,16 +157,16 @@ export default function LoginPage() {
            <div className="space-y-2">
              <Label htmlFor="email" className="text-sm font-medium">Email</Label>
              <div className="relative">
-               <Input
-                 id="email"
-                 type="email"
-                 placeholder="nama@perusahaan.com"
-                 autoComplete="email"
-                 autoFocus
-                 {...register('email')}
-                 aria-invalid={!!errors.email}
-                 className="h-12 pl-10 rounded-lg border border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-gray-700/50 hover:border-accent/50 focus:ring-2 focus:ring-accent focus:border-accent transition-all duration-200"
-               />
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="nama@perusahaan.com"
+                  autoComplete="email"
+                  autoFocus
+                  {...register('email')}
+                  aria-invalid={!!errors.email}
+                  className="h-12 pl-10 rounded-lg border border-border bg-muted/50 hover:border-accent/50 focus:ring-2 focus:ring-accent focus:border-accent transition-all duration-200"
+                />
                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
@@ -176,15 +184,15 @@ export default function LoginPage() {
            <div className="space-y-2">
              <Label htmlFor="password" className="text-sm font-medium">Password</Label>
              <div className="relative">
-               <Input
-                 id="password"
-                 type={showPassword ? 'text' : 'password'}
-                 placeholder="••••••••••"
-                 autoComplete="current-password"
-                 {...register('password')}
-                 aria-invalid={!!errors.password}
-                 className="h-12 pl-10 rounded-lg border border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-gray-700/50 hover:border-accent/50 focus:ring-2 focus:ring-accent focus:border-accent transition-all duration-200"
-               />
+                <Input
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="••••••••••"
+                  autoComplete="current-password"
+                  {...register('password')}
+                  aria-invalid={!!errors.password}
+                  className="h-12 pl-10 rounded-lg border border-border bg-muted/50 hover:border-accent/50 focus:ring-2 focus:ring-accent focus:border-accent transition-all duration-200"
+                />
                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
@@ -209,12 +217,12 @@ export default function LoginPage() {
              )}
            </div>
 
-             <Button
-               type="submit"
-               disabled={loading || showSkeleton}
-               className="w-full h-12 text-base font-semibold rounded-lg transition-all duration-200 hover:scale-[1.02] hover:brightness-105 shadow-md hover:shadow-lg"
-               size="lg"
-             >
+              <Button
+                type="submit"
+                disabled={loading || showSkeleton}
+                className="w-full h-12 text-base font-semibold rounded-lg bg-gradient-to-b from-[#0000FF] to-[#0000D9] shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_1px_2px_rgba(0,0,0,0.1)] hover:opacity-95 transition-all duration-200 hover:scale-[1.02]"
+                size="lg"
+              >
                {loading ? 'Memproses...' : 'Masuk'}
              </Button>
            </form>

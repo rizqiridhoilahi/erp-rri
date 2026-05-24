@@ -157,9 +157,9 @@ export default async function DashboardPage() {
       <section>
         <h2 className="text-lg font-heading font-semibold mb-3 flex items-center gap-2"><DollarSign className="h-5 w-5 text-muted-foreground" />Revenue & Profit</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-          <StatCard label="Revenue Bulan Ini" value={`Rp ${revenueBulanIni.toLocaleString('id-ID')}`} icon={TrendingUp} color="emerald" subtitle={`${(kwitansis.data ?? []).length} kwitansi`} trend={revenueTrend} trendLabel="vs last month" />
-          <StatCard label="Piutang (AR)" value={`Rp ${totalPiutang.toLocaleString('id-ID')}`} icon={Banknote} color="amber" subtitle={`${piutangCount} faktur outstanding`} />
-          <StatCard label="Hutang (AP)" value={totalHutang} icon={TrendingDown} color="red" subtitle="PO belum lunas" />
+           <StatCard label="Revenue Bulan Ini" value={`Rp ${revenueBulanIni.toLocaleString('id-ID')}`} icon={TrendingUp} color="success" subtitle={`${(kwitansis.data ?? []).length} kwitansi`} trend={revenueTrend} trendLabel="vs last month" />
+           <StatCard label="Piutang (AR)" value={`Rp ${totalPiutang.toLocaleString('id-ID')}`} icon={Banknote} color="warning" subtitle={`${piutangCount} faktur outstanding`} />
+           <StatCard label="Hutang (AP)" value={totalHutang} icon={TrendingDown} color="destructive" subtitle="PO belum lunas" />
           <StatCard label="Karyawan Aktif" value={karyawan.count ?? 0} icon={Users2} />
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -204,8 +204,8 @@ export default async function DashboardPage() {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
           <StatCard label="Customer Aktif" value={cust.count ?? 0} icon={Users} subtitle="Total customer terdaftar" />
-          <StatCard label="Piutang Outstanding" value={piutangCount} icon={Banknote} color="amber" subtitle="Faktur belum dibayar" />
-          <StatCard label="Delivery Pending" value={dos.count ?? 0} icon={Truck} color="blue" subtitle="Siap dikirim" />
+           <StatCard label="Piutang Outstanding" value={piutangCount} icon={Banknote} color="warning" subtitle="Faktur belum dibayar" />
+           <StatCard label="Delivery Pending" value={dos.count ?? 0} icon={Truck} color="primary" subtitle="Siap dikirim" />
         </div>
       </section>
 
