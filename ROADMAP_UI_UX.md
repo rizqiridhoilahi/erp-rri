@@ -191,6 +191,31 @@
 - [x] Semua form pakai shadcn/ui Card, Input, Button, Label
 - [x] Bahasa Indonesia untuk semua label dan pesan error
 
+## P0-P2 Remaining UI/UX Gaps (Post-Audit)
+
+### P0 — Critical Missing Pages
+- [ ] **Laporan PPN Masa** — Halaman baru `/dashboard/laporan/ppn-masa`. Filter bulan/tahun. Tabel perbandingan PPN Keluaran (dari invoice penjualan) vs PPN Masukan (dari purchase order/pembelian). Ringkasan: Total PPN Keluaran, Total PPN Masukan, Kurang/Lebih Bayar. Komponen: PeriodFilter (shared), DataTable, KPI summary cards. Export PDF/Excel.
+- [ ] **Stock Opname** — Halaman baru `/dashboard/inventory/stock-opname`. Flow: Buat sesi (pilih gudang, input nama petugas) → Input stok fisik per barang (searchable) → Lihat selisih dengan stok sistem → Approve/Reject selisih → Sistem adjust otomatis. Komponen: TableRow pattern dengan color-coded selisih (hijau = cocok, merah = beda), form input cepat, AlertDialog untuk approval.
+- [ ] **Supplier Payment** — Halaman baru `/dashboard/procurement/supplier-payment`. Tabel daftar AP outstanding, inline pay button, form pembayaran (nominal, tanggal bayar, upload bukti transfer). Komponen: FileUpload untuk bukti transfer, StatusBadge (Lunas/Partial/Outstanding), form validasi.
+
+### P1 — Enhancement (Enterprise Readiness)
+- [x] **User Management** — Halaman `/dashboard/system/users`. Tabel: nama, email, role, status (Active/Non-Active), last login. Inline edit role (Select), toggle active status (Switch), tambah user (Dialog form). Komponen: shadcn Table + Select + Switch + Dialog.
+- [x] **Role-Based Navigation** — Filter sidebar berdasarkan role. Implementasi di `sidebar-nav.tsx`: map role → menu groups yang diizinkan. Owner = all menu. Setiap role hanya lihat menu sesuai izinnya. Active state tetap pakai `usePathname` + `bg-accent`.
+- [ ] **Bulk Import Excel** — Halaman `/dashboard/tools/bulk-import`. Upload Excel → preview data (tabel scroll horizontal) → validasi per baris (color-coded: hijau valid, merah error) → konfirmasi import → result (sukses/gagal count). Komponen: FileUpload (drag & drop Excel), DataTable preview, loading state progress bar, result summary card.
+- [ ] **Missing OpenAPI Docs** — Tambah JSDoc annotation ke 5 endpoint yang belum. Gunakan pola yang sama seperti existing (route handler docblock dengan @openapi tags). Regenerate spec. Tidak perlu UI.
+- [ ] **Global Search Enhancement** — Perluas `GlobalSearch` component (Command + CommandDialog) untuk 17 tabel baru. Pastikan hasil dikelompokkan per modul dengan ikon Lucide yang sesuai. Skeleton loading saat search. Debounce 300ms. Keyboard shortcut `/` dan `Ctrl+K`.
+- [ ] **Missing PDF Generations** — 11 dokumen PDF baru menggunakan @react-pdf/renderer. Template: header (logo + alamat RRI), info dokumen (nomor, tanggal), tabel items, signature section. Ikuti pola existing PDF components di `/components/pdf/`. Tersedia tombol "Download PDF" + "Preview PDF" di halaman detail masing-masing dokumen.
+
+### P2 — UI/UX Improvements
+- [ ] **WhatsApp Triggers UI** — 2 notifikasi baru: PO/DI Deal ke PIC Customer + Approval Request ke Manager. Cukup update trigger logic di `src/lib/utils/whatsapp.ts` + halaman notifikasi existing untuk tracking. Tidak perlu halaman baru.
+- [ ] **Approval Escalation UI** — Badge "Pending" dengan waktu di PR/PO list page. Jika >24 jam, muncul visual warning (Badge destructive + tooltip "Butuh escalation"). Halaman detail PR/PO: escalation history timeline. Tombol "Escalate Now" manual. Notifikasi in-app sonner toast.
+- [ ] **System Health Dashboard** — Halaman `/dashboard/system/health`. Cards: Uptime (dummy until API monitoring active), Error Rate (from AI error-stats), DB Connection (check), Storage Usage (Supabase Storage quota). Komponen: Card + Skeleton loading + StatusBadge (Healthy/Warning/Critical) + mini chart (AreaChart untuk error trend).
+- [ ] **Detail Pages (4 pages)** — Ikuti pola existing detail pages (StatusWorkflow, CopyButton, dokumen terkait link, ActivityTimeline):
+  - Retur Pembelian: tabel items retur, status (Draft→Dikirim→Diproses→Selesai), activity timeline
+  - Retur Penjualan: tabel items retur, status (Draft→Diproses→Selesai), activity timeline
+  - Absensi (per karyawan per bulan): kalender kehadiran, summary cards (hadir/sakit/izin/cuti)
+  - Penggajian (per periode): breakdown komponen gaji, slip preview link
+
 ## Implementation Notes
 1. **Tidak perlu ganti font** — Lexend + Source Sans 3 sudah sesuai rekomendasi
 2. **Tidak perlu ganti warna** — navy-blue scheme sudah enterprise-grade

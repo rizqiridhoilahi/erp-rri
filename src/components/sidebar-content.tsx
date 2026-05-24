@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
-import { ChevronDown } from 'lucide-react'
+import { ChevronDown, Settings } from 'lucide-react'
 import {
   Home, Package, Users, Building2, UserCircle, BookOpen, FileText, FolderTree, Briefcase, Users2,
   Search, ShoppingCart, Landmark, Receipt, ReceiptText, BookOpenCheck, TrendingUp, TrendingDown,
@@ -12,7 +12,9 @@ import {
 } from 'lucide-react'
 import { useTheme } from '@/components/theme/theme-provider'
 import { PanduanButton } from '@/components/onboarding/panduan-button'
+import { useAuth } from '@/lib/hooks/use-auth'
 import { cn } from '@/lib/utils'
+import { MODULE_PERMISSIONS, type Role } from '@/types/role'
 
 interface MenuLink {
   href: string
@@ -98,10 +100,26 @@ const menuItems: MenuItem[] = [
     { href: '/dashboard/penggajian', label: 'Penggajian', icon: DollarSign },
   ]},
   { label: 'System', icon: ShieldCheck, children: [
+    { href: '/dashboard/system/users', label: 'User Management', icon: Users },
+    { href: '/dashboard/system/profile', label: 'Profil', icon: Settings },
     { href: '/dashboard/audit-log', label: 'Audit Trail', icon: ClipboardList },
     { href: '/dashboard/notifikasi', label: 'Notifikasi', icon: Bell },
   ]},
 ]
+
+const labelToModule: Record<string, string> = {
+  Dashboard: 'system',
+  'Master Data': 'master',
+  'Pre-Sales': 'pre-sales',
+  Sales: 'sales',
+  Procurement: 'procurement',
+  Inventory: 'inventory',
+  Finance: 'finance',
+  Laporan: 'laporan',
+  'AI Agent': 'ai',
+  HR: 'hr',
+  System: 'system',
+}
 
 function isActive(href: string, pathname: string): boolean {
   if (href === '/dashboard') return pathname === '/dashboard'
@@ -131,14 +149,34 @@ function SidebarNavLink({ href, icon: Icon, label, collapsed }: { href: string; 
   )
 }
 
+function filterMenuByRole(items: MenuItem[], role: Role): MenuItem[] {
+  return items.filter((item) => {
+    if (isGroup(item)) {
+      const modKey = labelToModule[item.label]
+      const allowed = modKey ? MODULE_PERMISSIONS[modKey] : undefined
+      if (allowed && !allowed.includes(role)) return false
+      item.children = item.children.filter((child) => {
+        const childModKey = labelToModule[child.label] ?? modKey
+        const childAllowed = childModKey ? MODULE_PERMISSIONS[childModKey] : undefined
+        return !childAllowed || childAllowed.includes(role)
+      })
+      return item.children.length > 0
+    }
+    return true
+  })
+}
+
 export function SidebarContent({ collapsed }: { collapsed?: boolean }) {
   const { theme, toggleTheme } = useTheme()
   const pathname = usePathname()
+  const { user } = useAuth()
+  const role = (user?.role as Role) ?? 'owner'
+  const visibleItems = filterMenuByRole(menuItems, role)
 
   return (
     <>
       <nav className="flex-1 overflow-y-auto p-3 space-y-1">
-        {menuItems.map((item) => {
+        {visibleItems.map((item) => {
           if (isGroup(item)) {
             const expanded = groupHasActive(item, pathname)
             return <SidebarGroup key={item.label} group={item} defaultOpen={expanded} collapsed={collapsed} />

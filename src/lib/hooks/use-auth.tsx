@@ -6,6 +6,7 @@ import { supabase } from '@/lib/db/client'
 interface User {
   id: string
   email: string
+  name?: string
   role: string
 }
 
@@ -32,6 +33,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setUser({
             id: session.user.id,
             email: session.user.email || '',
+            name: session.user.user_metadata?.name || '',
             role: session.user.user_metadata?.role || 'owner',
           })
         }
@@ -50,6 +52,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser({
           id: session.user.id,
           email: session.user.email || '',
+          name: session.user.user_metadata?.name || '',
           role: session.user.user_metadata?.role || 'owner',
         })
       } else if (event === 'SIGNED_OUT') {

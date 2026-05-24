@@ -8,6 +8,10 @@ export function unauthorized(message = 'Authentication required') {
   return NextResponse.json({ error: message, code: 'UNAUTHORIZED' }, { status: 401 })
 }
 
+export function forbidden(message = 'Access denied') {
+  return NextResponse.json({ error: message, code: 'FORBIDDEN' }, { status: 403 })
+}
+
 export function notFound(message = 'Resource not found') {
   return NextResponse.json({ error: message, code: 'NOT_FOUND' }, { status: 404 })
 }

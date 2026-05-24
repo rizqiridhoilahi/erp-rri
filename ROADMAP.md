@@ -125,3 +125,24 @@
 - [x] **Price Trend Analysis** — `src/lib/ai/price-trend.ts` + API + dashboard page (recharts chart) + sidebar
 - [x] **Anomaly Detection** — `src/lib/ai/anomaly-detection.ts` (z-score stats) + API + dashboard page + sidebar
 - [x] **PRD.md update** — tech stack NVIDIA NIM, 3-agent architecture, automation triggers, rate limiting, error monitoring, 4 new features
+
+## Fase 11 — Post-Audit Gap Closure (May 2026)
+
+### P0 — Critical Missing Features (Core Business)
+- [ ] **Laporan PPN Masa** — Rekap PPN masa per bulan untuk pelaporan ke Kantor Pajak. Filter periode, detail PPN Keluaran (penjualan) + PPN Masukan (pembelian), total kurang/lebih bayar. Halaman `/dashboard/laporan/ppn-masa`.
+- [ ] **Stock Opname** — Opname stok fisik: buat sesi opname, input stok riil, hitung selisih dengan stok sistem, approval selisih, adjust stok. Halaman `/dashboard/inventory/stock-opname`.
+- [ ] **Supplier Payment** — Pembayaran ke supplier: catat pembayaran (nominal, tanggal, bukti transfer), update AP aging. Halaman `/dashboard/procurement/supplier-payment`.
+
+### P1 — High Impact (Enterprise Readiness)
+- [x] **User Management** — CRUD user (`users` table), assign role, toggle active/non-active, edit profile. API: `/api/v1/admin/users`. Halaman: `/dashboard/system/users`.
+- [x] **Role-Based Navigation** — Sidebar & menu filter berdasarkan `users.role`: Owner (ALL), Admin (master + konfigurasi), Manager (approval), Sales (pre-sales + sales), Procurement (PR/PO/receiving), Gudang (stok), Finance (invoice/keuangan), HR (karyawan/absensi). Implementasi di `sidebar-nav.tsx`.
+- [ ] **Bulk Import Excel** — Upload file Excel untuk import master data barang, supplier, customer. Sheet per entity, validasi baris per baris, preview sebelum import, hasil sukses/gagal. Halaman `/dashboard/tools/bulk-import`. API: `POST /api/v1/tools/bulk-import`.
+- [ ] **Missing OpenAPI Docs (5 endpoints)** — Tambah dekorasi JSDoc untuk endpoint yang belum tercakup: retur-pembelian, retur-penjualan, inventory, laporan, user management. Jalankan `npx next-openapi-gen generate` untuk regenerate spec.
+- [ ] **Global Search Coverage (17 missing tables)** — Perluas `GlobalSearch` component agar mencakup tabel yang belum: retur-pembelian, retur-penjualan, faktur-pajak, kwitansi, negosiasi, rfq, kontrak, customer-po, di, penggajian, absensi, purchase-receiving, grn, karyawan, jabatan, coa, ai-ocr-history.
+- [ ] **Missing PDF Generations (11 documents)** — Implementasi PDF untuk dokumen yang belum: Faktur Pajak, Nota Retur Jual, Nota Retur Beli, GRN, Purchase Order (Internal), Purchase Request, RFQ, Negosiasi Summary, DI, Slip Gaji (existing), Laporan (AR/AP/LabaRugi/Neraca/ArusKas) — existing PDF export via API route.
+
+### P2 — Medium Priority (Process Automation)
+- [ ] **WhatsApp Triggers (2 new)** — PO/DI Deal konfirmasi ke PIC Customer + Approval Request (PR/PO pending) ke Manager via WhatsApp. Update tabel `whatsapp_log` untuk tracking.
+- [ ] **Approval Escalation** — Jika PR/PO tidak di-approve dalam 24 jam, auto-escalate ke atasan via notifikasi in-app + WhatsApp. Cron job harian cek pending approvals, kirim escalation, catat ke audit_log. Integrasi dengan tabel `purchase_request` dan `purchase_order`.
+- [ ] **System Health Monitoring** — Dashboard monitoring: uptime API endpoints, error rate (integration dengan error-stats AI), database connection health, storage usage. Halaman `/dashboard/system/health`. API: `GET /api/v1/system/health`.
+- [ ] **Detail Pages (4 remaining)** — Detail page untuk: Retur Pembelian, Retur Penjualan, Absensi (per karyawan per bulan), Penggajian (per periode). Ikuti pola existing (StatusWorkflow, dokumen terkait, activity timeline).
