@@ -193,7 +193,7 @@ export default function AbsensiPage() {
           week.map((day, dayIndex) => {
             const isEmpty = day === 0
             const dateString = !isEmpty ? `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}` : null
-            const statuses = dateString ? absensiByDate[dateString] : []
+            const statuses = dateString ? absensiByDate[dateString] || [] : []
             const isTodayCell = !isEmpty && isToday(year, month, day)
 
             // Determine the most common status for this day

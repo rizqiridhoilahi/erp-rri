@@ -1,0 +1,1 @@
+ALTER TABLE "barang" ADD CONSTRAINT "barang_kategori_id_kategori_barang_id_fk" FOREIGN KEY ("kategori_id") REFERENCES "public"."kategori_barang"("id") ON DELETE restrict ON UPDATE no action;

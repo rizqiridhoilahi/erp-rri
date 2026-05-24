@@ -1,3 +1,5 @@
+"use client"
+
 import { ReactNode } from 'react'
 import Link from 'next/link'
 import { GlobalSearch } from '@/components/global-search'

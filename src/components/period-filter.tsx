@@ -4,12 +4,12 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select'
 
 const MONTHS = [
-  { value: '', label: 'Semua Bulan' },
+  { value: 'all', label: 'Semua Bulan' },
   ...Array.from({ length: 12 }, (_, i) => ({ value: String(i + 1), label: new Date(0, i).toLocaleDateString('id-ID', { month: 'long' }) })),
 ]
 
 const QUARTERS = [
-  { value: '', label: 'Semua Kuartal' },
+  { value: 'all', label: 'Semua Kuartal' },
   { value: '1', label: 'Q1 (Jan-Mar)' },
   { value: '2', label: 'Q2 (Apr-Jun)' },
   { value: '3', label: 'Q3 (Jul-Sep)' },
