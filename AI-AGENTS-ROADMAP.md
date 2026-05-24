@@ -46,7 +46,7 @@ src/lib/ai/
     │   ├── prompts.ts          # System prompt + task templates
     │   ├── chat/               # NL-to-SQL RAG (DataAgent chat only)
     │   │   ├── intentClassifier.ts   # Regex/keyword → intent type (100+ patterns)
-    │   │   ├── queryLibrary.ts        # 100 predefined SQL patterns (10 categories) (10 categories)
+    │   │   ├── queryLibrary.ts        # 100 predefined SQL patterns (10 categories)
     │   │   ├── queryBuilder.ts        # Build parameterized SQL
     │   │   ├── responseFormatter.ts   # LLM format output ONLY
     │   │   └── chatRouter.ts          # Orchestrate 3-layer flow
@@ -126,7 +126,6 @@ RLS Policies: User hanya bisa lihat history mereka sendiri.
 - [x] Buat `src/lib/ai/streaming.ts` — SSE utilities
 - [x] Buat `src/lib/ai/agents/types.ts` — shared types
 - [x] Buat `drizzle/0004_ai_agents_history.sql` — migrations
-- [ ] Install: `npm install openai --legacy-peer-deps` ← DONE
 - [ ] Apply migration: `npx drizzle-kit push` atau via Supabase
 - [ ] Test connectivity: verify all 3 models respond
 
@@ -134,21 +133,27 @@ RLS Policies: User hanya bisa lihat history mereka sendiri.
 - [x] Buat `src/lib/ai/agents/NegoAgent/index.ts`
 - [x] Buat `src/lib/ai/agents/NegoAgent/prompts.ts`
 - [x] Buat 3 tools: marginCalculator, approvalRouter, riskAssessor
-- [ ] Buat `/api/v1/ai/agents/nego-agent/route.ts`
-- [ ] Buat `/dashboard/ai/nego-agent/page.tsx`
-- [ ] Implement streaming reasoning_content display
+- [x] Buat `/api/v1/ai/agents/nego-agent/route.ts`
+- [x] Buat `/dashboard/ai/nego-agent/page.tsx`
+- [x] Implement streaming reasoning_content display
 
 ### Phase 3: DataAgent (Full)
 - [x] Buat `src/lib/ai/agents/DataAgent/index.ts`
 - [x] Buat `src/lib/ai/agents/DataAgent/prompts.ts`
 - [x] Buat 8 tools: priceRecommender, reportSummarizer, dataClassifier, autoInvoice, smartReminder, prRouter, grnChecker, contractAlert
-- [ ] Buat `/api/v1/ai/agents/data-agent/route.ts`
-- [ ] Buat automation trigger endpoint
-- [ ] Buat `/dashboard/ai/data-agent/page.tsx`
+- [x] Buat `/api/v1/ai/agents/data-agent/route.ts`
+- [x] Buat automation trigger endpoint
+- [x] Buat `/dashboard/ai/data-agent/page.tsx`
 
 ### Phase 3b: DataAgent Chat — NL-to-SQL RAG
 
 **Architectural Decision:** DataAgent chat menggunakan **NL-to-SQL** (bukan document RAG) karena data ERP sudah terstruktur di PostgreSQL/Supabase. NL-to-SQL mencegah hallucination karena LLM hanya memformat hasil, bukan menghasilkan data.
+
+- [x] Buat `src/lib/ai/agents/DataAgent/chat/intentClassifier.ts` — 100+ intent pattern matching
+- [x] Buat `src/lib/ai/agents/DataAgent/chat/queryLibrary.ts` — 100 SQL patterns (10 kategori)
+- [x] Buat `src/lib/ai/agents/DataAgent/chat/queryBuilder.ts` — Parameterized SQL builder
+- [x] Buat `src/lib/ai/agents/DataAgent/chat/responseFormatter.ts` — LLM format output ONLY
+- [x] Buat `src/lib/ai/agents/DataAgent/chat/chatRouter.ts` — 3-layer orchestrator + streaming
 
 ```
 User Query: "Berapa total AR customer ABC yang overdue?"
@@ -343,12 +348,14 @@ AI Response: "Total AR overdue customer ABC adalah Rp 150.000.000"
 
 ```
 src/lib/ai/agents/DataAgent/chat/
-├── intentClassifier.ts    # Regex/keyword matching → intent type
-├── queryLibrary.ts        # 20-30 predefined SQL patterns
-├── queryBuilder.ts        # Build parameterized SQL dari intent
-├── responseFormatter.ts   # LLM format only (NO data gen)
-└── chatRouter.ts          # Orchestrate 3-layer flow
+├── intentClassifier.ts    # Regex/keyword matching → intent type (100+ patterns) ✅
+├── queryLibrary.ts        # 100 predefined SQL patterns (10 categories) ✅
+├── queryBuilder.ts        # Build parameterized SQL dari intent ✅
+├── responseFormatter.ts   # LLM format only (NO data gen) ✅
+└── chatRouter.ts          # Orchestrate 3-layer flow ✅
 ```
+
+All 5 chat components built. (Marked ✅)
 
 #### Hallucination Prevention Guarantee
 
@@ -368,9 +375,9 @@ Jika SQL execution gagal → return error message ke user (bukan generate fake d
 ### Phase 4: VisionAgent
 - [x] Buat `src/lib/ai/agents/VisionAgent/index.ts`
 - [x] Buat `src/lib/ai/agents/VisionAgent/prompts.ts`
-- [ ] Buat `/api/v1/ai/agents/vision-agent/route.ts`
-- [ ] Buat document upload UI
-- [ ] Integration dengan existing OCR page
+- [x] Buat `/api/v1/ai/agents/vision-agent/route.ts`
+- [x] Buat document upload UI
+- [x] Integration dengan existing OCR page
 
 ### Phase 5: Integration
 - [ ] Wire automation triggers ke database events
@@ -439,11 +446,11 @@ const response = await client.chat.completions.create({
 | `src/lib/ai/agents/types.ts` | ✅ | Done |
 | `src/lib/ai/agents/NegoAgent/*` | ✅ | Done |
 | `src/lib/ai/agents/DataAgent/*` | ✅ | Done |
-| `src/lib/ai/agents/DataAgent/chat/*` | ⏳ | Pending (NL-to-SQL RAG) |
+| `src/lib/ai/agents/DataAgent/chat/*` | ✅ | Done (5 files) |
 | `src/lib/ai/agents/VisionAgent/*` | ✅ | Done |
 | `drizzle/0004_ai_agents_history.sql` | ✅ | Done |
-| `/api/v1/ai/agents/*` | ⏳ | Pending |
-| `/dashboard/ai/*` pages | ⏳ | Pending |
+| `/api/v1/ai/agents/*` | ✅ | Done (3 endpoints) |
+| `/dashboard/ai/*` pages | ✅ | Done (nego-agent, data-agent, vision-agent) |
 | Trigger integration | ⏳ | Pending |
 
 ---
@@ -452,9 +459,11 @@ const response = await client.chat.completions.create({
 
 1. **Apply migration** ke database: `npx drizzle-kit push`
 2. **Test AI connectivity** — verify all 3 models respond
-3. **Build API routes** untuk setiap agent
-4. **Build dashboard pages** untuk user interaction
-5. **Integrate automation triggers** dengan database events
+3. **Wire automation triggers** ke database events (CRON / webhook)
+4. **Add rate limiting middleware** untuk API routes
+5. **Add usage dashboard** — per user, per agent stats
+6. **Fallback to rule-based** jika AI timeout
+7. **Documentation** — API reference untuk semua agent endpoints
 
 ---
 

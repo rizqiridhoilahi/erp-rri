@@ -1,5 +1,6 @@
 import { createNvidiaClient, AI_MODELS } from '@/lib/ai/client'
-import { buildVisionMessages, VisionTaskType } from './prompts'
+import { buildVisionMessages, type VisionTaskType } from './prompts'
+export type { VisionTaskType }
 import { supabaseAdmin } from '@/lib/api/supabase-server'
 
 export interface VisionExtractionResult {

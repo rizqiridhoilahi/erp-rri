@@ -1,5 +1,4 @@
 import { createNvidiaClient, AI_MODELS, MODEL_CONFIGS } from '@/lib/ai/client'
-import { StreamingAccumulator } from '@/lib/ai/streaming'
 import { buildNegoPrompt } from './prompts'
 import { calculateMargin, suggestCounterPrice } from './tools/marginCalculator'
 import { routeApproval } from './tools/approvalRouter'
@@ -41,7 +40,6 @@ export async function analyzeNegosiasi(
   userId: string,
   useStreaming: boolean = true
 ): Promise<NegoAnalysisResult> {
-  const startTime = Date.now()
   const client = createNvidiaClient()
 
   const marginResult = calculateMargin(input.harga_beli, input.harga_diminta)
@@ -79,7 +77,6 @@ export async function analyzeNegosiasi(
       ...MODEL_CONFIGS.NEGO_AGENT,
     }) as ReturnType<typeof client.chat.completions.create>)
 
-    const accumulator = new StreamingAccumulator()
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     for await (const chunk of stream as any) {
       const delta = chunk.choices?.[0]?.delta
