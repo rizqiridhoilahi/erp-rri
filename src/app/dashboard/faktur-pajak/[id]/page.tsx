@@ -1,4 +1,7 @@
+"use client"
+
 import Link from 'next/link'
+import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/db/client'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -15,39 +18,143 @@ function rupiah(v: number) {
   return `Rp ${v.toLocaleString('id-ID')}`
 }
 
-export default async function FakturPajakDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params
+export default function FakturPajakDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const [id, setId] = useState<string>('');
 
-  const { data: fp, error } = await supabase
-    .from('faktur_pajak')
-    .select('*, invoice!invoice_id(nomor, customer_id, customer!customer_id(nama, alamat, kode))')
-    .eq('id', id)
-    .single()
+  useEffect(() => {
+    params.then((resolvedParams) => {
+      setId(resolvedParams.id);
+    });
+  }, [params]);
+  const [fakturPajak, setFakturPajak] = useState<{
+    id: string;
+    nomor: string;
+    nomor_faktur: string;
+    tanggal: string;
+    status: string;
+    dpp: number;
+    ppn: number;
+    pph: number;
+    invoice: {
+      nomor: string;
+      customer_id: string;
+      customer: {
+        nama: string;
+        alamat: string | null;
+        kode: string;
+      };
+    };
+  } | null>(null);
+  const [invoice, setInvoice] = useState<{
+    nomor: string;
+    customer_id: string;
+    customer: {
+      nama: string;
+      alamat: string | null;
+      kode: string;
+    };
+  } | null>(null);
+  const [customer, setCustomer] = useState<{
+    nama: string;
+    alamat: string | null;
+    kode: string;
+  } | null>(null);
+  const [items, setItems] = useState<Array<{
+    id: string;
+    faktur_pajak_id: string;
+    invoice_item_id: string;
+    dpp: number;
+    ppn: number;
+    pph: number;
+    invoice_item: {
+      harga: number;
+      barang_id: string;
+      barang: {
+        nama: string;
+        kode: string;
+        satuan: string;
+      };
+    };
+  }>>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  if (error || !fp) {
-    return <div className="text-center py-20 text-muted-foreground">Faktur Pajak tidak ditemukan</div>
+  useEffect(() => {
+    if (!id) return;
+
+    const fetchData = async () => {
+      const { data: fp, error } = await supabase
+        .from('faktur_pajak')
+        .select('*, invoice!invoice_id(nomor, customer_id, customer!customer_id(nama, alamat, kode))')
+        .eq('id', id)
+        .single();
+
+      const { data: fpData, error: fpError } = await supabase
+        .from('faktur_pajak')
+        .select('*, invoice!invoice_id(nomor, customer_id, customer!customer_id(nama, alamat, kode))')
+        .eq('id', id)
+        .single();
+
+      if (fpError || !fpData) {
+        setError("Faktur Pajak tidak ditemukan");
+        setIsLoading(false);
+        return;
+      }
+
+      const { data: items } = await supabase
+        .from('faktur_pajak_item')
+        .select('*, invoice_item!invoice_item_id(harga, barang_id, barang!barang_id(nama, kode, satuan))')
+        .eq('faktur_pajak_id', id)
+        .order('created_at', { ascending: true });
+
+      const ppnRate = items && items.length > 0 && items[0].dpp > 0
+        ? Math.round((items[0].ppn / items[0].dpp) * 100)
+        : 11;
+
+      const pphRate = (() => {
+        if (!items?.length) return null;
+        const totalPph = items.reduce((s, i) => s + (i.pph ?? 0), 0);
+        const totalDpp = items.reduce((s, i) => s + (i.dpp ?? 0), 0);
+        if (totalDpp > 0 && totalPph > 0) return Math.round((totalPph / totalDpp) * 100);
+        return null;
+      })();
+
+      const invoice = fpData.invoice as { nomor: string; customer_id: string; customer: { nama: string; alamat: string | null; kode: string } } | null;
+      const customer = invoice?.customer || null;
+
+      setFakturPajak(fpData);
+      setInvoice(invoice);
+      setCustomer(customer);
+      setItems(items || []);
+      setIsLoading(false);
+    };
+
+    fetchData();
+  }, [params]);
+
+  if (isLoading) {
+    return <div className="text-center py-20 text-muted-foreground">Loading...</div>;
   }
 
-  const { data: items } = await supabase
-    .from('faktur_pajak_item')
-    .select('*, invoice_item!invoice_item_id(harga, barang_id, barang!barang_id(nama, kode, satuan))')
-    .eq('faktur_pajak_id', id)
-    .order('created_at', { ascending: true })
+  if (error) {
+    return <div className="text-center py-20 text-muted-foreground">{error}</div>;
+  }
+
+  if (!fakturPajak) {
+    return <div className="text-center py-20 text-muted-foreground">Faktur Pajak tidak ditemukan</div>;
+  }
 
   const ppnRate = items && items.length > 0 && items[0].dpp > 0
     ? Math.round((items[0].ppn / items[0].dpp) * 100)
-    : 11
+    : 11;
 
   const pphRate = (() => {
-    if (!items?.length) return null
-    const totalPph = items.reduce((s, i) => s + (i.pph ?? 0), 0)
-    const totalDpp = items.reduce((s, i) => s + (i.dpp ?? 0), 0)
-    if (totalDpp > 0 && totalPph > 0) return Math.round((totalPph / totalDpp) * 100)
-    return null
-  })()
-
-  const invoice = fp.invoice as { nomor: string; customer_id: string; customer: { nama: string; alamat: string | null; kode: string } } | null
-  const customer = invoice?.customer
+    if (!items?.length) return null;
+    const totalPph = items.reduce((s, i) => s + (i.pph ?? 0), 0);
+    const totalDpp = items.reduce((s, i) => s + (i.dpp ?? 0), 0);
+    if (totalDpp > 0 && totalPph > 0) return Math.round((totalPph / totalDpp) * 100);
+    return null;
+  })();
 
   return (
     <div className="space-y-6">
@@ -60,7 +167,7 @@ export default async function FakturPajakDetailPage({ params }: { params: Promis
           </Button>
           <div>
             <h1 className="text-3xl font-heading font-bold">Faktur Pajak</h1>
-            <p className="text-muted-foreground mt-1">{fp.nomor}</p>
+            <p className="text-muted-foreground mt-1">{fakturPajak.nomor}</p>
           </div>
         </div>
         <div className="flex gap-2">
@@ -68,7 +175,7 @@ export default async function FakturPajakDetailPage({ params }: { params: Promis
             <Printer className="h-4 w-4 mr-2" />Cetak
           </Button>
           <Button variant="outline" asChild>
-            <Link href={`/dashboard/faktur-pajak/${id}/edit`}>
+           <Link href={`/dashboard/faktur-pajak/${id}/edit`}>
               <Pencil className="h-4 w-4 mr-2" />Edit
             </Link>
           </Button>
@@ -89,16 +196,16 @@ export default async function FakturPajakDetailPage({ params }: { params: Promis
           <div className="bg-muted/30 border rounded-lg p-4 space-y-1">
             <div className="flex justify-between items-center">
               <span className="text-sm text-muted-foreground">Kode dan Nomor Seri Faktur Pajak</span>
-              <span className="font-mono font-bold text-base">{fp.nomor_faktur}</span>
+              <span className="font-mono font-bold text-base">{fakturPajak.nomor_faktur}</span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-sm text-muted-foreground">Tanggal</span>
-              <span className="font-medium">{new Date(fp.tanggal).toLocaleDateString('id-ID')}</span>
+              <span className="font-medium">{new Date(fakturPajak.tanggal).toLocaleDateString('id-ID')}</span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-sm text-muted-foreground">Status</span>
-              <Badge variant={statusMap[fp.status]?.variant ?? 'outline'}>
-                {statusMap[fp.status]?.label ?? fp.status}
+              <Badge variant={statusMap[fakturPajak.status]?.variant ?? 'outline'}>
+                {statusMap[fakturPajak.status]?.label ?? fakturPajak.status}
               </Badge>
             </div>
           </div>
@@ -190,7 +297,7 @@ export default async function FakturPajakDetailPage({ params }: { params: Promis
                           <p className="font-medium">{brg?.nama ?? '-'}</p>
                           <p className="text-xs text-muted-foreground">{brg?.kode}</p>
                         </TableCell>
-                        <TableCell className="text-right font-mono">{rupiah(item.harga)}</TableCell>
+                         <TableCell className="text-right font-mono">{rupiah(item.invoice_item.harga)}</TableCell>
                         <TableCell className="text-right">—</TableCell>
                         <TableCell className="text-right">—</TableCell>
                         <TableCell className="text-right font-mono">{rupiah(item.dpp)}</TableCell>
@@ -213,22 +320,22 @@ export default async function FakturPajakDetailPage({ params }: { params: Promis
             <div className="border-t-2 mt-4 pt-4 space-y-2">
               <div className="flex justify-end items-center gap-8 text-sm">
                 <span className="text-muted-foreground w-24 text-right">DPP</span>
-                <span className="font-semibold w-36 text-right font-mono">{rupiah(fp.dpp)}</span>
+                <span className="font-semibold w-36 text-right font-mono">{rupiah(fakturPajak.dpp)}</span>
               </div>
               <div className="flex justify-end items-center gap-8 text-sm">
                 <span className="text-muted-foreground w-24 text-right">PPN {ppnRate}%</span>
-                <span className="font-semibold w-36 text-right font-mono">{rupiah(fp.ppn)}</span>
+                <span className="font-semibold w-36 text-right font-mono">{rupiah(fakturPajak.ppn)}</span>
               </div>
-              {fp.pph && fp.pph > 0 && (
+              {fakturPajak.pph && fakturPajak.pph > 0 && (
                 <div className="flex justify-end items-center gap-8 text-sm">
                   <span className="text-muted-foreground w-24 text-right">PPh{pphRate ? ` ${pphRate}%` : ''}</span>
-                  <span className="font-semibold w-36 text-right font-mono">{rupiah(fp.pph)}</span>
+                  <span className="font-semibold w-36 text-right font-mono">{rupiah(fakturPajak.pph)}</span>
                 </div>
               )}
               <div className="flex justify-end items-center gap-8 border-t pt-2 mt-2">
                 <span className="font-bold w-24 text-right">Total</span>
                 <span className="font-bold text-base w-36 text-right font-mono">
-                  {rupiah(fp.dpp + fp.ppn - (fp.pph ?? 0))}
+                  {rupiah(fakturPajak.dpp + fakturPajak.ppn - (fakturPajak.pph ?? 0))}
                 </span>
               </div>
             </div>
@@ -252,11 +359,11 @@ export default async function FakturPajakDetailPage({ params }: { params: Promis
           <Printer className="h-4 w-4 mr-2" />Cetak
         </Button>
         <Button asChild>
-          <Link href={`/dashboard/faktur-pajak/${id}/edit`}>
+            <Link href={`/dashboard/faktur-pajak/${id}/edit`}>
             <Pencil className="h-4 w-4 mr-2" />Edit
           </Link>
         </Button>
       </div>
     </div>
   )
-}
+};

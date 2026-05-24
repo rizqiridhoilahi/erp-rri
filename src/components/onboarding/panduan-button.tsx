@@ -1,3 +1,5 @@
+"use client"
+
 'use client'
 
 import { HelpCircle } from 'lucide-react'
