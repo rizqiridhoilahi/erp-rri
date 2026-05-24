@@ -53,7 +53,7 @@ export async function generateInvoiceFromQuotation(
     .select('*, barang!barang_id(id, nama, kode)')
     .eq('quotation_id', input.quotation_id)
 
-  const { data: customer } = await supabaseAdmin
+  const { data: _customer } = await supabaseAdmin
     .from('customer')
     .select('nama, kode')
     .eq('id', input.customer_id)

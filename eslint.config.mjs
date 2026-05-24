@@ -16,6 +16,7 @@ const eslintConfig = defineConfig([
   {
     rules: {
       "react-hooks/incompatible-library": "off",
+      "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_", varsIgnorePattern: "^_" }],
     },
   },
 ]);

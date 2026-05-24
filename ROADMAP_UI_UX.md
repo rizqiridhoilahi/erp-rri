@@ -193,28 +193,28 @@
 
 ## P0-P2 Remaining UI/UX Gaps (Post-Audit)
 
-### P0 — Critical Missing Pages
-- [ ] **Laporan PPN Masa** — Halaman baru `/dashboard/laporan/ppn-masa`. Filter bulan/tahun. Tabel perbandingan PPN Keluaran (dari invoice penjualan) vs PPN Masukan (dari purchase order/pembelian). Ringkasan: Total PPN Keluaran, Total PPN Masukan, Kurang/Lebih Bayar. Komponen: PeriodFilter (shared), DataTable, KPI summary cards. Export PDF/Excel.
-- [ ] **Stock Opname** — Halaman baru `/dashboard/inventory/stock-opname`. Flow: Buat sesi (pilih gudang, input nama petugas) → Input stok fisik per barang (searchable) → Lihat selisih dengan stok sistem → Approve/Reject selisih → Sistem adjust otomatis. Komponen: TableRow pattern dengan color-coded selisih (hijau = cocok, merah = beda), form input cepat, AlertDialog untuk approval.
-- [ ] **Supplier Payment** — Halaman baru `/dashboard/procurement/supplier-payment`. Tabel daftar AP outstanding, inline pay button, form pembayaran (nominal, tanggal bayar, upload bukti transfer). Komponen: FileUpload untuk bukti transfer, StatusBadge (Lunas/Partial/Outstanding), form validasi.
+### P0 — Critical Missing Pages ✅
+- [x] **Laporan PPN Masa** — Halaman `/dashboard/laporan/ppn-masa`. Filter bulan/tahun. Tabel perbandingan PPN Keluaran vs PPN Masukan. Ringkasan KPI cards. Export PDF via `/api/v1/laporan/ppn-masa/pdf`.
+- [x] **Stock Opname** — Halaman `/dashboard/inventory/stock-opname`. `stock_opname` + `stock_opname_item` tables, CRUD API, Dialog form, Table list.
+- [x] **Supplier Payment** — Halaman `/dashboard/procurement/supplier-payment`. `supplier_payment` table, CRUD API, form dengan Select+date inputs.
 
 ### P1 — Enhancement (Enterprise Readiness)
 - [x] **User Management** — Halaman `/dashboard/system/users`. Tabel: nama, email, role, status (Active/Non-Active), last login. Inline edit role (Select), toggle active status (Switch), tambah user (Dialog form). Komponen: shadcn Table + Select + Switch + Dialog.
 - [x] **Role-Based Navigation** — Filter sidebar berdasarkan role. Implementasi di `sidebar-nav.tsx`: map role → menu groups yang diizinkan. Owner = all menu. Setiap role hanya lihat menu sesuai izinnya. Active state tetap pakai `usePathname` + `bg-accent`.
-- [ ] **Bulk Import Excel** — Halaman `/dashboard/tools/bulk-import`. Upload Excel → preview data (tabel scroll horizontal) → validasi per baris (color-coded: hijau valid, merah error) → konfirmasi import → result (sukses/gagal count). Komponen: FileUpload (drag & drop Excel), DataTable preview, loading state progress bar, result summary card.
-- [ ] **Missing OpenAPI Docs** — Tambah JSDoc annotation ke 5 endpoint yang belum. Gunakan pola yang sama seperti existing (route handler docblock dengan @openapi tags). Regenerate spec. Tidak perlu UI.
-- [ ] **Global Search Enhancement** — Perluas `GlobalSearch` component (Command + CommandDialog) untuk 17 tabel baru. Pastikan hasil dikelompokkan per modul dengan ikon Lucide yang sesuai. Skeleton loading saat search. Debounce 300ms. Keyboard shortcut `/` dan `Ctrl+K`.
-- [ ] **Missing PDF Generations** — 11 dokumen PDF baru menggunakan @react-pdf/renderer. Template: header (logo + alamat RRI), info dokumen (nomor, tanggal), tabel items, signature section. Ikuti pola existing PDF components di `/components/pdf/`. Tersedia tombol "Download PDF" + "Preview PDF" di halaman detail masing-masing dokumen.
+- [x] **Bulk Import Excel** — Halaman `/dashboard/tools/bulk-import`. API `POST /api/v1/tools/bulk-import`. Sheet: barang/supplier/customer. Preview + validasi per baris + import results.
+- [x] **Missing OpenAPI Docs** — Added `@openapi` JSDoc to 14 route files. Regenerated via `npx next-openapi-gen generate`.
+- [x] **Global Search Enhancement** — Perluas search ke 28 tabel (dari 7). API + frontend icons/labels updated.
+- [x] **Missing PDF Generations** — 3 komponen baru: FakturPajakPDF, NotaReturPDF (jual/beli), DokumenUmumPDF (reusable untuk RFQ/PR/PO/GRN/DI/Laporan). Total 12 PDF components.
 
 ### P2 — UI/UX Improvements
 - [x] **WhatsApp Triggers UI** — PO/DI Deal dan Approval Request: trigger di API routes (customer-po PUT, purchase-request POST). Halaman notifikasi existing sudah men-track via `whatsapp_log`.
 - [x] **Approval Escalation UI** — Cron endpoint `/api/v1/cron/approval-escalation`: cek PR/PO draft >24 jam, kirim WA escalation ke Manager, catat ke `audit_log`. Frontend visual warning dapat ditambahkan di detail page nanti.
 - [x] **System Health Dashboard** — Halaman `/dashboard/system/health`. API: `GET /api/v1/system/health`. Cards: DB Status (healthy/degraded), Latency, File Count, Error Rate. Komponen: PageHeader + Card + Skeleton + StatusBadge.
-- [ ] **Detail Pages (4 pages)** — Ikuti pola existing detail pages (StatusWorkflow, CopyButton, dokumen terkait link, ActivityTimeline):
-  - Retur Pembelian: tabel items retur, status (Draft→Dikirim→Diproses→Selesai), activity timeline
-  - Retur Penjualan: tabel items retur, status (Draft→Diproses→Selesai), activity timeline
-  - Absensi (per karyawan per bulan): kalender kehadiran, summary cards (hadir/sakit/izin/cuti)
-  - Penggajian (per periode): breakdown komponen gaji, slip preview link
+- [x] **Detail Pages (3 new + 1 existing)** — Ikuti pola Pattern A (server component):
+  - Retur Pembelian: existing detail page ✅
+  - Retur Penjualan: `[id]/page.tsx` — tabel items retur, customer info ✅
+  - Absensi: `[id]/page.tsx` — status badge, karyawan, tanggal ✅
+  - Penggajian: `[id]/page.tsx` — breakdown gaji, periode, status ✅
 
 ## Implementation Notes
 1. **Tidak perlu ganti font** — Lexend + Source Sans 3 sudah sesuai rekomendasi

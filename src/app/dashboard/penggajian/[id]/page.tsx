@@ -3,7 +3,7 @@ import { supabase } from '@/lib/db/client'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
-import { ArrowLeft, Calculator } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 
 const s: Record<string, { label: string; v: 'secondary' | 'success' | 'warning' | 'outline' }> = {
   draft: { label: 'Draft', v: 'secondary' }, paid: { label: 'Dibayar', v: 'success' }, pending: { label: 'Pending', v: 'warning' },

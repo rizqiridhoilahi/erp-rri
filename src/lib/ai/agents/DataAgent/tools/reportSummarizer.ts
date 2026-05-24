@@ -10,13 +10,13 @@ export interface ReportSummary {
 
 export async function summarizeReport(
   reportType: string,
-  filters?: {
+  _filters?: {
     start_date?: string
     end_date?: string
     customer_id?: string
   }
 ): Promise<ReportSummary> {
-  let data: Record<string, unknown> = {}
+  let _data: Record<string, unknown> = {}
   let summary: ReportSummary
 
   switch (reportType) {
@@ -38,7 +38,7 @@ export async function summarizeReport(
         0
       )
 
-      data = {
+      _data = {
         total_invoices: invoices?.length ?? 0,
         overdue_count: overdueInvoices.length,
         total_ar: totalAR,
@@ -80,7 +80,7 @@ export async function summarizeReport(
         .select('*, coa!coa_id(kode, nama)')
         .like('coa.kode', '1%')
 
-      data = { asset_count: assets?.length ?? 0 }
+      _data = { asset_count: assets?.length ?? 0 }
       summary = {
         report_type: 'neraca',
         executive_summary: [

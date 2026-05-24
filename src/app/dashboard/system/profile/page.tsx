@@ -1,6 +1,5 @@
 "use client"
 import { useState, useEffect, useRef } from 'react'
-import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/hooks/use-auth'
 import { apiFetch } from '@/lib/api/client'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -15,9 +14,7 @@ import { ROLE_LABELS } from '@/types/role'
 
 export default function ProfilePage() {
   const { user } = useAuth()
-  const router = useRouter()
   const [name, setName] = useState('')
-  const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -60,7 +57,7 @@ export default function ProfilePage() {
       const { error } = await supabase.auth.updateUser({ password: newPassword })
       if (error) throw new Error(error.message)
       toast.success('Password berhasil diubah')
-      setCurrentPassword(''); setNewPassword(''); setConfirmPassword('')
+      setNewPassword(''); setConfirmPassword('')
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : 'Gagal mengubah password')
     } finally { setSubmitting(false) }
