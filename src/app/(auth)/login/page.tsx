@@ -1,13 +1,13 @@
 "use client"
 
 import { useState } from 'react'
-import Link from 'next/link'
+// import Link from 'next/link' // Used in JSX
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/db/client'
 import { z } from 'zod'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Loader2, Eye, EyeOff, LogIn } from 'lucide-react'
+import { Eye, EyeOff, LogIn, ShieldCheck, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -21,12 +21,27 @@ const loginSchema = z.object({
 
 type LoginFormValues = z.infer<typeof loginSchema>
 
+// Shimmer animation for loading skeleton
+const shimmerStyle = `
+  .shimmer {
+    background: linear-gradient(90deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.2) 20%, rgba(255,255,255,0.1) 40%, rgba(255,255,255,0.1) 100%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+`
+
 export default function LoginPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [showPassword, setShowPassword] = useState(false)
   const [showSkeleton, setShowSkeleton] = useState(false)
+  const mounted = true // Remove mounted state to avoid setState in useEffect
 
   const {
     register,
@@ -69,107 +84,152 @@ export default function LoginPage() {
     }
   }
 
-  return (
-    <Card className="border-0 shadow-lg sm:border sm:shadow-sm">
-      <CardHeader className="space-y-1 pb-6">
-        <div className="flex items-center gap-2 mb-2">
-          <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center lg:hidden">
-            <LogIn className="h-4 w-4 text-primary-foreground" />
-          </div>
-          <CardTitle className="text-2xl font-heading font-bold">Masuk</CardTitle>
-        </div>
-        <CardDescription>
-          Masukkan email dan password untuk mengakses dashboard
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        {showSkeleton ? (
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Skeleton className="h-4 w-12" />
-              <Skeleton className="h-10 w-full" />
-            </div>
-            <div className="space-y-2">
-              <Skeleton className="h-4 w-16" />
-              <Skeleton className="h-10 w-full" />
-            </div>
-            <Skeleton className="h-10 w-full" />
-          </div>
-        ) : (
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            {error && (
-              <div
-                role="alert"
-                className="rounded-md bg-destructive/10 p-3 text-sm text-destructive border border-destructive/20"
-              >
-                {error}
-              </div>
-            )}
+   return (
+     <>
+       <style jsx global>{shimmerStyle}</style>
+       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center p-4 relative overflow-hidden">
+       {/* Decorative elements */}
+       {mounted && (
+         <>
+           <div className="absolute top-10 left-10 w-32 h-32 bg-accent/10 rounded-full blur-3xl opacity-30"></div>
+           <div className="absolute bottom-20 right-20 w-48 h-48 bg-accent/10 rounded-full blur-3xl opacity-20"></div>
+           <div className="absolute top-1/2 left-1/4 w-2 h-2 bg-amber-400 rounded-full"></div>
+           <div className="absolute top-1/3 right-1/3 w-1 h-1 bg-amber-300 rounded-full"></div>
+         </>
+       )}
+       
+       {/* Luxury header */}
+       <div className="absolute top-8 left-0 right-0 flex justify-center">
+         <div className="flex items-center gap-2 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm px-6 py-3 rounded-full shadow-lg border border-white/20 dark:border-gray-700/50">
+           <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
+             <LogIn className="h-5 w-5 text-primary-foreground" />
+           </div>
+           <span className="text-xl font-heading font-bold text-primary">ERP RRI</span>
+         </div>
+       </div>
+       
+       {/* Login card */}
+       <Card className="w-full max-w-md border-0 shadow-2xl sm:border sm:shadow-xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-white/20 dark:border-gray-700/50">
+         <CardHeader className="space-y-3 pb-6 text-center">
+           <div className="flex justify-center mb-4">
+             <div className="p-3 bg-accent/10 rounded-full">
+               <Sparkles className="h-8 w-8 text-accent" />
+             </div>
+           </div>
+           <CardTitle className="text-3xl font-heading font-bold text-primary">Selamat Datang</CardTitle>
+           <CardDescription className="text-muted-foreground">
+             Masukkan kredensial untuk mengakses dashboard profesional
+           </CardDescription>
+         </CardHeader>
+         <CardContent>
+           {showSkeleton ? (
+             <div className="space-y-5">
+               <div className="space-y-2">
+                 <Skeleton className="h-4 w-20 shimmer" />
+                 <Skeleton className="h-12 w-full rounded-lg shimmer" />
+               </div>
+               <div className="space-y-2">
+                 <Skeleton className="h-4 w-24 shimmer" />
+                 <Skeleton className="h-12 w-full rounded-lg shimmer" />
+               </div>
+               <Skeleton className="h-12 w-full rounded-lg shimmer" />
+             </div>
+           ) : (
+             <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+               {error && (
+                 <div
+                   role="alert"
+                   className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive border border-destructive/20 flex items-center gap-2"
+                 >
+                   <ShieldCheck className="h-4 w-4" />
+                   {error}
+                 </div>
+               )}
 
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="nama@email.com"
-              autoComplete="email"
-              autoFocus
-              {...register('email')}
-              aria-invalid={!!errors.email}
-            />
-            {errors.email && (
-              <p className="text-sm font-medium text-destructive" role="alert">
-                {errors.email.message}
-              </p>
-            )}
-          </div>
+           <div className="space-y-2">
+             <Label htmlFor="email" className="text-sm font-medium">Email</Label>
+             <div className="relative">
+               <Input
+                 id="email"
+                 type="email"
+                 placeholder="nama@perusahaan.com"
+                 autoComplete="email"
+                 autoFocus
+                 {...register('email')}
+                 aria-invalid={!!errors.email}
+                 className="h-12 pl-10 rounded-lg border border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-gray-700/50 hover:border-accent/50 focus:ring-2 focus:ring-accent focus:border-accent transition-all duration-200"
+               />
+               <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                   <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                   <polyline points="22,6 12,13 2,6" />
+                 </svg>
+               </div>
+             </div>
+             {errors.email && (
+               <p className="text-sm font-medium text-destructive flex items-center gap-1" role="alert">
+                 <ShieldCheck className="h-3 w-3" /> {errors.email.message}
+               </p>
+             )}
+           </div>
 
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="password">Password</Label>
-            </div>
-            <div className="relative">
-              <Input
-                id="password"
-                type={showPassword ? 'text' : 'password'}
-                placeholder="••••••••"
-                autoComplete="current-password"
-                {...register('password')}
-                aria-invalid={!!errors.password}
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-                tabIndex={-1}
-                aria-label={showPassword ? 'Sembunyikan password' : 'Tampilkan password'}
-              >
-                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              </button>
-            </div>
-            {errors.password && (
-              <p className="text-sm font-medium text-destructive" role="alert">
-                {errors.password.message}
-              </p>
-            )}
-          </div>
+           <div className="space-y-2">
+             <Label htmlFor="password" className="text-sm font-medium">Password</Label>
+             <div className="relative">
+               <Input
+                 id="password"
+                 type={showPassword ? 'text' : 'password'}
+                 placeholder="••••••••••"
+                 autoComplete="current-password"
+                 {...register('password')}
+                 aria-invalid={!!errors.password}
+                 className="h-12 pl-10 rounded-lg border border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-gray-700/50 hover:border-accent/50 focus:ring-2 focus:ring-accent focus:border-accent transition-all duration-200"
+               />
+               <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                   <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                   <circle cx="12" cy="16" r="1" />
+                   <path d="m7 11 2.5 4.5L17 11" />
+                 </svg>
+               </div>
+               <button
+                 type="button"
+                 onClick={() => setShowPassword(!showPassword)}
+                 className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                 tabIndex={-1}
+                 aria-label={showPassword ? 'Sembunyikan password' : 'Tampilkan password'}
+               >
+                 {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+               </button>
+             </div>
+             {errors.password && (
+               <p className="text-sm font-medium text-destructive flex items-center gap-1" role="alert">
+                 <ShieldCheck className="h-3 w-3" /> {errors.password.message}
+               </p>
+             )}
+           </div>
 
-            <Button type="submit" disabled={loading || showSkeleton} className="w-full" size="lg">
-              Masuk
-            </Button>
-          </form>
-        )}
-      </CardContent>
-      <CardFooter className="flex-col space-y-3">
-        {!showSkeleton && (
-          <div className="text-sm text-muted-foreground text-center w-full">
-            Belum punya akun?{' '}
-            <Link href="/register" className="text-accent font-medium hover:underline underline-offset-4">
-              Daftar disini
-            </Link>
-          </div>
-        )}
-      </CardFooter>
-    </Card>
-  )
+             <Button
+               type="submit"
+               disabled={loading || showSkeleton}
+               className="w-full h-12 text-base font-semibold rounded-lg transition-all duration-200 hover:scale-[1.02] hover:brightness-105 shadow-md hover:shadow-lg"
+               size="lg"
+             >
+               {loading ? 'Memproses...' : 'Masuk'}
+             </Button>
+           </form>
+         )}
+       </CardContent>
+       <CardFooter className="flex-col space-y-4 pt-2">
+         {!showSkeleton && (
+           <div className="text-sm text-muted-foreground text-center w-full flex items-center justify-center gap-1">
+             <ShieldCheck className="h-4 w-4 text-muted-foreground" />
+             Sistem terlindungi dengan enkripsi end-to-end
+           </div>
+         )}
+       </CardFooter>
+     </Card>
+    </div>
+       </>
+    )
 }
