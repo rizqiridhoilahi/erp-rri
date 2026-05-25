@@ -17,6 +17,8 @@ const barangSchema = z.object({
   kategori_id: z.string().min(1, { message: "Kategori harus dipilih" }),
   satuan: z.string().min(1, { message: "Satuan harus diisi" }),
   spesifikasi: z.string().optional(),
+  justification: z.string().optional(),
+  image_url: z.string().optional(),
   harga_beli_default: z.coerce.number().nonnegative().optional(),
   harga_jual_default: z.coerce.number().nonnegative().optional(),
   stok_minimum: z.coerce.number().nonnegative().default(0),
@@ -107,6 +109,14 @@ export default function EditBarangPage() {
         <div>
           <label className="block text-sm font-medium mb-1">Spesifikasi</label>
           <textarea {...register('spesifikasi')} rows={2} className="w-full px-3 py-2 border rounded-md focus:outline-none focus-visible:ring-3 focus-visible:ring-ring" />
+        </div>
+        <div>
+          <label className="block text-sm font-medium mb-1">Justification</label>
+          <textarea {...register('justification')} rows={2} className="w-full px-3 py-2 border rounded-md focus:outline-none focus-visible:ring-3 focus-visible:ring-ring" />
+        </div>
+        <div>
+          <label className="block text-sm font-medium mb-1">Image URL</label>
+          <input type="text" {...register('image_url')} placeholder="https://..." className="w-full px-3 py-2 border rounded-md focus:outline-none focus-visible:ring-3 focus-visible:ring-ring" />
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div>

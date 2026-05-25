@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Surat Penawaran Harga - PT. Rizqi Ridho Ilahi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Menggunakan font Arial secara global */
+        body { 
+            font-family: Arial, Helvetica, sans-serif; 
+            background-color: #d1d5db; /* gray-300 */
+        }
+        
+        /* Pengaturan ukuran kertas A4 untuk tampilan cetak/PDF */
+        @page { size: A4; margin: 0; }
+        
+        /* Kontainer untuk setiap halaman A4 */
+        .a4-page {
+            width: 210mm;
+            min-height: 297mm;
+            margin: 20mm auto;
+            background-color: white;
+            padding: 20mm; /* Padding standar dokumen */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            position: relative;
+            box-sizing: border-box;
+        }
+
+        /* Hilangkan bayangan dan margin saat dicetak */
+        @media print {
+            body { background: white; margin: 0; padding: 0; }
+            .a4-page { 
+                margin: 0; 
+                box-shadow: none; 
+                border: none; 
+                page-break-after: always; /* Memastikan lampiran pindah ke halaman 2 saat di-print */
+            }
+        }
+
+        /* Styling khusus untuk tabel lampiran */
+        table.lampiran {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        table.lampiran th, table.lampiran td {
+            border: 1px solid black;
+            padding: 6px;
+            font-size: 11px;
+            vertical-align: top;
+        }
+        table.lampiran th {
+            background-color: #f3f4f6;
+            text-align: center;
+            font-weight: bold;
+        }
+        .text-right { text-align: right; }
+        .text-center { text-align: center; }
+    </style>
+</head>
+<body class="py-8 text-gray-900 leading-relaxed">
+
+    <!-- ==========================================
+         HALAMAN 1 : SURAT PENAWARAN UTAMA
+         ========================================== -->
+    <div class="a4-page flex flex-col">
+
+        <!-- HEADER -->
+        <header class="flex justify-between items-center border-b-[3px] border-black pb-4 mb-6">
+            <!-- Logo Perusahaan -->
+            <div class="w-20 h-20 bg-blue-900 text-white flex justify-center items-center rounded-full text-5xl font-bold">
+                R
+            </div>
+            <!-- Nama & Bidang Usaha (Rata Kanan) -->
+            <div class="text-right">
+                <h1 class="text-[22px] font-bold tracking-wide uppercase text-black mb-1">PT. Rizqi Ridho Ilahi</h1>
+                <p class="text-sm font-semibold text-black">Furniture, Welding</p>
+                <p class="text-sm font-semibold text-black">General Trading</p>
+                <p class="text-sm font-semibold text-black">Services</p>
+            </div>
+        </header>
+
+        <!-- KEPALA SURAT (Nomor & Tanggal) -->
+        <div class="flex justify-between items-start text-sm mb-6">
+            <table class="border-none text-left">
+                <tbody>
+                    <tr>
+                        <td class="pr-2 py-1 align-top w-20">No. Surat</td>
+                        <td class="px-2 py-1 align-top">:</td>
+                        <td class="py-1">RRI-SPH-24-028</td>
+                    </tr>
+                    <tr>
+                        <td class="pr-2 py-1 align-top">No. Ref.</td>
+                        <td class="px-2 py-1 align-top">:</td>
+                        <td class="py-1">RFQ-PR-BJS-24-1868</td>
+                    </tr>
+                    <tr>
+                        <td class="pr-2 py-1 align-top">Lampiran</td>
+                        <td class="px-2 py-1 align-top">:</td>
+                        <td class="py-1">Softcopy Penawaran Harga</td>
+                    </tr>
+                    <tr>
+                        <td class="pr-2 py-1 align-top">Perihal</td>
+                        <td class="px-2 py-1 align-top">:</td>
+                        <td class="py-1">Penawaran Harga</td>
+                    </tr>
+                </tbody>
+            </table>
+            <!-- Tanggal (Rata Kanan) -->
+            <div class="text-right">
+                <p>Jepara, 22-Agu-2024</p>
+            </div>
+        </div>
+
+        <!-- ALAMAT TUJUAN -->
+        <div class="text-sm mb-8">
+            <p>Kepada Yth.:</p>
+            <p class="font-bold mt-2">PT. Bhumi Jepara Service</p>
+            <p class="mt-1">u.p. Bapak Muhammad Fauzi</p>
+            <div class="mt-2 max-w-[350px] leading-snug">
+                <p>PT. Bhumi Jepara Service PLTU Tanjung Jati B Unit 5 & 6 Sekuping, Tubanan, Kec Kembang, Kab Jepara, Jawa Tengah 59458</p>
+            </div>
+        </div>
+
+        <!-- ISI SURAT -->
+        <div class="text-sm text-justify mb-8 space-y-4 flex-grow">
+            <p>Dengan hormat,</p>
+            <p>
+                Dengan ini kami bermaksud mengirimkan penawaran harga untuk melaksanakan pekerjaan tersebut.
+            </p>
+            <p>
+                Harga yang kami ajukan adalah <strong>Rp. 32.340.000</strong>
+            </p>
+            <p>
+                Dengan rincian sebagaimana terlampir.
+            </p>
+            
+            <div class="mt-4">
+                <p class="font-bold">Keterangan:</p>
+                <p class="mt-1">- Informasi harga ini berlaku sampai 6-Sep-2024</p>
+            </div>
+
+            <p class="pt-4">
+                Demikian surat penawaran ini kami sampaikan, atas perhatian dan pertimbangannya diucapkan terimakasih.
+            </p>
+        </div>
+
+        <!-- TANDA TANGAN (Sisi Kiri Sesuai Referensi) -->
+        <div class="text-sm text-left mb-8">
+            <p class="mb-1">Hormat kami</p>
+            <p class="font-bold">PT. RIZQI RIDHO ILAHI</p>
+            
+            <!-- Ruang untuk Tanda Tangan -->
+            <div class="h-24"></div> 
+            
+            <p class="font-bold underline">Mohamad Marzuqi</p>
+            <p>Direktur</p>
+            <p class="mt-1">0812-607-5500</p>
+        </div>
+
+        <!-- FOOTER HALAMAN 1 -->
+        <footer class="border-t-[1.5px] border-black pt-2 text-center text-xs text-black mt-auto">
+            <p>Jerukwangi - Bangsri, Jepara</p>
+            <p>+6281 2607 5500, mazzjoeq@gmail.com</p>
+        </footer>
+
+    </div>
+
+    <!-- ==========================================
+         HALAMAN 2 : LAMPIRAN (TABEL HARGA)
+         ========================================== -->
+    <div class="a4-page flex flex-col">
+        
+        <!-- Judul Lampiran -->
+        <div class="mb-2">
+            <h2 class="text-sm font-bold underline">LAMPIRAN RINCIAN PENAWARAN HARGA</h2>
+            <p class="text-xs">No. Surat : RRI-SPH-24-028</p>
+        </div>
+
+        <!-- TABEL RINCIAN -->
+        <table class="lampiran">
+            <thead>
+                <tr>
+                    <th style="width: 3%;">No</th>
+                    <th style="width: 15%;">Item</th>
+                    <th style="width: 20%;">Spesification</th>
+                    <th style="width: 20%;">Justification</th>
+                    <th style="width: 10%;">Pict</th>
+                    <th style="width: 5%;">Qty</th>
+                    <th style="width: 7%;">UoM</th>
+                    <th style="width: 10%;">Price</th>
+                    <th style="width: 10%;">TotalPrice</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="text-center">1</td>
+                    <td>Big Trash Bin 660L<br>(4 Pcs)</td>
+                    <td>Krisbow 660 Ltr Tempat Sampah Outdoor/ SKU: 10238167</td>
+                    <td>CY Area, Vehicle Maintenance Shop, WWTP. and Coal yard electrical control house</td>
+                    <td class="text-center text-gray-500 italic">[Gambar Tempat Sampah]</td>
+                    <td class="text-center">4</td>
+                    <td class="text-center">Pcs</td>
+                    <td class="text-right">4,500,000</td>
+                    <td class="text-right">18,000,000</td>
+                </tr>
+                <tr>
+                    <td class="text-center">2</td>
+                    <td>Print Acrylic UV 2 mm<br>(70 Pcs)</td>
+                    <td>Print QR Cleaning Checklist all Area Print Acrylic UV size 11x17cm</td>
+                    <td>All Area with Check list Cleaning</td>
+                    <td class="text-center text-gray-500 italic">[Gambar QR]</td>
+                    <td class="text-center">70</td>
+                    <td class="text-center">Pcs</td>
+                    <td class="text-right">24,000</td>
+                    <td class="text-right">1,680,000</td>
+                </tr>
+                <tr>
+                    <td class="text-center">3</td>
+                    <td>Print Acrylic UV 2 mm<br>(70 Pcs)</td>
+                    <td>Print Knock Door Sign AB and CCB, Print Acrylic UV size 10x16cm</td>
+                    <td>All Area door with wooden door</td>
+                    <td class="text-center text-gray-500 italic">[Gambar Sign Knock]</td>
+                    <td class="text-center">70</td>
+                    <td class="text-center">Pcs</td>
+                    <td class="text-right">24,000</td>
+                    <td class="text-right">1,680,000</td>
+                </tr>
+                <tr>
+                    <td class="text-center">4</td>
+                    <td>Print Acrylic UV 2 mm<br>(2 Pcs)</td>
+                    <td>Print Lobby Door Sign Enter, Print Acrylic UV size 30x20cm</td>
+                    <td>Lobby AB</td>
+                    <td class="text-center text-gray-500 italic">[Gambar Sign Enter]</td>
+                    <td class="text-center">2</td>
+                    <td class="text-center">Pcs</td>
+                    <td class="text-right">55,000</td>
+                    <td class="text-right">110,000</td>
+                </tr>
+                <tr>
+                    <td class="text-center">5</td>
+                    <td>Print Acrylic UV 2 mm<br>(2 Pcs)</td>
+                    <td>Print Lobby Door Sign Exit, Print Acrylic UV size 30x20cm</td>
+                    <td>Lobby AB</td>
+                    <td class="text-center text-gray-500 italic">[Gambar Sign Exit]</td>
+                    <td class="text-center">2</td>
+                    <td class="text-center">Pcs</td>
+                    <td class="text-right">55,000</td>
+                    <td class="text-right">110,000</td>
+                </tr>
+                <tr>
+                    <td class="text-center">6</td>
+                    <td>Print Sign Push and Pull<br>(2 Pair)</td>
+                    <td>Sign Push and Pull (1 set 2 pcs, pull and push)</td>
+                    <td>Lobby AB</td>
+                    <td class="text-center text-gray-500 italic">[Gambar Push Pull]</td>
+                    <td class="text-center">2</td>
+                    <td class="text-center">Pair</td>
+                    <td class="text-right">25,000</td>
+                    <td class="text-right">50,000</td>
+                </tr>
+                <tr>
+                    <td class="text-center">7</td>
+                    <td>Disinfectant<br>(12 Jerycan)</td>
+                    <td>KLENCO Sanifect High Level Disinfectant Jerry Can 5000ml 1pc</td>
+                    <td>For Stock disinfectant 6 months</td>
+                    <td class="text-center text-gray-500 italic">[Gambar Jerry Can]</td>
+                    <td class="text-center">12</td>
+                    <td class="text-center">Jerry Can</td>
+                    <td class="text-right">600,000</td>
+                    <td class="text-right">7,200,000</td>
+                </tr>
+                <tr>
+                    <td class="text-center">8</td>
+                    <td>Trolley<br>(1 Unit)</td>
+                    <td>Krisbow Troli Barang 300 kg sku kw0500048 (Workshop)</td>
+                    <td>Workshop Office</td>
+                    <td class="text-center text-gray-500 italic">[Gambar Trolley]</td>
+                    <td class="text-center">1</td>
+                    <td class="text-center">Unit</td>
+                    <td class="text-right">950,000</td>
+                    <td class="text-right">950,000</td>
+                </tr>
+                <tr>
+                    <td class="text-center">9</td>
+                    <td>Bike Pump<br>(2 Pcs)</td>
+                    <td>Bike Pump 160 PSI Promend P08 Alloy Pentil Schrader dan (WS and CYO)</td>
+                    <td>Workshop and Coal Yard Office</td>
+                    <td class="text-center text-gray-500 italic">[Gambar Pompa]</td>
+                    <td class="text-center">2</td>
+                    <td class="text-center">Pcs</td>
+                    <td class="text-right">110,000</td>
+                    <td class="text-right">220,000</td>
+                </tr>
+                <tr>
+                    <td class="text-center">10</td>
+                    <td>Dish Drainer<br>(6 Pcs)</td>
+                    <td>Rovega Rak Piring Plastik Dish Drainer Paloma Food Grade PLM-200-Putih</td>
+                    <td>CYO, Coal Unloading Jetty Electrical control House - Lab, FGD, - WTP, and WWTP</td>
+                    <td class="text-center text-gray-500 italic">[Gambar Rak Piring]</td>
+                    <td class="text-center">6</td>
+                    <td class="text-center">Pcs</td>
+                    <td class="text-right">390,000</td>
+                    <td class="text-right">2,340,000</td>
+                </tr>
+                <!-- Total Row -->
+                <tr>
+                    <td colspan="8" class="text-right font-bold" style="padding-right: 15px;">TOTAL</td>
+                    <td class="text-right font-bold">32,340,000</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <div class="mt-4 text-xs italic text-gray-600">
+            * Keterangan: Support Tools period Aug 2024
+        </div>
+    </div>
+
+</body>
+</html>

@@ -259,6 +259,23 @@ All items above (Bulk Import, OpenAPI Docs, Global Search, PDF Generations, Deta
 ### Verification
 - Build: `npm run build` — 0 errors, 2 warnings (pre-existing)
 
+## Fase 16 — Quotation Redesign (SPH Format, May 2026)
+- [x] Plan: `docs-plan/QUOTATION-REDESIGN.md` — roadmap 10 step
+- [x] DB schema: `barang` (+justification, +imageUrl), `quotation` (+11 columns: rfqId, referensi, lampiran, perihal, picCustomerId, alamat, masaBerlaku, tanggalBerlakuSampai, ppnEnabled, totalHarga, keterangan), `quotation_item` (+5: specification, justification, imageUrl, satuan, totalHarga)
+- [x] Migration `0017_quotation_redesign` — applied to Supabase
+- [x] Document number utility: `generateDocumentNumber` supports `format: 'dash'` (RRI-SPH-YY-MM-0001)
+- [x] Company Settings: API `GET/POST /api/v1/system/company` + page `/dashboard/system/company` + sidebar link (System > Company Profile)
+- [x] Switch UI component: `src/components/ui/switch.tsx` (Radix UI)
+- [x] Barang Master: API Zod + form (tambah/edit/detail) + justification + image_url fields
+- [x] Quotation API POST/PUT: redesigned with all 11 new fields, RFQ relation, pic_customer, masa_berlaku calc, PPN toggle, WA notification
+- [x] Quotation API GET: returns all new fields + rfq relation + items with barang (spec/justification/image_url)
+- [x] Quotation Form Tambah: full SPH redesign (RFQ dropdown, lampiran, perihal, PIC customer, alamat, item rows with spec/justif/image/satuan/total, masa berlaku dropdown, PPN toggle)
+- [x] Quotation Form Edit: full SPH redesign matching Tambah
+- [x] Quotation Detail page: display all new fields (rfq ref, lampiran, perihal, PIC, alamat, masa berlaku, PPN, grand total)
+- [x] PDF component (`src/lib/pdf/quotation.tsx`): 2-page PDF (surat utama + lampiran tabel rincian) with Arial font, company info from settings, signature + stamp images
+- [x] PDF route handler: fetches all new fields + company settings + pic_customer
+- [x] Build: `npm run build` — 0 errors, warnings only
+
 ### Next Steps
 - [ ] Test upload file via aplikasi — cek file muncul di Supabase Storage dashboard
 - [ ] Implement image pipeline (compress + WebP) — browser-image-compression sudah terinstall

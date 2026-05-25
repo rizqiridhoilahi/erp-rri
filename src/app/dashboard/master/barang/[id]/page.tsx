@@ -23,6 +23,8 @@ interface Barang {
   kategori_barang: { nama: string }[]
   satuan: string | null
   spesifikasi: string | null
+  justification: string | null
+  image_url: string | null
   harga_beli_default: number | null
   harga_jual_default: number | null
   stok_minimum: number | null
@@ -49,6 +51,8 @@ export default function DetailBarangPage() {
         kategori_barang!inner(nama),
         satuan,
         spesifikasi,
+        justification,
+        image_url,
         harga_beli_default,
         harga_jual_default,
         stok_minimum,
@@ -134,6 +138,16 @@ export default function DetailBarangPage() {
               <label className="block text-sm font-medium text-muted-foreground mb-1">Spesifikasi</label>
               <p className="text-sm font-medium">{data.spesifikasi || "-"}</p>
             </div>
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-muted-foreground mb-1">Justification</label>
+              <p className="text-sm font-medium">{data.justification || "-"}</p>
+            </div>
+            {data.image_url && (
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-muted-foreground mb-1">Image</label>
+                <img src={data.image_url} alt={data.nama} className="h-24 w-24 object-contain rounded border" />
+              </div>
+            )}
             <div>
               <label className="block text-sm font-medium text-muted-foreground mb-1">Harga Beli Default</label>
               <p className="text-sm font-medium">{formatCurrency(data.harga_beli_default)}</p>

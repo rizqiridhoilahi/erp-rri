@@ -10,6 +10,8 @@ const schema = z.object({
   kategori_id: z.string().min(1, 'Kategori harus dipilih'),
   satuan: z.string().min(1, 'Satuan harus diisi'),
   spesifikasi: z.string().optional(),
+  justification: z.string().optional(),
+  image_url: z.string().optional(),
   harga_beli_default: z.coerce.number().nonnegative().optional(),
   harga_jual_default: z.coerce.number().nonnegative().optional(),
   stok_minimum: z.coerce.number().nonnegative().default(0),

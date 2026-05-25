@@ -8,17 +8,29 @@ import { sendWhatsapp } from '@/lib/utils/whatsapp'
 
 const itemSchema = z.object({
   barang_id: z.string().min(1),
+  specification: z.string().optional().nullable(),
+  justification: z.string().optional().nullable(),
+  image_url: z.string().optional().nullable(),
+  satuan: z.string().optional().nullable(),
   jumlah: z.coerce.number().int().positive(),
   harga_satuan: z.coerce.number().nonnegative(),
-  diskon: z.coerce.number().nonnegative().optional(),
-  keterangan: z.string().optional(),
+  diskon: z.coerce.number().nonnegative().optional().nullable(),
+  keterangan: z.string().optional().nullable(),
 })
 
 const schema = z.object({
   customer_id: z.string().min(1, 'Customer harus dipilih'),
+  rfq_id: z.string().optional().nullable(),
+  referensi: z.string().optional().nullable(),
+  lampiran: z.string().optional().nullable(),
+  perihal: z.string().optional().default('Penawaran Harga'),
+  pic_customer_id: z.string().optional().nullable(),
+  alamat: z.string().optional().nullable(),
   tanggal: z.string().min(1, 'Tanggal harus diisi'),
+  masa_berlaku: z.string().optional().nullable(),
   ppn_rate: z.coerce.number().nonnegative().default(0.11),
-  keterangan: z.string().optional(),
+  ppn_enabled: z.coerce.boolean().optional().default(true),
+  keterangan: z.string().optional().nullable(),
   items: z.array(itemSchema).min(1, 'Minimal 1 item'),
 })
 
@@ -35,6 +47,17 @@ export async function GET(request: NextRequest) {
   return NextResponse.json({ data: data ?? [] })
 }
 
+function calcTanggalBerlaku(masaBerlaku: string, tanggal: Date): string | null {
+  const map: Record<string, number> = {
+    '1 Minggu': 7, '2 Minggu': 14, '3 Minggu': 21, '1 Bulan': 30,
+  }
+  const days = map[masaBerlaku]
+  if (!days) return null
+  const end = new Date(tanggal)
+  end.setDate(end.getDate() + days)
+  return end.toISOString().split('T')[0]
+}
+
 export async function POST(request: NextRequest) {
   const auth = await verifyAuth(request)
   if (auth.error) return auth.error
@@ -45,17 +68,50 @@ export async function POST(request: NextRequest) {
   const parsed = schema.safeParse(body)
   if (!parsed.success) return badRequest(parsed.error.issues.map(e => e.message).join(', '))
 
-  const nomor = await generateDocumentNumber('QTN')
+  const nomor = await generateDocumentNumber('SPH', 'dash')
   const now = new Date().toISOString()
+
+  const items = parsed.data.items.map(item => {
+    const totalHarga = item.jumlah * item.harga_satuan
+    return {
+      barang_id: item.barang_id,
+      specification: item.specification ?? null,
+      justification: item.justification ?? null,
+      image_url: item.image_url ?? null,
+      satuan: item.satuan ?? null,
+      jumlah: item.jumlah,
+      harga_satuan: item.harga_satuan,
+      diskon: item.diskon ?? 0,
+      total_harga: totalHarga,
+      keterangan: item.keterangan ?? null,
+    }
+  })
+
+  const totalHarga = items.reduce((sum, i) => sum + (i.total_harga ?? 0), 0)
+  const tanggal = new Date(parsed.data.tanggal)
+  const tanggalBerlakuSampai = parsed.data.masa_berlaku
+    ? calcTanggalBerlaku(parsed.data.masa_berlaku, tanggal)
+    : null
 
   const { data: qtn, error: qtnError } = await supabaseAdmin
     .from('quotation')
     .insert({
       nomor,
       customer_id: parsed.data.customer_id,
+      rfq_id: parsed.data.rfq_id ?? null,
+      referensi: parsed.data.referensi ?? null,
+      lampiran: parsed.data.lampiran ?? null,
+      perihal: parsed.data.perihal ?? 'Penawaran Harga',
+      pic_customer_id: parsed.data.pic_customer_id ?? null,
+      alamat: parsed.data.alamat ?? null,
       tanggal: parsed.data.tanggal,
+      masa_berlaku: parsed.data.masa_berlaku ?? null,
+      tanggal_berlaku_sampai: tanggalBerlakuSampai,
       status: 'draft',
       ppn_rate: parsed.data.ppn_rate,
+      ppn_enabled: parsed.data.ppn_enabled,
+      total_harga: totalHarga,
+      keterangan: parsed.data.keterangan ?? null,
       created_at: now,
       updated_at: now,
     })
@@ -64,19 +120,15 @@ export async function POST(request: NextRequest) {
 
   if (qtnError) return internalError(qtnError)
 
-  const items = parsed.data.items.map(item => ({
+  const dbItems = items.map(item => ({
     quotation_id: qtn.id,
-    barang_id: item.barang_id,
-    jumlah: item.jumlah,
-    harga_satuan: item.harga_satuan,
-    diskon: item.diskon ?? 0,
-    ppn_per_item: (item.harga_satuan * item.jumlah * parsed.data.ppn_rate) / (item.diskon ? 1 : 1),
-    keterangan: item.keterangan ?? null,
-    created_at: now,
-    updated_at: now,
+    ...item,
+    ppn_per_item: parsed.data.ppn_enabled
+      ? (item.total_harga ?? 0) * parsed.data.ppn_rate
+      : 0,
   }))
 
-  const { error: itemsError } = await supabaseAdmin.from('quotation_item').insert(items)
+  const { error: itemsError } = await supabaseAdmin.from('quotation_item').insert(dbItems)
 
   if (itemsError) {
     await supabaseAdmin.from('quotation').delete().eq('id', qtn.id)
@@ -96,5 +148,5 @@ export async function POST(request: NextRequest) {
     await sendWhatsapp(pic.no_hp, msg, auth.user?.id)
   }
 
-  return NextResponse.json({ data: { ...qtn, items } }, { status: 201 })
+  return NextResponse.json({ data: { ...qtn, items: dbItems } }, { status: 201 })
 }

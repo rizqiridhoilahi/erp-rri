@@ -115,6 +115,7 @@ const menuItems: MenuItem[] = [
     { href: '/dashboard/system/maintenance', label: 'Maintenance', icon: Wrench },
     { href: '/dashboard/system/archive', label: 'Data Archive', icon: Archive },
     { href: '/dashboard/system/profile', label: 'Profil', icon: Settings },
+    { href: '/dashboard/system/company', label: 'Company Profile', icon: Building2 },
     { href: '/dashboard/audit-log', label: 'Audit Trail', icon: ClipboardList },
     { href: '/dashboard/notifikasi', label: 'Notifikasi', icon: Bell },
   ]},

@@ -9,13 +9,20 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { apiFetch } from '@/lib/api/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { DatePicker } from '@/components/ui/date-picker'
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select'
+import { Switch } from '@/components/ui/switch'
 import { Plus, Trash2, ArrowLeft, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 const itemSchema = z.object({
   barang_id: z.string().min(1),
+  specification: z.string().optional(),
+  justification: z.string().optional(),
+  image_url: z.string().optional(),
+  satuan: z.string().min(1),
   jumlah: z.coerce.number().int().positive(),
   harga_satuan: z.coerce.number().nonnegative(),
   diskon: z.coerce.number().nonnegative().optional(),
@@ -24,9 +31,17 @@ const itemSchema = z.object({
 
 const qtnSchema = z.object({
   customer_id: z.string().min(1),
+  rfq_id: z.string().optional(),
+  referensi: z.string().optional(),
+  lampiran: z.string().optional(),
+  perihal: z.string().default('Penawaran Harga'),
+  pic_customer_id: z.string().optional(),
+  alamat: z.string().optional(),
   tanggal: z.string().min(1),
   status: z.string().optional(),
+  masa_berlaku: z.string().optional(),
   ppn_rate: z.coerce.number().nonnegative().default(0.11),
+  ppn_enabled: z.boolean().default(true),
   keterangan: z.string().optional(),
   items: z.array(itemSchema).min(1),
 })
@@ -41,40 +56,80 @@ const statusOptions = [
   { value: 'closed', label: 'Ditutup' },
 ]
 
+const masaBerlakuOptions = [
+  { value: '1 Minggu', label: '1 Minggu' },
+  { value: '2 Minggu', label: '2 Minggu' },
+  { value: '3 Minggu', label: '3 Minggu' },
+  { value: '1 Bulan', label: '1 Bulan' },
+]
+
+interface BarangOption {
+  value: string
+  label: string
+  satuan: string
+  spesifikasi: string
+  justification: string
+  image_url: string
+}
+
 export default function EditQuotationPage() {
   const router = useRouter()
   const params = useParams()
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
-  const [customerOptions, setCustomerOptions] = useState<Array<{ value: string; label: string }>>([])
-  const [barangOptions, setBarangOptions] = useState<Array<{ value: string; label: string }>>([])
+  const [customerOptions, setCustomerOptions] = useState<Array<{ value: string; label: string; alamat?: string }>>([])
+  const [barangData, setBarangData] = useState<BarangOption[]>([])
+  const [picOptions, setPicOptions] = useState<Array<{ value: string; label: string }>>([])
+  const [rfqOptions, setRfqOptions] = useState<Array<{ value: string; label: string }>>([])
 
   const { register, handleSubmit, control, reset, watch, setValue } = useForm<QtnFormValues>({
     resolver: zodResolver(qtnSchema),
   })
 
   const { fields, append, remove } = useFieldArray({ control, name: 'items' })
+  const selectedCustomerId = watch('customer_id')
 
   useEffect(() => {
     const id = params.id as string
 
     Promise.all([
-      apiFetch<Array<{ id: string; nama: string; kode: string }>>('/api/v1/master/customer'),
-      apiFetch<Array<{ id: string; nama: string; kode: string }>>('/api/v1/master/barang'),
-    ]).then(([customers, barang]) => {
-      setCustomerOptions((customers.data ?? []).map(c => ({ value: c.id, label: `[${c.kode}] ${c.nama}` })))
-      setBarangOptions((barang.data ?? []).map(b => ({ value: b.id, label: `[${b.kode}] ${b.nama}` })))
+      apiFetch<Array<{ id: string; nama: string; kode: string; alamat?: string }>>('/api/v1/master/customer'),
+      apiFetch<Array<{ id: string; nama: string; kode: string; satuan: string; spesifikasi?: string; justification?: string; image_url?: string }>>('/api/v1/master/barang'),
+      apiFetch<Array<{ id: string; nomor: string }>>('/api/v1/rfq'),
+    ]).then(([customers, barang, rfqs]) => {
+      setCustomerOptions((customers.data ?? []).map(c => ({ value: c.id, label: `[${c.kode}] ${c.nama}`, alamat: c.alamat ?? '' })))
+      setBarangData((barang.data ?? []).map(b => ({
+        value: b.id,
+        label: `[${b.kode}] ${b.nama}`,
+        satuan: b.satuan,
+        spesifikasi: b.spesifikasi ?? '',
+        justification: b.justification ?? '',
+        image_url: b.image_url ?? '',
+      })))
+      setRfqOptions((rfqs.data ?? []).map(r => ({ value: r.id, label: r.nomor })))
     }).catch(() => toast.error('Gagal memuat data referensi'))
 
     apiFetch<{
       id: string
       customer_id: string
+      rfq_id: string | null
+      referensi: string | null
+      lampiran: string | null
+      perihal: string
+      pic_customer_id: string | null
+      alamat: string | null
       tanggal: string
       status: string
+      masa_berlaku: string | null
       ppn_rate: number
+      ppn_enabled: boolean
       keterangan: string | null
       items: Array<{
         barang_id: string
+        specification: string | null
+        justification: string | null
+        image_url: string | null
+        satuan: string | null
         jumlah: number
         harga_satuan: number
         diskon: number | null
@@ -85,17 +140,29 @@ export default function EditQuotationPage() {
         const qtn = res.data
         reset({
           customer_id: qtn.customer_id,
+          rfq_id: qtn.rfq_id ?? '',
+          referensi: qtn.referensi ?? '',
+          lampiran: qtn.lampiran ?? '',
+          perihal: qtn.perihal ?? 'Penawaran Harga',
+          pic_customer_id: qtn.pic_customer_id ?? '',
+          alamat: qtn.alamat ?? '',
           tanggal: qtn.tanggal.split('T')[0],
           status: qtn.status,
+          masa_berlaku: qtn.masa_berlaku ?? '',
           ppn_rate: qtn.ppn_rate,
+          ppn_enabled: qtn.ppn_enabled,
           keterangan: qtn.keterangan ?? '',
           items: qtn.items.length > 0 ? qtn.items.map(i => ({
             barang_id: i.barang_id,
+            specification: i.specification ?? '',
+            justification: i.justification ?? '',
+            image_url: i.image_url ?? '',
+            satuan: i.satuan ?? '',
             jumlah: i.jumlah,
             harga_satuan: i.harga_satuan,
             diskon: i.diskon ?? 0,
             keterangan: i.keterangan ?? '',
-          })) : [{ barang_id: '', jumlah: 1, harga_satuan: 0 }],
+          })) : [{ barang_id: '', jumlah: 1, harga_satuan: 0, specification: '', justification: '', image_url: '', satuan: '' }],
         })
         setLoading(false)
       })
@@ -104,6 +171,23 @@ export default function EditQuotationPage() {
         router.push('/dashboard/quotation')
       })
   }, [params.id, reset, router])
+
+  useEffect(() => {
+    if (!selectedCustomerId) { setPicOptions([]); return }
+    apiFetch<Array<{ id: string; nama: string; jabatan?: string }>>(`/api/v1/master/customer-pic?customer_id=${selectedCustomerId}`)
+      .then((res) => setPicOptions((res.data ?? []).map(p => ({ value: p.id, label: `${p.nama}${p.jabatan ? ` (${p.jabatan})` : ''}` }))))
+      .catch(() => {})
+  }, [selectedCustomerId])
+
+  const handleBarangChange = (index: number, barangId: string) => {
+    const barang = barangData.find(b => b.value === barangId)
+    if (barang) {
+      setValue(`items.${index}.specification`, barang.spesifikasi)
+      setValue(`items.${index}.justification`, barang.justification)
+      setValue(`items.${index}.image_url`, barang.image_url)
+      setValue(`items.${index}.satuan`, barang.satuan)
+    }
+  }
 
   const onSubmit = async (data: QtnFormValues) => {
     setSubmitting(true)
@@ -130,61 +214,71 @@ export default function EditQuotationPage() {
   }
 
   return (
-    <div className="max-w-3xl space-y-6">
+    <div className="max-w-4xl space-y-6">
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" asChild>
           <Link href="/dashboard/quotation"><ArrowLeft className="h-5 w-5" /></Link>
         </Button>
         <div>
           <h1 className="text-3xl font-heading font-bold text-foreground">Edit Quotation</h1>
-          <p className="text-muted-foreground mt-1">Update penawaran harga</p>
+          <p className="text-muted-foreground mt-1">Update surat penawaran harga</p>
         </div>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Informasi Quotation</CardTitle>
-          </CardHeader>
+          <CardHeader><CardTitle className="text-base">Header Surat</CardTitle></CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Customer <span className="text-destructive">*</span></label>
-                <select
-                  {...register('customer_id')}
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring"
-                >
-                  <option value="">Pilih Customer</option>
-                  {customerOptions.map(opt => (
-                    <option key={opt.value} value={opt.value}>{opt.label}</option>
-                  ))}
+                <label className="text-sm font-medium">No. Referensi (RFQ)</label>
+                <select {...register('rfq_id')} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background">
+                  <option value="">Pilih RFQ</option>
+                  {rfqOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
                 </select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Lampiran</label>
+                <Input {...register('lampiran')} placeholder="Softcopy Penawaran Harga" />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Perihal</label>
+                <Input {...register('perihal')} />
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium">Tanggal <span className="text-destructive">*</span></label>
                 <DatePicker value={watch('tanggal')} onChange={(v) => setValue('tanggal', v)} />
               </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader><CardTitle className="text-base">Kepada Yth.</CardTitle></CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Status</label>
-                <select
-                  {...register('status')}
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring"
-                >
-                  {statusOptions.map(opt => (
-                    <option key={opt.value} value={opt.value}>{opt.label}</option>
-                  ))}
+                <label className="text-sm font-medium">Customer <span className="text-destructive">*</span></label>
+                <select {...register('customer_id')}
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring">
+                  <option value="">Pilih Customer</option>
+                  {customerOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+                </select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">PIC Customer</label>
+                <select {...register('pic_customer_id')}
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring">
+                  <option value="">Pilih PIC</option>
+                  {picOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
                 </select>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">PPN Rate (%)</label>
-                <Input type="number" step="0.01" min="0" max="100" {...register('ppn_rate')} />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Keterangan</label>
-                <Input {...register('keterangan')} />
-              </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Alamat Tujuan</label>
+              <Textarea {...register('alamat')} rows={2} />
             </div>
           </CardContent>
         </Card>
@@ -192,7 +286,7 @@ export default function EditQuotationPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="text-base">Item Penawaran</CardTitle>
-            <Button type="button" variant="outline" size="sm" onClick={() => append({ barang_id: '', jumlah: 1, harga_satuan: 0 })}>
+            <Button type="button" variant="outline" size="sm" onClick={() => append({ barang_id: '', jumlah: 1, harga_satuan: 0, specification: '', justification: '', image_url: '', satuan: '' })}>
               <Plus className="h-4 w-4 mr-1" />Tambah Item
             </Button>
           </CardHeader>
@@ -207,36 +301,54 @@ export default function EditQuotationPage() {
                     </Button>
                   )}
                 </div>
-                <div className="grid grid-cols-4 gap-3">
-                  <div className="col-span-2 space-y-2">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-2">
                     <label className="text-xs font-medium">Barang <span className="text-destructive">*</span></label>
-                    <select
-                      {...register(`items.${index}.barang_id`)}
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring"
-                    >
+                    <select {...register(`items.${index}.barang_id`)}
+                      onChange={(e) => { const v = e.target.value; setValue(`items.${index}.barang_id`, v); handleBarangChange(index, v) }}
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background">
                       <option value="">Pilih Barang</option>
-                      {barangOptions.map(opt => (
-                        <option key={opt.value} value={opt.value}>{opt.label}</option>
-                      ))}
+                      {barangData.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
                     </select>
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-xs font-medium">Jumlah <span className="text-destructive">*</span></label>
-                    <Input type="number" min="1" {...register(`items.${index}.jumlah`)} />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-xs font-medium">Harga Satuan <span className="text-destructive">*</span></label>
-                    <Input type="number" min="0" step="1" {...register(`items.${index}.harga_satuan`)} />
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-2">
-                    <label className="text-xs font-medium">Diskon (%)</label>
-                    <Input type="number" min="0" max="100" step="0.01" {...register(`items.${index}.diskon`)} />
+                    <label className="text-xs font-medium">Specification</label>
+                    <Textarea {...register(`items.${index}.specification`)} rows={2} />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-xs font-medium">Keterangan</label>
-                    <Input {...register(`items.${index}.keterangan`)} />
+                    <label className="text-xs font-medium">Justification</label>
+                    <Textarea {...register(`items.${index}.justification`)} rows={2} />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-2">
+                    <label className="text-xs font-medium">Image URL</label>
+                    <Input {...register(`items.${index}.image_url`)} placeholder="https://..." />
+                    {watch(`items.${index}.image_url`) && (
+                      <img src={watch(`items.${index}.image_url`)} alt="" className="mt-1 h-12 w-12 object-contain rounded border" />
+                    )}
+                  </div>
+                </div>
+                <div className="grid grid-cols-4 gap-3">
+                  <div className="space-y-2">
+                    <label className="text-xs font-medium">Qty <span className="text-destructive">*</span></label>
+                    <Input type="number" min="1" {...register(`items.${index}.jumlah`)} />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-medium">UoM</label>
+                    <Input {...register(`items.${index}.satuan`)} />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-medium">Price <span className="text-destructive">*</span></label>
+                    <Input type="number" min="0" step="1" {...register(`items.${index}.harga_satuan`)} placeholder="0" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-medium">Total Price</label>
+                    <div className="h-10 flex items-center px-3 border rounded-md bg-muted/30 text-sm font-medium">
+                      Rp {(Number(watch(`items.${index}.jumlah`)) * Number(watch(`items.${index}.harga_satuan`)) || 0).toLocaleString('id-ID')}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -244,9 +356,43 @@ export default function EditQuotationPage() {
           </CardContent>
         </Card>
 
+        <Card>
+          <CardHeader><CardTitle className="text-base">Pengaturan</CardTitle></CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Status</label>
+                <select {...register('status')}
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring">
+                  {statusOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+                </select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Masa Berlaku</label>
+                <select {...register('masa_berlaku')}
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring">
+                  <option value="">Pilih masa berlaku</option>
+                  {masaBerlakuOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+                </select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">PPN</label>
+                <div className="flex items-center gap-3 h-10">
+                  <Switch checked={watch('ppn_enabled') ?? true} onCheckedChange={(v) => setValue('ppn_enabled', v)} />
+                  <span className="text-sm text-muted-foreground">{watch('ppn_enabled') ? 'PPN 11%' : 'Non-PPN'}</span>
+                </div>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Keterangan</label>
+              <Textarea {...register('keterangan')} rows={2} placeholder="Catatan tambahan..." />
+            </div>
+          </CardContent>
+        </Card>
+
         <div className="flex justify-end gap-3">
-<Button type="button" variant="cancel">
-             <Link href="/dashboard/quotation">Batal</Link>
+          <Button type="button" variant="cancel">
+            <Link href="/dashboard/quotation">Batal</Link>
           </Button>
           <Button type="submit" disabled={submitting}>
             {submitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
