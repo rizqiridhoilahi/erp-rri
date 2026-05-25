@@ -75,6 +75,9 @@ import { aiVisionHistory } from "./ai-vision-history";
 import { aiAutomationLog } from "./ai-automation-log";
 import { siteSettings } from "./site-settings";
 import { dataArchive } from "./data-archive";
+import { customerPoDocument } from "./customer-po-document";
+import { diDocument } from "./di-document";
+import { grnDocument } from "./grn-document";
 
 export {
   users,
@@ -153,5 +156,8 @@ export {
   aiVisionHistory,
   aiAutomationLog,
   siteSettings,
-  dataArchive
+  dataArchive,
+  customerPoDocument,
+  diDocument,
+  grnDocument
 };

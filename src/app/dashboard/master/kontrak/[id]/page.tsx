@@ -2,13 +2,16 @@
 
 import { useState, useEffect } from "react"
 import { useRouter, usePathname } from "next/navigation"
-import { supabase } from "@/lib/db/client"
+import { apiFetch } from "@/lib/api/client"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Loader2 } from "lucide-react"
 import { BreadcrumbNav, BreadcrumbItem } from "@/components/breadcrumb-nav"
 import { PageHeader } from "@/components/page-header"
 import { EmptyState } from "@/components/empty-state"
+import { FileUpload, type DocumentFile } from "@/components/file-upload"
+import { toast } from "sonner"
+
 const breadcrumbItems: BreadcrumbItem[] = [
   { label: "Dashboard", href: "/dashboard" },
   { label: "Master Data" },
@@ -33,28 +36,50 @@ export default function DetailKontrakPage() {
   const [data, setData] = useState<Kontrak | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
+  const [documents, setDocuments] = useState<DocumentFile[]>([])
+  const [uploading, setUploading] = useState(false)
 
   useEffect(() => {
     if (!id) return
-    supabase
-      .from("kontrak")
-      .select(`
-        id,
-        nama,
-        customer!inner(nama),
-        tanggal_mulai,
-        tanggal_selesai,
-        is_active,
-        created_at
-      `)
-      .eq("id", id)
-      .single()
-      .then(({ data: result, error: err }) => {
-        if (err) setError(err.message)
-        else setData(result as Kontrak)
-        setLoading(false)
-      })
+    apiFetch<Kontrak>(`/api/v1/master/kontrak/${id}`)
+      .then((res) => { setData(res.data); setLoading(false) })
+      .catch((err) => { setError(err.message); setLoading(false) })
   }, [id])
+
+  useEffect(() => {
+    if (!id) return
+    apiFetch<DocumentFile[]>(`/api/v1/master/kontrak/${id}/documents`)
+      .then((res) => setDocuments(res.data ?? []))
+      .catch(() => {})
+  }, [id])
+
+  const handleUpload = async (file: File) => {
+    if (!id) return
+    setUploading(true)
+    try {
+      const formData = new FormData()
+      formData.append("file", file)
+      const { apiFetchFormData } = await import("@/lib/api/client")
+      const r = await apiFetchFormData(`/api/v1/master/kontrak/${id}/documents`, formData)
+      setDocuments((prev) => [r.data as DocumentFile, ...prev])
+      toast.success("File berhasil diupload")
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Gagal upload file")
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  const handleDeleteDocument = async (docId: string) => {
+    if (!id) return
+    try {
+      await apiFetch(`/api/v1/master/kontrak/${id}/documents?docId=${docId}`, { method: "DELETE" })
+      setDocuments((prev) => prev.filter((d) => d.id !== docId))
+      toast.success("File berhasil dihapus")
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Gagal hapus file")
+    }
+  }
 
   const formatDate = (date: string | null) => {
     if (!date) return "-"
@@ -143,6 +168,19 @@ export default function DetailKontrakPage() {
           </div>
         </CardContent>
       </Card>
+      <div className="mt-6">
+        <Card>
+          <CardContent className="pt-6">
+            <h3 className="text-lg font-semibold mb-4">Lampiran</h3>
+            <FileUpload
+              documents={documents}
+              onUpload={handleUpload}
+              onDelete={handleDeleteDocument}
+              uploading={uploading}
+            />
+          </CardContent>
+        </Card>
+      </div>
     </div>
   )
 }

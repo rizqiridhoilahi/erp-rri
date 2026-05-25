@@ -108,7 +108,7 @@ export function FileUpload({ documents, onUpload, onDelete, uploading = false, a
                         </a>
                       </Button>
                     </TooltipTrigger>
-                    <TooltipContent>Buka di Google Drive</TooltipContent>
+                    <TooltipContent>Buka file</TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
                 <Button variant="ghost" size="icon" onClick={() => onDelete(doc.id)}>

@@ -1,6 +1,6 @@
 # PRD: ERP PT. RIZKI RIDHO ILAHI
 
-**Versi:** 4.0
+**Versi:** 5.0
 **Status:** Draft
 **Tanggal:** 21 Mei 2026
 
@@ -149,27 +149,34 @@ Tema dirancang untuk enterprise/government — fokus pada accessibility, high co
 
 ## 5. Storage & File Management
 
-### 5.1 Google Drive Storage Strategy (Menggantikan Supabase Storage)
-File storage menggunakan **Google Drive API** melalui **Service Account** dengan **Shared Drive** akun Google Workspace for Education (100GB+).
+### 5.1 Supabase Storage Strategy
+File storage menggunakan **Supabase Storage** — bucket `dokumen` yang sudah ada di project Supabase yang sama.
 
-**Alasan migrasi dari Supabase Storage:**
-- Fitur **kolaborasi & preview** Google Docs Viewer (PDF, gambar, spreadsheet bisa di-preview langsung di browser)
-- **Share link** ke eksternal (supplier, customer) via Google Drive share dialog — akses "Anyone with link"
-- **Version history** built-in — rollback tanpa implementasi sendiri
-- **Biaya storage** 100GB+ dari akun Education gratis
+**Alasan:**
+- **1GB gratis** — cukup untuk ~1-2 tahun ERP RRI (estimasi ~800MB/tahun)
+- **Tanpa kartu kredit** — langsung aktif dengan project Supabase yang sudah berjalan
+- **Terintegrasi** — pakai `supabaseAdmin` yang sama dengan API routes lainnya
+- **Public URL** built-in — setiap file langsung punya URL publik yang bisa di-share
+- **CDN** — file di-serve via CDN Supabase
 
-### 5.2 Struktur Folder di Google Drive
+**Catatan:** Jika suatu saat melebihi 1GB, upgrade ke Pro plan ($25/bulan) dapat 100GB.
+
+### 5.2 Struktur Folder di Supabase Storage
 
 ```
-📁 RRI-ERP (Shared Drive)
-├── 📁 dokumen/
-│   ├── 📁 rfq/{rfqId}/
-│   ├── 📁 kontrak/{kontrakId}/
-│   ├── 📁 invoice/{invoiceId}/
-│   └── 📁 kontrak-ocr/
-├── 📁 avatars/{userId}/
-├── 📁 barang/{barangId}/
-└── 📁 temporary/
+Bucket: dokumen
+├── dokumen/rfq/{rfqId}/{timestamp}-{file}.pdf
+├── dokumen/kontrak/{kontrakId}/{timestamp}-{file}.pdf
+├── dokumen/invoice/{invoiceId}/{timestamp}-{file}.pdf
+├── dokumen/customer-po/{id}/{timestamp}-{file}.pdf
+├── dokumen/di/{id}/{timestamp}-{file}.pdf
+├── dokumen/grn/{id}/{timestamp}-{file}.pdf
+├── dokumen/retur-penjualan/{id}/{timestamp}-{file}.pdf
+├── dokumen/retur-pembelian/{id}/{timestamp}-{file}.pdf
+├── dokumen/kontrak-ocr/{timestamp}-{file}.pdf
+├── avatars/{userId}/{timestamp}-avatar.jpg
+├── barang/{barangId}/{timestamp}-foto-1.webp
+└── temporary/{sessionId}/{file}.xlsx
 ```
 
 ### 5.3 Optimasi Penyimpanan
@@ -178,13 +185,11 @@ File storage menggunakan **Google Drive API** melalui **Service Account** dengan
 |---|---|---|
 | **Compress sebelum upload** | `browser-image-compression` library di client-side | Ukuran file turun 60-80% |
 | **Konversi ke WebP** | Semua gambar otomatis dikonversi ke format WebP | Ukuran file turun 30% tambahan |
-| **Delete file lama** | Setiap update file: hapus file existing via Drive API, baru upload yang baru | Tidak ada file sampah menumpuk |
+| **Delete file lama** | Setiap update file: hapus file existing di Storage, baru upload yang baru | Tidak ada file sampah menumpuk |
 | **Max dimensi** | Foto barang: max 1920px. Avatar: max 200px. Foto profil: max 600px | File size terkontrol |
 | **Max file size** | Client-side + server-side validation: Foto = max 5MB, Dokumen PDF = max 10MB | Mencegah abuse |
 | **Whitelist tipe file** | Hanya izinkan: `image/jpeg`, `image/png`, `image/webp`, `application/pdf` | Keamanan storage |
-| **Anyone with link** | Setiap file setelah upload langsung di-set permission "Anyone with link can view" | File bisa di-share ke eksternal tanpa login |
-| **Google Docs Viewer** | File bisa di-preview via embedded viewer atau link langsung | Tidak perlu download untuk lihat | 
-| **Rate limit handling** | 10 requests/second — implementasi queue/retry untuk upload massal | Tidak kena quota error |
+| **Public URL** | Setiap file punya public URL via `getPublicUrl()` | Share ke supplier/customer tanpa login |
 
 ### 5.4 Arsitektur Upload File
 
@@ -198,16 +203,15 @@ File storage menggunakan **Google Drive API** melalui **Service Account** dengan
 │ API Route (Next.js)                                      │
 │ verifyAuth() → validasi tipe/ukuran → buffer             │
 │ → StorageService.upload(buffer, path, mimeType)          │
-│ → simpan fileId + webViewLink ke DB                      │
+│ → simpan fileUrl ke DB (public URL)                      │
 │ → return response                                        │
 └────────────────────┬─────────────────────────────────────┘
                      ↓
 ┌──────────────────────────────────────────────────────────┐
 │ StorageService (src/lib/storage/)                        │
-│ GoogleAuth (JWT Service Account)                         │
-│ → ensure folder path exists (buat folder jika belum)     │
-│ → Google Drive API: Files.create (upload ke Shared Drive)│
-│ → set permission: Anyone with link (reader)              │
+│ supabaseAdmin.storage.from('dokumen')                    │
+│ → upload(path, buffer)                                   │
+│ → getPublicUrl(path)                                     │
 │ → return { fileId, webViewLink, webContentLink }        │
 └──────────────────────────────────────────────────────────┘
 ```
@@ -219,23 +223,15 @@ Abstraction layer di `src/lib/storage/`:
 | File | Fungsi |
 |------|--------|
 | `types.ts` | Interface `IStorageService` + type definitions |
-| `google-drive.ts` | Implementasi Google Drive API (upload, getUrl, delete, list) |
+| `supabase.ts` | Implementasi Supabase Storage (upload, getUrl, delete, list) |
 | `index.ts` | Re-export `storageService` |
-
-**Environment Variables:**
-```env
-GOOGLE_DRIVE_CLIENT_EMAIL=service-account@project.iam.gserviceaccount.com
-GOOGLE_DRIVE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
-GOOGLE_DRIVE_SHARED_DRIVE_ID=shared_drive_id_here
-```
 
 ### 5.6 Keamanan File
 
-- **Anyone with link (readonly)** — semua file bisa diakses oleh siapa pun yang memiliki link (tanpa login Google)
-- File disimpan di **Shared Drive** — tidak terikat ke akun personal, dikelola oleh tim IT
-- **Service Account** hanya bisa upload/edit/delete file — tidak bisa manage members atau shared drive itu sendiri
-- `drive_file_id` disimpan di database sebagai referensi permanen ke file di Google Drive
-- Delete: file dihapus permanen dari Google Drive via API (bukan di-trash)
+- **Public URL** — semua file bisa diakses siapa pun yang memiliki URL
+- **Upload via API saja** — semua upload melalui API Route yang sudah diverifikasi auth (`verifyAuth()`)
+- **Supabase Admin Client** — menggunakan service role key (`supabaseAdmin`) untuk operasi storage
+- `drive_file_id` di database berisi path objek di bucket (contoh: `dokumen/rfq/abc123/file.pdf`)
 
 ### 5.7 File Naming Convention
 
@@ -244,6 +240,23 @@ GOOGLE_DRIVE_SHARED_DRIVE_ID=shared_drive_id_here
 ```
 
 Contoh: `dokumen/rfq/abc123/1712345678-PO-001.pdf`
+
+### 5.8 Document Upload Modules (7 Modul)
+
+Setiap modul transaksi memiliki fitur upload dokumen lampiran (PDF/gambar) dengan pola yang identik:
+
+| Modul | API Route | DB Table | Storage Path |
+|-------|-----------|----------|--------------|
+| RFQ | `/api/v1/rfq/{id}/documents` | `rfq_document` | `dokumen/rfq/{id}/` |
+| Kontrak | `/api/v1/master/kontrak/{id}/documents` | `kontrak_file` | `dokumen/kontrak/{id}/` |
+| Customer PO | `/api/v1/customer-po/{id}/documents` | `customer_po_document` | `dokumen/customer-po/{id}/` |
+| DI | `/api/v1/di/{id}/documents` | `di_document` | `dokumen/di/{id}/` |
+| GRN | `/api/v1/grn/{id}/documents` | `grn_document` | `dokumen/grn/{id}/` |
+| Invoice | `/api/v1/invoice/{id}/documents` | `invoice_document` | `dokumen/invoice/{id}/` |
+| Retur Penjualan | `/api/v1/retur-penjualan/{id}/documents` | `retur_penjualan_document` | `dokumen/retur-penjualan/{id}/` |
+| Retur Pembelian | `/api/v1/retur-pembelian/{id}/documents` | `retur_pembelian_document` | `dokumen/retur-pembelian/{id}/` |
+
+**Pattern API:** Setiap route memiliki 3 method: `GET` (list), `POST` (upload multipart form-data), `DELETE` (by query param `docId`). Semua menggunakan `storageService` dari `src/lib/storage/`.
 
 ## 6. Scalability & Arsitektur
 
@@ -392,7 +405,7 @@ Modul ini menangani proses sebelum terjadinya penjualan, dengan tracking per PIC
 
 | Sub-Modul | Deskripsi |
 |---|---|
-| **RFQ (Request for Quotation)** | Merekam RFQ dari customer. Assign ke PIC Customer spesifik. Upload file RFQ jika ada |
+| **RFQ (Request for Quotation)** | Merekam RFQ dari customer. Assign ke PIC Customer spesifik. Upload file RFQ (PDF/gambar) via Lampiran |
 | **Quotation** | Membuat penawaran harga. Dua model pricing: (1) Default: cost + 15% profit, (2) Manual: user tentukan sendiri. Bisa pilih hasil dari AI Search sebagai referensi harga beli. Nomor otomatis: `SPH/RRI/YY/MM/0001` |
 | **Negosiasi** | Setelah Quotation dikirim, Procurement customer bisa negosiasi. Fitur: track history negosiasi, counter offer, approval internal |
 | **Quotation → PO** | Konversi quotation yang deal menjadi PO customer — auto-generate Sales Order |
@@ -401,8 +414,8 @@ Modul ini menangani proses sebelum terjadinya penjualan, dengan tracking per PIC
 
 | Sub-Modul | Deskripsi |
 |---|---|
-| **Kontrak Customer** | Kontrak fixed price list. Upload PDF → AI OCR → simpan harga kontrak. Assign PIC Customer |
-| **DI (Delivery Instruction)** | Instruksi pengiriman dari customer berdasarkan kontrak. Assign PIC Customer |
+| **Kontrak Customer** | Kontrak fixed price list. Upload PDF → AI OCR → simpan harga kontrak. Assign PIC Customer. Upload dokumen fisik kontrak via Lampiran |
+| **DI (Delivery Instruction)** | Instruksi pengiriman dari customer berdasarkan kontrak. Assign PIC Customer. Upload dokumen pendukung via Lampiran |
 
 ### D. Sales Order & Pengiriman
 
@@ -411,7 +424,7 @@ Modul ini menangani proses sebelum terjadinya penjualan, dengan tracking per PIC
 | **Sales Order (SO)** | Order penjualan internal (berdasarkan PO Customer atau DI). Auto-generate saat PO/DI deal |
 | **Delivery Order (DO)** | Surat jalan untuk pengiriman barang. Nomor otomatis: `SJ/RRI/YY/MM/0001`. Auto-generate draft saat SO siap kirim |
 | **Tracking Pengiriman** | Status pengiriman barang. Begitu DO status "Dikirim", auto-generate draft Invoice |
-| **Retur Penjualan** | Barang dikembalikan oleh customer karena cacat/rusak/tidak sesuai. Proses: Retur → GRN Retur → Stok masuk → Invoice Adjustment / Refund. Dokumen: Nota Retur |
+| **Retur Penjualan** | Barang dikembalikan oleh customer karena cacat/rusak/tidak sesuai. Proses: Retur → GRN Retur → Stok masuk → Invoice Adjustment / Refund. Dokumen: Nota Retur. Upload bukti retur via Lampiran |
 | **Barcode / QR Code** | Setiap DO bisa di-scan pakai HP gudang |
 
 ### E. Procurement / Pembelian
@@ -424,8 +437,8 @@ Modul ini menangani pembelian dari supplier — termasuk supplier marketplace Sh
 | **Supplier Search** | Cari supplier — bisa dari database seller existing, atau via AI Search (Shopee/Tokopedia) |
 | **Purchase Order (PO)** | Order pembelian ke supplier. Untuk marketplace: field tambahan (link produk, nama toko, marketplace, no. resi) |
 | **Receiving / Penerimaan Barang** | Penerimaan barang dari supplier, update stok |
-| **GRN (Goods Received Note)** | Tanda terima barang |
-| **Retur Pembelian** | Barang dikembalikan ke supplier karena cacat/tidak sesuai. Proses: Retur → DO Retur → Kirim ke supplier → Refund/Adjustment |
+| **GRN (Goods Received Note)** | Tanda terima barang. Upload dokumen pendukung via Lampiran |
+| **Retur Pembelian** | Barang dikembalikan ke supplier karena cacat/tidak sesuai. Proses: Retur → DO Retur → Kirim ke supplier → Refund/Adjustment. Upload dokumen pendukung via Lampiran |
 | **Supplier Payment** ✅ | Pembayaran ke supplier (termasuk bukti transfer) — `supplier_payment` table + API + halaman `/dashboard/procurement/supplier-payment` |
 | **Approval Escalation** ✅ | Jika PR/PO tidak di-approve dalam 24 jam, auto-escalate ke atasan via notifikasi — Cron endpoint `/api/v1/cron/approval-escalation` + audit_log |
 
