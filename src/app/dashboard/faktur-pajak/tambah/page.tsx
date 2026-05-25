@@ -1,7 +1,7 @@
 "use client"
 import Link from 'next/link'
 import { useState, useEffect } from 'react'; import { useRouter } from 'next/navigation'; import { z } from 'zod'; import { useForm, useFieldArray } from 'react-hook-form'; import { zodResolver } from '@hookform/resolvers/zod'
-import { apiFetch } from '@/lib/api/client'; import { Button } from '@/components/ui/button'; import { Input } from '@/components/ui/input'; import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { apiFetch } from '@/lib/api/client'; import { Button } from '@/components/ui/button'; import { Input } from '@/components/ui/input'; import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'; import { DatePicker } from '@/components/ui/date-picker'
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select'
 import { Plus, Trash2, ArrowLeft, Loader2 } from 'lucide-react'; import { toast } from 'sonner'
@@ -36,7 +36,7 @@ export default function TambahFakturPajakPage() {
                   <SelectContent>{invOpts.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}</SelectContent>
                 </Select><FormMessage /></FormItem>
               )} />
-              <div className="space-y-2"><label className="text-sm font-medium">Tanggal *</label><Input type="date" {...form.register('tanggal')} /></div>
+              <div className="space-y-2"><label className="text-sm font-medium">Tanggal *</label><DatePicker value={form.watch('tanggal')} onChange={(v) => form.setValue('tanggal', v)} /></div>
               <div className="space-y-2"><label className="text-sm font-medium">Nomor Faktur *</label><Input {...form.register('nomor_faktur')} placeholder="010.000-25.12345678" /></div>
               <div className="space-y-2"><label className="text-sm font-medium">DPP *</label><Input type="number" step="0.01" {...form.register('dpp')} /></div>
               <div className="space-y-2"><label className="text-sm font-medium">PPN *</label><Input type="number" step="0.01" {...form.register('ppn')} /></div>

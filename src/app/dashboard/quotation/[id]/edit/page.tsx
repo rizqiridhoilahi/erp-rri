@@ -10,6 +10,7 @@ import { apiFetch } from '@/lib/api/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { DatePicker } from '@/components/ui/date-picker'
 import { Plus, Trash2, ArrowLeft, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -48,7 +49,7 @@ export default function EditQuotationPage() {
   const [customerOptions, setCustomerOptions] = useState<Array<{ value: string; label: string }>>([])
   const [barangOptions, setBarangOptions] = useState<Array<{ value: string; label: string }>>([])
 
-  const { register, handleSubmit, control, reset } = useForm<QtnFormValues>({
+  const { register, handleSubmit, control, reset, watch, setValue } = useForm<QtnFormValues>({
     resolver: zodResolver(qtnSchema),
   })
 
@@ -161,7 +162,7 @@ export default function EditQuotationPage() {
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium">Tanggal <span className="text-destructive">*</span></label>
-                <Input type="date" {...register('tanggal')} />
+                <DatePicker value={watch('tanggal')} onChange={(v) => setValue('tanggal', v)} />
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium">Status</label>

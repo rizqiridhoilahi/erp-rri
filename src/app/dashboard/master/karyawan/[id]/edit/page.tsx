@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
+import { DatePicker } from '@/components/ui/date-picker';
 import { Loader2 } from 'lucide-react';
 import { useUnsavedChanges } from '@/hooks/use-unsaved-changes';
 import { ConfirmLeaveDialog } from '@/components/confirm-leave-dialog';
@@ -27,7 +28,7 @@ export default function EditKaryawanPage() {
   const router = useRouter();
   const pathname = usePathname();
   const id = pathname.split('/').at(-2);
-  const { register, handleSubmit, formState: { errors, isDirty }, reset } = useForm<FormValues>({ resolver: zodResolver(schema) });
+  const { register, handleSubmit, formState: { errors, isDirty }, reset, watch, setValue } = useForm<FormValues>({ resolver: zodResolver(schema) });
   const { confirmLeave, showDialog, handleConfirm, handleCancel } = useUnsavedChanges(isDirty);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -132,7 +133,7 @@ export default function EditKaryawanPage() {
         </div>
         <div>
           <label className="block text-sm font-medium mb-1">Tanggal Masuk</label>
-          <input type="date" {...register('tanggalMasuk')} className="w-full px-3 py-2 border rounded-md focus:outline-none focus-visible:ring-3 focus-visible:ring-ring" />
+          <DatePicker value={watch('tanggalMasuk')} onChange={(v) => setValue('tanggalMasuk', v)} />
         </div>
         <div className="flex items-center">
           <label className="flex items-center text-sm font-medium">

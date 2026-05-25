@@ -3,6 +3,7 @@ import { useEffect, useState, useRef } from 'react'
 import { apiFetch } from '@/lib/api/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { DatePicker } from '@/components/ui/date-picker'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -90,11 +91,11 @@ export default function AIUsagePage() {
       <div className="flex flex-wrap items-center gap-3 mb-6">
         <div className="flex items-center gap-2">
           <label className="text-xs text-muted-foreground whitespace-nowrap">Dari</label>
-          <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="h-9 w-40" />
+          <DatePicker value={startDate} onChange={(v) => setStartDate(v ?? '')} />
         </div>
         <div className="flex items-center gap-2">
           <label className="text-xs text-muted-foreground whitespace-nowrap">Sampai</label>
-          <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="h-9 w-40" />
+          <DatePicker value={endDate} onChange={(v) => setEndDate(v ?? '')} />
         </div>
         <div className="flex items-center gap-2 flex-1 min-w-[200px] max-w-xs">
           <Search className="h-4 w-4 text-muted-foreground shrink-0" />

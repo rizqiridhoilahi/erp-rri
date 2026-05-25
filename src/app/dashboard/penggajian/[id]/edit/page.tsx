@@ -1,14 +1,14 @@
 "use client"
 import Link from 'next/link'
 import { useState, useEffect } from 'react'; import { useRouter, useParams } from 'next/navigation'; import { z } from 'zod'; import { useForm } from 'react-hook-form'; import { zodResolver } from '@hookform/resolvers/zod'
-import { apiFetch } from '@/lib/api/client'; import { Button } from '@/components/ui/button'; import { Input } from '@/components/ui/input'; import { Textarea } from '@/components/ui/textarea'; import { Card, CardContent } from '@/components/ui/card'
+import { apiFetch } from '@/lib/api/client'; import { Button } from '@/components/ui/button'; import { Input } from '@/components/ui/input'; import { Textarea } from '@/components/ui/textarea'; import { Card, CardContent } from '@/components/ui/card'; import { DatePicker } from '@/components/ui/date-picker'
 import { ArrowLeft, Loader2 } from 'lucide-react'; import { toast } from 'sonner'
 const schema = z.object({ status: z.string().optional(), gaji_pokok: z.coerce.number().optional(), tunjangan: z.coerce.number().optional(), potongan: z.coerce.number().optional(), tanggal_pembayaran: z.string().optional(), keterangan: z.string().optional() })
 type FV = z.input<typeof schema>
 const statusOpts = [{ value: 'draft', label: 'Draft' }, { value: 'paid', label: 'Dibayar' }, { value: 'pending', label: 'Pending' }]
 export default function EditPenggajianPage() {
   const router = useRouter(); const params = useParams(); const [loading, setLoading] = useState(true); const [submitting, setSubmitting] = useState(false)
-  const { register, handleSubmit, reset, watch } = useForm<FV>({ resolver: zodResolver(schema) })
+  const { register, handleSubmit, reset, watch, setValue } = useForm<FV>({ resolver: zodResolver(schema) })
   const gp = watch('gaji_pokok', 0); const tj = watch('tunjangan', 0); const pt = watch('potongan', 0)
   useEffect(() => {
     apiFetch<{ status: string; gaji_pokok: number; tunjangan: number; potongan: number; keterangan: string | null; tanggal_pembayaran: string | null }>(`/api/v1/penggajian/${params.id}`)
@@ -30,7 +30,7 @@ export default function EditPenggajianPage() {
           <div className="space-y-2"><label className="text-sm font-medium">Potongan</label><Input type="number" step="0.01" {...register('potongan')} /></div>
         </div>
         <div><p className="text-sm">Gaji Bersih: <strong>Rp {((Number(gp) || 0) + (Number(tj) || 0) - (Number(pt) || 0)).toLocaleString('id-ID')}</strong></p></div>
-        <div className="space-y-2"><label className="text-sm font-medium">Tgl Pembayaran</label><Input type="date" {...register('tanggal_pembayaran')} /></div>
+        <div className="space-y-2"><label className="text-sm font-medium">Tgl Pembayaran</label><DatePicker value={watch('tanggal_pembayaran')} onChange={(v) => setValue('tanggal_pembayaran', v)} /></div>
         <div className="space-y-2"><label className="text-sm font-medium">Keterangan</label><Textarea {...register('keterangan')} rows={3} /></div>
       </CardContent></Card><div className="flex justify-end gap-3"><Button type="button" variant="cancel" asChild><Link href="/dashboard/penggajian">Batal</Link></Button><Button type="submit" disabled={submitting}>{submitting ? '...' : 'Update'}</Button></div></form>
     </div>

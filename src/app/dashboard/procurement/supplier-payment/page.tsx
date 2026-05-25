@@ -4,6 +4,7 @@ import { apiFetch } from '@/lib/api/client'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { DatePicker } from '@/components/ui/date-picker'
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
@@ -116,7 +117,7 @@ export default function SupplierPaymentPage() {
                 </div>
                 <div className="space-y-2">
                   <Label>Tanggal Bayar</Label>
-                  <Input type="date" value={form.tanggalBayar} onChange={(e) => setForm(f => ({ ...f, tanggalBayar: e.target.value }))} />
+                  <DatePicker value={form.tanggalBayar} onChange={(v) => setForm(f => ({ ...f, tanggalBayar: v ?? '' }))} />
                 </div>
               </div>
               <div className="space-y-2">
