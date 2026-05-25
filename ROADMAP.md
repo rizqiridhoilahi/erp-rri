@@ -176,3 +176,26 @@ All items above (Bulk Import, OpenAPI Docs, Global Search, PDF Generations, Deta
 ### Verification
 - Build: `npm run build` — 0 errors, 0 warnings
 - Lint: `npm run lint` — 0 errors, 0 warnings
+
+## Fase 13 — Dashboard Chart Enhancements (May 2026)
+
+### New Chart Components
+- [x] **SalesFunnelChart** — BarChart (4 stage: Quotation → PO Customer → Sales Order → DO)
+- [x] **TopCustomersChart** — Horizontal BarChart (top 5 by revenue)
+- [x] **TopSuppliersChart** — Horizontal BarChart (top 5 by spend)
+- [x] **StockCategoryChart** — Donut PieChart (stock distribution by kategori)
+- [x] **LowStockChart** — Horizontal BarChart (items sorted by lowest stock)
+- [x] **RevenueMixChart** — Donut PieChart (revenue by product category)
+- [x] **InvoiceVelocityChart** — BarChart (days to payment distribution)
+- [x] **ProcurementCycleChart** — BarChart (PR→PO cycle time buckets)
+- [x] **ChartCard** — Reusable chart wrapper component (same design as RevenueChartCard)
+
+### Dashboard Updates
+- [x] **Owner Dashboard** — Added: Sales Funnel, Top 5 Customers, AR Aging (AgingChart), Revenue Mix, Stock Category, Low Stock Ranking
+- [x] **Sales Dashboard** — Redesigned with StatCards + Sales Funnel Chart + modern card style
+- [x] **Gudang Dashboard** — Redesigned with StatCards + Stock Category Donut + Low Stock Ranking
+- [x] **Procurement Dashboard** — Redesigned with StatCards + Top Suppliers + PR→PO Cycle Time
+- [x] **Finance Dashboard** — Redesigned with StatCards + AR Aging Distribution (AgingChart mounted) + Invoice Payment Velocity
+
+### Verification
+- Lint: `npm run lint` — 0 errors, 3 warnings (pre-existing, intentional)

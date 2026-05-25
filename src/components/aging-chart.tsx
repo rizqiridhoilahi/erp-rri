@@ -19,9 +19,9 @@ export function AgingChart({ data, formatCurrency }: AgingChartProps) {
   return (
     <ResponsiveContainer width="100%" height={250}>
       <BarChart data={chartData} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
-        <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-        <XAxis dataKey="label" tick={{ fontSize: 12 }} />
-        <YAxis tick={{ fontSize: 12 }} tickFormatter={v => formatCurrency ? rupiah(v) : String(v)} />
+        <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" strokeOpacity={0.5} />
+        <XAxis dataKey="label" tick={{ fontSize: 12, fill: 'var(--muted-foreground)' }} />
+        <YAxis tick={{ fontSize: 12, fill: 'var(--muted-foreground)' }} tickFormatter={v => formatCurrency ? rupiah(v) : String(v)} />
         <Tooltip
           formatter={(v) => formatCurrency ? rupiah(Number(v) || 0) : String(Number(v) || 0)}
           contentStyle={{ fontSize: 13, borderRadius: 8 }}

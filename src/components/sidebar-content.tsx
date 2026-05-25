@@ -44,17 +44,17 @@ const menuItems: MenuItem[] = [
   { href: '/dashboard', label: 'Dashboard', icon: Home },
   { label: 'Master Data', icon: FolderTree, children: [
     { href: '/dashboard/master/barang', label: 'Barang', icon: Package },
+    { href: '/dashboard/master/kategori-barang', label: 'Kategori Barang', icon: FolderTree },
     { href: '/dashboard/master/supplier', label: 'Supplier', icon: Building2 },
     { href: '/dashboard/master/customer', label: 'Customer', icon: Users },
     { href: '/dashboard/master/pic-customer', label: 'PIC Customer', icon: UserCircle },
     { href: '/dashboard/master/coa', label: 'Chart of Accounts', icon: BookOpen },
-    { href: '/dashboard/master/kontrak', label: 'Kontrak', icon: FileText },
-    { href: '/dashboard/master/kategori-barang', label: 'Kategori Barang', icon: FolderTree },
     { href: '/dashboard/master/jabatan', label: 'Jabatan', icon: Briefcase },
     { href: '/dashboard/master/karyawan', label: 'Karyawan', icon: Users2 },
     { href: '/dashboard/tools/bulk-import', label: 'Import Excel', icon: FileSpreadsheet },
   ]},
   { label: 'Pre-Sales', icon: Search, children: [
+    { href: '/dashboard/master/kontrak', label: 'Kontrak', icon: FileText },
     { href: '/dashboard/rfq', label: 'RFQ', icon: FileText },
     { href: '/dashboard/quotation', label: 'Quotation', icon: FileText },
     { href: '/dashboard/negoiasi', label: 'Negosiasi', icon: FileText },
@@ -213,10 +213,10 @@ export function SidebarContent({ collapsed }: { collapsed?: boolean }) {
         </button>
         <Button
           variant="ghost"
-          className="flex items-center gap-2 w-full px-4 py-2 rounded-lg text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors duration-200"
+          className="flex items-center gap-2 w-full px-4 py-2 rounded-lg text-sm text-destructive hover:bg-destructive/10 hover:text-destructive transition-colors duration-200"
           onClick={handleLogout}
         >
-          <LogOut className="h-4 w-4" />
+          <LogOut className="h-4 w-4 text-destructive" />
           {!collapsed && 'Keluar'}
         </Button>
         {user && !collapsed && (

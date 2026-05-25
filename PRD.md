@@ -472,25 +472,27 @@ Bukan sekedar 6 kartu statistik — dashboard Owner adalah command center yang m
 
 | Section | Data | Tujuan |
 |---|---|---|
-| **Revenue & Profit** | Total revenue bulan ini, Laba/Rugi, perbandingan dengan bulan lalu | Performa bisnis real-time |
-| **Pipeline** | Quotation outstanding, PO customer deal, SO aktif | Visibilitas order yang sedang berjalan |
-| **Procurement** | PR dan PO pending | Tidak ada pembelian terlewat |
-| **Finance** | AR outstanding + aging, AP outstanding, Faktur Pajak pending | Cashflow & kewajiban terpantau |
-| **Inventory** | Total barang, total stok, stok kosong/minimum | Tahu potensi stop operasional |
-| **Pending Actions** | Semua item butuh tindakan owner (PR/PO approval, retur pending) | Tidak ada yang terabaikan |
-| **Recent Activity** | 5-10 transaksi terakhir dari semua modul | Konteks aktivitas hari ini |
-| **Quick Actions** | Tombol shortcut sesuai konteks owner solo | Eksekusi cepat tanpa navigasi |
+| **Revenue & Profit** | Total revenue bulan ini, Laba/Rugi, perbandingan dengan bulan lalu, Revenue Trend Chart (6 bulan) | Performa bisnis real-time |
+| **Sales Pipeline** | StatCards: RFQ, Quotation, PO Customer, SO — plus row Customer Aktif, Piutang Outstanding, DO Pending | Visibilitas order yang sedang berjalan |
+| **Sales Analytics** | Sales Pipeline Funnel (BarChart 4 stage), Top 5 Customers by Revenue (HorizontalBarChart), AR Aging Distribution (BarChart) | Analisis penjualan visual |
+| **Revenue Mix** | Revenue per Kategori Barang (Donut PieChart), Komposisi Stok per Kategori (Donut PieChart) | Komposisi pendapatan & inventori |
+| **Procurement** | PR aktif, PO terbuka, Pending Receiving, Pending GRN (StatCards) | Tidak ada pembelian terlewat |
+| **Inventory Analytics** | Peringkat Stok Menipis (HorizontalBarChart), Total Barang/Stok/Stok Kosong/DO Pending (StatCards) | Manajemen stok visual |
+| **Pending Actions** | Semua item butuh tindakan owner (PR/PO approval, stok kosong, faktur pajak, DO) | Tidak ada yang terabaikan |
+| **Recent Activity** | 8 transaksi terakhir dari Quotation/SO/Invoice/PO | Konteks aktivitas hari ini |
+| **Quick Actions** | Akses Cepat terkelompok: HR, Finance, Sales & Procurement | Eksekusi cepat tanpa navigasi |
+| **Modul** | Grid 8 modul utama (Master Barang, Supplier, Customer, Karyawan, Laba/Rugi, Neraca, AR Aging, Arus Kas) | Navigasi modul |
 
 **Role-Specific Dashboards (Future-Ready):**
 
 | Dashboard | Untuk Role |
-|---|---|
+|---|---|---|
 | **Manager** | Ringkasan per modul, approval pending (PR, PO) |
-| **Sales** | Pipeline order, RFQ → Quotation → Deal ratio, recent quotations |
-| **Procurement** | PR/PO status, pending receiving & GRN |
-| **Gudang** | Stok, barang kosong, DO pending |
-| **Finance** | AR/AP, kwitansi bulan ini, faktur pajak pending |
-| **Owner/Admin** | Executive Command Center — semua data dalam satu layar |
+| **Sales** | Pipeline order (StatCards + SalesFunnelChart), recent quotations |
+| **Procurement** | PR/PO status (StatCards), Top 5 Suppliers by Spend (HorizontalBarChart), PR→PO Cycle Time (BarChart) |
+| **Gudang** | Stok (StatCards), Komposisi Stok per Kategori (Donut PieChart), Peringkat Stok Menipis (HorizontalBarChart) |
+| **Finance** | AR/AP (StatCards), AR/AP Aging (ArapChart), AR Aging Distribution (AgingChart), Invoice Payment Velocity (BarChart), Arus Kas (CashflowChart) |
+| **Owner/Admin** | Executive Command Center — 10 section dengan 7 jenis chart interaktif |
 | Semua data bisa di-export ke Excel/CSV | Semua role |
 
 > **Catatan:** Dashboard per role siap aktif kapanpun. Cukup set role user di database (`users.role`), sistem otomatis menampilkan dashboard yang sesuai. Owner dan Admin melihat Executive Command Center selama rolenya 'owner' atau 'admin'.

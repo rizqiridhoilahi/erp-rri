@@ -2,16 +2,24 @@ import { cookies } from 'next/headers'
 import { createClient } from '@supabase/supabase-js'
 import Link from 'next/link'
 import { supabase } from '@/lib/db/client'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { TrendingUp, TrendingDown, Package, Users, Building2, Users2, FileText, ShoppingCart, DollarSign, ClipboardList, AlertTriangle, Clock, Bot, Receipt, Banknote, Truck, ArrowUpRight, ArrowDownRight, Inbox } from 'lucide-react'
+import { TrendingUp, TrendingDown, Package, Users, Building2, Users2, FileText, ShoppingCart, DollarSign, ClipboardList, AlertTriangle, Clock, Bot, Receipt, Banknote, Truck, Inbox, PieChart, TrendingUpIcon } from 'lucide-react'
 import ManagerDashboard from '@/components/dashboards/manager'
 import SalesDashboard from '@/components/dashboards/sales'
 import ProcurementDashboard from '@/components/dashboards/procurement'
 import GudangDashboard from '@/components/dashboards/gudang'
 import FinanceDashboard from '@/components/dashboards/finance'
 import { StatusBadge } from '@/components/status-badge'
-import { RevenueChart } from '@/components/revenue-chart'
+import { StatCard } from '@/components/stat-card'
+import { RevenueChartCard } from '@/components/revenue-chart-card'
+import { ChartCard } from '@/components/chart-card'
+import { SalesFunnelChart } from '@/components/sales-funnel-chart'
+import { TopCustomersChart } from '@/components/top-customers-chart'
+import { AgingChart } from '@/components/aging-chart'
+import { StockCategoryChart } from '@/components/stock-category-chart'
+import { LowStockChart } from '@/components/low-stock-chart'
+import { RevenueMixChart } from '@/components/revenue-mix-chart'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -34,37 +42,6 @@ async function getUserRole(): Promise<string> {
 }
 
 type RecentItem = { id: string; nomor: string; tanggal: string; status: string; label: string; href: string }
-type Stat = { label: string; value: string | number; icon: typeof Package; color?: string; subtitle?: string; trend?: number; trendLabel?: string }
-
-function StatCard({ label, value, icon: Icon, color, subtitle, trend, trendLabel }: Stat) {
-  return (
-    <Card className={`overflow-hidden border-t-2 border-t-[#A1A1AA] shadow-[0_1px_3px_rgba(0,0,0,0.05),0_10px_15px_-3px_rgba(0,0,0,0.01),0_4px_6px_-4px_rgba(0,0,0,0.01)] ${color ? '' : ''}`}>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className={`text-sm font-semibold uppercase tracking-wider ${color ? 'text-foreground' : 'text-muted-foreground'}`}>
-          {label}
-        </CardTitle>
-        <div className={`rounded-full p-2 ${color ? 'bg-primary/10 text-primary dark:bg-[#3B82F6]/10 dark:text-[#3B82F6]' : 'bg-muted text-muted-foreground'}`}>
-          <Icon className="h-4 w-4" />
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold font-heading tracking-tight text-foreground">
-          {typeof value === 'number' ? value.toLocaleString('id-ID') : value}
-        </div>
-        <div className="flex items-center justify-between mt-1">
-          {subtitle && <p className="text-xs text-muted-foreground">{subtitle}</p>}
-          {trend !== undefined && (
-            <div className={`flex items-center gap-0.5 text-xs font-medium ${trend >= 0 ? 'text-success' : 'text-destructive'}`}>
-              {trend >= 0 ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
-              <span>{Math.abs(trend).toFixed(1)}%</span>
-              {trendLabel && <span className="text-muted-foreground font-normal ml-1">{trendLabel}</span>}
-            </div>
-          )}
-        </div>
-      </CardContent>
-    </Card>
-  )
-}
 
 export default async function DashboardPage() {
   const role = await getUserRole()
@@ -91,6 +68,8 @@ export default async function DashboardPage() {
     lastMonthKwitansis,
     sixMonthRevenue,
     rfq,
+    invoiceItems, customersData, kategoriBarang, stokDetail, barangDetail,
+    allInvoices,
   ] = await Promise.all([
     supabase.from('invoice').select('*').in('status', ['sent', 'overdue']),
     supabase.from('customer').select('*', { count: 'exact', head: true }),
@@ -115,6 +94,12 @@ export default async function DashboardPage() {
     supabase.from('kwitansi').select('*, total').gte('created_at', lastMonthFirstDay).lte('created_at', lastMonthLastDay),
     supabase.from('kwitansi').select('created_at, total').gte('created_at', sixMonthsAgo).order('created_at', { ascending: true }),
     supabase.from('rfq').select('*', { count: 'exact', head: true }).eq('status', 'sent'),
+    supabase.from('invoice_item').select('invoice_id, harga, jumlah, diskon'),
+    supabase.from('customer').select('id, nama'),
+    supabase.from('kategori_barang').select('id, nama'),
+    supabase.from('stok').select('barang_id, jumlah'),
+    supabase.from('barang').select('id, nama, kategori_id'),
+    supabase.from('invoice').select('id, tanggal, status, customer_id').in('status', ['sent', 'paid', 'partial', 'overdue']),
   ])
 
   const totalPiutang = (invoice.data ?? []).reduce((s: number, i) => s + ((i as { ppn_rate?: number }).ppn_rate ?? 0), 0)
@@ -145,83 +130,188 @@ export default async function DashboardPage() {
     ...(recentPO.data ?? []).map(p => ({ ...p, label: 'Purchase Order', href: `/dashboard/purchase-order/${p.id}/edit` })),
   ].sort((a, b) => new Date(b.tanggal).getTime() - new Date(a.tanggal).getTime()).slice(0, 8)
 
+  // Sales funnel
+  const funnelData = [
+    { stage: 'Quotation\nDikirim', count: quotations.count ?? 0, fill: 'var(--info)' },
+    { stage: 'PO Customer\nDeal', count: custPos.count ?? 0, fill: 'var(--primary)' },
+    { stage: 'Sales Order\nAktif', count: sos.count ?? 0, fill: 'var(--success)' },
+    { stage: 'DO\nPending', count: dos.count ?? 0, fill: 'var(--warning)' },
+  ]
+
+  // Top customers by revenue
+  const invData = (invoiceItems.data ?? []) as { invoice_id: string; harga: number; jumlah: number; diskon?: number }[]
+  const invTotalsByInvoice: Record<string, number> = {}
+  for (const it of invData) {
+    invTotalsByInvoice[it.invoice_id] = (invTotalsByInvoice[it.invoice_id] ?? 0) + (it.harga * it.jumlah - (it.diskon ?? 0))
+  }
+
+  const allInvData = (allInvoices.data ?? []) as { id: string; customer_id: string; tanggal: string; status: string }[]
+  const custMap = new Map((customersData.data ?? []).map((c: { id: string; nama: string }) => [c.id, c.nama]))
+  const custRevenue: Record<string, number> = {}
+  for (const inv of allInvData) {
+    if (inv.customer_id) {
+      custRevenue[inv.customer_id] = (custRevenue[inv.customer_id] ?? 0) + (invTotalsByInvoice[inv.id] ?? 0)
+    }
+  }
+  const topCustomersData = Object.entries(custRevenue)
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, 5)
+    .map(([id, revenue]) => ({ name: custMap.get(id) || '-', revenue }))
+
+  // AR Aging
+  const arTotals: Record<string, number> = {}
+  for (const inv of invoice.data ?? []) {
+    arTotals[inv.id] = invTotalsByInvoice[inv.id] ?? 0
+  }
+  const AGING_BUCKETS = [
+    { label: '0-30 hari', min: 0, max: 30 },
+    { label: '31-60 hari', min: 31, max: 60 },
+    { label: '61-90 hari', min: 61, max: 90 },
+    { label: '>90 hari', min: 91, max: Infinity },
+  ]
+  const agingData = AGING_BUCKETS.map(b => {
+    const filtered = (invoice.data ?? []).filter((i: { tanggal: string }) => {
+      const d = Math.floor((now.getTime() - new Date(i.tanggal).getTime()) / (1000 * 60 * 60 * 24))
+      return d >= b.min && d <= b.max
+    })
+    return { label: b.label, total: filtered.reduce((s: number, i: { id: string }) => s + (arTotals[i.id] ?? 0), 0) }
+  })
+
+  // Stock by category
+  const stokData = (stokDetail.data ?? []) as { barang_id: string; jumlah: number }[]
+  const barangData = (barangDetail.data ?? []) as { id: string; nama: string; kategori_id: string }[]
+  const kategoriMap = new Map((kategoriBarang.data ?? []).map((k: { id: string; nama: string }) => [k.id, k.nama]))
+  const barangKategoriMap = new Map(barangData.map(b => [b.id, b.kategori_id]))
+  const stokByKat: Record<string, number> = {}
+  for (const s of stokData) {
+    const katId = barangKategoriMap.get(s.barang_id) || ''
+    stokByKat[katId] = (stokByKat[katId] ?? 0) + (s.jumlah ?? 0)
+  }
+  const stockCategoryData = Object.entries(stokByKat)
+    .map(([id, value]) => ({ name: kategoriMap.get(id) || 'Tanpa Kategori', value }))
+    .sort((a, b) => b.value - a.value)
+    .slice(0, 8)
+
+  // Low stock ranking
+  const barangNamaMap = new Map(barangData.map(b => [b.id, b.nama]))
+  const lowStockChartData = stokData
+    .filter(s => s.jumlah <= 5)
+    .sort((a, b) => a.jumlah - b.jumlah)
+    .slice(0, 10)
+    .map(s => ({ name: barangNamaMap.get(s.barang_id) || '-', stock: s.jumlah }))
+
+  // Revenue mix by category
+  const revenueByKat: Record<string, number> = {}
+  for (const inv of allInvData) {
+    const items = (invoiceItems.data ?? []).filter((it: { invoice_id: string }) => it.invoice_id === inv.id)
+    for (const item of items as Array<{ invoice_id: string; harga: number; jumlah: number; diskon?: number }>) {
+      const katId = barangKategoriMap.get(item.invoice_id) || ''
+      revenueByKat[katId] = (revenueByKat[katId] ?? 0) + (item.harga * item.jumlah - (item.diskon ?? 0))
+    }
+  }
+  const revenueMixData = Object.entries(revenueByKat)
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, 8)
+    .map(([id, value]) => ({ name: kategoriMap.get(id) || 'Tanpa Kategori', value }))
+
   return (
     <div className="space-y-6">
 
       <section>
          <h2 className="text-lg font-heading font-semibold tracking-tight mb-3 flex items-center gap-2"><DollarSign className="h-5 w-5 text-muted-foreground" />Revenue & Profit</h2>
          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-            <StatCard label="Revenue Bulan Ini" value={`Rp ${revenueBulanIni.toLocaleString('id-ID')}`} icon={TrendingUp} color="success" subtitle={`${(kwitansis.data ?? []).length} kwitansi`} trend={revenueTrend} trendLabel="vs last month" />
-            <StatCard label="Piutang (AR)" value={`Rp ${totalPiutang.toLocaleString('id-ID')}`} icon={Banknote} color="warning" subtitle={`${piutangCount} faktur outstanding`} />
-            <StatCard label="Hutang (AP)" value={totalHutang} icon={TrendingDown} color="destructive" subtitle="PO belum lunas" />
-            <StatCard label="Karyawan Aktif" value={karyawan.count ?? 0} icon={Users2} />
-            <Card className="overflow-hidden border-t-2 border-t-[#A1A1AA] shadow-[0_1px_3px_rgba(0,0,0,0.05),0_10px_15px_-3px_rgba(0,0,0,0.01),0_4px_6px_-4px_rgba(0,0,0,0.01)]">
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm text-foreground">Revenue Trend</CardTitle>
-                <div className="rounded-full bg-primary/10 p-2 text-primary dark:bg-[#3B82F6]/10 dark:text-[#3B82F6]">
-                  <TrendingUp className="h-4 w-4" />
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="h-[60px]">
-                  <RevenueChart data={revenueChartData} />
-                </div>
-                <p className="text-xs text-muted-foreground mt-1">6 bulan terakhir</p>
-              </CardContent>
-            </Card>
+            <StatCard label="Revenue Bulan Ini" value={`Rp ${revenueBulanIni.toLocaleString('id-ID')}`} icon={TrendingUp} iconVariant="success" subtitle={`${(kwitansis.data ?? []).length} kwitansi`} trend={revenueTrend} trendLabel="vs last month" />
+            <StatCard label="Piutang (AR)" value={`Rp ${totalPiutang.toLocaleString('id-ID')}`} icon={Banknote} iconVariant="warning" subtitle={`${piutangCount} faktur outstanding`} />
+            <StatCard label="Hutang (AP)" value={totalHutang} icon={TrendingDown} iconVariant="destructive" subtitle="PO belum lunas" />
+            <StatCard label="Karyawan Aktif" value={karyawan.count ?? 0} icon={Users2} iconVariant="info" />
+            <RevenueChartCard data={revenueChartData} />
          </div>
       </section>
 
       <section>
          <h2 className="text-lg font-heading font-semibold tracking-tight mb-3 flex items-center gap-2"><ShoppingCart className="h-5 w-5 text-muted-foreground" />Sales Pipeline</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-0 rounded-lg border overflow-hidden">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            { label: 'Quotation', count: rfq.count ?? 0, sub: 'RFQ dikirim ke supplier', icon: FileText, bg: 'bg-muted' },
-            { label: 'Quotation Diterima', count: quotations.count ?? 0, sub: 'Menunggu respon', icon: FileText, bg: 'bg-muted' },
-            { label: 'PO Customer', count: custPos.count ?? 0, sub: 'Deal confirmed', icon: ShoppingCart, bg: 'bg-muted' },
-            { label: 'Sales Order', count: sos.count ?? 0, sub: 'Dalam proses', icon: DollarSign, bg: 'bg-muted' },
-          ].map((stage, i, arr) => (
-            <div key={stage.label} className={`relative ${stage.bg} p-4 ${i < arr.length - 1 ? 'border-r border-border' : ''}`}>
-              {i < arr.length - 1 && (
-                <div className="absolute right-0 top-1/2 -translate-y-1/2 z-10">
-                  <div className="bg-background rounded-full p-1">
-                    <TrendingUp className="h-3 w-3 text-muted-foreground" />
+            { label: 'Quotation', count: rfq.count ?? 0, sub: 'RFQ dikirim ke supplier', icon: FileText, variant: 'primary' as const },
+            { label: 'Quot. Diterima', count: quotations.count ?? 0, sub: 'Menunggu respon', icon: FileText, variant: 'info' as const },
+            { label: 'PO Customer', count: custPos.count ?? 0, sub: 'Deal confirmed', icon: ShoppingCart, variant: 'success' as const },
+            { label: 'Sales Order', count: sos.count ?? 0, sub: 'Dalam proses', icon: DollarSign, variant: 'success' as const },
+          ].map(stage => {
+            const colors = {
+              primary: { container: 'bg-primary/20', icon: 'text-primary' },
+              info: { container: 'bg-sky-500/20', icon: 'text-sky-500' },
+              success: { container: 'bg-success/20', icon: 'text-success' },
+            }[stage.variant]
+            return (
+              <div key={stage.label} className="rounded-2xl bg-white dark:bg-primary/10 dark:backdrop-blur-sm border border-primary/10 dark:border-primary/20 p-4 hover:scale-[1.02] hover:shadow-[0_4px_20px_rgba(0,0,255,0.08)] dark:hover:shadow-xl transition-all duration-300">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-sm font-medium text-foreground">{stage.label}</span>
+                  <div className={`${colors.container} p-2 rounded-lg`}>
+                    <stage.icon className={`h-4 w-4 ${colors.icon}`} />
                   </div>
                 </div>
-              )}
-              <div className="flex items-center gap-2 mb-2">
-                <stage.icon className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm font-medium text-foreground">{stage.label}</span>
+                <p className="text-2xl font-bold font-heading tracking-tight text-primary">{stage.count}</p>
+                <p className="text-xs text-muted-foreground mt-1">{stage.sub}</p>
               </div>
-              <p className="text-3xl font-bold text-foreground">{stage.count}</p>
-              <p className="text-xs text-muted-foreground mt-1">{stage.sub}</p>
-            </div>
-          ))}
+            )
+          })}
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-          <StatCard label="Customer Aktif" value={cust.count ?? 0} icon={Users} subtitle="Total customer terdaftar" />
-           <StatCard label="Piutang Outstanding" value={piutangCount} icon={Banknote} color="warning" subtitle="Faktur belum dibayar" />
-           <StatCard label="Delivery Pending" value={dos.count ?? 0} icon={Truck} color="primary" subtitle="Siap dikirim" />
+          <StatCard label="Customer Aktif" value={cust.count ?? 0} icon={Users} iconVariant="info" subtitle="Total customer terdaftar" />
+            <StatCard label="Piutang Outstanding" value={piutangCount} icon={Banknote} iconVariant="warning" subtitle="Faktur belum dibayar" />
+           <StatCard label="Delivery Pending" value={dos.count ?? 0} icon={Truck} subtitle="Siap dikirim" />
+        </div>
+      </section>
+
+      <section>
+        <h2 className="text-lg font-heading font-semibold tracking-tight mb-3 flex items-center gap-2"><TrendingUpIcon className="h-5 w-5 text-muted-foreground" />Sales Analytics</h2>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <ChartCard title="Sales Pipeline Funnel" icon={TrendingUp} iconVariant="primary" subtitle="Konversi penjualan per tahap">
+            <SalesFunnelChart data={funnelData} />
+          </ChartCard>
+          <ChartCard title="Top 5 Customers" icon={Users} iconVariant="info" subtitle="Berdasarkan total revenue">
+            {topCustomersData.length > 0 ? <TopCustomersChart data={topCustomersData} /> : <p className="text-sm text-muted-foreground text-center py-8">Belum ada data transaksi.</p>}
+          </ChartCard>
+          <ChartCard title="AR Aging" icon={Banknote} iconVariant="warning" subtitle="Piutang berdasarkan umur">
+            {agingData.some(d => d.total > 0) ? <AgingChart data={agingData} formatCurrency /> : <p className="text-sm text-muted-foreground text-center py-8">Tidak ada piutang.</p>}
+          </ChartCard>
+        </div>
+      </section>
+
+      <section>
+        <h2 className="text-lg font-heading font-semibold tracking-tight mb-3 flex items-center gap-2"><PieChart className="h-5 w-5 text-muted-foreground" />Revenue Mix</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <ChartCard title="Revenue per Kategori Barang" icon={PieChart} iconVariant="success" subtitle="Distribusi pendapatan">
+            {revenueMixData.some(d => d.value > 0) ? <RevenueMixChart data={revenueMixData} /> : <p className="text-sm text-muted-foreground text-center py-8">Belum ada data.</p>}
+          </ChartCard>
+          <ChartCard title="Komposisi Stok per Kategori" icon={Building2} iconVariant="info" subtitle="Distribusi unit stok">
+            {stockCategoryData.length > 0 ? <StockCategoryChart data={stockCategoryData} /> : <p className="text-sm text-muted-foreground text-center py-8">Belum ada data stok.</p>}
+          </ChartCard>
         </div>
       </section>
 
       <section>
          <h2 className="text-lg font-heading font-semibold tracking-tight mb-3 flex items-center gap-2"><Package className="h-5 w-5 text-muted-foreground" />Procurement</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard label="PR Aktif" value={prCount} icon={ClipboardList} color={prCount > 0 ? 'warning' : undefined} subtitle="Menunggu diproses" />
-          <StatCard label="PO Terbuka" value={poCount} icon={FileText} color={poCount > 0 ? 'warning' : undefined} subtitle="Belum dikirim / dikonfirmasi" />
-          <StatCard label="Pending Receiving" value={receiving.count ?? 0} icon={Package} color={(receiving.count ?? 0) > 0 ? 'warning' : undefined} />
-          <StatCard label="Pending GRN" value={grns.count ?? 0} icon={ClipboardList} color={(grns.count ?? 0) > 0 ? 'warning' : undefined} />
+          <StatCard label="PR Aktif" value={prCount} icon={ClipboardList} iconVariant="warning" subtitle="Menunggu diproses" />
+          <StatCard label="PO Terbuka" value={poCount} icon={FileText} iconVariant="warning" subtitle="Belum dikirim / dikonfirmasi" />
+          <StatCard label="Pending Receiving" value={receiving.count ?? 0} icon={Package} iconVariant="warning" />
+          <StatCard label="Pending GRN" value={grns.count ?? 0} icon={ClipboardList} iconVariant="warning" />
         </div>
       </section>
 
       <section>
-         <h2 className="text-lg font-heading font-semibold tracking-tight mb-3 flex items-center gap-2"><Banknote className="h-5 w-5 text-muted-foreground" />Inventory</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard label="Total Barang" value={barangsStok.count ?? 0} icon={Package} />
-          <StatCard label="Total Stok" value={totalStok.toLocaleString('id-ID')} icon={Building2} subtitle="Unit tersedia" />
-           <StatCard label="Stok Kosong" value={lowStockItems.length} icon={AlertTriangle} color={lowStockItems.length > 0 ? 'destructive' : undefined} subtitle="Perlu re-stock" />
-          <StatCard label="DO Pending" value={dos.count ?? 0} icon={Truck} color={(dos.count ?? 0) > 0 ? 'warning' : undefined} />
+        <h2 className="text-lg font-heading font-semibold tracking-tight mb-3 flex items-center gap-2"><AlertTriangle className="h-5 w-5 text-muted-foreground" />Inventory Analytics</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <ChartCard title="Peringkat Stok Menipis" icon={AlertTriangle} iconVariant="destructive" subtitle="Barang dengan stok paling rendah">
+            {lowStockChartData.length > 0 ? <LowStockChart data={lowStockChartData} /> : <p className="text-sm text-muted-foreground text-center py-8">Semua stok aman.</p>}
+          </ChartCard>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <StatCard label="Total Barang" value={barangsStok.count ?? 0} icon={Package} iconVariant="info" />
+            <StatCard label="Total Stok" value={totalStok.toLocaleString('id-ID')} icon={Building2} iconVariant="info" subtitle="Unit tersedia" />
+             <StatCard label="Stok Kosong" value={lowStockItems.length} icon={AlertTriangle} iconVariant="destructive" subtitle="Perlu re-stock" />
+            <StatCard label="DO Pending" value={dos.count ?? 0} icon={Truck} />
+          </div>
         </div>
       </section>
 
@@ -241,70 +331,136 @@ export default async function DashboardPage() {
       ) : null}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Card>
-          <CardHeader><CardTitle className="text-base flex items-center gap-2"><Clock className="h-4 w-4 text-muted-foreground" />Aktivitas Terbaru</CardTitle></CardHeader>
-          <CardContent>
+        <div className="rounded-2xl bg-white dark:bg-primary/10 dark:backdrop-blur-sm border border-primary/10 dark:border-primary/20">
+          <div className="flex items-center justify-between px-6 pt-6 pb-0">
+            <p className="text-sm font-semibold uppercase tracking-wider text-foreground">Aktivitas Terbaru</p>
+            <div className="bg-primary/20 p-3 rounded-lg">
+              <Clock className="h-5 w-5 text-primary" />
+            </div>
+          </div>
+          <div className="p-6 pt-4">
              {!recentItems.length ? (
-               <div className="text-center py-12 border border-dashed rounded-lg bg-muted/20">
-                 <Inbox className="mx-auto h-8 w-8 text-muted-foreground/60 mb-2" />
+               <div className="text-center py-12">
+                 <Inbox className="mx-auto h-10 w-10 text-muted-foreground/40 mb-3" />
                  <p className="text-sm font-medium text-muted-foreground">Belum ada aktivitas terkini</p>
                </div>
              ) :
-             <div className="space-y-1">{recentItems.map(item => (
-               <Link key={item.id + item.label} href={item.href} className="flex items-center justify-between py-2 px-2 rounded-md hover:bg-muted/50 transition-colors">
-                 <div className="flex items-center gap-3">
-                   <span className="text-xs px-1.5 py-0.5 rounded bg-muted font-medium text-muted-foreground min-w-[7rem]">{item.label}</span>
-                   <p className="text-sm font-medium">{item.nomor}</p>
-                 </div>
-                 <div className="flex items-center gap-2">
-                   <span className="text-xs text-muted-foreground">{new Date(item.tanggal).toLocaleDateString('id-ID')}</span>
-                   <StatusBadge status={item.status} />
-                 </div>
-               </Link>
-             ))}</div>}
-          </CardContent>
-        </Card>
+             <div className="space-y-1">{recentItems.map(item => {
+               const docIcons: Record<string, typeof FileText> = {
+                 Quotation: FileText,
+                 'Sales Order': DollarSign,
+                 Invoice: Receipt,
+                 'Purchase Order': Package,
+               }
+               const DocIcon = docIcons[item.label] || FileText
+               return (
+                <Link key={item.id + item.label} href={item.href} className="flex items-center justify-between py-2.5 px-3 rounded-lg hover:bg-primary/5 hover:scale-[1.01] transition-all duration-200">
+                  <div className="flex items-center gap-3">
+                    <div className="bg-primary/10 p-2 rounded-md">
+                      <DocIcon className="h-4 w-4 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-foreground">{item.nomor}</p>
+                      <p className="text-xs text-muted-foreground">{item.label}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-muted-foreground">{new Date(item.tanggal).toLocaleDateString('id-ID')}</span>
+                    <StatusBadge status={item.status} />
+                  </div>
+                </Link>
+              )
+             })}</div>}
+          </div>
+        </div>
 
-        <Card>
-          <CardHeader><CardTitle className="text-base">Akses Cepat</CardTitle></CardHeader>
-          <CardContent className="grid grid-cols-2 gap-2">
-           {[
-             { href: '/dashboard/absensi/tambah', label: 'Input Absensi', icon: Users2 },
-             { href: '/dashboard/penggajian/tambah', label: 'Input Gaji', icon: DollarSign },
-             { href: '/dashboard/invoice/tambah', label: 'Buat Invoice', icon: Receipt },
-             { href: '/dashboard/kwitansi/tambah', label: 'Buat Kwitansi', icon: Banknote },
-             { href: '/dashboard/quotation/tambah', label: 'Buat Quotation', icon: FileText },
-             { href: '/dashboard/purchase-order/tambah', label: 'Buat PO', icon: ShoppingCart },
-             { href: '/dashboard/sales-order/tambah', label: 'Buat SO', icon: DollarSign },
-             { href: '/dashboard/ai/search-harga', label: 'Search Harga', icon: Bot },
-           ].map(item => (
-              <Button key={item.href} variant="ghost" className="justify-start h-auto py-3 transition-all duration-200" asChild>
-                <Link href={item.href}><item.icon className="h-4 w-4 mr-2" />{item.label}</Link>
-              </Button>
-           ))}
-          </CardContent>
-        </Card>
+        <div className="rounded-2xl bg-white dark:bg-primary/10 dark:backdrop-blur-sm border border-primary/10 dark:border-primary/20">
+          <div className="flex items-center justify-between px-6 pt-6 pb-0">
+            <p className="text-sm font-semibold uppercase tracking-wider text-foreground">Akses Cepat</p>
+            <div className="bg-primary/20 p-3 rounded-lg">
+              <Bot className="h-5 w-5 text-primary" />
+            </div>
+          </div>
+          <div className="p-6 pt-4 space-y-4">
+            {[
+              {
+                category: 'HR & Kepegawaian',
+                items: [
+                  { href: '/dashboard/absensi/tambah', label: 'Input Absensi', icon: Users2 },
+                  { href: '/dashboard/penggajian/tambah', label: 'Input Gaji', icon: DollarSign },
+                ],
+              },
+              {
+                category: 'Finance',
+                items: [
+                  { href: '/dashboard/invoice/tambah', label: 'Buat Invoice', icon: Receipt },
+                  { href: '/dashboard/kwitansi/tambah', label: 'Buat Kwitansi', icon: Banknote },
+                ],
+              },
+              {
+                category: 'Sales & Procurement',
+                items: [
+                  { href: '/dashboard/quotation/tambah', label: 'Buat Quotation', icon: FileText },
+                  { href: '/dashboard/purchase-order/tambah', label: 'Buat PO', icon: ShoppingCart },
+                  { href: '/dashboard/sales-order/tambah', label: 'Buat SO', icon: DollarSign },
+                  { href: '/dashboard/ai/search-harga', label: 'Search Harga', icon: Bot },
+                ],
+              },
+            ].map(group => (
+              <div key={group.category}>
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">{group.category}</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {group.items.map(item => (
+                    <Link key={item.href} href={item.href} className="flex items-center gap-3 rounded-xl bg-white dark:bg-primary/5 border border-primary/10 dark:border-primary/20 p-3 hover:scale-[1.02] hover:shadow-[0_4px_12px_rgba(0,0,255,0.06)] dark:hover:shadow-xl transition-all duration-200">
+                      <div className="bg-primary/10 p-2 rounded-lg">
+                        <item.icon className="h-4 w-4 text-primary" />
+                      </div>
+                      <span className="text-sm font-medium text-foreground">{item.label}</span>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
 
-      <Card>
-        <CardHeader><CardTitle className="text-base">Modul</CardTitle></CardHeader>
-        <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-2">
-           {[
-             { href: '/dashboard/master/barang', label: 'Master Barang' },
-             { href: '/dashboard/master/supplier', label: 'Supplier' },
-             { href: '/dashboard/master/customer', label: 'Customer' },
-             { href: '/dashboard/master/karyawan', label: 'Karyawan' },
-             { href: '/dashboard/laporan/laba-rugi', label: 'Laba/Rugi' },
-             { href: '/dashboard/laporan/neraca', label: 'Neraca' },
-             { href: '/dashboard/laporan/ar-aging', label: 'AR Aging' },
-             { href: '/dashboard/laporan/arus-kas', label: 'Arus Kas' },
-           ].map(item => (
-             <Button key={item.href} variant="ghost" className="justify-start h-auto py-2 text-sm font-medium" asChild>
-               <Link href={item.href}>{item.label}</Link>
-             </Button>
-           ))}
-        </CardContent>
-      </Card>
+      <div className="rounded-2xl bg-white dark:bg-primary/10 dark:backdrop-blur-sm border border-primary/10 dark:border-primary/20">
+        <div className="flex items-center justify-between px-6 pt-6 pb-0">
+          <p className="text-sm font-semibold uppercase tracking-wider text-foreground">Modul</p>
+          <div className="bg-primary/20 p-3 rounded-lg">
+            <ClipboardList className="h-5 w-5 text-primary" />
+          </div>
+        </div>
+        <div className="p-6 pt-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {[
+              { href: '/dashboard/master/barang', label: 'Master Barang', icon: Package, variant: 'info' as const },
+              { href: '/dashboard/master/supplier', label: 'Supplier', icon: Building2, variant: 'info' as const },
+              { href: '/dashboard/master/customer', label: 'Customer', icon: Users, variant: 'info' as const },
+              { href: '/dashboard/master/karyawan', label: 'Karyawan', icon: Users2, variant: 'info' as const },
+              { href: '/dashboard/laporan/laba-rugi', label: 'Laba/Rugi', icon: TrendingUp, variant: 'success' as const },
+              { href: '/dashboard/laporan/neraca', label: 'Neraca', icon: PieChart, variant: 'warning' as const },
+              { href: '/dashboard/laporan/ar-aging', label: 'AR Aging', icon: Clock, variant: 'warning' as const },
+              { href: '/dashboard/laporan/arus-kas', label: 'Arus Kas', icon: DollarSign, variant: 'success' as const },
+            ].map(modul => {
+              const colors = {
+                info: { container: 'bg-primary/10', icon: 'text-primary' },
+                success: { container: 'bg-success/10', icon: 'text-success' },
+                warning: { container: 'bg-warning/10', icon: 'text-warning' },
+              }[modul.variant]
+              return (
+                <Link key={modul.href} href={modul.href} className="flex items-center gap-3 rounded-xl bg-white dark:bg-primary/5 border border-primary/10 dark:border-primary/20 p-3 hover:scale-[1.02] hover:shadow-[0_4px_12px_rgba(0,0,255,0.06)] dark:hover:shadow-xl transition-all duration-200">
+                  <div className={`${colors.container} p-2 rounded-lg`}>
+                    <modul.icon className={`h-4 w-4 ${colors.icon}`} />
+                  </div>
+                  <span className="text-sm font-medium text-foreground">{modul.label}</span>
+                </Link>
+              )
+            })}
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
