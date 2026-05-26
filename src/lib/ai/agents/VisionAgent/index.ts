@@ -140,7 +140,7 @@ function extractNestedData(raw: Record<string, unknown>): Record<string, unknown
   return data
 }
 
-function parseVisionResponse(
+async function parseVisionResponse(
   content: string,
   model: string,
   usage: { total_tokens?: number } | undefined,
@@ -148,7 +148,7 @@ function parseVisionResponse(
   taskType: VisionTaskType,
   fileName: string,
   userId: string
-): VisionExtractionResult {
+): Promise<VisionExtractionResult> {
   let parsedResult: Record<string, unknown> = {}
 
   const logTag = Date.now()
@@ -208,7 +208,7 @@ function parseVisionResponse(
   }
 
   try {
-    supabaseAdmin.from('ai_vision_history').insert({
+    await supabaseAdmin.from('ai_vision_history').insert({
       id: result.id,
       user_id: userId,
       file_name: result.file_name,

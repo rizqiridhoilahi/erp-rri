@@ -5,6 +5,7 @@ import { badRequest, notFound, internalError } from '@/lib/api/errors'
 import { sendWhatsapp } from '@/lib/utils/whatsapp'
 
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const auth = await verifyAuth(_request); if (auth.error) return auth.error
   const { id } = await params
   const { data: sj, error } = await supabaseAdmin.from('delivery_order').select('*, sales_order!sales_order_id(nomor)').eq('id', id).single()
   if (error) return internalError(error)

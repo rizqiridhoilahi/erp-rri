@@ -4,6 +4,7 @@ import { verifyAuth } from '@/lib/api/auth'
 import { badRequest, notFound, internalError } from '@/lib/api/errors'
 
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const auth = await verifyAuth(_request); if (auth.error) return auth.error
   const { id } = await params
   const { data: grn, error } = await supabaseAdmin.from('grn').select('*, purchase_receiving!purchase_receiving_id(nomor), di!di_id(nomor)').eq('id', id).single()
   if (error) return internalError(error)

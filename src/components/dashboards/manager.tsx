@@ -5,14 +5,19 @@ import { Button } from '@/components/ui/button'
 import { FileCheck, ClipboardList, ShoppingCart, Users, TrendingUp, DollarSign } from 'lucide-react'
 
 export default async function ManagerDashboard() {
-  const [pr, po, _so, invoices, karyawan] = await Promise.all([
+  const [pr, po, _so, invoices, invoiceItems, karyawan] = await Promise.all([
     supabase.from('purchase_request').select('*', { count: 'exact', head: true }).eq('status', 'draft'),
     supabase.from('purchase_order').select('*', { count: 'exact', head: true }).eq('status', 'draft'),
     supabase.from('sales_order').select('*', { count: 'exact', head: true }).in('status', ['confirmed', 'processed']),
-    supabase.from('invoice').select('ppn_rate').in('status', ['sent', 'overdue']),
+    supabase.from('invoice').select('id, status').in('status', ['sent', 'overdue']),
+    supabase.from('invoice_item').select('invoice_id, harga, jumlah, diskon'),
     supabase.from('karyawan').select('*', { count: 'exact', head: true }).eq('is_active', true),
   ])
-  const totalPiutang = (invoices.data ?? []).reduce((s: number, i) => s + ((i as { ppn_rate?: number }).ppn_rate ?? 0), 0)
+  const invTotals: Record<string, number> = {}
+  for (const it of (invoiceItems.data ?? []) as Array<{ invoice_id: string; harga: number; jumlah: number; diskon?: number }>) {
+    invTotals[it.invoice_id] = (invTotals[it.invoice_id] ?? 0) + (it.harga * it.jumlah - (it.diskon ?? 0))
+  }
+  const totalPiutang = (invoices.data ?? []).reduce((s: number, i) => s + (invTotals[i.id] ?? 0), 0)
 
   return (
     <div className="space-y-6">

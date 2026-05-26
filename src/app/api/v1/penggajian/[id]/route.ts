@@ -4,6 +4,7 @@ import { verifyAuth } from '@/lib/api/auth'
 import { badRequest, notFound, internalError } from '@/lib/api/errors'
 
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const auth = await verifyAuth(_request); if (auth.error) return auth.error
   const { id } = await params
   const { data, error } = await supabaseAdmin.from('penggajian').select('*, karyawan!karyawan_id(nama, nik, jabatan_id, gaji_pokok)').eq('id', id).single()
   if (error) return internalError(error)

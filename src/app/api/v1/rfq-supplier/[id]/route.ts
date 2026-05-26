@@ -4,6 +4,7 @@ import { verifyAuth } from '@/lib/api/auth'
 import { badRequest, notFound, internalError } from '@/lib/api/errors'
 
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const auth = await verifyAuth(_request); if (auth.error) return auth.error
   const { id } = await params
 
   const { data: rfq, error: rfqError } = await supabaseAdmin

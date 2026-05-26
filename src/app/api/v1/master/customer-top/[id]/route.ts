@@ -65,6 +65,7 @@ const updateSchema = z.object({
 })
 
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const auth = await verifyAuth(_request); if (auth.error) return auth.error
   const { id } = await params
   const { data, error } = await supabaseAdmin.from('customer_top').select('*').eq('id', id).single()
   if (error) return internalError(error)

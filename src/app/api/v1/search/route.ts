@@ -61,9 +61,9 @@ const tableConfigs = [
   { table: 'retur_penjualan', select: 'id, nomor', query: (q: string) => supabaseAdmin.from('retur_penjualan').select('id, nomor').ilike('nomor', `%${q}%`).limit(5) },
   { table: 'retur_pembelian', select: 'id, nomor', query: (q: string) => supabaseAdmin.from('retur_pembelian').select('id, nomor').ilike('nomor', `%${q}%`).limit(5) },
   { table: 'jurnal', select: 'id, nomor', query: (q: string) => supabaseAdmin.from('jurnal').select('id, nomor').ilike('nomor', `%${q}%`).limit(5) },
-  { table: 'negosiasi', select: 'id, nomor', query: (q: string) => supabaseAdmin.from('negosiasi').select('id, nomor').ilike('nomor', `%${q}%`).limit(5) },
+  { table: 'negoiasi', select: 'id, nomor', query: (q: string) => supabaseAdmin.from('negoiasi').select('id, nomor').ilike('nomor', `%${q}%`).limit(5) },
   { table: 'kontrak', select: 'id, nomor', query: (q: string) => supabaseAdmin.from('kontrak').select('id, nomor').ilike('nomor', `%${q}%`).limit(5) },
-  { table: 'absensi', select: 'id, nama', query: (q: string) => supabaseAdmin.from('absensi').select('id, nama').ilike('nama', `%${q}%`).limit(5) },
+  { table: 'absensi', select: 'id, keterangan', query: (q: string) => supabaseAdmin.from('absensi').select('id, keterangan').ilike('keterangan', `%${q}%`).limit(5) },
   { table: 'coa', select: 'id, nama', query: (q: string) => supabaseAdmin.from('coa').select('id, nama').ilike('nama', `%${q}%`).limit(5) },
   { table: 'jabatan', select: 'id, nama', query: (q: string) => supabaseAdmin.from('jabatan').select('id, nama').ilike('nama', `%${q}%`).limit(5) },
   { table: 'kategori_barang', select: 'id, nama', query: (q: string) => supabaseAdmin.from('kategori_barang').select('id, nama').ilike('nama', `%${q}%`).limit(5) },
@@ -89,8 +89,8 @@ export async function POST(request: NextRequest) {
     if (res.status === 'fulfilled' && res.value.data) {
       const cfg = tableConfigs[i]
       for (const row of res.value.data) {
-        const r = row as { id: string; nomor?: string; nama?: string }
-        const label = r.nomor ?? r.nama ?? r.id
+        const r = row as { id: string; nomor?: string; nama?: string; keterangan?: string }
+        const label = r.nomor ?? r.nama ?? r.keterangan ?? r.id
         const baseRoute = routeMap[cfg.table]
         if (baseRoute) {
           results.push({ table: cfg.table, id: row.id, label: `[${cfg.table.replace(/_/g, ' ').toUpperCase()}] ${label}`, href: `${baseRoute}/${row.id}` })

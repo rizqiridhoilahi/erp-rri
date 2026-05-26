@@ -30,7 +30,7 @@ export function FileUpload({ documents, onUpload, onDelete, uploading = false, a
   const handleFile = useCallback((file: File) => {
     const ext = "." + file.name.split(".").pop()?.toLowerCase()
     const allowed = accept.split(",").map((s) => s.trim().toLowerCase())
-    if (!allowed.some((a) => ext === a || file.type.startsWith(a.replace(".", "")))) {
+    if (!allowed.some((a) => ext === a || file.type.startsWith("application/" + a.replace(".", "")) || file.type.startsWith("image/" + a.replace(".", "")))) {
       setError(`Tipe file ${file.type || ext} tidak didukung`)
       return
     }

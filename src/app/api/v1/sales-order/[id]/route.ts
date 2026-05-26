@@ -5,6 +5,7 @@ import { badRequest, notFound, internalError } from '@/lib/api/errors'
 import { generateDOFromSO } from '@/lib/auto-sales'
 
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const auth = await verifyAuth(_request); if (auth.error) return auth.error
   const { id } = await params
   const { data: so, error } = await supabaseAdmin.from('sales_order').select('*, customer_po!customer_po_id(nomor)').eq('id', id).single()
   if (error) return internalError(error)

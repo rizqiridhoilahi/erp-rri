@@ -1,301 +1,565 @@
 # Audit Bug Report — ERP RRI
 
-Tanggal: 2026-05-23 (revisi: 2026-05-24)
-
----
-
-## Status Pengerjaan
-
-| # | Deskripsi | Severity | Temuan | Status |
-|---|-----------|----------|--------|--------|
-| 1 | GET Handler Tanpa Authentication | HIGH | 23-05: 4 endpoint list (stok, gudang, kategori-barang, rfq/documents) | ✅ FIXED |
-|   |                                 |      | 24-05: 1 endpoint detail (stok/kartu/[id]) — terlewat dari audit sebelumnya | ✅ FIXED |
-| 2 | Cron Endpoint Tanpa Authentication | HIGH | 23-05: ar-reminder tanpa auth | ✅ FIXED |
-| 3 | Memory Leak — Object URL Tidak Di-revoke | HIGH | | ✅ FIXED |
-| 4 | Stale Cached Token Setelah Sign-Out | HIGH | | ✅ FIXED |
-| 5 | Dynamic Tailwind Class Names | MEDIUM | | ✅ FIXED |
-| 6 | Login Page Console Logs | MEDIUM | | ✅ FIXED |
-| 7 | FormSkeleton Tidak Digunakan di Page "Tambah" | MEDIUM | | ✅ FIXED |
-| 8 | RFQ Page Pakai fetch langsung | MEDIUM | | ✅ FIXED |
-| 9 | Badge Variants CSS Variables Non-Standard | MEDIUM | | ✅ FIXED |
-| 10 | API Response Format Tidak Konsisten | LOW | | ⏳ Skipped |
-| 11 | Unused Ref OCR Kontrak | LOW | | ✅ FIXED |
-| 12 | Finance Dashboard Hardcoded Colors | LOW | | ✅ FIXED |
-| 13 | Error Boundary Tidak Dipakai | LOW | | ✅ FIXED |
-| **14** | **Error Masking di GET Handlers** | **HIGH** | 36 GET handler pakai `if(error\|\|!data) return notFound()` — DB error termasking 404 | ✅ **FIXED** |
-| **15** | **`customer_top` CRUD Missing** | **MEDIUM** | Table & schema ada, tapi tidak ada API/halaman CRUD | ✅ **FIXED** |
-| **16** | **PRD vs Implementasi: `satuan` tabel** | **LOW** | PRD tulis tabel terpisah, realita free-text di barang | ✅ **PRD corrected** |
-| **17** | **PRD vs Implementasi: `supplier_kontak`** | **LOW** | PRD tulis tabel multiple kontak, belum diimplementasi | ✅ **FIXED** |
+Tanggal: 2026-05-26 — Audit Komprehensif (full codebase scan: 137 API routes, 84 schema files, 78 components)
 
 ---
 
 ## Ringkasan
 
-| Severity | Jumlah |
-|----------|--------|
-| HIGH     | 7      |
-| MEDIUM   | 7      |
-| LOW      | 6      |
+| Severitas | Jumlah | Kritis | Perlu Segera |
+|-----------|--------|--------|--------------|
+| **CRITICAL** | 5 | Runtime error / data salah | Sebelum production |
+| **HIGH** | 16 | Security hole / logic salah | Sebelum production |
+| **MEDIUM** | 18 | Inkosisten / UX buruk | Sebelum / setelah deploy |
+| **LOW** | 16 | Convention / best practice | Nice to have |
 
-**Fixed: 17 | Gaps remaining: 1** (item #10 — sengaja dilewati)
-
----
-
-## HIGH Severity
-
-### 1. GET Handler Tidak Punya Authentication ✅ FIXED
-
-**File:**
-- `src/app/api/v1/stok/route.ts:6`
-- `src/app/api/v1/master/gudang/route.ts:6`
-- `src/app/api/v1/master/kategori-barang/route.ts:22`
-- `src/app/api/v1/rfq/[id]/documents/route.ts:6`
-
-**Deskripsi:** GET endpoint menggunakan `supabaseAdmin` (service role key) tapi tidak menjalankan `verifyAuth()`. Data sensitif (stok, gudang, RFQ) bisa diakses tanpa autentikasi.
-
-**Perbaikan:** Tambahkan `verifyAuth(req)` di awal setiap GET handler dengan tipe `NextRequest`.
+**Total: 55 findings unik** (belum termasuk yang sudah fixed dari audit sebelumnya)
 
 ---
 
-### 2. Cron Endpoint Tidak Ada Authentication ✅ FIXED
+## Yang Sudah Diperbaiki (Audit 23-24 May 2026)
 
-**File:** `src/app/api/v1/cron/ar-reminder/route.ts`
-
-**Deskripsi:** Seluruh route tidak punya autentikasi. Endpoint ini kirim pesan WhatsApp — bisa disalahgunakan untuk spam atau memicu query berlebihan ke database.
-
-**Perbaikan:** Tambahkan validasi `CRON_SECRET_TOKEN` dari environment variable jika diset.
-
----
-
-### 3. Memory Leak — Object URL Tidak Di-revoke ✅ FIXED
-
-**File:** `src/app/dashboard/ai/ocr-kontrak/page.tsx`
-
-**Deskripsi:** Setiap upload file baru, `URL.createObjectURL(file)` dipanggil tapi URL sebelumnya tidak di-revoke. URL orphan menumpuk di memory browser.
-
-**Perbaikan:** Revoke URL lama sebelum create URL baru: `if (previewUrl) { URL.revokeObjectURL(previewUrl); }`
-
----
-
-### 4. Stale Cached Token Setelah Sign-Out ✅ FIXED
-
-**File:** `src/lib/api/client.ts`
-
-**Deskripsi:** `cachedToken` tidak pernah dibersihkan saat sign-out. Jika user logout dan user lain login di browser yang sama, token user pertama bisa dikembalikan dari cache sebelum subscription update.
-
-**Perbaikan:** Hapus caching token — selalu panggil `supabase.auth.getSession()` langsung.
+| # | Temuan | Severity | Status |
+|---|--------|----------|--------|
+| 1 | GET Handler Tanpa Auth (4 endpoint) | HIGH | ✅ FIXED |
+| 2 | Cron Endpoint Tanpa Auth | HIGH | ✅ FIXED |
+| 3 | Memory Leak Object URL Tidak Di-revoke | HIGH | ✅ FIXED |
+| 4 | Stale Cached Token Setelah Sign-Out | HIGH | ✅ FIXED |
+| 5 | Dynamic Tailwind Class Names | MEDIUM | ✅ FIXED |
+| 6 | Login Page Console Logs | MEDIUM | ✅ FIXED |
+| 7 | FormSkeleton Tidak Dipakai | MEDIUM | ✅ FIXED |
+| 8 | RFQ Page Pakai fetch Langsung | MEDIUM | ✅ FIXED |
+| 9 | Badge Variants CSS Variables Non-Standard | MEDIUM | ✅ FIXED |
+| 10 | API Response Format Tidak Konsisten | LOW | ⏳ Skipped |
+| 11 | Unused Ref OCR Kontrak | LOW | ✅ FIXED |
+| 12 | Finance Dashboard Hardcoded Colors | LOW | ✅ FIXED |
+| 13 | Error Boundary Tidak Dipakai | LOW | ✅ FIXED |
+| 14 | Error Masking di GET Handlers (36 file) | HIGH | ✅ FIXED |
+| 15 | customer_top CRUD Missing | MEDIUM | ✅ FIXED |
+| 16 | satuan Bukan Tabel Terpisah | LOW | ✅ PRD Corrected |
+| 17 | supplier_kontak Belum Ada | LOW | ✅ FIXED |
 
 ---
 
-## MEDIUM Severity
+# TEMUAN BARU (Audit 26 May 2026)
 
-### 5. Dynamic Tailwind Class Names Tidak di-Purge
+## CRITICAL — Runtime Error / Data Salah
 
-**File:** `src/app/dashboard/ai/search-harga/page.tsx:188`
+### C1. Sidebar Mutasi Module-Level Array 🔴
 
-**Deskripsi:** `text-${getPriceStatus(item.harga)}` menghasilkan class seperti `text-high`, `text-low` yang tidak ada di Tailwind config dan tidak akan di-generate.
+**File:** `src/components/sidebar-content.tsx:173`
 
-**Rencana Perbaikan:** Gunakan conditional class eksplisit:
+**Masalah:** `filterMenuByRole()` memanggil `item.children = item.children.filter(...)` yang **memutasi module-scope `menuItems` secara in-place**. Efek: user A (admin) lihat semua menu, user B (sales) buka → menu terfilter, user A buka lagi → menu sudah terfilter versi sales. Menu menghilang progresif.
 
-```typescript
-<p className={`text-xl font-bold ${
-  getPriceStatus(item.harga) === 'high' ? 'text-destructive' :
-  getPriceStatus(item.harga) === 'low' ? 'text-success' : 'text-foreground'
-}`}>
-```
+**Perbaikan:** Deep clone sebelum filter, atau gunakan pristine source di setiap render.
 
 ---
 
-### 6. Login Page Mengandung Debug Console Logs
+### C2. Dashboard — `totalPiutang` Menjumlahkan `ppn_rate` 🔴
 
-**File:** `src/app/(auth)/login/page.tsx:38,49,57,58,62,66`
+**File:** `src/app/dashboard/page.tsx:105`
 
-**Deskripsi:** multiple `console.log` yang expose informasi autentikasi di production.
+**Masalah:** `reduce((s, i) => s + (i.ppn_rate ?? 0), 0)` — `ppn_rate` adalah **persentase PPN** (misal 11), bukan nominal. Hasil: angka piutang di dashboard = 11 + 11 + 11 = 33 (salah total).
 
-**Rencana Perbaikan:** Hapus semua `console.log` di login page.
-
----
-
-### 7. FormSkeleton Tidak Digunakan di Page "Tambah"
-
-**File:**
-- `src/app/dashboard/invoice/tambah/page.tsx`
-- `src/app/dashboard/purchase-order/tambah/page.tsx`
-- `src/app/dashboard/quotation/tambah/page.tsx`
-
-**Deskripsi:** Page-page ini fetch dropdown options via `useEffect` tapi tidak tampilkan `FormSkeleton` saat loading. Form render langsung dengan dropdown kosong.
-
-**Rencana Perbaikan:** Ikuti pola yang sudah ada di inventory stok pages:
-
-```typescript
-const [loading, setLoading] = useState(true)
-
-useEffect(() => {
-  Promise.all([...]).then(...).finally(() => setLoading(false))
-}, [])
-
-if (loading) return <FormSkeleton />
-```
+**Perbaikan:** Jumlahkan `harga * jumlah` dari `invoice_item` seperti yang dilakukan `finance.tsx:76-80`.
 
 ---
 
-### 8. RFQ Page Pakai `fetch` Langsung вместо `apiFetch`
+### C3. Manager Dashboard — Sama `ppn_rate` Bug 🔴
 
-**File:** `src/app/dashboard/rfq/[id]/page.tsx:90-94`
+**File:** `src/components/dashboards/manager.tsx:15`
 
-**Deskripsi:** `handleUpload` pakai `fetch` manual dengan token handling, tidak konsiten dengan pola `apiFetch` helper.
+**Masalah:** Identik dengan C2 — `reduce` menjumlahkan `ppn_rate`.
 
-**Rencana Perbaikan:** Buat helper `apiFetchFormData` yang support FormData dengan auth token otomatis, atau gunakan pola direct fetch yang sudah ada secara konsisten.
-
----
-
-### 9. Badge Variants Pakai CSS Variables Non-Standard
-
-**File:** `src/components/ui/badge.tsx:14-15`
-
-**Deskripsi:** Badge pakai variant `success` dan `warning` yang rely pada CSS variables `--success` dan `--warning`, tapi shadcn/ui tidak define ini secara default.
-
-**Rencana Perbaikan:** Definisikan CSS variables di `globals.css` atau map ke warna standar:
-
-```css
-:root {
-  --success: hsl(142 76% 36%);
-  --warning: hsl(38 92% 50%);
-}
-```
+**Perbaikan:** Sama seperti C2.
 
 ---
 
-## LOW Severity
+### C4. Revenue Mix — Pakai `invoice_id` sebagai Key Lookup `barang` 🔴
 
-### 10. API Response Format Tidak Konsisten
+**File:** `src/app/dashboard/page.tsx:204-211`
 
-**Deskripsi:** API routes return struktur data berbeda:
-- `/ai/search-harga` → `{ data: { history_id, query, results, priceComparison } }`
-- `/ai/ocr-kontrak` → `{ data: { ...result, extracted_items } }`
+**Masalah:** `barangKategoriMap` berisi `barang.id → kategori_id`, tapi lookup pakai `item.invoice_id` (ID invoice). Tidak akan pernah match → semua revenue masuk "Tanpa Kategori".
 
-**Rencana Perbaikan:** Standardisasi response format — selalu pakai `{ data: {...}, message?: string }`.
+**Perbaikan:** Fetch `barang_id` di query invoice items dan pakai itu untuk lookup.
 
 ---
 
-### 11. Unused Ref
+### C5. File Upload — MIME Type Fallback Gagal Total 🔴
 
-**File:** `src/app/dashboard/ai/ocr-kontrak/page.tsx:17`
+**File:** `src/components/file-upload.tsx:33`
 
-**Deskripsi:** `previewUrlRef` di-assign tapi tidak digunakan — `previewUrl` state dipakai untuk rendering.
+**Masalah:** `file.type.startsWith(a.replace(".", ""))` — untuk `.pdf`, string jadi `"pdf"` sedangkan `file.type` = `"application/pdf"`. `"pdf"` tidak `startsWith("application/pdf")`. Fallback tidak pernah jalan.
 
-**Rencana Perbaikan:** Hapus `previewUrlRef` jika tidak digunakan.
-
----
-
-### 12. Finance Dashboard Pakai Hardcoded Tailwind Colors
-
-**File:** `src/components/dashboards/finance.tsx:133,143,163`
-
-**Deskripsi:** `border-emerald-200`, `text-emerald-600`, `text-red-600` — tidak menggunakan CSS variables dari theme.
-
-**Rencana Perbaikan:** Ganti dengan CSS variables yang sesuai:
-- `border-muted`, `text-muted-foreground` untuk abu-abu
-- `text-destructive` untuk merah
-- `text-success` untuk hijau
+**Perbaikan:** `file.type === "application/" + ext` atau `file.type.includes(ext)`.
 
 ---
 
-### 13. Error Boundary Tidak Dipakai
+## HIGH — Security / Logic Salah
 
-**Deskripsi:** `ErrorBoundary` component ada di `src/components/error-boundary.tsx` tapi tidak digunakan di dashboard layout atau page manapun.
+### H1. Search Route Query Table TyPo: `negosiasi` vs `negoiasi` 🔴
 
-**Rencana Perbaikan:** Wrap dashboard layout dengan `ErrorBoundary`:
+**File:** `src/app/api/v1/search/route.ts:64`
 
-```tsx
-// src/app/dashboard/layout.tsx
-import { ErrorBoundary } from '@/components/error-boundary'
+**Masalah:** Search route query `supabase.from('negosiasi')` tapi tabel di DB bernama `negoiasi` (typo di schema file `negoiasi.ts:4`). Query akan throw `relation "negosiasi" does not exist`.
 
-export default function DashboardLayout({ children }) {
-  return <ErrorBoundary>{children}</ErrorBoundary>
-}
-```
+**Perbaikan:** Ganti query jadi `'negoiasi'` (sesuai nama tabel aktual), atau rename tabel via migration.
 
 ---
 
-## New Findings (24 May 2026 — Integration Audit)
+### H2. Search Route Query Column `nama` di `absensi` Tidak Ada 🔴
 
-### 14. Error Masking di GET Handlers ✅ FIXED
+**File:** `src/app/api/v1/search/route.ts:66`
 
-**Severity:** HIGH
+**Masalah:** `.select('id, nama').ilike('nama', ...)` — tabel `absensi` tidak punya kolom `nama`. Kolom: `id`, `karyawan_id`, `tanggal`, `status`, `keterangan`, `created_at`, `updated_at`. Akan throw `column absensi.nama does not exist`.
 
-**File:** 36 file `[id]/route.ts` dan `[id]/pdf/route.ts` di seluruh modul
-
-**Deskripsi:** Semua GET detail handler menggunakan pola:
-```ts
-if (error || !data) return notFound('...')
-```
-Ini menyebabkan **DB error (koneksi putus, RLS violation, timeout) termasking sebagai 404 Not Found** — menyulitkan debugging. Hanya `absensi/[id]` yang sudah benar sejak awal.
-
-**Perbaikan:** Dipisahkan menjadi:
-```ts
-if (error) return internalError(error)   // DB error → 500
-if (!data) return notFound('...')        // legitimate missing → 404
-```
-
-**File yang diperbaiki (36):**
-- Transaksi: `invoice`, `purchase-order`, `sales-order`, `customer-po`, `delivery-order`, `grn`, `retur-penjualan`, `retur-pembelian`, `kwitansi`, `faktur-pajak`, `jurnal`, `supplier-payment`, `purchase-request`, `purchase-receiving`, `negoiasi`, `quotation`, `rfq`, `di`
-- HR: `penggajian`
-- Master: `barang`, `supplier`, `customer`, `pic-customer`, `coa`, `kontrak`, `kategori-barang`, `jabatan`, `karyawan`, `stock-opname`, `gudang`
-- Users: `users`
-- PDF: `invoice/[id]/pdf`, `kwitansi/[id]/pdf`, `delivery-order/[id]/pdf`, `quotation/[id]/pdf`, `slip-gaji/[id]/pdf`
+**Perbaikan:** Query `karyawan_id` dan join ke tabel `karyawan` untuk ambil nama.
 
 ---
 
-### 15. `customer_top` CRUD Missing ✅ FIXED
+### H3. Missing `await` pada Supabase Insert di VisionAgent 🔴
 
-**Severity:** MEDIUM
+**File:** `src/lib/ai/agents/VisionAgent/index.ts:211`
 
-**File:** `src/app/api/v1/master/customer-top/route.ts` + `[id]/route.ts` (baru), `src/app/dashboard/master/customer/[id]/page.tsx` (updated)
+**Masalah:** `supabaseAdmin.from('ai_vision_history').insert({...})` tanpa `await`. Insert fire-and-forget — error silent, data history hilang.
 
-**Deskripsi:** Tabel `customer_top` sudah ada di database dan Drizzle schema (column: `id`, `customer_id`, `top`, `created_at`, `updated_at`), dan sudah digunakan oleh AI Data Agent queries. TAPI tidak ada:
-- API routes (`/api/v1/master/customer-top`)
-- Frontend pages untuk CRUD
-- UI untuk memilih TOP di form customer
-
-**Perbaikan (24 May 2026):**
-- **API:** `POST /api/v1/master/customer-top` — create; `GET /api/v1/master/customer-top?customer_id=X` — list by customer
-- **API:** `GET/PUT/DELETE /api/v1/master/customer-top/[id]` — detail, update, delete
-- **Frontend:** Card "Daftar Terms of Payment" di halaman detail customer dengan add/delete. Dropdown options: Net 30, Net 60, Cash, Custom. Option yang sudah dipakai di-disable untuk hindari duplikasi.
+**Perbaikan:** Tambah `await`.
 
 ---
 
-### 16. PRD vs Implementasi: `satuan` Bukan Tabel Terpisah ✅ PRD Corrected
+### H4. Tidak Ada Tipe TypeScript untuk 84 Tabel Database
 
-**Severity:** LOW
+**File:** `src/types/` (hanya ada `role.ts`)
 
-**Deskripsi:** PRD mencantumkan `satuan` sebagai tabel terpisah. Realitanya, `satuan` adalah free-text field (`text`) pada tabel `barang` dan `rfq_item`. Tidak ada master data satuan yang terstandardisasi.
+**Masalah:** Zero TypeScript types untuk entity database. Developer harus manual infer dari Drizzle schema. Risk of mismatch di runtime.
 
-**Perbaikan:** PRD.md sudah dikoreksi.
-
-**Future:** Jika diperlukan standardisasi satuan, bisa ditambahkan sebagai tabel master dengan foreign key dari `barang.satuan`.
+**Perbaikan:** Generate type pakai `supabase gen types typescript` atau export `InferSelect`/`InferInsert` dari Drizzle.
 
 ---
 
-### 17. PRD vs Implementasi: `supplier_kontak` ✅ FIXED
+### H5. Dual Migration Directory — 50 FK Hanya di Manual SQL
 
-**Severity:** LOW
+**File:** `drizzle/` vs `src/lib/db/migrations/`
 
-**Deskripsi:** PRD mencantumkan `supplier_kontak` sebagai tabel multiple kontak supplier. Realitanya:
-- Supplier hanya punya satu field `kontak` (text)
-- Tidak ada tabel `supplier_kontak` di schema, DB, atau migration
-- Tidak ada API atau UI untuk multiple kontak supplier
+**Masalah:** Dua direktori migrasi terpisah. ~50 FK constraint (dari `0002_add_foreign_keys.sql`) dan ~65 performance indexes (dari `0001_init.sql`) HANYA ada di manual `src/lib/db/migrations/` yang TIDAK terhubung ke Drizzle journal. `npx drizzle-kit migrate` di DB baru akan melewatkan semua FK dan index ini.
 
-**Perbaikan (24 May 2026):**
-- **Drizzle Schema:** `src/lib/db/schema/supplier-kontak.ts` — tabel `supplier_kontak` (columns: `id`, `supplier_id`, `nama`, `jabatan`, `no_hp`, `email`, `is_active`, `created_at`, `updated_at`)
-- **Migration:** `0012_supplier_kontak.sql` (applied ke Supabase project `jagrbaydmehsdkekexuq`)
-- **API:** `POST/GET /api/v1/master/supplier-kontak` + `GET/PUT/DELETE /api/v1/master/supplier-kontak/[id]`
-- **Frontend:** Card "Kontak PIC Supplier" di halaman detail supplier dengan inline add/delete
+**Perbaikan:** Migrate semua FK dan index ke dalam Drizzle migration chain (`drizzle/`), atau konversi ke `.references()` di schema.
+
+---
+
+### H6. SidebarGroup — Prop `defaultOpen` Diabaikan Setelah Render Awal 🔴
+
+**File:** `src/components/sidebar-content.tsx:238`
+
+**Masalah:** `const [open, setOpen] = useState(defaultOpen)` — navigasi ke page di group berbeda tidak membuka group karena `useState` hanya pakai initial value.
+
+**Perbaikan:** `useEffect(() => setOpen(defaultOpen), [defaultOpen])`.
+
+---
+
+### H7. Onboarding Overlay Pakai Tailwind Class Sebagai CSS Value 🔴
+
+**File:** `src/components/onboarding/onboarding-provider.tsx:125`
+
+**Masalah:** `overlay: { backgroundColor: 'bg-black/40' }` — `bg-black/40` adalah Tailwind utility, bukan CSS value. Overlay tidak tampil.
+
+**Perbaikan:** `overlay: { backgroundColor: 'rgba(0,0,0,0.4)' }`.
+
+---
+
+### H8. Onboarding Text Warna Hardcoded — Rusak di Dark Mode 🔴
+
+**File:** `src/components/onboarding/onboarding-provider.tsx:128-129`
+
+**Masalah:** `tooltipContent: { color: '#020617' }` — warna sangat gelap. Di dark mode (latar belakang gelap), teks tidak terbaca.
+
+**Perbaikan:** Pakai `hsl(var(--foreground))` atau theme-aware color.
+
+---
+
+### H9. GET Handler Tidak Punya Auth (30+ Endpoint)
+
+**File:** Semua `[id]/route.ts` di master & transaksi (lihat catatan audit sebelumnya)
+
+**Masalah:** 30+ GET handler detail tidak panggil `verifyAuth()`. Data bisa dibaca tanpa token.
+
+**Perbaikan:** Tambah `verifyAuth()` di setiap GET handler.
+
+---
+
+## MEDIUM — Inkonsisten / UX Buruk
+
+### M1. 4 AI Schema Pakai `uuid` Type, 80+ Lainnya Pakai `text`
+
+**File:** `schema/ai-*-history.ts`, `schema/ai-automation-log.ts`
+
+**Masalah:** ID type tidak konsisten — `uuid('id').defaultRandom()` vs `text("id").default(sql\`gen_random_uuid()::text\`)`. Join antara dua type bisa error.
+
+**Perbaikan:** Standardisasi ke satu type (prefer `text` seperti mayoritas).
+
+---
+
+### M2. `aiNegoHistory` Properti `created_at` Snake_case
+
+**File:** `schema/ai-nego-history.ts:19`
+
+**Masalah:** `created_at: timestamp('created_at', ...)` — nama properti snake_case. Semua schema lain pakai `createdAt`.
+
+**Perbaikan:** Rename ke `createdAt: timestamp('created_at', ...)`.
+
+---
+
+### M3. AI Schemas Omit `.notNull()` pada Default Field
+
+**File:** `ai-*-history.ts`, `ai-automation-log.ts`
+
+**Masalah:** Field dengan `.defaultNow()` atau `.default(true)` tidak punya `.notNull()`. Inkosisten dengan 80+ schema lain.
+
+**Perbaikan:** Tambah `.notNull()`.
+
+---
+
+### M4. Tidak Ada Zod Validation di Supplier Payment
+
+**File:** `src/app/api/v1/procurement/supplier-payment/route.ts:22-25`
+
+**Masalah:** Manual `if (!body.x || !body.y)` alih-alih Zod `safeParse`. Inkonsisten dengan semua POST handler lain.
+
+**Perbaikan:** Implementasi Zod validation schema.
+
+---
+
+### M5. Tidak Ada Zod Validation di DO Scan Items
+
+**File:** `src/app/api/v1/delivery-order/[id]/scan/route.ts:22-25`
+
+**Masalah:** Raw type assertion `body.scanned_items as Array<...>` tanpa validasi.
+
+**Perbaikan:** Zod schema untuk scanned items.
+
+---
+
+### M6. Non-Standard Error Response di Users Routes
+
+**File:** `src/app/api/v1/users/route.ts`, `src/app/api/v1/users/[id]/route.ts`
+
+**Masalah:** `NextResponse.json({ error: 'Unauthorized' })` instead of `unauthorized()` dari error helpers.
+
+**Perbaikan:** Pakai error helpers yang konsisten.
+
+---
+
+### M7. Stock Opname — Document Number Tidak Auto-Generate
+
+**File:** `src/app/api/v1/inventory/stock-opname/route.ts:38`
+
+**Masalah:** Schema require `nomor: z.string().min(1)` — client harus kirim nomor. Semua dokumen lain auto-generate via `generateDocumentNumber()`.
+
+**Perbaikan:** Auto-generate nomor dokumen.
+
+---
+
+### M8. Search Harga — Empty Catch Block
+
+**File:** `src/app/api/v1/ai/search-harga/route.ts:21`
+
+**Masalah:** `catch { /* fallback to mock */ }` — semua error diswallow tanpa log.
+
+**Perbaikan:** Minimal `console.error`.
+
+---
+
+### M9. Syntax Error di Migration Manual: `CREATE_INDEX`
+
+**File:** `src/lib/db/migrations/0001_init.sql:741`
+
+**Masalah:** `CREATE_INDEX idx_penggajian_krw_id ON penggajian(karyawan_id);` — underscore, harusnya `CREATE INDEX`. Akan error jika dijalankan.
+
+**Perbaikan:** Ganti jadi `CREATE INDEX`.
+
+---
+
+### M10. ID Type Churn (Migration 0008 ↔ 0009)
+
+**File:** `drizzle/0008_mean_doctor_doom.sql`, `drizzle/0009_material_tinkerer.sql`
+
+**Masalah:** Migrasi 0008 ubah semua ID dari `text` → `uuid`, migrasi 0009 balikin `uuid` → `text`. Full-table rewrite tanpa net change.
+
+**Perbaikan:** Hapus kedua migrasi dari chain jika belum dijalankan di production.
+
+---
+
+### M11. `0005_ai_error_tracking.sql` Tidak di Journal
+
+**File:** `drizzle/0005_ai_error_tracking.sql`
+
+**Masalah:** File ada tapi tidak terdaftar di `drizzle/meta/_journal.json`. Akan dilewati oleh `drizzle-kit migrate`.
+
+**Perbaikan:** Register di journal atau merge isinya ke migrasi lain.
+
+---
+
+### M12. Belum Ada FK Constraints untuk Document Tables
+
+**File:** Schema `customer-po-document`, `di-document`, `grn-document`, `quotation-document`, `rfq-customer*`
+
+**Masalah:** Tabel dokumen dan rfq_customer tidak punya FK constraint sama sekali — baik di schema `.references()` maupun migration `ALTER TABLE`.
+
+**Perbaikan:** Tambah `.references()` di schema + migration untuk add FK.
+
+---
+
+### M13. `handleLogout` Tidak `useCallback`
+
+**File:** `src/components/sidebar-content.tsx:192-195`
+
+**Masalah:** Function reference baru tiap render → potential unnecessary re-renders.
+
+**Perbaikan:** Wrap dengan `useCallback`.
+
+---
+
+### M14. Duplicate `"use client"` Directive (4 file)
+
+**File:** `sidebar-content.tsx`, `onboarding-provider.tsx`, `panduan-button.tsx`, `dark-mode-toggle.tsx`
+
+**Masalah:** Baris 1 dan 3 sama-sama `"use client"` (quotes beda). Duplikat.
+
+**Perbaikan:** Hapus salah satu.
+
+---
+
+### M15. Skeleton — Dynamic Tailwind Classes Tidak Akan Resolve
+
+**File:** `src/components/ui/skeleton.tsx:26,37`
+
+**Masalah:** `` w-${colWidths[i]} `` — Tailwind JIT hanya scan complete class names. Runtime template literal tidak akan digenerate.
+
+**Perbaikan:** Map preset widths atau pakai inline style.
+
+---
+
+### M16. Delete Button Text Tidak Berubah Saat Loading
+
+**File:** `src/components/kelola-kategori-dialog.tsx:274-276`
+
+**Masalah:** Button tetap "Ya, Hapus" saat loading. Pembanding: `delete-confirmation-dialog.tsx:57` sudah benar pakai "Menghapus...".
+
+**Perbaikan:** `{deleteLoading ? "Menghapus..." : "Ya, Hapus"}`.
+
+---
+
+### M17. Confirm Leave Dialog — Hardcoded Color
+
+**File:** `src/components/confirm-leave-dialog.tsx:31`
+
+**Masalah:** `bg-red-500/70` langsung, tidak pakai button variant. Inkonsisten dengan `delete-confirmation-dialog.tsx:48` yang pakai `bg-zinc-500/70`.
+
+**Perbaikan:** Pakai `variant="destructive"` dari button system.
+
+---
+
+### M18. Master Data Table — Sorting String untuk Field Numerik
+
+**File:** `src/components/master-data-table.tsx:47-51`
+
+**Masalah:** `localeCompare` dipakai untuk semua kolom. "100" datang sebelum "20" secara leksikografis.
+
+**Perbaikan:** Deteksi tipe data dan pakai numeric comparison untuk angka.
+
+---
+
+## LOW — Convention / Best Practice
+
+### L1. `invoiceItem` Pakai `harga` Bukan `hargaSatuan`
+
+**File:** `schema/invoice-item.ts:8`
+
+**Masalah:** Semua item table lain pakai `hargaSatuan`, invoice-item pakai `harga`. Inkonsisten.
+
+**Perbaikan:** Rename ke `hargaSatuan` untuk konsistensi.
+
+---
+
+### L2. `aiAutomationLog` Tidak Punya `createdAt`
+
+**File:** `schema/ai-automation-log.ts`
+
+**Masalah:** Hanya punya `executedAt`, tidak ada `createdAt`. Semua tabel lain punya `createdAt`.
+
+**Perbaikan:** Tambah field `createdAt`.
+
+---
+
+### L3. `invoiceDocument` Punya Field Unik `documentType`
+
+**File:** `schema/invoice-document.ts:7`
+
+**Masalah:** Satu-satunya document table dengan `documentType`. Semua document table lain identik.
+
+**Catatan:** Mungkin intentional, tapi break pattern.
+
+---
+
+### L4. `siteSettings` — Tidak Ada `id` atau `createdAt`
+
+**File:** `schema/site-settings.ts`
+
+**Masalah:** Key-value store tanpa `id` dan `createdAt`. Break pattern umum semua tabel.
+
+---
+
+### L5. `userRoles` — Tidak Ada `updatedAt` atau `isActive`
+
+**File:** `schema/user-roles.ts`
+
+**Masalah:** Tidak bisa track kapan role diubah, dan tidak bisa soft-disable role assignment.
+
+---
+
+### L6. Inconsistent Auth Pattern di 5 AI Routes
+
+**File:** AI routes (rekomendasi-supplier, error-stats, usage, anomaly-detection, auto-suggest-barang, price-trend)
+
+**Masalah:** `if (!auth.user) { ... }` bukan `if (auth.error) return auth.error`.
+
+---
+
+### L7. Hardcoded PPN Rate 11%
+
+**File:** `src/app/api/v1/invoice/route.ts:24`, `src/app/api/v1/quotation/route.ts:31`
+
+**Masalah:** `ppn_rate: ...default(0.11)` hardcoded. Harusnya dari site settings atau company profile.
+
+---
+
+### L8. Hardcoded 24h Escalation Threshold
+
+**File:** `src/app/api/v1/cron/approval-escalation/route.ts:14`
+
+**Masalah:** `24 * 60 * 60 * 1000` hardcoded. Harusnya dari config table.
+
+---
+
+### L9. DELETE Handler Return 200 Instead of 204
+
+**File:** Semua DELETE handler (30+)
+
+**Masalah:** `NextResponse.json({ message: 'Berhasil dihapus' })` — REST convention prefers 204 No Content.
+
+---
+
+### L10. Non-null Assertion `auth.user!`
+
+**File:** AI routes (ocr-kontrak, search-harga, dll)
+
+**Masalah:** `auth.user!.id` — kalau user null (edge case), throw runtime TypeError.
+
+**Perbaikan:** Guard dengan early return.
+
+---
+
+### L11. `status-badge.tsx` — Union Type Collapse ke `string`
+
+**File:** `src/components/status-badge.tsx:5`
+
+**Masalah:** `StatusVariant | string` — karena `string` adalah supertype, union collapse ke `string` saja. Type checking tidak berguna.
+
+---
+
+### L12. Export PDF Button — `download` Diabaikan dengan `target="_blank"`
+
+**File:** `src/components/export-pdf-button.tsx:21`
+
+**Masalah:** Browser ignore `download` attribute saat `target="_blank"` (cross-origin security). PDF opens in new tab instead of download.
+
+---
+
+### L13. Barcode Scanner — Tidak Ada Feedback di Browser Unsupported
+
+**File:** `src/components/barcode-scanner.tsx:63-80`
+
+**Masalah:** `BarcodeDetector` API hanya di Chromium. Firefox/Safari: kamera aktif tapi tidak ada feedback.
+
+**Perbaikan:** Deteksi support dan tampilkan pesan.
+
+---
+
+### L14. `table-actions.tsx` — Prop `id` Dideklarasi tapi Tidak Dipakai
+
+**File:** `src/components/table-actions.tsx:11-13`
+
+---
+
+### L15. `kelola-kategori-dialog.tsx` — Field `keterangan` Tidak Ada `<FormMessage />`
+
+**File:** `src/components/kelola-kategori-dialog.tsx:239`
+
+---
+
+### L16. Extensive `as` Type Assertions (Multiple Files)
+
+**File:** `sidebar-content.tsx`, `activity-timeline.tsx`, `dashboard/page.tsx`, `dashboards/*.tsx`
+
+**Masalah:** Banyak `as SomeType` yang bypass type checking.
 
 ---
 
 ## Prioritas Perbaikan
 
-1. **Segera (sebelum production):** Bug #1, #2, #3, #4, #14
-2. **Sebelum production deploy:** Bug #5, #6, #7, #9
-3. **Nice to have:** Bug #8, #10, #11, #12, #13, #16, #17
+### Phase 1 — Segera (sebelum production)
+| Priority | Item | Effort |
+|----------|------|--------|
+| P0 | C1: Sidebar mutasi module-level array | 1 jam |
+| P0 | C2-C3: `ppn_rate` instead of amount (dashboard + manager) | 1 jam |
+| P0 | C4: Revenue mix `invoice_id` jadi key lookup | 1 jam |
+| P0 | C5: File upload MIME fallback | 30 menit |
+| P0 | H1: Search route query `negosiasi` typo | 15 menit |
+| P0 | H2: Search route query `nama` di absensi | 30 menit |
+| P0 | H3: Missing `await` VisionAgent insert | 15 menit |
+| P0 | H9: 30+ GET handler tanpa auth | 2 jam |
+
+### Phase 2 — Sebelum Production Deploy
+| Priority | Item | Effort |
+|----------|------|--------|
+| P1 | H5: Dual migration / FK hilang | 4 jam |
+| P1 | H6: SidebarGroup defaultOpen | 30 menit |
+| P1 | H7-H8: Onboarding overlay & dark mode | 1 jam |
+| P1 | M1-M3: AI schema inconsistencies | 1 jam |
+| P1 | M4-M5: Zod validation missing | 2 jam |
+| P1 | M6: Users route non-standard error | 30 menit |
+| P1 | M7: Stock opname no auto-number | 1 jam |
+| P1 | M9: Migration syntax error | 15 menit |
+| P1 | M10-M12: Migration fixes | 3 jam |
+| P1 | M15: Skeleton dynamic tailwind | 30 menit |
+| P1 | M16-M18: Dialog UX fixes | 1 jam |
+| P1 | H4: Generate TypeScript types | 2 jam |
+| P1 | M8: Search harga catch block | 15 menit |
+
+### Phase 3 — Post-Deploy / Quality
+| Priority | Item | Effort |
+|----------|------|--------|
+| P2 | M13-M14: useCallback + dup directives | 30 menit |
+| P2 | L1-L5: Schema naming consistency | 2 jam |
+| P2 | L6: AI routes auth pattern | 1 jam |
+| P2 | L7-L8: Hardcoded values → config | 2 jam |
+| P2 | L9-L12: REST convention fixes | 2 jam |
+| P3 | L13-L16: Minor UX & type fixes | 2 jam |
+
+---
+
+## Catatan Infrastruktur
+
+### Migration Strategy
+1. **Segera:** Hapus migrasi 0008 dan 0009 dari chain (ID type churn)
+2. **Segera:** Register `0005_ai_error_tracking.sql` ke `drizzle/meta/_journal.json`
+3. **Post-deploy:** Migrate FK dari `src/lib/db/migrations/0002_add_foreign_keys.sql` ke Drizzle schema `.references()` dan generate migration baru
+4. **Post-deploy:** Migrate index dari `src/lib/db/migrations/0001_init.sql` ke schema `.index()` atau migration manual
+
+### Deploy Checklist
+- [ ] Semua Phase 1 items selesai
+- [ ] `npm run build` sukses tanpa error
+- [ ] `npm run lint` bersih
+- [ ] Testing manual: login, buka dashboard, buat invoice, buat PO
+- [ ] Testing migration di branch database
+- [ ] Update AGENTS.md jika ada perubahan konvensi

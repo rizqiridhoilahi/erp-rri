@@ -4,7 +4,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { ChevronDown, Settings, Activity, Wrench, Archive } from 'lucide-react'
 import {
   Home, Package, Users, Building2, UserCircle, BookOpen,   FileText, FileSpreadsheet, FolderTree, Briefcase, Users2,
@@ -170,12 +170,12 @@ function filterMenuByRole(items: MenuItem[], role: Role): MenuItem[] {
       const modKey = labelToModule[item.label]
       const allowed = modKey ? MODULE_PERMISSIONS[modKey] : undefined
       if (allowed && !allowed.includes(role)) return false
-      item.children = item.children.filter((child) => {
+      const filteredChildren = item.children.filter((child) => {
         const childModKey = labelToModule[child.label] ?? modKey
         const childAllowed = childModKey ? MODULE_PERMISSIONS[childModKey] : undefined
         return !childAllowed || childAllowed.includes(role)
       })
-      return item.children.length > 0
+      return filteredChildren.length > 0
     }
     return true
   })
@@ -236,6 +236,7 @@ export function SidebarContent({ collapsed }: { collapsed?: boolean }) {
 
 function SidebarGroup({ group, defaultOpen, collapsed }: { group: MenuGroup; defaultOpen: boolean; collapsed?: boolean }) {
   const [open, setOpen] = useState(defaultOpen)
+  useEffect(() => { setOpen(defaultOpen) }, [defaultOpen])
 
   if (collapsed) {
     return (

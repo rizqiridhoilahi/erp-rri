@@ -94,7 +94,7 @@ export default async function DashboardPage() {
     supabase.from('kwitansi').select('*, total').gte('created_at', lastMonthFirstDay).lte('created_at', lastMonthLastDay),
     supabase.from('kwitansi').select('created_at, total').gte('created_at', sixMonthsAgo).order('created_at', { ascending: true }),
     supabase.from('rfq_customer').select('*', { count: 'exact', head: true }).eq('status', 'sent'),
-    supabase.from('invoice_item').select('invoice_id, harga, jumlah, diskon'),
+    supabase.from('invoice_item').select('invoice_id, barang_id, harga, jumlah, diskon'),
     supabase.from('customer').select('id, nama'),
     supabase.from('kategori_barang').select('id, nama'),
     supabase.from('stok').select('barang_id, jumlah'),
@@ -102,7 +102,7 @@ export default async function DashboardPage() {
     supabase.from('invoice').select('id, tanggal, status, customer_id').in('status', ['sent', 'paid', 'partial', 'overdue']),
   ])
 
-  const totalPiutang = (invoice.data ?? []).reduce((s: number, i) => s + ((i as { ppn_rate?: number }).ppn_rate ?? 0), 0)
+  const totalPiutang = (invoice.data ?? []).reduce((s: number, i) => s + (invTotalsByInvoice[i.id] ?? 0), 0)
   const totalStok = (stoks.data ?? []).reduce((s: number, i) => s + ((i as { jumlah: number }).jumlah ?? 0), 0)
   const lowStockItems = (stoks.data ?? []).filter((s: { jumlah: number }) => s.jumlah <= 0)
   const revenueBulanIni = (kwitansis.data ?? []).reduce((s: number, k) => s + ((k as { total?: number }).total ?? 0), 0)
@@ -139,7 +139,7 @@ export default async function DashboardPage() {
   ]
 
   // Top customers by revenue
-  const invData = (invoiceItems.data ?? []) as { invoice_id: string; harga: number; jumlah: number; diskon?: number }[]
+  const invData = (invoiceItems.data ?? []) as { invoice_id: string; barang_id: string; harga: number; jumlah: number; diskon?: number }[]
   const invTotalsByInvoice: Record<string, number> = {}
   for (const it of invData) {
     invTotalsByInvoice[it.invoice_id] = (invTotalsByInvoice[it.invoice_id] ?? 0) + (it.harga * it.jumlah - (it.diskon ?? 0))
@@ -204,8 +204,8 @@ export default async function DashboardPage() {
   const revenueByKat: Record<string, number> = {}
   for (const inv of allInvData) {
     const items = (invoiceItems.data ?? []).filter((it: { invoice_id: string }) => it.invoice_id === inv.id)
-    for (const item of items as Array<{ invoice_id: string; harga: number; jumlah: number; diskon?: number }>) {
-      const katId = barangKategoriMap.get(item.invoice_id) || ''
+    for (const item of items as Array<{ invoice_id: string; barang_id: string; harga: number; jumlah: number; diskon?: number }>) {
+      const katId = barangKategoriMap.get(item.barang_id) || ''
       revenueByKat[katId] = (revenueByKat[katId] ?? 0) + (item.harga * item.jumlah - (item.diskon ?? 0))
     }
   }

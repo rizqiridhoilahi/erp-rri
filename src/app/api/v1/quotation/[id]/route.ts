@@ -45,6 +45,7 @@ function calcTanggalBerlaku(masaBerlaku: string, tanggal: Date): string | null {
 }
 
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const auth = await verifyAuth(_request); if (auth.error) return auth.error
   const { id } = await params
 
   const { data: qtn, error: qtnError } = await supabaseAdmin
