@@ -54,11 +54,11 @@ export default async function PpnMasaPage({ searchParams }: { searchParams: Prom
   const prev = prevPeriod(sp.tahun ?? null, sp.bulan ?? null)
 
   const [{ data: invoices }, { data: poItems }] = await Promise.all([
-    supabase.from('invoice').select('*, invoice_item!invoice_id(harga, jumlah, ppn)').in('status', ['paid', 'sent', 'lunas']).gte('tanggal', period.since).lte('tanggal', period.until),
+    supabase.from('invoice').select('*, invoice_item!invoice_id(harga_satuan, jumlah, ppn)').in('status', ['paid', 'sent', 'lunas']).gte('tanggal', period.since).lte('tanggal', period.until),
     supabase.from('purchase_order_item').select('*, purchase_order!purchase_order_id(status, tanggal)').gte('purchase_order.tanggal', period.since).lte('purchase_order.tanggal', period.until),
   ])
 
-  const { data: prevInvoices } = await supabase.from('invoice').select('*, invoice_item!invoice_id(harga, jumlah, ppn)').in('status', ['paid', 'sent', 'lunas']).gte('tanggal', prev.since).lte('tanggal', prev.until)
+  const { data: prevInvoices } = await supabase.from('invoice').select('*, invoice_item!invoice_id(harga_satuan, jumlah, ppn)').in('status', ['paid', 'sent', 'lunas']).gte('tanggal', prev.since).lte('tanggal', prev.until)
   const { data: prevPoItems } = await supabase.from('purchase_order_item').select('*, purchase_order!purchase_order_id(status, tanggal)').gte('purchase_order.tanggal', prev.since).lte('purchase_order.tanggal', prev.until)
 
   function calcPpnKeluaran(items: Array<Record<string, unknown>>): number {
@@ -89,7 +89,7 @@ export default async function PpnMasaPage({ searchParams }: { searchParams: Prom
   const buckets = buildMonthlyBuckets(period)
   const chartData = await Promise.all(buckets.map(async b => {
     const [r, c] = await Promise.all([
-      supabase.from('invoice').select('*, invoice_item!invoice_id(harga, jumlah, ppn)').in('status', ['paid', 'sent', 'lunas']).gte('tanggal', b.since).lte('tanggal', b.until),
+      supabase.from('invoice').select('*, invoice_item!invoice_id(harga_satuan, jumlah, ppn)').in('status', ['paid', 'sent', 'lunas']).gte('tanggal', b.since).lte('tanggal', b.until),
       supabase.from('purchase_order_item').select('*, purchase_order!purchase_order_id(status)').gte('purchase_order.tanggal', b.since).lte('purchase_order.tanggal', b.until),
     ])
     const keluaran = calcPpnKeluaran(r.data ?? [])

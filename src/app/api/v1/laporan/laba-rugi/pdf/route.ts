@@ -52,10 +52,10 @@ function buildMonthlyBuckets(period: { since: string; until: string }) {
   return buckets
 }
 
-function calcRev(invoices: Array<{ invoice_item?: Array<{ harga: number; jumlah: number; diskon: number | null; ppn: number | null; pph: number | null }> }>): number {
+function calcRev(invoices: Array<{ invoice_item?: Array<{ harga_satuan: number; jumlah: number; diskon: number | null; ppn: number | null; pph: number | null }> }>): number {
   let total = 0
   for (const inv of invoices) {
-    for (const it of inv.invoice_item ?? []) total += it.harga * it.jumlah - (it.diskon ?? 0) + (it.ppn ?? 0) - (it.pph ?? 0)
+    for (const it of inv.invoice_item ?? []) total += it.harga_satuan * it.jumlah - (it.diskon ?? 0) + (it.ppn ?? 0) - (it.pph ?? 0)
   }
   return total
 }
@@ -76,11 +76,11 @@ export async function GET(request: NextRequest) {
   const prev = prevPeriod(tahun, bulan)
 
   const [{ data: invoices }, { data: poItems }] = await Promise.all([
-    supabaseAdmin.from('invoice').select('*, invoice_item!invoice_id(harga, jumlah, diskon, ppn, pph)').in('status', ['paid', 'sent']).gte('tanggal', period.since).lte('tanggal', period.until),
+    supabaseAdmin.from('invoice').select('*, invoice_item!invoice_id(harga_satuan, jumlah, diskon, ppn, pph)').in('status', ['paid', 'sent']).gte('tanggal', period.since).lte('tanggal', period.until),
     supabaseAdmin.from('purchase_order_item').select('*, purchase_order!purchase_order_id(status, tanggal)').gte('purchase_order.tanggal', period.since).lte('purchase_order.tanggal', period.until),
   ])
 
-  const { data: prevInvoices } = await supabaseAdmin.from('invoice').select('*, invoice_item!invoice_id(harga, jumlah, diskon, ppn, pph)').in('status', ['paid', 'sent']).gte('tanggal', prev.since).lte('tanggal', prev.until)
+  const { data: prevInvoices } = await supabaseAdmin.from('invoice').select('*, invoice_item!invoice_id(harga_satuan, jumlah, diskon, ppn, pph)').in('status', ['paid', 'sent']).gte('tanggal', prev.since).lte('tanggal', prev.until)
   const { data: prevPoItems } = await supabaseAdmin.from('purchase_order_item').select('*, purchase_order!purchase_order_id(status, tanggal)').gte('purchase_order.tanggal', prev.since).lte('purchase_order.tanggal', prev.until)
 
   const totalRevenue = calcRev(invoices ?? [])
@@ -96,7 +96,7 @@ export async function GET(request: NextRequest) {
   const buckets = buildMonthlyBuckets(period)
   const monthly = await Promise.all(buckets.map(async b => {
     const [r, c] = await Promise.all([
-      supabaseAdmin.from('invoice').select('*, invoice_item!invoice_id(harga, jumlah, diskon, ppn, pph)').in('status', ['paid', 'sent']).gte('tanggal', b.since).lte('tanggal', b.until),
+      supabaseAdmin.from('invoice').select('*, invoice_item!invoice_id(harga_satuan, jumlah, diskon, ppn, pph)').in('status', ['paid', 'sent']).gte('tanggal', b.since).lte('tanggal', b.until),
       supabaseAdmin.from('purchase_order_item').select('*, purchase_order!purchase_order_id(status)').gte('purchase_order.tanggal', b.since).lte('purchase_order.tanggal', b.until),
     ])
     return { bulan: b.label, pendapatan: calcRev(r.data ?? []), hpp: calcCogs(c.data ?? []) }

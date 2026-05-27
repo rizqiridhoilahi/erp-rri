@@ -41,7 +41,7 @@ export default function JabatanPage() {
       .order("nama")
       .then(({ data: result, error: err }) => {
         if (err) setError(err.message)
-        else setData((result || []) as Jabatan[])
+        else setData((Array.isArray(result) ? result : []) as Jabatan[])
         setLoading(false)
       })
   }, [])

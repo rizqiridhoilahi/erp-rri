@@ -94,7 +94,7 @@ export default async function DashboardPage() {
     supabase.from('kwitansi').select('*, total').gte('created_at', lastMonthFirstDay).lte('created_at', lastMonthLastDay),
     supabase.from('kwitansi').select('created_at, total').gte('created_at', sixMonthsAgo).order('created_at', { ascending: true }),
     supabase.from('rfq_customer').select('*', { count: 'exact', head: true }).eq('status', 'sent'),
-    supabase.from('invoice_item').select('invoice_id, barang_id, harga, jumlah, diskon'),
+    supabase.from('invoice_item').select('invoice_id, barang_id, harga_satuan, jumlah, diskon'),
     supabase.from('customer').select('id, nama'),
     supabase.from('kategori_barang').select('id, nama'),
     supabase.from('stok').select('barang_id, jumlah'),
@@ -139,13 +139,13 @@ export default async function DashboardPage() {
   ]
 
   // Top customers by revenue
-  const invData = (invoiceItems.data ?? []) as { invoice_id: string; barang_id: string; harga: number; jumlah: number; diskon?: number }[]
+  const invData = (Array.isArray(invoiceItems.data) ? invoiceItems.data : []) as { invoice_id: string; barang_id: string; harga_satuan: number; jumlah: number; diskon?: number }[]
   const invTotalsByInvoice: Record<string, number> = {}
   for (const it of invData) {
-    invTotalsByInvoice[it.invoice_id] = (invTotalsByInvoice[it.invoice_id] ?? 0) + (it.harga * it.jumlah - (it.diskon ?? 0))
+    invTotalsByInvoice[it.invoice_id] = (invTotalsByInvoice[it.invoice_id] ?? 0) + (it.harga_satuan * it.jumlah - (it.diskon ?? 0))
   }
 
-  const allInvData = (allInvoices.data ?? []) as { id: string; customer_id: string; tanggal: string; status: string }[]
+  const allInvData = (Array.isArray(allInvoices.data) ? allInvoices.data : []) as { id: string; customer_id: string; tanggal: string; status: string }[]
   const custMap = new Map((customersData.data ?? []).map((c: { id: string; nama: string }) => [c.id, c.nama]))
   const custRevenue: Record<string, number> = {}
   for (const inv of allInvData) {
@@ -178,8 +178,8 @@ export default async function DashboardPage() {
   })
 
   // Stock by category
-  const stokData = (stokDetail.data ?? []) as { barang_id: string; jumlah: number }[]
-  const barangData = (barangDetail.data ?? []) as { id: string; nama: string; kategori_id: string }[]
+  const stokData = (Array.isArray(stokDetail.data) ? stokDetail.data : []) as { barang_id: string; jumlah: number }[]
+  const barangData = (Array.isArray(barangDetail.data) ? barangDetail.data : []) as { id: string; nama: string; kategori_id: string }[]
   const kategoriMap = new Map((kategoriBarang.data ?? []).map((k: { id: string; nama: string }) => [k.id, k.nama]))
   const barangKategoriMap = new Map(barangData.map(b => [b.id, b.kategori_id]))
   const stokByKat: Record<string, number> = {}
@@ -204,9 +204,9 @@ export default async function DashboardPage() {
   const revenueByKat: Record<string, number> = {}
   for (const inv of allInvData) {
     const items = (invoiceItems.data ?? []).filter((it: { invoice_id: string }) => it.invoice_id === inv.id)
-    for (const item of items as Array<{ invoice_id: string; barang_id: string; harga: number; jumlah: number; diskon?: number }>) {
+    for (const item of (Array.isArray(items) ? items : []) as Array<{ invoice_id: string; barang_id: string; harga_satuan: number; jumlah: number; diskon?: number }>) {
       const katId = barangKategoriMap.get(item.barang_id) || ''
-      revenueByKat[katId] = (revenueByKat[katId] ?? 0) + (item.harga * item.jumlah - (item.diskon ?? 0))
+      revenueByKat[katId] = (revenueByKat[katId] ?? 0) + (item.harga_satuan * item.jumlah - (item.diskon ?? 0))
     }
   }
   const revenueMixData = Object.entries(revenueByKat)

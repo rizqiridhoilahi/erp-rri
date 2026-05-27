@@ -54,7 +54,7 @@ export default function KontrakPage() {
       .order("created_at", { ascending: false })
       .then(({ data: result, error: err }) => {
         if (err) setError(err.message)
-        else setData((result || []) as unknown as Kontrak[])
+        else setData((Array.isArray(result) ? result : []) as unknown as Kontrak[])
         setLoading(false)
       })
   }, [])

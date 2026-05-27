@@ -88,7 +88,7 @@ export default function RfqDetailPage() {
       formData.append("file", file)
       const { apiFetchFormData } = await import("@/lib/api/client")
       const r = await apiFetchFormData(`/api/v1/rfq-supplier/${id}/documents`, formData)
-      setDocuments((prev) => [r.data as { id: string; file_name: string; file_url: string; uploaded_at: string; rfq_supplier_id: string }, ...prev])
+      setDocuments((prev) => [r.data as { id: string; file_name: string; file_url: string; uploaded_at: string; rfq_supplier_id: string }, ...prev].filter(Boolean))
       toast.success("File berhasil diupload")
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Gagal upload file")

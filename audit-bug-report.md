@@ -371,13 +371,13 @@ Tanggal: 2026-05-26 — Audit Komprehensif (full codebase scan: 137 API routes, 
 
 ## LOW — Convention / Best Practice
 
-### L1. `invoiceItem` Pakai `harga` Bukan `hargaSatuan`
+### L1. `invoiceItem` Pakai `harga` Bukan `hargaSatuan` ✅ FIXED
 
 **File:** `schema/invoice-item.ts:8`
 
 **Masalah:** Semua item table lain pakai `hargaSatuan`, invoice-item pakai `harga`. Inkonsisten.
 
-**Perbaikan:** Rename ke `hargaSatuan` untuk konsistensi.
+**Perbaikan:** Rename ke `hargaSatuan` + migration `ALTER TABLE invoice_item RENAME COLUMN harga TO harga_satuan` + update 36 references.
 
 ---
 
@@ -391,13 +391,13 @@ Tanggal: 2026-05-26 — Audit Komprehensif (full codebase scan: 137 API routes, 
 
 ---
 
-### L3. `invoiceDocument` Punya Field Unik `documentType`
+### L3. `invoiceDocument` Punya Field Unik `documentType` ✅ FIXED
 
 **File:** `schema/invoice-document.ts:7`
 
 **Masalah:** Satu-satunya document table dengan `documentType`. Semua document table lain identik.
 
-**Catatan:** Mungkin intentional, tapi break pattern.
+**Perbaikan:** Hapus `documentType` dari schema + migration `ALTER TABLE invoice_document DROP COLUMN document_type`. Juga tambah FK `.references()` ke `invoice.id` (sejalan M12). Field tidak pernah diisi oleh kode manapun — dead column.
 
 ---
 
@@ -497,11 +497,13 @@ Tanggal: 2026-05-26 — Audit Komprehensif (full codebase scan: 137 API routes, 
 
 ---
 
-### L16. Extensive `as` Type Assertions (Multiple Files)
+### L16. Extensive `as` Type Assertions (Multiple Files) ✅ FIXED
 
 **File:** `sidebar-content.tsx`, `activity-timeline.tsx`, `dashboard/page.tsx`, `dashboards/*.tsx`
 
 **Masalah:** Banyak `as SomeType` yang bypass type checking.
+
+**Perbaikan:** 28 `as` assertions paling berbahaya (dari 113+) diberi runtime guard: `Array.isArray()` + null check + optional chaining. Sisanya (`as const`, `as keyof`, narrowing) aman dan tidak perlu diubah.
 
 ---
 
@@ -540,11 +542,11 @@ Tanggal: 2026-05-26 — Audit Komprehensif (full codebase scan: 137 API routes, 
 | Priority | Item | Effort | Status |
 |----------|------|--------|--------|
 | P2 | M13-M14: useCallback + dup directives | 30 menit | ✅ FIXED (Phase 2) |
-| P2 | L1-L5: Schema naming consistency | 2 jam | ✅ L4/L5 fixed (L1 skipped: terlalu invasif untuk LOW; L2 sdh ada; L3 intentional) |
+| P2 | L1-L5: Schema naming consistency | 2 jam | ✅ L1+L3+L4+L5 fixed; L2 sdh ada |
 | P2 | L6: AI routes auth pattern | 1 jam | ✅ FIXED (6 file) |
 | P2 | L7-L8: Hardcoded values → config | 2 jam | ✅ FIXED (pakai `getConfigNumber()` dari `site_settings`) |
 | P2 | L9-L12: REST convention fixes | 2 jam | ✅ FIXED (DELETE 204: 29 file; auth.user! guard; status-badge union; pdf download) |
-| P3 | L13-L16: Minor UX & type fixes | 2 jam | ✅ L13/L14/L15 fixed; L16 skipped (terlalu luas) |
+| P3 | L13-L16: Minor UX & type fixes | 2 jam | ✅ L13/L14/L15/L16 fixed (28 `as` berbahaya dikasih runtime guard) |
 
 ---
 

@@ -65,8 +65,8 @@ export default function StokKeluarPage() {
           tipe: 'keluar',
           barang_id: selectedBarang.id,
           gudang_id: selectedGudang || null,
-          jumlah: Number((e.currentTarget.elements.namedItem('jumlah') as HTMLInputElement).value),
-          keterangan: (e.currentTarget.elements.namedItem('keterangan') as HTMLTextAreaElement).value,
+          jumlah: Number((e.currentTarget.elements.namedItem('jumlah') as HTMLInputElement | null)?.value ?? ''),
+          keterangan: (e.currentTarget.elements.namedItem('keterangan') as HTMLTextAreaElement | null)?.value ?? '',
         }),
       })
       toast.success('Stok keluar dicatat!')

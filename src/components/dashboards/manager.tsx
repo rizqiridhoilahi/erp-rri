@@ -10,12 +10,12 @@ export default async function ManagerDashboard() {
     supabase.from('purchase_order').select('*', { count: 'exact', head: true }).eq('status', 'draft'),
     supabase.from('sales_order').select('*', { count: 'exact', head: true }).in('status', ['confirmed', 'processed']),
     supabase.from('invoice').select('id, status').in('status', ['sent', 'overdue']),
-    supabase.from('invoice_item').select('invoice_id, harga, jumlah, diskon'),
+    supabase.from('invoice_item').select('invoice_id, harga_satuan, jumlah, diskon'),
     supabase.from('karyawan').select('*', { count: 'exact', head: true }).eq('is_active', true),
   ])
   const invTotals: Record<string, number> = {}
-  for (const it of (invoiceItems.data ?? []) as Array<{ invoice_id: string; harga: number; jumlah: number; diskon?: number }>) {
-    invTotals[it.invoice_id] = (invTotals[it.invoice_id] ?? 0) + (it.harga * it.jumlah - (it.diskon ?? 0))
+  for (const it of (invoiceItems.data ?? []) as Array<{ invoice_id: string; harga_satuan: number; jumlah: number; diskon?: number }>) {
+    invTotals[it.invoice_id] = (invTotals[it.invoice_id] ?? 0) + (it.harga_satuan * it.jumlah - (it.diskon ?? 0))
   }
   const totalPiutang = (invoices.data ?? []).reduce((s: number, i) => s + (invTotals[i.id] ?? 0), 0)
 

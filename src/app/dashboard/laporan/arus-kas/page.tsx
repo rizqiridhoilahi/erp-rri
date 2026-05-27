@@ -46,14 +46,14 @@ function buildMonthlyBuckets(period: { since: string; until: string }) {
   return buckets
 }
 
-type InvItem = { harga: number; jumlah: number; diskon: number | null; ppn: number | null; pph: number | null }
+type InvItem = { harga_satuan: number; jumlah: number; diskon: number | null; ppn: number | null; pph: number | null }
 type PoItem = { harga_satuan: number; jumlah: number }
 
 function calcRevenue(invoices: Array<{ invoice_item?: InvItem[] }>) {
   let total = 0
   for (const inv of invoices) {
     for (const it of inv.invoice_item ?? []) {
-      total += it.harga * it.jumlah - (it.diskon ?? 0) + (it.ppn ?? 0) - (it.pph ?? 0)
+      total += it.harga_satuan * it.jumlah - (it.diskon ?? 0) + (it.ppn ?? 0) - (it.pph ?? 0)
     }
   }
   return total
@@ -69,9 +69,9 @@ export default async function ArusKasPage({ searchParams }: { searchParams: Prom
   const prev = prevPeriod(sp.tahun ?? null, sp.bulan ?? null)
 
   const [curInvoices, curPoItems, prevInvoices, prevPoItems] = await Promise.all([
-    supabase.from('invoice').select('*, invoice_item!invoice_id(harga, jumlah, diskon, ppn, pph)').in('status', ['paid', 'sent']).gte('tanggal', period.since).lte('tanggal', period.until),
+    supabase.from('invoice').select('*, invoice_item!invoice_id(harga_satuan, jumlah, diskon, ppn, pph)').in('status', ['paid', 'sent']).gte('tanggal', period.since).lte('tanggal', period.until),
     supabase.from('purchase_order_item').select('*, purchase_order!purchase_order_id(status)').in('purchase_order.status', ['sent', 'received']).gte('purchase_order.tanggal', period.since).lte('purchase_order.tanggal', period.until),
-    supabase.from('invoice').select('*, invoice_item!invoice_id(harga, jumlah, diskon, ppn, pph)').in('status', ['paid', 'sent']).gte('tanggal', prev.since).lte('tanggal', prev.until),
+    supabase.from('invoice').select('*, invoice_item!invoice_id(harga_satuan, jumlah, diskon, ppn, pph)').in('status', ['paid', 'sent']).gte('tanggal', prev.since).lte('tanggal', prev.until),
     supabase.from('purchase_order_item').select('*, purchase_order!purchase_order_id(status)').in('purchase_order.status', ['sent', 'received']).gte('purchase_order.tanggal', prev.since).lte('purchase_order.tanggal', prev.until),
   ])
 
@@ -87,7 +87,7 @@ export default async function ArusKasPage({ searchParams }: { searchParams: Prom
   const buckets = buildMonthlyBuckets(period)
   const chartData = await Promise.all(buckets.map(async b => {
     const [r, e] = await Promise.all([
-      supabase.from('invoice').select('*, invoice_item!invoice_id(harga, jumlah, diskon, ppn, pph)').in('status', ['paid', 'sent']).gte('tanggal', b.since).lte('tanggal', b.until),
+      supabase.from('invoice').select('*, invoice_item!invoice_id(harga_satuan, jumlah, diskon, ppn, pph)').in('status', ['paid', 'sent']).gte('tanggal', b.since).lte('tanggal', b.until),
       supabase.from('purchase_order_item').select('*, purchase_order!purchase_order_id(status)').in('purchase_order.status', ['sent', 'received']).gte('purchase_order.tanggal', b.since).lte('purchase_order.tanggal', b.until),
     ])
     return {

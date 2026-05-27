@@ -54,19 +54,19 @@ export default async function LabaRugiPage({ searchParams }: { searchParams: Pro
   const prev = prevPeriod(sp.tahun ?? null, sp.bulan ?? null)
 
   const [{ data: invoices }, { data: poItems }] = await Promise.all([
-    supabase.from('invoice').select('*, invoice_item!invoice_id(harga, jumlah, diskon, ppn, pph)').in('status', ['paid', 'sent']).gte('tanggal', period.since).lte('tanggal', period.until),
+    supabase.from('invoice').select('*, invoice_item!invoice_id(harga_satuan, jumlah, diskon, ppn, pph)').in('status', ['paid', 'sent']).gte('tanggal', period.since).lte('tanggal', period.until),
     supabase.from('purchase_order_item').select('*, purchase_order!purchase_order_id(status, tanggal)').gte('purchase_order.tanggal', period.since).lte('purchase_order.tanggal', period.until),
   ])
 
-  const { data: prevInvoices } = await supabase.from('invoice').select('*, invoice_item!invoice_id(harga, jumlah, diskon, ppn, pph)').in('status', ['paid', 'sent']).gte('tanggal', prev.since).lte('tanggal', prev.until)
+  const { data: prevInvoices } = await supabase.from('invoice').select('*, invoice_item!invoice_id(harga_satuan, jumlah, diskon, ppn, pph)').in('status', ['paid', 'sent']).gte('tanggal', prev.since).lte('tanggal', prev.until)
   const { data: prevPoItems } = await supabase.from('purchase_order_item').select('*, purchase_order!purchase_order_id(status, tanggal)').gte('purchase_order.tanggal', prev.since).lte('purchase_order.tanggal', prev.until)
 
   function calcRev(items: Array<Record<string, unknown>>): number {
     let total = 0
     for (const inv of items) {
-      const invItems = (inv as { invoice_item?: Array<{ harga: number; jumlah: number; diskon: number | null; ppn: number | null; pph: number | null }> }).invoice_item ?? []
+      const invItems = (inv as { invoice_item?: Array<{ harga_satuan: number; jumlah: number; diskon: number | null; ppn: number | null; pph: number | null }> }).invoice_item ?? []
       for (const it of invItems) {
-        total += it.harga * it.jumlah - (it.diskon ?? 0) + (it.ppn ?? 0) - (it.pph ?? 0)
+        total += it.harga_satuan * it.jumlah - (it.diskon ?? 0) + (it.ppn ?? 0) - (it.pph ?? 0)
       }
     }
     return total
@@ -90,7 +90,7 @@ export default async function LabaRugiPage({ searchParams }: { searchParams: Pro
   const buckets = buildMonthlyBuckets(period)
   const chartData = await Promise.all(buckets.map(async b => {
     const [r, c] = await Promise.all([
-      supabase.from('invoice').select('*, invoice_item!invoice_id(harga, jumlah, diskon, ppn, pph)').in('status', ['paid', 'sent']).gte('tanggal', b.since).lte('tanggal', b.until),
+      supabase.from('invoice').select('*, invoice_item!invoice_id(harga_satuan, jumlah, diskon, ppn, pph)').in('status', ['paid', 'sent']).gte('tanggal', b.since).lte('tanggal', b.until),
       supabase.from('purchase_order_item').select('*, purchase_order!purchase_order_id(status)').gte('purchase_order.tanggal', b.since).lte('purchase_order.tanggal', b.until),
     ])
     return { label: b.label, revenue: calcRev(r.data ?? []), cogs: calcCogs(c.data ?? []) }

@@ -26,8 +26,8 @@ export default async function ProcurementDashboard() {
   const pendingPrList = pendingPrRes.data ?? []
   const pendingPoList = pendingPoRes.data ?? []
   const receivingToday = receivingTodayRes.data ?? []
-  const suppliersData = (suppliers.data ?? []) as { id: string; nama: string }[]
-  const poList = (poItems.data ?? []) as { id: string; supplier_id: string; nomor: string; tanggal: string }[]
+  const suppliersData = (Array.isArray(suppliers.data) ? suppliers.data : []) as { id: string; nama: string }[]
+  const poList = (Array.isArray(poItems.data) ? poItems.data : []) as { id: string; supplier_id: string; nomor: string; tanggal: string }[]
 
   const poIds = poList.map(p => p.id)
   const { data: poItemDetails } = poIds.length

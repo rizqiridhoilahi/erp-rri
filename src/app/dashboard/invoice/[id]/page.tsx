@@ -83,7 +83,7 @@ export default function InvoiceDetailPage() {
       formData.append("file", file)
       const { apiFetchFormData } = await import("@/lib/api/client")
       const r = await apiFetchFormData(`/api/v1/invoice/${id}/documents`, formData)
-      setDocuments((prev) => [r.data as DocumentFile, ...prev])
+      setDocuments((prev) => [r.data as DocumentFile, ...prev].filter(Boolean))
       toast.success("File berhasil diupload")
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Gagal upload file")

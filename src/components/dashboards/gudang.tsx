@@ -15,7 +15,7 @@ export default async function GudangDashboard() {
     supabase.from('kategori_barang').select('id, nama'),
   ])
 
-  const stoksData = (stoksRaw.data ?? []) as { barang_id: string; jumlah: number }[]
+  const stoksData = (Array.isArray(stoksRaw.data) ? stoksRaw.data : []) as { barang_id: string; jumlah: number }[]
   const totalStok = stoksData.reduce((s, i) => s + (i.jumlah ?? 0), 0)
   const lowStockItems = stoksData.filter(s => s.jumlah <= 0)
 

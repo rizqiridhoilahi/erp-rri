@@ -52,15 +52,15 @@ export default function FakturPajakDetailPage({ params }: { params: Promise<{ id
     dpp: number;
     ppn: number;
     pph: number;
-    invoice_item: {
-      harga: number;
-      barang_id: string;
-      barang: {
-        nama: string;
-        kode: string;
-        satuan: string;
+      invoice_item: {
+        harga_satuan: number;
+        barang_id: string;
+        barang: {
+          nama: string;
+          kode: string;
+          satuan: string;
+        };
       };
-    };
   }>>([]);
   
   const ppnRate = items && items.length > 0 && items[0].dpp > 0
@@ -95,7 +95,7 @@ export default function FakturPajakDetailPage({ params }: { params: Promise<{ id
 
       const { data: items } = await supabase
         .from('faktur_pajak_item')
-        .select('*, invoice_item!invoice_item_id(harga, barang_id, barang!barang_id(nama, kode, satuan))')
+        .select('*, invoice_item!invoice_item_id(harga_satuan, barang_id, barang!barang_id(nama, kode, satuan))')
         .eq('faktur_pajak_id', id)
         .order('created_at', { ascending: true });
 
@@ -251,7 +251,7 @@ export default function FakturPajakDetailPage({ params }: { params: Promise<{ id
                   </TableRow>
                 ) : (
                   items.map((item, i) => {
-                    const invItem = item.invoice_item as { harga: number; barang_id: string; barang: { nama: string; kode: string; satuan: string } | null } | null
+                    const invItem = item.invoice_item as { harga_satuan: number; barang_id: string; barang: { nama: string; kode: string; satuan: string } | null } | null
                     const brg = invItem?.barang
                     return (
                       <TableRow key={item.id}>
@@ -260,7 +260,7 @@ export default function FakturPajakDetailPage({ params }: { params: Promise<{ id
                           <p className="font-medium">{brg?.nama ?? '-'}</p>
                           <p className="text-xs text-muted-foreground">{brg?.kode}</p>
                         </TableCell>
-                         <TableCell className="text-right font-mono">{rupiah(item.invoice_item.harga)}</TableCell>
+                          <TableCell className="text-right font-mono">{rupiah(item.invoice_item.harga_satuan)}</TableCell>
                         <TableCell className="text-right">—</TableCell>
                         <TableCell className="text-right">—</TableCell>
                         <TableCell className="text-right font-mono">{rupiah(item.dpp)}</TableCell>

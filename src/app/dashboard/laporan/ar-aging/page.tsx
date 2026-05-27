@@ -28,12 +28,12 @@ export default async function ArAgingPage() {
 
   const ids = (invoices ?? []).map(i => i.id)
   const { data: items } = ids.length
-    ? await supabase.from('invoice_item').select('invoice_id, harga, jumlah, diskon, ppn, pph').in('invoice_id', ids)
+    ? await supabase.from('invoice_item').select('invoice_id, harga_satuan, jumlah, diskon, ppn, pph').in('invoice_id', ids)
     : { data: [] }
 
   const totalsById: Record<string, number> = {}
   for (const it of items ?? []) {
-    const dpp = it.harga * it.jumlah - (it.diskon ?? 0)
+    const dpp = it.harga_satuan * it.jumlah - (it.diskon ?? 0)
     totalsById[it.invoice_id] = (totalsById[it.invoice_id] ?? 0) + dpp + (it.ppn ?? 0) - (it.pph ?? 0)
   }
 

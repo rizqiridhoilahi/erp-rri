@@ -70,11 +70,11 @@ export default async function FinanceDashboard() {
 
   const invIds = (invoices.data ?? []).map(i => i.id)
   const { data: invItems } = invIds.length
-    ? await supabase.from('invoice_item').select('invoice_id, harga, jumlah, diskon, ppn, pph').in('invoice_id', invIds)
+    ? await supabase.from('invoice_item').select('invoice_id, harga_satuan, jumlah, diskon, ppn, pph').in('invoice_id', invIds)
     : { data: [] }
   const arTotals: Record<string, number> = {}
   for (const it of invItems ?? []) {
-    const dpp = it.harga * it.jumlah - (it.diskon ?? 0)
+    const dpp = it.harga_satuan * it.jumlah - (it.diskon ?? 0)
     arTotals[it.invoice_id] = (arTotals[it.invoice_id] ?? 0) + dpp + (it.ppn ?? 0) - (it.pph ?? 0)
   }
   const totalPiutang = invIds.reduce((s, id) => s + (arTotals[id] ?? 0), 0)
@@ -94,11 +94,11 @@ export default async function FinanceDashboard() {
 
   const paidIds = (paidInvoices.data ?? []).map(i => i.id)
   const { data: paidItems } = paidIds.length
-    ? await supabase.from('invoice_item').select('invoice_id, harga, jumlah, diskon, ppn, pph').in('invoice_id', paidIds)
+    ? await supabase.from('invoice_item').select('invoice_id, harga_satuan, jumlah, diskon, ppn, pph').in('invoice_id', paidIds)
     : { data: [] }
   const revTotals: Record<string, number> = {}
   for (const it of paidItems ?? []) {
-    const dpp = it.harga * it.jumlah - (it.diskon ?? 0)
+    const dpp = it.harga_satuan * it.jumlah - (it.diskon ?? 0)
     revTotals[it.invoice_id] = (revTotals[it.invoice_id] ?? 0) + dpp + (it.ppn ?? 0) - (it.pph ?? 0)
   }
   const monthlyRev = computeMonthly(paidInvoices.data ?? [], revTotals, sixMonths)
@@ -120,7 +120,7 @@ export default async function FinanceDashboard() {
   }))
 
   // Invoice velocity: days between invoice.tanggal and kwitansi.tanggal
-  const kwitansiList = (kwitansiAll.data ?? []) as Array<{ id: string; invoice_id: string; tanggal: string }>
+  const kwitansiList = (Array.isArray(kwitansiAll.data) ? kwitansiAll.data : []) as Array<{ id: string; invoice_id: string; tanggal: string }>
   const velocityDays: number[] = []
   for (const kw of kwitansiList) {
     if (kw.invoice_id) {

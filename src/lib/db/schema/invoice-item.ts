@@ -5,7 +5,7 @@ export const invoiceItem = pgTable("invoice_item", {
  id: text("id").primaryKey().default(sql`gen_random_uuid()::text`),
  invoiceId: text("invoice_id").notNull(),
  barangId: text("barang_id").notNull(),
- harga: real("harga").notNull(),
+  hargaSatuan: real("harga_satuan").notNull(),
  diskon: real("diskon").default(0),
  ppn: real("ppn"),
  pph: real("pph"),

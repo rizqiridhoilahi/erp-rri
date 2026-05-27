@@ -53,7 +53,7 @@ export default function CoaPage() {
       .order("created_at", { ascending: false })
       .then(({ data: result, error: err }) => {
         if (err) setError(err.message)
-        else setData((result || []) as Coa[])
+        else setData((Array.isArray(result) ? result : []) as Coa[])
         setLoading(false)
       })
   }, [])

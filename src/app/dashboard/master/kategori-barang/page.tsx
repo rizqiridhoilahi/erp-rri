@@ -41,7 +41,7 @@ export default function KategoriBarangPage() {
       .order("nama")
       .then(({ data: result, error: err }) => {
         if (err) setError(err.message)
-        else setData((result || []) as KategoriBarang[])
+        else setData((Array.isArray(result) ? result : []) as KategoriBarang[])
         setLoading(false)
       })
   }, [])
