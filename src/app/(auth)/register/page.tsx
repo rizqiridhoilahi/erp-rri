@@ -7,7 +7,7 @@ import { supabase } from '@/lib/db/client'
 import { z } from 'zod'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Loader2, Eye, EyeOff, UserPlus, Check, X } from 'lucide-react'
+import { Loader2, Eye, EyeOff, User, Mail, Lock, AlertCircle, Check, X, UserPlus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -138,7 +138,7 @@ export default function RegisterPage() {
   }
 
   return (
-    <Card className="border-0 shadow-lg sm:border sm:shadow-sm">
+    <Card className="border-border/50 shadow-[0_8px_32px_rgba(0,0,0,0.12),0_2px_8px_rgba(0,0,0,0.06)]">
       <CardHeader className="space-y-1 pb-6">
         <div className="flex items-center gap-2 mb-2">
           <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center lg:hidden">
@@ -155,49 +155,68 @@ export default function RegisterPage() {
           {error && (
             <div
               role="alert"
-              className="rounded-md bg-destructive/10 p-3 text-sm text-destructive border border-destructive/20"
+              className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive border border-destructive/20 flex items-center gap-2"
             >
+              <AlertCircle className="h-4 w-4 shrink-0" />
               {error}
             </div>
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="name">Nama Lengkap</Label>
-            <Input
-              id="name"
-              type="text"
-              placeholder="Nama lengkap Anda"
-              autoComplete="name"
-              autoFocus
-              {...register('name')}
-              aria-invalid={!!errors.name}
-            />
+            <Label htmlFor="name" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Nama Lengkap
+            </Label>
+            <div className="relative">
+              <Input
+                id="name"
+                type="text"
+                placeholder="Nama lengkap Anda"
+                autoComplete="name"
+                autoFocus
+                {...register('name')}
+                aria-invalid={!!errors.name}
+                className="h-12 pl-10 rounded-lg bg-muted/50 focus:bg-background transition-all duration-200"
+              />
+              <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none">
+                <User className="h-5 w-5" />
+              </div>
+            </div>
             {errors.name && (
-              <p className="text-sm font-medium text-destructive" role="alert">
-                {errors.name.message}
+              <p className="text-sm font-medium text-destructive flex items-center gap-1" role="alert">
+                <AlertCircle className="h-3 w-3" /> {errors.name.message}
               </p>
             )}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="nama@email.com"
-              autoComplete="email"
-              {...register('email')}
-              aria-invalid={!!errors.email}
-            />
+            <Label htmlFor="email" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Email
+            </Label>
+            <div className="relative">
+              <Input
+                id="email"
+                type="email"
+                placeholder="nama@email.com"
+                autoComplete="email"
+                {...register('email')}
+                aria-invalid={!!errors.email}
+                className="h-12 pl-10 rounded-lg bg-muted/50 focus:bg-background transition-all duration-200"
+              />
+              <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none">
+                <Mail className="h-5 w-5" />
+              </div>
+            </div>
             {errors.email && (
-              <p className="text-sm font-medium text-destructive" role="alert">
-                {errors.email.message}
+              <p className="text-sm font-medium text-destructive flex items-center gap-1" role="alert">
+                <AlertCircle className="h-3 w-3" /> {errors.email.message}
               </p>
             )}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Password
+            </Label>
             <div className="relative">
               <Input
                 id="password"
@@ -206,7 +225,11 @@ export default function RegisterPage() {
                 autoComplete="new-password"
                 {...register('password')}
                 aria-invalid={!!errors.password}
+                className="h-12 pl-10 rounded-lg bg-muted/50 focus:bg-background transition-all duration-200"
               />
+              <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none">
+                <Lock className="h-5 w-5" />
+              </div>
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
@@ -214,23 +237,25 @@ export default function RegisterPage() {
                 tabIndex={-1}
                 aria-label={showPassword ? 'Sembunyikan password' : 'Tampilkan password'}
               >
-                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
               </button>
             </div>
             {errors.password && (
-              <p className="text-sm font-medium text-destructive" role="alert">
-                {errors.password.message}
+              <p className="text-sm font-medium text-destructive flex items-center gap-1" role="alert">
+                <AlertCircle className="h-3 w-3" /> {errors.password.message}
               </p>
             )}
             {password && <PasswordStrength password={password} />}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="role">Role</Label>
+            <Label htmlFor="role" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Role
+            </Label>
             <Select
               onValueChange={(value) => setValue('role', value as RegisterFormValues['role'])}
             >
-              <SelectTrigger id="role" aria-invalid={!!errors.role}>
+              <SelectTrigger id="role" aria-invalid={!!errors.role} className="h-12 rounded-lg bg-muted/50">
                 <SelectValue placeholder="Pilih role" />
               </SelectTrigger>
               <SelectContent>
@@ -242,16 +267,20 @@ export default function RegisterPage() {
               </SelectContent>
             </Select>
             {errors.role && (
-              <p className="text-sm font-medium text-destructive" role="alert">
-                {errors.role.message}
+              <p className="text-sm font-medium text-destructive flex items-center gap-1" role="alert">
+                <AlertCircle className="h-3 w-3" /> {errors.role.message}
               </p>
             )}
           </div>
 
-          <Button type="submit" disabled={loading} className="w-full" size="lg">
+          <Button
+            type="submit"
+            disabled={loading}
+            className="w-full h-12 text-base font-semibold shadow-[inset_0_1px_0_rgba(255,255,255,0.15)] hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0 transition-all duration-200"
+          >
             {loading ? (
               <>
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <Loader2 className="h-5 w-5 animate-spin mr-2" />
                 Memproses...
               </>
             ) : (

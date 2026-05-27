@@ -984,7 +984,9 @@ ERP RRI uses **client-side authentication** via Supabase Auth with an `AuthProvi
 | `src/lib/hooks/use-auth.tsx` | Auth context provider + `useAuth` hook — wraps `onAuthStateChange` listener |
 | `src/app/dashboard/auth-guard-client.tsx` | `AuthGuardClient` — client component that checks `isAuthenticated`, shows loading spinner, redirects to `/login` if not authenticated |
 | `src/app/dashboard/layout.tsx` | Dashboard layout wraps with `AuthGuardClient` for route protection |
-| `src/app/(auth)/login/page.tsx` | Uses `router.push('/dashboard')` after successful `signInWithPassword` |
+| `src/app/(auth)/login/page.tsx` | Glassmorphism card, spinner loading (no skeleton), client-side Supabase auth, Lucide icons, `#0000FF` theme, `animate-fade-in-up` entrance |
+| `src/app/(auth)/register/page.tsx` | Aligned styling with login — same card design, icon-prefixed inputs, spinner button |
+| `src/app/(auth)/layout.tsx` | Dual-panel: brand panel (animated mesh gradient `#0000FF` → `#0A0E27`) + form panel (entrance animation) |
 
 **Why Client-Side Auth instead of Middleware:**
 - Previous middleware approach used `supabase.auth.getUser()` which made network calls that could timeout

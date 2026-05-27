@@ -5,9 +5,18 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-screen">
       {/* Brand Panel */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-primary via-primary to-accent/80 relative overflow-hidden">
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wMyI+PGNpcmNsZSBjeD0iMzAiIGN5PSIzMCIgcj0iMiIvPjwvZz48L2c+PC9zdmc+')] opacity-50" />
-        <div className="relative flex flex-col justify-between p-12 w-full">
+      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-[#0000FF] via-[#0000D9] to-[#0A0E27] relative overflow-hidden">
+        {/* Animated mesh gradient overlay */}
+        <div className="absolute inset-0 opacity-30">
+          <div className="absolute -top-1/4 -left-1/4 w-1/2 h-1/2 rounded-full bg-[#4444FF] blur-[120px] animate-mesh-shift" />
+          <div className="absolute -bottom-1/4 -right-1/4 w-1/2 h-1/2 rounded-full bg-[#0000CC] blur-[120px] animate-mesh-shift" style={{ animationDelay: '-10s' }} />
+        </div>
+        {/* Dot pattern */}
+        <div
+          className="absolute inset-0 opacity-[0.04]"
+          style={{ backgroundImage: 'radial-gradient(rgba(255,255,255,0.5) 1px, transparent 1px)', backgroundSize: '24px 24px' }}
+        />
+        <div className="relative flex flex-col justify-between p-12 w-full z-10">
           <div>
             <div className="flex items-center gap-3 mb-16">
               <div className="h-12 w-12 rounded-xl bg-white/20 backdrop-blur flex items-center justify-center">
@@ -24,8 +33,8 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
                 <span className="text-white/80">Dalam Satu Platform</span>
               </h2>
               <p className="text-lg text-white/70 max-w-md leading-relaxed">
-                Sistem ERP terintegrasi untuk PT. Rizki Ridho Ilahi — 
-                mengelola sales, procurement, inventory, finance, dan HR 
+                Sistem ERP terintegrasi untuk PT. Rizki Ridho Ilahi —
+                mengelola sales, procurement, inventory, finance, dan HR
                 secara real-time.
               </p>
             </div>
@@ -57,7 +66,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
       </div>
       {/* Form Panel */}
       <div className="flex-1 flex items-center justify-center p-8 bg-background">
-        <div className="w-full max-w-md">
+        <div className="w-full max-w-md animate-fade-in-up">
           {children}
         </div>
       </div>

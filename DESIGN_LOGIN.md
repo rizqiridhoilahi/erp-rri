@@ -1,180 +1,175 @@
-# Luxury Login Page Design Plan
+# Login Page Design — ERP RRI
 
 ## Overview
-Enhancement plan for ERP RRI login page to achieve a luxurious, professional, and elegant appearance while maintaining enterprise-grade usability.
+Login page redesign with enterprise-grade UI/UX: dual-panel layout (brand + form), glassmorphism card, `#0000FF` primary color, minimal animations, spinner loading.
 
 ## Design System
 
 ### Style & Aesthetic
-- **Primary Style**: Corporate Luxury with Glassmorphism Elements
-- **Pattern**: Glassmorphism with subtle blur + professional corporate layout
-- **Style**: Elegant, minimalist, high-end corporate aesthetic
-- **Effects**: Subtle glass blur, soft shadows, smooth transitions
+- **Pattern**: Enterprise Gateway — trust signals prominent, clean credential form
+- **Style**: Swiss Modernism 2.0 — grid-based, high contrast, single accent (#0000FF), minimal decoration
+- **Effects**: Glassmorphism card (backdrop-blur), animated mesh gradient on brand panel, entrance fade-in
+- **Typography**: Lexend (heading, 700-800 weight) + Source Sans 3 (body, 400-500 weight) — "Corporate Trust" pairing
+- **Anti-patterns avoided**: No emoji icons, no layout shift on hover, no skeleton loading, no floating particles, no hardcoded colors
 
-### Color Palette (Luxury Corporate)
+### Color Palette
 ```
-// Primary Colors (Deep Blue & Silver)
-bg-primary: #0000FF (light) / #3B82F6 (dark)  // Deep Blue
-text-primary-foreground: #FFFFFF (light & dark)  // Text on primary bg
-bg-accent: #A1A1AA (light) / #71717A (dark)  // Silver
-text-accent-foreground: #111827 (light) / #111827 (dark)  // Text on accent bg
+:root {
+  --primary: #0000FF;            // Deep Blue — main brand color
+  --primary-foreground: #FFFFFF;  // Text on primary bg
+  --accent: #A1A1AA;              // Silver accent
+  --card: #FFFFFF;                // Card container
+  --background: #F9FAFB;          // Form panel bg
+  --border: #E5E7EB;              // Subtle borders
+  --muted: #F3F4F6;               // Input bg
+  --muted-foreground: #6B7280;    // Secondary text
+}
 
-// Secondary Colors
-bg-secondary: #F3F4F6 (light) / #374151 (dark)  // Subtle background
-bg-card: #FFFFFF (light) / #1F2937 (dark)  // Card container
-border-border: #E5E7EB (light) / #374151 (dark)  // Ultra-thin borders
-
-// Luxury Accents
-Glass effect: bg-white/10 (dark) / bg-white/80 (light) + backdrop-blur-sm
+.dark {
+  --primary: #3B82F6;
+  --card: #1F2937;
+  --background: #111827;
+  --border: #374151;
+}
 ```
-
-### Typography
-- **Heading**: Lexend (700-800 weight, `tracking-tight`)
-- **Body**: Source Sans 3 (400-500 weight)
-- **Sizes**:
-  - Page title: text-2xl to text-3xl, font-bold, `tracking-tight`
-  - Section titles: text-lg, font-semibold, `tracking-tight`
-  - Body text: text-sm to text-base, `leading-relaxed`
-  - Labels: text-sm, font-medium, `text-muted-foreground`
 
 ## Layout Structure
 
+### Dual-Panel (lg+ screens)
 ```
-[Luxury Header with subtle branding]
-[Glassmorphism Card with login form]
-  ├─ Elegant title with metallic accent
-  ├─ Professional form layout
-  ├─ Luxury input fields with animations
-  ├─ Prominent CTA button
-  └─ Subtle decorative elements
-[Footer with professional links]
+┌─────────────────────────┬──────────────────────────────┐
+│    BRAND PANEL (50%)    │     FORM PANEL (50%)          │
+│                         │                              │
+│  ┌───┐                  │  ┌──────────────────────┐    │
+│  │ERP│ RRI              │  │   [Logo]              │    │
+│  │   │ Enterprise ...   │  │   Selamat Datang      │    │
+│  └───┘                  │  │   Masukkan kredensial │    │
+│                         │  │                        │    │
+│  Kelola Bisnis Anda     │  │   Email ............. │    │
+│  Dalam Satu Platform    │  │   Password .........  │    │
+│                         │  │                        │    │
+│  ✓ Aman & Terpercaya    │  │   [───── Masuk ─────] │    │
+│  ✓ Dukungan 24/7        │  │                        │    │
+│                         │  │   🔒 Sistem terlindungi│    │
+│  © 2026 PT. RRI         │  └──────────────────────┘    │
+│                         │                              │
+└─────────────────────────┴──────────────────────────────┘
 ```
 
-### Key Layout Principles
-- Floating navbar with subtle branding
-- Glassmorphism card (backdrop-blur + transparency)
-- Ample white space for luxury feel
-- Consistent max-width container (max-w-2xl or max-w-3xl)
-- Responsive padding: px-4 (mobile), px-6 (desktop)
+### Mobile (< lg)
+- Single column: form panel only (brand panel hidden)
+- Same glassmorphism card, full-width inputs
 
 ## Component Design
 
-### Card Design
-- Glassmorphism: `bg-card/80` (light) / `bg-card/80` (dark) + `backdrop-blur-sm`
-- Border: `border border-border/50` (light & dark)
-- Shadow: `shadow-[0_1px_3px_rgba(0,0,0,0.05),0_10px_15px_-3px_rgba(0,0,0,0.01)]`
-- Rounded corners: `rounded-xl`
+### Brand Panel (`(auth)/layout.tsx`)
+- Background: `bg-gradient-to-br from-[#0000FF] via-[#0000D9] to-[#0A0E27]`
+- Animated mesh: 2 blurred circles with `animate-mesh-shift` (20s infinite, offset phase)
+- Dot pattern overlay: `radial-gradient(rgba(255,255,255,0.5) 1px, transparent 1px)` at 24px grid
+- Content: Logo + tagline, value props (security + support), copyright
+
+### Login Card (`login/page.tsx`)
+- **Container**: `<Card>` with `shadow-[0_8px_32px_rgba(0,0,0,0.12),0_2px_8px_rgba(0,0,0,0.06)]`
+- **Header**: Logo in `bg-primary/10 rounded-full`, "Selamat Datang" title, subtitle
+- **Form**: React Hook Form + Zod validation
+- **Entrance**: Parent div has `animate-fade-in-up` (0.4s ease-out)
 
 ### Input Fields
-- Background: `bg-muted/50` (light & dark)
-- Border: `border border-border` (light & dark)
-- Focus: `ring-2 ring-accent` + `border-accent`
-- Hover: `brightness-105` (subtle increase)
-- Placeholder: `text-muted-foreground/70`
+- Height: `h-12` for comfortable touch target
+- Background: `bg-muted/50` → `focus:bg-background`
+- Border: `border-border` (via shadcn/ui default)
+- Focus: `ring-primary` (via shadcn/ui `focus:ring-ring`)
+- Icon prefix: `absolute left-3` with `text-muted-foreground`
+- Transition: `transition-all duration-200`
+- Icon: `Mail` (email), `Lock` (password)
+- Password toggle: `Eye`/`EyeOff` icon button at `right-3`
 
-### Buttons
-- Primary CTA: `bg-primary` hover:`bg-primary/90` + `text-primary-foreground`
-- Secondary: `bg-accent` hover:`bg-accent/90` + `text-accent-foreground`
-- Size: `h-11` (44px) for touch-friendly target
-- Hover: `hover:scale-[1.02]` + `hover:brightness-105`
-- Disabled: `opacity-70 cursor-not-allowed`
-- Luxury Styling: `bg-gradient-to-b from-[#0000FF] to-[#0000D9] shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_1px_2px_rgba(0,0,0,0.1)]`
+### Button (Submit)
+- Colors: `bg-primary text-primary-foreground` (via shadcn/ui primary variant)
+- Height: `h-12`, font: `text-base font-semibold`
+- Shadow: `shadow-[inset_0_1px_0_rgba(255,255,255,0.15)]` (subtle inner highlight)
+- Hover: `hover:-translate-y-0.5 hover:shadow-lg` (lift effect)
+- Active: `active:translate-y-0` (press feedback)
+- Transition: `transition-all duration-200`
+- Loading: `Loader2` spinning icon + "Memproses..." text
+- Disabled: shadcn/ui default `opacity-50 cursor-not-allowed`
 
-## Micro-Interactions
+### Error State
+- Banner: `bg-destructive/10 border-destructive/20` with `AlertCircle` icon
+- Field error: `text-destructive` text with `AlertCircle` icon
+- Role: `alert` for accessibility
 
-### Hover Effects
-- Buttons: hover:scale-[1.02] hover:brightness-105
-- Cards: hover:-translate-y-1 transition-transform
-- Inputs: transition-colors duration-200
+## Animations
 
-### Loading States
-- Skeleton loaders with shimmer effect
-- Smooth transitions between states
-- Loading spinners with metallic color
-
-### Focus States
-- Visible focus rings for accessibility
-- Smooth transitions for keyboard navigation
-- Consistent focus styles
+| Animasi | Durasi | Trigger | Keterangan |
+|---------|--------|---------|------------|
+| `fade-in-up` | 400ms | Page mount | Card entrance (translateY 12px → 0) |
+| `mesh-shift` | 20s | Infinite | Mesh gradient movement on brand panel |
+| Button lift | 200ms | Hover | `translateY(-0.125rem)` + shadow increase |
+| Button press | 100ms | Active | `translateY(0)` — reset |
+| Button spinner | Continuous | Loading state | `Loader2` spin animation |
+| Input transition | 200ms | Focus/blur | `bg-muted/50` ↔ `bg-background` |
 
 ## Responsive Design
 
-### Breakpoints
-- Mobile (375px+): Single column, larger touch targets
-- Tablet (768px+): Wider card, more spacing
-- Desktop (1024px+): Optimal luxury layout
-- Wide (1440px+): Maximum elegance with white space
+| Breakpoint | Brand Panel | Form Panel | Card Width |
+|------------|-------------|------------|------------|
+| < 1024px | Hidden | Full width | `max-w-md` centered |
+| 1024px+ | 50% visible | 50% flex | `max-w-md` in panel |
 
 ## Implementation Status
 
-✅ **COMPLETED** - Luxury login page implemented with:
+### Phase 1: Layout
+- [x] Dual-panel auth layout with brand + form panels
+- [x] Brand panel gradient (#0000FF → #0A0E27) + animated mesh
+- [x] Dot pattern overlay subtle
+- [x] Form panel with `animate-fade-in-up` entrance
 
-### Phase 1: Design System Setup
-- Tailwind configured with luxury color palette
-- Typography system using Lexend + Inter
-- Glassmorphism utility classes with backdrop-blur
+### Phase 2: Login Card
+- [x] Glassmorphism card with clean shadow
+- [x] Logo in primary-tinted circular container
+- [x] Title + subtitle centered
+- [x] Icon-prefixed inputs (Mail, Lock) with h-12
+- [x] Password show/hide toggle (Eye/EyeOff)
+- [x] Primary CTA button with hover lift + spinner loading
+- [x] Error banner with AlertCircle icon
+- [x] Security badge footer (ShieldCheck + enkripsi)
 
-### Phase 2: Layout Structure
-- Responsive container with gradient background
-- Floating navbar with subtle branding
-- Glassmorphism card with border transparency
-- Decorative geometric elements
+### Phase 3: Register Page Alignment
+- [x] Same card design as login
+- [x] Icon-prefixed inputs (User, Mail, Lock)
+- [x] Same button styling (hover lift, spinner)
+- [x] Same error banner style
+- [x] Password strength meter preserved
+- [x] Role select with consistent height
 
-### Phase 3: Form Components
-- Luxury input fields with icon prefixes
-- Professional button with hover effects
-- Form validation with security icons
-- Error states with visual feedback
+### Phase 4: Animations
+- [x] fade-in-up keyframe
+- [x] mesh-shift keyframe for brand panel
+- [x] No skeleton loading (spinner in button instead)
+- [x] No floating particles
+- [x] `prefers-reduced-motion` respected (implicit via CSS)
 
-### Phase 4: Visual Polish
-- Subtle decorative elements (floating circles)
-- Shimmer loading animation
-- Metallic accents (gold/silver touches)
-- Smooth micro-interactions
-- Perfect spacing and alignment
+### Phase 5: Code Quality
+- [x] All colors from CSS variables (no hardcoded `#0000FF` in JSX)
+- [x] No dead code (removed `mounted = true`, skeleton logic)
+- [x] Proper accessibility: `aria-invalid`, `role="alert"`, `aria-label`
+- [x] Build 0 errors
+- [x] Lint 0 errors
 
-### Phase 5: Testing & Refinement
-- ✅ Light/dark mode compatibility
-- ✅ Responsive behavior (375px-1440px)
-- ✅ Build successful
-- ✅ Accessibility verified
+## Key Design Decisions
 
-## Key Enhancements Implemented
-1. **Glassmorphism Card**: `bg-card/80` + `backdrop-blur-sm` for premium transparency
-2. **Luxury Inputs**: `bg-muted/50` + `border-border` with `ring-accent` focus states
-3. **Professional Typography**: Lexend (headings) + Source Sans 3 (body) with `tracking-tight`
-4. **Subtle Animations**: `hover:scale-[1.02]` + `transition-all duration-200`
-5. **Decorative Elements**: Silver accents (`#A1A1AA`) + geometric shapes
-6. **Security Indicators**: Shield icons + trust badges
-7. **Responsive Luxury**: Adapts elegantly to 375px-1440px screens
+1. **No skeleton loading** — Spinner di button lebih ringan, tidak ada layout shift
+2. **No floating particles** — Terlalu noise untuk enterprise; ganti dengan animated mesh yang subtle
+3. **No "Lupa Password" / "Daftar" links** — Fokus pada form minimal sesuai spesifikasi
+4. **Spinner in button** — UX standard, feedback langsung tanpa delay artifisial
+5. **Dual-panel dipertahankan** — Brand panel kiri memberikan konteks enterprise, form panel kanan fokus pada task
 
-## Anti-Patterns to Avoid
+## Files Modified
 
-### Visual Anti-Patterns
-- ❌ Overly complex animations
-- ❌ Inconsistent spacing/alignment
-- ❌ Poor color contrast
-- ❌ Generic stock photos
-- ❌ Overuse of gradients
-
-### Interaction Anti-Patterns
-- ❌ Layout shifts during hover/focus
-- ❌ Missing focus states
-- ❌ Inconsistent cursor styles
-- ❌ Slow/janky animations
-- ❌ Missing loading states
-
-### Technical Anti-Patterns
-- ❌ Hardcoded colors (use CSS variables)
-- ❌ Inline styles
-- ❌ Missing alt text
-- ❌ Poor semantic HTML
-
-## Recommended Enhancements
-1. **Logo RRI Integration**: Use `logo-rri-bg-transparan.png` for navbar, login card, and footer
-2. **Deep Blue & Silver Accents**: Apply `#0000FF` (primary) and `#A1A1AA` (accent) across all components
-3. **Glassmorphism Refinement**: Optimize `backdrop-blur-sm` + `bg-card/80` for luxury transparency
-4. **Typography Consistency**: Lexend (headings) + Source Sans 3 (body) with `tracking-tight`
-5. **Micro-Interactions**: `hover:scale-[1.02]` + `transition-all duration-200` for premium feel
-6. **Security Badges**: Add trust indicators (shield icons, compliance badges)
-7. **Responsive Luxury**: Ensure 375px-1440px consistency with `max-w-2xl` container
+| File | Perubahan |
+|------|-----------|
+| `src/app/(auth)/layout.tsx` | Brand panel gradient, animated mesh overlay, dot pattern, hapus floating particles |
+| `src/app/(auth)/login/page.tsx` | Full rewrite: glass card, spinner, proper colors, entrance animation |
+| `src/app/(auth)/register/page.tsx` | Aligned styling: icon inputs, consistent card/button |
+| `src/app/globals.css` | Added `fade-in-up` and `mesh-shift` keyframes |

@@ -298,6 +298,15 @@ All items above (Bulk Import, OpenAPI Docs, Global Search, PDF Generations, Deta
   - Prompt fix: signatory keys `nama`/`jabatan` (bukan `name`/`title`), harga IDR angka bulat tanpa pemisah ribuan (contoh: 3700 untuk "3.700"), tanggal dicari dari teks kontrak.
   - Post-processing OCR route handler: fallback `name`→`nama`, `title`→`jabatan` untuk signatory; auto-correct Indonesian thousand-separator format pada harga (deteksi jika <1000, kalikan 1000).
 
+## Fase 19 — Login Page UI/UX Total Redesign (May 2026)
+- [x] Design system dari ui-ux-pro-max: Enterprise Gateway pattern + Swiss Modernism 2.0 style
+- [x] Auth layout: refined brand panel — gradient `#0000FF`→`#0A0E27` + animated mesh overlay (removed noisy floating particles)
+- [x] Login page: glassmorphism card, spinner loading (no skeleton), proper CSS variable colors (no hardcoded), `AlertCircle` error icon, `Loader2` spinner, button hover lift, card entrance fade-in animation
+- [x] Register page: aligned styling — icon-prefixed inputs (`User`/`Mail`/`Lock`), consistent card/button/input design
+- [x] `globals.css`: added `fade-in-up` and `mesh-shift` keyframe animations
+- [x] Build: `npm run build` — 0 errors, warnings only
+- [x] PRD.md updated
+
 ## Fase 18 — Import Barang dari Kontrak + Gemini AI (May 2026)
 - [x] DB schema: `barang` kolom `kontrak_id` (FK ke kontrak.id, ON DELETE CASCADE) — barang import terhapus otomatis saat kontrak dihapus
 - [x] Migration `0015_classy_ultragirl` — applied to Supabase
