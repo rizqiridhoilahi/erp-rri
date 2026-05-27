@@ -1,13 +1,15 @@
-import { pgTable, uuid, text, jsonb, boolean, timestamp } from 'drizzle-orm/pg-core'
+import { pgTable, text, jsonb, boolean, timestamp } from 'drizzle-orm/pg-core'
+import { sql } from 'drizzle-orm'
 
 export const aiAutomationLog = pgTable('ai_automation_log', {
-  id: uuid('id').defaultRandom().primaryKey(),
+  id: text("id").primaryKey().default(sql`gen_random_uuid()::text`),
   triggerType: text('trigger_type').notNull(),
   triggerPayload: jsonb('trigger_payload').notNull(),
   agentType: text('agent_type').notNull(),
   result: jsonb('result'),
-  success: boolean('success').default(true),
+  success: boolean('success').notNull().default(true),
   errorMessage: text('error_message'),
-  executedBy: uuid('executed_by'),
-  executedAt: timestamp('executed_at', { withTimezone: true }).defaultNow(),
+  executedBy: text("executed_by"),
+  executedAt: timestamp('executed_at', { withTimezone: true }).notNull().defaultNow(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 })

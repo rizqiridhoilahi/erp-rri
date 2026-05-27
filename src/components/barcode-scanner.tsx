@@ -78,6 +78,8 @@ export function BarcodeScanner({ barangOptions, onScanComplete, trigger }: Barco
             }
           }
         }, 500)
+      } else {
+        setCameraError('Browser tidak mendukung scan barcode otomatis. Gunakan input manual.')
       }
 
       setCameraActive(true)

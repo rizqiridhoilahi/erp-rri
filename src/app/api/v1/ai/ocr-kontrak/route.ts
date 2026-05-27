@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/api/supabase-server'
 import { verifyAuth } from '@/lib/api/auth'
-import { badRequest, internalError } from '@/lib/api/errors'
+import { badRequest, internalError, unauthorized } from '@/lib/api/errors'
 import { extractKontrakFromPDF } from '@/lib/ai/agents/VisionAgent'
 import { storageService } from '@/lib/storage'
 import * as fs from 'fs'
@@ -54,6 +54,7 @@ function correctIndonesianPrice(raw: number | string): number {
 export async function POST(request: NextRequest) {
   const auth = await verifyAuth(request)
   if (auth.error) return auth.error
+  if (!auth.user) return unauthorized('Unauthorized')
 
   const formData = await request.formData().catch(() => null)
   if (!formData) return badRequest('Invalid form data')
@@ -76,7 +77,7 @@ export async function POST(request: NextRequest) {
 
   let visionResult
   try {
-    visionResult = await extractKontrakFromPDF(buffer, file.name, auth.user!.id)
+    visionResult = await extractKontrakFromPDF(buffer, file.name, auth.user.id)
   } catch (err) {
     await storageService.delete(uploadResult.fileId).catch(() => {})
     return internalError('Gagal memproses OCR: ' + (err instanceof Error ? err.message : 'unknown error'))
@@ -136,7 +137,7 @@ export async function POST(request: NextRequest) {
 
   try {
     await supabaseAdmin.from('ai_ocr_history').insert({
-      user_id: auth.user!.id,
+      user_id: auth.user.id,
       file_name: file.name,
       file_url: uploadResult.webViewLink,
       drive_file_id: uploadResult.fileId ?? null,
@@ -152,8 +153,9 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   const auth = await verifyAuth(request)
   if (auth.error) return auth.error
+  if (!auth.user) return unauthorized('Unauthorized')
   const { data, error } = await supabaseAdmin.from('ai_ocr_history')
-    .select('*').eq('user_id', auth.user!.id).order('created_at', { ascending: false }).limit(20)
+    .select('*').eq('user_id', auth.user.id).order('created_at', { ascending: false }).limit(20)
   if (error) return internalError(error)
   return NextResponse.json({ data: data ?? [] })
 }

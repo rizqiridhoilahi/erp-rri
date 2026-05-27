@@ -27,6 +27,7 @@ import { z } from 'zod'
 import { verifyAuth } from '@/lib/api/auth'
 import { supabaseAdmin } from '@/lib/api/supabase-server'
 import { badRequest, internalError } from '@/lib/api/errors'
+import { generateDocumentNumber } from '@/lib/utils/document-number'
 
 const stockOpnameItemSchema = z.object({
   barangId: z.string().min(1),
@@ -35,7 +36,7 @@ const stockOpnameItemSchema = z.object({
 })
 
 const createSchema = z.object({
-  nomor: z.string().min(1, 'Nomor wajib diisi'),
+  nomor: z.string().optional(),
   petugas: z.string().min(1, 'Petugas wajib diisi'),
   gudangId: z.string().optional(),
   keterangan: z.string().optional(),
@@ -62,8 +63,9 @@ export async function POST(request: NextRequest) {
   const parsed = createSchema.safeParse(body)
   if (!parsed.success) return badRequest(parsed.error.issues.map(e => e.message).join(', '))
 
+  const nomor = parsed.data.nomor ?? await generateDocumentNumber('SO')
   const { data, error } = await supabaseAdmin.from('stock_opname').insert({
-    nomor: parsed.data.nomor,
+    nomor,
     gudang_id: parsed.data.gudangId ?? null,
     petugas: parsed.data.petugas,
     status: 'draft',

@@ -738,4 +738,4 @@ CREATE INDEX idx_stok_gdg_id ON stok(gudang_id);
 CREATE INDEX idx_jurnal_item_jrn_id ON jurnal_item(jurnal_id);
 CREATE INDEX idx_jurnal_item_acc_id ON jurnal_item(akun_id);
 CREATE INDEX idx_absensi_krw_id ON absensi(karyawan_id);
-CREATE_INDEX idx_penggajian_krw_id ON penggajian(karyawan_id);
+CREATE INDEX idx_penggajian_krw_id ON penggajian(karyawan_id);

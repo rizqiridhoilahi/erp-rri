@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/api/supabase-server'
 import { verifyAuth } from '@/lib/api/auth'
-import { unauthorized } from '@/lib/api/errors'
 
 /**
  * @openapi
@@ -33,10 +32,7 @@ import { unauthorized } from '@/lib/api/errors'
  */
 export async function GET(request: NextRequest) {
   const auth = await verifyAuth(request)
-  if (!auth.user) {
-    const res = auth.error
-    return res ?? unauthorized('Unauthorized')
-  }
+  if (auth.error) return auth.error
 
   const { searchParams } = new URL(request.url)
   const startDateParam = searchParams.get('start_date')

@@ -1,7 +1,5 @@
 "use client"
 
-'use client'
-
 import { createContext, useContext, useState, useCallback, type ReactNode } from 'react'
 import dynamic from 'next/dynamic'
 import { supabase } from '@/lib/db/client'
@@ -122,11 +120,11 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
              color: 'hsl(var(--muted-foreground))',
              fontSize: '14px',
            },
-           overlay: { backgroundColor: 'bg-black/40' },
+            overlay: { backgroundColor: 'rgba(0,0,0,0.4)' },
            tooltipContainer: { textAlign: 'left' },
            tooltip: { backgroundColor: 'hsl(var(--card))', borderRadius: '12px', padding: '20px' },
-          tooltipContent: { color: '#020617', fontSize: '14px', lineHeight: '1.5' },
-          tooltipTitle: { color: '#020617', fontSize: '18px', fontWeight: 600 },
+           tooltipContent: { color: 'hsl(var(--foreground))', fontSize: '14px', lineHeight: '1.5' },
+           tooltipTitle: { color: 'hsl(var(--foreground))', fontSize: '18px', fontWeight: 600 },
         }}
       />
 

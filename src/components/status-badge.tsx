@@ -1,9 +1,7 @@
 import { Badge } from '@/components/ui/badge'
 
-type StatusVariant = 'active' | 'inactive' | 'pending' | 'draft' | 'success' | 'warning' | 'error' | 'info'
-
 interface StatusBadgeProps {
-  status: StatusVariant | string
+  status: string
   label?: string
   className?: string
 }

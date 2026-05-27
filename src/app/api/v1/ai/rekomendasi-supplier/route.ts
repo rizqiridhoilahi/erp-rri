@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { rekomendasiSupplier } from '@/lib/ai/rekomendasi-supplier'
 import { verifyAuth } from '@/lib/api/auth'
-import { unauthorized } from '@/lib/api/errors'
 
 /**
  * @openapi
@@ -32,10 +31,7 @@ import { unauthorized } from '@/lib/api/errors'
  */
 export async function GET(request: NextRequest) {
   const auth = await verifyAuth(request)
-  if (!auth.user) {
-    const res = auth.error
-    return res ?? unauthorized('Unauthorized')
-  }
+  if (auth.error) return auth.error
 
   const { searchParams } = new URL(request.url)
   const barangId = searchParams.get('barang_id') ?? undefined

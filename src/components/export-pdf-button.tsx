@@ -17,7 +17,7 @@ export function ExportPdfButton({ hrefPrefix, variant = 'outline', label = 'Expo
 
   return (
     <Button variant={variant} asChild>
-      <a href={href} download target="_blank" rel="noopener noreferrer">
+      <a href={href} download rel="noopener noreferrer">
         <FileDown className="h-4 w-4 mr-2" />{label}
       </a>
     </Button>

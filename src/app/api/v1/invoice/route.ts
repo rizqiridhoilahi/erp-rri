@@ -5,6 +5,7 @@ import { verifyAuth } from '@/lib/api/auth'
 import { badRequest, internalError } from '@/lib/api/errors'
 import { generateDocumentNumber } from '@/lib/utils/document-number'
 import { generateInvoiceJournal } from '@/lib/auto-jurnal'
+import { getConfigNumber } from '@/lib/utils/config'
 
 const itemSchema = z.object({
   barang_id: z.string().min(1),
@@ -21,7 +22,7 @@ const schema = z.object({
   customer_id: z.string().min(1, 'Customer harus dipilih'),
   tanggal: z.string().min(1, 'Tanggal harus diisi'),
   top: z.string().min(1, 'TOP harus diisi'),
-  ppn_rate: z.coerce.number().optional().default(0.11),
+  ppn_rate: z.coerce.number().optional(),
   pph_rate: z.coerce.number().optional(),
   items: z.array(itemSchema).min(1),
 })
@@ -42,12 +43,13 @@ export async function POST(request: NextRequest) {
   const parsed = schema.safeParse(body)
   if (!parsed.success) return badRequest(parsed.error.issues.map(e => e.message).join(', '))
 
+  const ppnRate = parsed.data.ppn_rate ?? await getConfigNumber('ppn_rate', 0.11)
   const nomor = await generateDocumentNumber('INV')
   const now = new Date().toISOString()
 
   const { data: inv, error: invError } = await supabaseAdmin.from('invoice').insert({
     nomor, sales_order_id: parsed.data.sales_order_id, customer_id: parsed.data.customer_id,
-    tanggal: parsed.data.tanggal, top: parsed.data.top, ppn_rate: parsed.data.ppn_rate,
+    tanggal: parsed.data.tanggal, top: parsed.data.top, ppn_rate: ppnRate,
     pph_rate: parsed.data.pph_rate ?? null, status: 'draft',
     created_at: now, updated_at: now,
   }).select().single()
@@ -58,7 +60,7 @@ export async function POST(request: NextRequest) {
     return {
       invoice_id: inv.id, barang_id: item.barang_id, harga: item.harga,
       jumlah: item.jumlah, diskon: item.diskon ?? 0,
-      ppn: item.ppn ?? subtotal * parsed.data.ppn_rate,
+      ppn: item.ppn ?? subtotal * ppnRate,
       pph: item.pph ?? (parsed.data.pph_rate ? subtotal * parsed.data.pph_rate : null),
       keterangan: item.keterangan ?? null,
       created_at: now, updated_at: now,

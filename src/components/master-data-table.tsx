@@ -45,8 +45,13 @@ export function MasterDataTable<T extends { id: string }>({
   const sorted = useMemo(() => {
     if (!sortKey) return filtered
     return [...filtered].sort((a, b) => {
-      const aVal = String(a[sortKey as keyof T] ?? "")
-      const bVal = String(b[sortKey as keyof T] ?? "")
+      const aRaw = a[sortKey as keyof T]
+      const bRaw = b[sortKey as keyof T]
+      if (typeof aRaw === "number" && typeof bRaw === "number") {
+        return sortDir === "asc" ? aRaw - bRaw : bRaw - aRaw
+      }
+      const aVal = String(aRaw ?? "")
+      const bVal = String(bRaw ?? "")
       return sortDir === "asc" ? aVal.localeCompare(bVal, "id") : bVal.localeCompare(aVal, "id")
     })
   }, [filtered, sortKey, sortDir])

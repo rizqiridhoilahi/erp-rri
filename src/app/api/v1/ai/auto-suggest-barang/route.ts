@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { autoSuggestBarang } from '@/lib/ai/auto-suggest-barang'
 import { verifyAuth } from '@/lib/api/auth'
-import { badRequest, unauthorized } from '@/lib/api/errors'
+import { badRequest } from '@/lib/api/errors'
 
 const schema = z.object({
   query: z.string().min(1, 'Query wajib diisi'),
@@ -45,10 +45,7 @@ const schema = z.object({
  */
 export async function GET(request: NextRequest) {
   const auth = await verifyAuth(request)
-  if (!auth.user) {
-    const res = auth.error
-    return res ?? unauthorized('Unauthorized')
-  }
+  if (auth.error) return auth.error
 
   const { searchParams } = new URL(request.url)
   const parsed = schema.safeParse({

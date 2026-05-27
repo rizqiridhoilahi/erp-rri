@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPriceTrend } from '@/lib/ai/price-trend'
 import { verifyAuth } from '@/lib/api/auth'
-import { badRequest, notFound, unauthorized } from '@/lib/api/errors'
+import { badRequest, notFound } from '@/lib/api/errors'
 import { z } from 'zod'
 
 const schema = z.object({
@@ -39,10 +39,7 @@ const schema = z.object({
  */
 export async function GET(request: NextRequest) {
   const auth = await verifyAuth(request)
-  if (!auth.user) {
-    const res = auth.error
-    return res ?? unauthorized('Unauthorized')
-  }
+  if (auth.error) return auth.error
 
   const { searchParams } = new URL(request.url)
   const parsed = schema.safeParse({

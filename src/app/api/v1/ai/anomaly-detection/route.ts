@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { detectAnomalies } from '@/lib/ai/anomaly-detection'
 import { verifyAuth } from '@/lib/api/auth'
-import { unauthorized } from '@/lib/api/errors'
 
 /**
  * @openapi
@@ -27,10 +26,7 @@ import { unauthorized } from '@/lib/api/errors'
  */
 export async function GET(request: NextRequest) {
   const auth = await verifyAuth(request)
-  if (!auth.user) {
-    const res = auth.error
-    return res ?? unauthorized('Unauthorized')
-  }
+  if (auth.error) return auth.error
 
   const { searchParams } = new URL(request.url)
   const days = parseInt(searchParams.get('days') ?? '30', 10)

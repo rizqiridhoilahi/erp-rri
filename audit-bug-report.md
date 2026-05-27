@@ -359,13 +359,13 @@ Tanggal: 2026-05-26 — Audit Komprehensif (full codebase scan: 137 API routes, 
 
 ---
 
-### M18. Master Data Table — Sorting String untuk Field Numerik
+### M18. Master Data Table — Sorting String untuk Field Numerik ✅ FIXED
 
 **File:** `src/components/master-data-table.tsx:47-51`
 
 **Masalah:** `localeCompare` dipakai untuk semua kolom. "100" datang sebelum "20" secara leksikografis.
 
-**Perbaikan:** Deteksi tipe data dan pakai numeric comparison untuk angka.
+**Perbaikan:** Deteksi tipe data: jika `typeof === "number"`, pakai `a - b`; sisanya pakai `localeCompare`.
 
 ---
 
@@ -536,15 +536,15 @@ Tanggal: 2026-05-26 — Audit Komprehensif (full codebase scan: 137 API routes, 
 | P1 | H4: Generate TypeScript types | 2 jam |
 | P1 | M8: Search harga catch block | 15 menit |
 
-### Phase 3 — Post-Deploy / Quality
-| Priority | Item | Effort |
-|----------|------|--------|
-| P2 | M13-M14: useCallback + dup directives | 30 menit |
-| P2 | L1-L5: Schema naming consistency | 2 jam |
-| P2 | L6: AI routes auth pattern | 1 jam |
-| P2 | L7-L8: Hardcoded values → config | 2 jam |
-| P2 | L9-L12: REST convention fixes | 2 jam |
-| P3 | L13-L16: Minor UX & type fixes | 2 jam |
+### Phase 3 — Post-Deploy / Quality (✅ Selesai 27 May 2026)
+| Priority | Item | Effort | Status |
+|----------|------|--------|--------|
+| P2 | M13-M14: useCallback + dup directives | 30 menit | ✅ FIXED (Phase 2) |
+| P2 | L1-L5: Schema naming consistency | 2 jam | ✅ L4/L5 fixed (L1 skipped: terlalu invasif untuk LOW; L2 sdh ada; L3 intentional) |
+| P2 | L6: AI routes auth pattern | 1 jam | ✅ FIXED (6 file) |
+| P2 | L7-L8: Hardcoded values → config | 2 jam | ✅ FIXED (pakai `getConfigNumber()` dari `site_settings`) |
+| P2 | L9-L12: REST convention fixes | 2 jam | ✅ FIXED (DELETE 204: 29 file; auth.user! guard; status-badge union; pdf download) |
+| P3 | L13-L16: Minor UX & type fixes | 2 jam | ✅ L13/L14/L15 fixed; L16 skipped (terlalu luas) |
 
 ---
 

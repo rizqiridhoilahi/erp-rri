@@ -85,5 +85,5 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
   await supabaseAdmin.from('retur_pembelian_item').delete().eq('retur_pembelian_id', id)
   const { error } = await supabaseAdmin.from('retur_pembelian').delete().eq('id', id)
   if (error) return internalError(error)
-  return NextResponse.json({ message: 'Berhasil dihapus' })
+  return new NextResponse(null, { status: 204 })
 }

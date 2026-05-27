@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
 import { verifyAuth } from '@/lib/api/auth'
 import { supabaseAdmin } from '@/lib/api/supabase-server'
 import { badRequest, internalError } from '@/lib/api/errors'
@@ -16,22 +17,31 @@ export async function GET(request: NextRequest) {
   return NextResponse.json({ data })
 }
 
+const createSchema = z.object({
+  purchaseOrderId: z.string().min(1, 'PO wajib diisi'),
+  supplierId: z.string().min(1, 'Supplier wajib diisi'),
+  nominal: z.number().min(1, 'Nominal wajib diisi'),
+  tanggalBayar: z.string().min(1, 'Tanggal bayar wajib diisi'),
+  metode: z.string().optional(),
+  buktiTransfer: z.string().optional(),
+  keterangan: z.string().optional(),
+})
+
 export async function POST(request: NextRequest) {
   const auth = await verifyAuth(request)
   if (auth.error) return auth.error
   const body = await request.json()
-  if (!body.purchaseOrderId || !body.supplierId || !body.nominal || !body.tanggalBayar) {
-    return badRequest('PO, supplier, nominal, dan tanggal bayar wajib diisi')
-  }
+  const parsed = createSchema.safeParse(body)
+  if (!parsed.success) return badRequest(parsed.error.issues.map(e => e.message).join(', '))
 
   const { data, error } = await supabaseAdmin.from('supplier_payment').insert({
-    purchase_order_id: body.purchaseOrderId,
-    supplier_id: body.supplierId,
-    nominal: body.nominal,
-    tanggal_bayar: body.tanggalBayar,
-    metode: body.metode ?? 'transfer',
-    bukti_transfer: body.buktiTransfer ?? null,
-    keterangan: body.keterangan ?? null,
+    purchase_order_id: parsed.data.purchaseOrderId,
+    supplier_id: parsed.data.supplierId,
+    nominal: parsed.data.nominal,
+    tanggal_bayar: parsed.data.tanggalBayar,
+    metode: parsed.data.metode ?? 'transfer',
+    bukti_transfer: parsed.data.buktiTransfer ?? null,
+    keterangan: parsed.data.keterangan ?? null,
   }).select().single()
   if (error) return internalError(error.message)
   return NextResponse.json({ data })

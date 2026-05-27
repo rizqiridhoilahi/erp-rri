@@ -5,6 +5,7 @@ import { verifyAuth } from '@/lib/api/auth'
 import { badRequest, internalError } from '@/lib/api/errors'
 import { generateDocumentNumber } from '@/lib/utils/document-number'
 import { sendWhatsapp } from '@/lib/utils/whatsapp'
+import { getConfigNumber } from '@/lib/utils/config'
 
 const itemSchema = z.object({
   barang_id: z.string().min(1),
@@ -28,7 +29,7 @@ const schema = z.object({
   alamat: z.string().optional().nullable(),
   tanggal: z.string().min(1, 'Tanggal harus diisi'),
   masa_berlaku: z.string().optional().nullable(),
-  ppn_rate: z.coerce.number().nonnegative().default(0.11),
+  ppn_rate: z.coerce.number().nonnegative().optional(),
   ppn_enabled: z.coerce.boolean().optional().default(true),
   keterangan: z.string().optional().nullable(),
   items: z.array(itemSchema).min(1, 'Minimal 1 item'),
@@ -68,6 +69,7 @@ export async function POST(request: NextRequest) {
   const parsed = schema.safeParse(body)
   if (!parsed.success) return badRequest(parsed.error.issues.map(e => e.message).join(', '))
 
+  const ppnRate = parsed.data.ppn_rate ?? await getConfigNumber('ppn_rate', 0.11)
   const nomor = await generateDocumentNumber('SPH', 'dash')
   const now = new Date().toISOString()
 
@@ -108,7 +110,7 @@ export async function POST(request: NextRequest) {
       masa_berlaku: parsed.data.masa_berlaku ?? null,
       tanggal_berlaku_sampai: tanggalBerlakuSampai,
       status: 'draft',
-      ppn_rate: parsed.data.ppn_rate,
+       ppn_rate: ppnRate,
       ppn_enabled: parsed.data.ppn_enabled,
       total_harga: totalHarga,
       keterangan: parsed.data.keterangan ?? null,
@@ -124,7 +126,7 @@ export async function POST(request: NextRequest) {
     quotation_id: qtn.id,
     ...item,
     ppn_per_item: parsed.data.ppn_enabled
-      ? (item.total_harga ?? 0) * parsed.data.ppn_rate
+      ? (item.total_harga ?? 0) * ppnRate
       : 0,
   }))
 

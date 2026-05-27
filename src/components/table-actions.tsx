@@ -9,7 +9,6 @@ import { Pencil, Trash2, Eye } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
 interface TableActionsProps {
-  id: string
   editUrl: string
   viewUrl?: string
   onDelete: () => Promise<void>

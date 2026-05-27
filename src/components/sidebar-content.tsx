@@ -1,10 +1,8 @@
 "use client"
 
-'use client'
-
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { ChevronDown, Settings, Activity, Wrench, Archive } from 'lucide-react'
 import {
   Home, Package, Users, Building2, UserCircle, BookOpen,   FileText, FileSpreadsheet, FolderTree, Briefcase, Users2,
@@ -189,10 +187,10 @@ export function SidebarContent({ collapsed }: { collapsed?: boolean }) {
   const role = (user?.role as Role) ?? 'owner'
   const visibleItems = filterMenuByRole(menuItems, role)
 
-  const handleLogout = async () => {
+  const handleLogout = useCallback(async () => {
     await supabase.auth.signOut()
     router.push('/login')
-  }
+  }, [router])
 
   return (
     <>
@@ -236,7 +234,6 @@ export function SidebarContent({ collapsed }: { collapsed?: boolean }) {
 
 function SidebarGroup({ group, defaultOpen, collapsed }: { group: MenuGroup; defaultOpen: boolean; collapsed?: boolean }) {
   const [open, setOpen] = useState(defaultOpen)
-  useEffect(() => { setOpen(defaultOpen) }, [defaultOpen])
 
   if (collapsed) {
     return (

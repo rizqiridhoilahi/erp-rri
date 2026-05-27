@@ -47,5 +47,5 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
   await supabaseAdmin.from('sales_order_item').delete().eq('sales_order_id', id)
   const { error } = await supabaseAdmin.from('sales_order').delete().eq('id', id)
   if (error) return internalError(error)
-  return NextResponse.json({ message: 'Berhasil dihapus' })
+  return new NextResponse(null, { status: 204 })
 }

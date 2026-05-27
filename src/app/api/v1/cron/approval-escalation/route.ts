@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/api/supabase-server'
 import { sendWhatsapp } from '@/lib/utils/whatsapp'
+import { getConfigNumber } from '@/lib/utils/config'
 
 export async function GET(req: Request) {
   const cronToken = process.env.CRON_SECRET_TOKEN
@@ -11,7 +12,8 @@ export async function GET(req: Request) {
     }
   }
 
-  const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+  const escalationHours = await getConfigNumber('escalation_hours', 24)
+  const threshold = new Date(Date.now() - escalationHours * 60 * 60 * 1000).toISOString()
   const escalated: string[] = []
 
   // Check Purchase Requests pending > 24h
@@ -19,7 +21,7 @@ export async function GET(req: Request) {
     .from('purchase_request')
     .select('id, nomor, created_at')
     .in('status', ['draft', 'pending'])
-    .lt('created_at', twentyFourHoursAgo)
+    .lt('created_at', threshold)
     .limit(20)
 
   for (const pr of pendingPRs ?? []) {
@@ -50,7 +52,7 @@ export async function GET(req: Request) {
     .from('purchase_order')
     .select('id, nomor, created_at')
     .in('status', ['draft', 'pending'])
-    .lt('created_at', twentyFourHoursAgo)
+    .lt('created_at', threshold)
     .limit(20)
 
   for (const po of pendingPOs ?? []) {

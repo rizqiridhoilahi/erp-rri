@@ -1,9 +1,10 @@
 import { sql } from "drizzle-orm"
 import { pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { rfqCustomer } from "./rfq-customer";
 
 export const rfqCustomerDocument = pgTable("rfq_customer_document", {
   id: text("id").primaryKey().default(sql`gen_random_uuid()::text`),
-  rfqCustomerId: text("rfq_customer_id").notNull(),
+  rfqCustomerId: text("rfq_customer_id").notNull().references(() => rfqCustomer.id, { onDelete: "cascade" }),
   fileName: text("file_name").notNull(),
   fileUrl: text("file_url").notNull(),
   driveFileId: text("drive_file_id"),
