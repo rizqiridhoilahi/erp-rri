@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
   if (supplierId) query = query.eq('supplier_id', supplierId)
   const { data, error } = await query
   if (error) return internalError(error.message)
-  return NextResponse.json({ data })
+  return NextResponse.json({ data: data ?? [] })
 }
 
 const createSchema = z.object({

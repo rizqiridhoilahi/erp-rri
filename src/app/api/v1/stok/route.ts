@@ -44,7 +44,7 @@ export async function GET(req: NextRequest) {
     .select('*, barang!barang_id(id, nama, kode, satuan, stok_minimum), gudang!gudang_id(nama)')
     .order('barang_id')
   if (error) return internalError(error)
-  return NextResponse.json({ data })
+  return NextResponse.json({ data: data ?? [] })
 }
 
 export async function POST(request: NextRequest) {

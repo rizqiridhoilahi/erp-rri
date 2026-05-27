@@ -39,7 +39,7 @@ export async function GET(req: NextRequest) {
   if (auth.error) return auth.error
   const { data, error } = await supabaseAdmin.from('gudang').select('*').order('nama')
   if (error) return internalError(error)
-  return NextResponse.json({ data })
+  return NextResponse.json({ data: data ?? [] })
 }
 
 export async function POST(request: NextRequest) {

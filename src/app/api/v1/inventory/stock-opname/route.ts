@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
   if (status) query = query.eq('status', status)
   const { data, error } = await query
   if (error) return internalError(error.message)
-  return NextResponse.json({ data })
+  return NextResponse.json({ data: data ?? [] })
 }
 
 export async function POST(request: NextRequest) {
