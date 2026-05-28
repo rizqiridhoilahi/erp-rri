@@ -43,22 +43,22 @@ const styles = StyleSheet.create({
   signaturePhone: { fontSize: 11, marginTop: 2 },
   footer: { position: 'absolute', bottom: 24, left: 50, right: 50, borderTopWidth: 1.5, borderTopColor: '#000', paddingTop: 6, alignItems: 'center' },
   footerText: { fontSize: 10 },
-  pageNum: { position: 'absolute', bottom: 28, right: 50, fontSize: 10, color: '#666' },
+  pageNum: { position: 'absolute', bottom: 28, right: 50, fontSize: 10, color: '#0000FF' },
   lampiranTitle: { fontSize: 11, fontWeight: 'bold', textDecoration: 'underline', marginBottom: 4 },
   lampiranSub: { fontSize: 11, marginBottom: 12 },
   table: { width: '100%', borderStyle: 'solid', borderWidth: 1, borderColor: '#000' },
   tableRow: { flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: '#000' },
   tableHeader: { flexDirection: 'row', backgroundColor: '#f0f0f0', borderBottomWidth: 1, borderBottomColor: '#000' },
-  tableCell: { fontSize: 10, padding: 4, borderRightWidth: 1, borderRightColor: '#000' },
-  tableHeaderCell: { fontSize: 10, fontWeight: 'bold', padding: 4, textAlign: 'center', borderRightWidth: 1, borderRightColor: '#000' },
-  tableCellRight: { fontSize: 10, padding: 4, textAlign: 'right', borderRightWidth: 1, borderRightColor: '#000' },
-  tableCellCenter: { fontSize: 10, padding: 4, textAlign: 'center', borderRightWidth: 1, borderRightColor: '#000' },
-  tableCellLast: { fontSize: 10, padding: 4, textAlign: 'right' },
-  tableCellCenterLast: { fontSize: 10, padding: 4, textAlign: 'center' },
+  tableCell: { fontSize: 9, padding: 4, borderRightWidth: 1, borderRightColor: '#000' },
+  tableHeaderCell: { fontSize: 9, fontWeight: 'bold', padding: 4, textAlign: 'center', borderRightWidth: 1, borderRightColor: '#000' },
+  tableCellRight: { fontSize: 9, padding: 4, textAlign: 'right', borderRightWidth: 1, borderRightColor: '#000' },
+  tableCellCenter: { fontSize: 9, padding: 4, textAlign: 'center', borderRightWidth: 1, borderRightColor: '#000' },
+  tableCellLast: { fontSize: 9, padding: 4, textAlign: 'right' },
+  tableCellCenterLast: { fontSize: 9, padding: 4, textAlign: 'center' },
   tableTotalRow: { flexDirection: 'row', borderTopWidth: 1, borderTopColor: '#000' },
-  tableTotalLabel: { fontSize: 10, fontWeight: 'bold', padding: 4, textAlign: 'right' },
-  tableTotalValue: { fontSize: 10, fontWeight: 'bold', padding: 4, textAlign: 'right' },
-  keteranganFootnote: { fontSize: 10, fontStyle: 'italic', marginTop: 12, color: '#555' },
+  tableTotalLabel: { fontSize: 9, fontWeight: 'bold', padding: 4, textAlign: 'right' },
+  tableTotalValue: { fontSize: 9, fontWeight: 'bold', padding: 4, textAlign: 'right' },
+  keteranganFootnote: { fontSize: 9, fontStyle: 'italic', marginTop: 12, color: '#555' },
 })
 
 interface QuotItem {
@@ -274,54 +274,64 @@ export function QuotationPDF({ data }: { data: QuotData }) {
       H(View, { style: styles.table },
         (() => {
           const headerCells = [
-            H(Text, { style: [styles.tableHeaderCell, { flex: 0.5 }] }, 'No'),
-            H(Text, { style: [styles.tableHeaderCell, { flex: 2.2 }] }, 'Item'),
+            H(Text, { style: [styles.tableHeaderCell, { width: 25 }] }, 'No'),
+            H(Text, { style: [styles.tableHeaderCell, { flex: 1 }] }, 'Item'),
           ]
           if (hasSpec) {
-            headerCells.push(H(Text, { style: [styles.tableHeaderCell, { flex: 3.2 }] }, 'Specification'))
+            headerCells.push(H(Text, { style: [styles.tableHeaderCell, { flex: 1 }] }, 'Specification'))
           }
           headerCells.push(
-            H(Text, { style: [styles.tableHeaderCell, { flex: 0.8 }] }, 'Pict'),
-            H(Text, { style: [styles.tableHeaderCell, { flex: 0.6 }] }, 'Qty'),
-            H(Text, { style: [styles.tableHeaderCell, { flex: 0.7 }] }, 'UoM'),
-            H(Text, { style: [styles.tableHeaderCell, { flex: 1.2 }] }, 'Price'),
-            H(Text, { style: [styles.tableHeaderCell, { flex: 1.8, borderRightWidth: 0 }] }, 'TotalPrice')
+            H(Text, { style: [styles.tableHeaderCell, { width: 65 }] }, 'Picture'),
+            H(Text, { style: [styles.tableHeaderCell, { width: 40 }] }, 'Qty'),
+            H(Text, { style: [styles.tableHeaderCell, { width: 45 }] }, 'UoM'),
+            H(Text, { style: [styles.tableHeaderCell, { width: 65 }] }, 'Price'),
+            H(Text, { style: [styles.tableHeaderCell, { width: 65, borderRightWidth: 0 }] }, 'Total Price')
           )
           return H(View, { style: styles.tableHeader }, ...headerCells)
         })(),
         ...data.items.map((item, i) => {
           const totalPrice = item.jumlah * item.hargaSatuan
           const hasImage = !!item.image_url
+          const v = (child: any, style: any) => H(View, { style: { justifyContent: 'center', ...style } }, child)
           const cells = [
-            H(Text, { style: [styles.tableCellCenter, { flex: 0.5 }] }, String(i + 1)),
-            H(Text, { style: [styles.tableCell, { flex: 2.2 }] }, item.nama),
+            v(H(Text, { style: { fontSize: 9, textAlign: 'center' } }, String(i + 1)), { width: 25, padding: 4, borderRightWidth: 1, borderRightColor: '#000' }),
+            v(H(Text, { style: { fontSize: 9 } }, item.nama), { flex: 1, padding: 4, borderRightWidth: 1, borderRightColor: '#000' }),
           ]
           if (hasSpec) {
-            cells.push(H(Text, { style: [styles.tableCell, { flex: 3.2 }] }, item.specification || '-'))
+            cells.push(v(H(Text, { style: { fontSize: 9 } }, item.specification || '-'), { flex: 1, padding: 4, borderRightWidth: 1, borderRightColor: '#000' }))
           }
           cells.push(
-            H(View, { style: [styles.tableCellCenter, { flex: 0.8, alignItems: 'center', justifyContent: 'center' }] },
+            H(View, { style: { width: 65, padding: 4, borderRightWidth: 1, borderRightColor: '#000', alignItems: 'center', justifyContent: 'center' } },
               hasImage
                 ? H(Image, { src: item.image_url, style: { width: 50, height: 50, objectFit: 'contain' } })
-                : H(Text, null, '-')
+                : H(Text, { style: { fontSize: 9, textAlign: 'center' } }, '-')
             ),
-            H(Text, { style: [styles.tableCellCenter, { flex: 0.6 }] }, String(item.jumlah)),
-            H(Text, { style: [styles.tableCellCenter, { flex: 0.7 }] }, item.satuan || '-'),
-            H(Text, { style: [styles.tableCellRight, { flex: 1.2 }] }, formatCurrency(item.hargaSatuan)),
-            H(Text, { style: [styles.tableCellLast, { flex: 1.8, textAlign: 'right' }] }, formatCurrency(totalPrice))
+            v(H(Text, { style: { fontSize: 9, textAlign: 'center' } }, String(item.jumlah)), { width: 40, padding: 4, borderRightWidth: 1, borderRightColor: '#000' }),
+            v(H(Text, { style: { fontSize: 9, textAlign: 'center' } }, item.satuan || '-'), { width: 45, padding: 4, borderRightWidth: 1, borderRightColor: '#000' }),
+            v(H(Text, { style: { fontSize: 9, textAlign: 'right' } }, formatCurrency(item.hargaSatuan)), { width: 65, padding: 4, borderRightWidth: 1, borderRightColor: '#000' }),
+            v(H(Text, { style: { fontSize: 9, textAlign: 'right' } }, formatCurrency(totalPrice)), { width: 65, padding: 4, textAlign: 'right' })
           )
           return H(View, { key: i, style: styles.tableRow }, ...cells)
         }),
         (() => {
-          const totalLabelFlex = hasSpec ? 9.2 : 6.0
           return H(View, { style: styles.tableTotalRow },
-            H(Text, { style: [styles.tableTotalLabel, { flex: totalLabelFlex }] }, 'TOTAL'),
-            H(Text, { style: [styles.tableTotalValue, { flex: 1.8 }] }, formatCurrency(grandTotal))
+            H(View, { style: { flex: 1, padding: 4, justifyContent: 'center' } },
+              H(Text, { style: { fontSize: 9, fontWeight: 'bold', textAlign: 'right' } }, 'TOTAL')
+            ),
+            H(View, { style: { width: 45, padding: 4, justifyContent: 'center' } },
+              H(Text, { style: { fontSize: 9, fontWeight: 'bold', textAlign: 'right' } }, formatCurrency(grandTotal))
+            )
           )
         })()
       ),
 
       data.keterangan && H(Text, { style: styles.keteranganFootnote }, '* Keterangan: ' + data.keterangan),
+      H(View, { style: styles.footer },
+        H(Text, { style: styles.footerText }, c.company_alamat || 'Jerukwangi - Bangsri, Jepara'),
+        H(Text, { style: styles.footerText },
+          (c.company_no_hp || '+6281 2607 5500') + ', ' + (c.company_email || 'mazzjoeq@gmail.com')
+        )
+      ),
       H(Text, { style: styles.pageNum }, 'Page 2 of 2')
     )
   )
