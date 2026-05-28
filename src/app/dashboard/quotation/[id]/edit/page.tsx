@@ -315,9 +315,9 @@ export default function EditQuotationPage() {
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-2">
                     <label className="text-xs font-medium">Barang <span className="text-destructive">*</span></label>
-                    {rfqItemLabels[index] ? (
+                    {isRfqLoaded ? (
                       <div className="flex h-10 w-full items-center rounded-md border border-input bg-muted px-3 py-2 text-sm text-muted-foreground">
-                        {rfqItemLabels[index]}
+                        {rfqItemLabels[index] || `Item #${index + 1} (dari RFQ)`}
                       </div>
                     ) : (
                     <select {...register(`items.${index}.barang_id`)}

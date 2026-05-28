@@ -7,7 +7,7 @@ const COMPANY_KEYS = [
   'company_nama', 'company_bidang_usaha', 'company_alamat',
   'company_no_hp', 'company_email', 'company_logo_url',
   'penandatangan_nama', 'penandatangan_jabatan', 'penandatangan_no_hp',
-  'tanda_tangan_url', 'stempel_url',
+  'tanda_tangan_url', 'stempel_url', 'tanda_tangan_stempel_url',
 ] as const
 
 export async function GET(request: NextRequest) {

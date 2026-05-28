@@ -509,6 +509,53 @@ Semua dokumen berikut digenerate dalam format PDF yang bisa diprint dan disave:
 
 Format dokumen akan mengikuti template yang akan disediakan customer di direktori `/docs/templates/`.
 
+### I.1 Panduan Implementasi PDF
+
+**Root Cause — React Error #31 di PDF Generation:**
+`@react-pdf/renderer` menggunakan React 18's `createElement`. Namun, Next.js 15 mengintercept `import React from 'react'` di file `src/lib/` dan me-resolve ke **RSC vendored React** yang menghasilkan elemen dengan `$$typeof = Symbol(react.transitional.element)` (React 19 canary). Reconciler React 18 tidak mengenali simbol ini → `Error #31: invariant "The renderer received a React element..."`.
+
+**Aturan Implementasi PDF Component:**
+1. File harus `.ts` (bukan `.tsx`) — menghindari RSC JSX runtime
+2. DILARANG `import React from 'react'` — akan meresolve ke RSC vendored React
+3. Hanya boleh `import type { ReactElement } from 'react'` — tipe dihapus saat kompilasi
+4. Gunakan fungsi `createEl()` (lihat template di bawah) untuk membuat elemen — menghasilkan `$$typeof: Symbol.for('react.element')` (React 18)
+5. Di route handler, cast hasil sebagai `as any` saat passing ke `pdf()` untuk menghindari TypeScript error
+6. Font registration: gunakan URL-encoded space (`Arial%20Bold.ttf`) untuk nama file yang mengandung spasi
+
+**Template PDF Component (`*.ts`):**
+```typescript
+import type { ReactElement } from 'react'
+
+function createEl(type: any, props?: any, ...children: any[]): ReactElement {
+  return {
+    $$typeof: Symbol.for('react.element'),
+    type,
+    key: null,
+    ref: null,
+    props: { ...props, children: children.length ? children : undefined },
+    _owner: null,
+  }
+}
+
+export function MyPDF({ data }: { data: MyData }): ReactElement {
+  return createEl(
+    'VIEW',
+    { style: { padding: 40 } },
+    createEl('TEXT', null, 'Hello, PDF!'),
+  )
+}
+```
+
+**Route Handler (`route.ts`):**
+```typescript
+import { pdf } from '@react-pdf/renderer'
+
+export async function GET() {
+  const blob = await pdf(MyPDF({ data }) as any).toBlob()
+  return new Response(blob, { headers: { 'Content-Type': 'application/pdf' } })
+}
+```
+
 ### J. Dashboard & Laporan
 
 Arsitektur dashboard role-based: setiap user melihat dashboard sesuai rolenya. Implementasi via server component yang mendeteksi role dari session user (`users.role`), lalu merender komponen dashboard yang sesuai.

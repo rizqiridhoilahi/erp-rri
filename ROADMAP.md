@@ -341,3 +341,9 @@ All items above (Bulk Import, OpenAPI Docs, Global Search, PDF Generations, Deta
 - [x] **RFQ Customer List — button Convert to Quotation** — icon `FileText` di kolom aksi, navigasi ke `/dashboard/quotation/tambah?rfq_id={id}`.
 - [x] **RFQ Customer Detail — button Convert to Quotation** — button "Convert to Quotation" di `PageHeader actions`, navigasi ke `/dashboard/quotation/tambah?rfq_id={id}`.
 - [x] **Build:** `npm run build` — 0 errors, warnings only
+
+## Fase 23 — PDF Generation React Error Fix (May 2026)
+- [x] **Root Cause identified:** Next.js 15 intercepts `import React from 'react'` in `src/lib/` files → resolves to RSC vendored React → `$$typeof = Symbol(react.transitional.element)` (React 19 canary) → `@react-pdf/reconciler` (React 18) throws Error #31
+- [x] **Fix:** Renamed `src/lib/pdf/quotation.tsx` → `quotation.ts`. Replaced `React.createElement` with custom `createEl()` function that creates plain objects with `$$typeof: Symbol.for('react.element')` (regular React 18). Only `import type { ReactElement } from 'react'` for types. Used `as any` cast in PDF route handler.
+- [x] **Verification:** `npm run build` — 0 errors. Dev server: route returns 401 (no auth), not 500. Node.js direct test: blob size 43875, `$$typeof: Symbol(react.element)`. Compiled bundle uses `Symbol.for("react.element")`, no RSC JSX runtime.
+- [x] **Documentation:** Added `Panduan Implementasi PDF` section to PRD.md (root cause, rules, template code) for future PDF components (invoice, kwitansi, surat jalan, faktur pajak, nota retur, dll).

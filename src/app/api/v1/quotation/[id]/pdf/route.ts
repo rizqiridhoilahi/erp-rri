@@ -9,7 +9,7 @@ const COMPANY_KEYS = [
   'company_nama', 'company_bidang_usaha', 'company_alamat',
   'company_no_hp', 'company_email', 'company_logo_url',
   'penandatangan_nama', 'penandatangan_jabatan', 'penandatangan_no_hp',
-  'tanda_tangan_url', 'stempel_url',
+  'tanda_tangan_url', 'stempel_url', 'tanda_tangan_stempel_url',
 ] as const
 
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -94,6 +94,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
     penandatangan_no_hp: settingsMap.get('penandatangan_no_hp') ?? null,
     tanda_tangan_url: settingsMap.get('tanda_tangan_url') ?? null,
     stempel_url: settingsMap.get('stempel_url') ?? null,
+    tanda_tangan_stempel_url: settingsMap.get('tanda_tangan_stempel_url') ?? null,
   }
 
   const pdfData = {
@@ -132,7 +133,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
   }
 
   try {
-    const blob = await pdf(QuotationPDF({ data: pdfData })).toBlob()
+    const blob = await pdf(QuotationPDF({ data: pdfData }) as any).toBlob()
     return new NextResponse(blob, {
       headers: {
         'Content-Type': 'application/pdf',
@@ -141,6 +142,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
     })
   } catch (e) {
     console.error('PDF generation error:', e)
+    console.error('PDF generation stack:', e instanceof Error ? e.stack : 'no stack')
     const msg = e instanceof Error ? e.message : 'Gagal generate PDF'
     return NextResponse.json({ error: msg, code: 'PDF_GENERATION_ERROR' }, { status: 500 })
   }
