@@ -7,7 +7,7 @@ import { storageService } from '@/lib/storage'
 const TABLE = 'kontrak_file'
 const FK_COL = 'kontrak_id'
 const STORAGE_PREFIX = 'dokumen/kontrak'
-const VALID_JENIS = ['kontrak', 'rfq_customer', 'di'] as const
+const VALID_JENIS = ['kontrak'] as const
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const auth = await verifyAuth(req)

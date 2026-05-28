@@ -58,8 +58,8 @@
 
 ## Important Conventions from PRD
 ### Document Numbering
-- Format: `{KODE}/{RRI}/{YY}/{MM}/{0000}`
-- Examples: `SPH/RRI/26/05/0001`, `SJ/RRI/26/05/0001`
+- Format: `RRI-{KODE}-{YY}-{MM}-{0000}`
+- Examples: `RRI-SPH-26-05-0001`, `RRI-SJ-26-05-0001`
 - Reset automatically at year boundary
 - Implemented via `document_counter` table + `increment_document_counter()` PG function
 - Usage: `import { generateDocumentNumber } from '@/lib/utils/document-number'`

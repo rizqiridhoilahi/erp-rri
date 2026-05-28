@@ -20,6 +20,7 @@ import { FormActions } from '@/components/form-actions';
 import { useUnsavedChanges } from '@/hooks/use-unsaved-changes';
 import { ConfirmLeaveDialog } from '@/components/confirm-leave-dialog';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { apiFetchFormData } from '@/lib/api/client';
 import { FileUp, Upload, FileText, X } from 'lucide-react';
 
 const kontrakSchema = z.object({
@@ -57,10 +58,10 @@ export default function TambahKontrakPage() {
   useEffect(() => {
     (async () => {
       try {
-        const { data } = await apiFetch<Array<{ id: string; nama: string }>>('/api/v1/master/customer');
+        const { data } = await apiFetch<Array<{ id: string; kode: string; nama: string }>>('/api/v1/master/customer');
         setCustomerOptions(data.map(item => ({
           value: item.id,
-          label: item.nama,
+          label: `[${item.kode}] ${item.nama}`,
         })));
       } catch (err) {
         console.error('Error loading customers:', err);
@@ -96,7 +97,6 @@ export default function TambahKontrakPage() {
         const formData = new FormData();
         formData.append('file', uploadFile);
         formData.append('jenis_dokumen', 'kontrak');
-        const { apiFetchFormData } = await import('@/lib/api/client');
         await apiFetchFormData(`/api/v1/master/kontrak/${res.data.id}/documents`, formData);
       }
 

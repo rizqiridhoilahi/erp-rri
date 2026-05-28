@@ -169,7 +169,7 @@ export default function KontrakPage() {
         <MasterDataTable
           data={data}
           columns={columns}
-          searchFields={["nama"]}
+          searchFields={["nomor_kontrak", "nama"]}
           searchPlaceholder="Cari kontrak..."
         />
       )}

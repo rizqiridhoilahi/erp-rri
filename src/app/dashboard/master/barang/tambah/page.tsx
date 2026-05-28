@@ -21,7 +21,8 @@ import { ConfirmLeaveDialog } from '@/components/confirm-leave-dialog';
 import { KelolaKategoriDialog } from '@/components/kelola-kategori-dialog';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
-import { Loader2, FileDown, Copy, Check, Plus } from 'lucide-react';
+import { Loader2, FileDown, Copy, Check, Plus, Upload, X } from 'lucide-react';
+import imageCompression from 'browser-image-compression';
 
 const barangSchema = z.object({
   nama: z.string().min(2, { message: "Nama barang harus diisi" }),
@@ -71,6 +72,9 @@ export default function TambahBarangPage() {
   const [parsedItems, setParsedItems] = useState<ImportItem[]>([]);
   const [importLoading, setImportLoading] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageUploading, setImageUploading] = useState(false);
 
   const fetchKategoriOptions = useCallback(async () => {
     try {
@@ -95,13 +99,53 @@ export default function TambahBarangPage() {
     })();
   }, [activeTab]);
 
+  const uploadImageAndUpdate = async (barangId: string) => {
+    if (!imageFile || !barangId) return
+    setImageUploading(true)
+    try {
+      const compressed = await imageCompression(imageFile, {
+        maxSizeMB: 1,
+        maxWidthOrHeight: 1920,
+        useWebWorker: true,
+        fileType: 'image/webp',
+      })
+      const formData = new FormData()
+      formData.append('file', compressed, 'foto-1.webp')
+      await apiFetch(`/api/v1/master/barang/${barangId}/image`, {
+        method: 'POST',
+        body: formData,
+      })
+    } catch { /* image optional, skip silently */ }
+    finally { setImageUploading(false) }
+  }
+
+  const handlePickImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const allowed = ['image/jpeg', 'image/png', 'image/webp']
+    if (!allowed.includes(file.type)) { toast.error('Hanya JPG, PNG, atau WebP'); return }
+    if (file.size > 5 * 1024 * 1024) { toast.error('Maksimal 5MB'); return }
+    setImageFile(file)
+    setImagePreview(URL.createObjectURL(file))
+    if (e.target) e.target.value = ''
+  }
+
+  const handleRemoveImage = () => {
+    setImageFile(null)
+    if (imagePreview) URL.revokeObjectURL(imagePreview)
+    setImagePreview(null)
+    form.setValue('image_url', '')
+  }
+
   const onSubmit = async (data: BarangFormValues) => {
     setLoading(true);
     const toastId = toast.loading('Menyimpan barang...');
     try {
-      await apiFetch('/api/v1/master/barang', { method: 'POST', body: JSON.stringify(data) });
+      const res = await apiFetch<{ id: string }>('/api/v1/master/barang', { method: 'POST', body: JSON.stringify({ ...data, image_url: '' }) });
       toast.success('Barang berhasil ditambahkan!', { id: toastId });
       form.reset();
+      const newId = res.data?.id
+      if (newId) await uploadImageAndUpdate(newId)
       setTimeout(() => router.push('/dashboard/master/barang'), 1500);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Terjadi kesalahan', { id: toastId });
@@ -354,19 +398,49 @@ export default function TambahBarangPage() {
                     </FormItem>
                   )}
                 />
-                <FormField
-                  control={form.control}
-                  name="image_url"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Image URL</FormLabel>
-                      <FormControl>
-                        <Input {...field} placeholder="https://..." />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
+                <div className="space-y-3">
+                  <FormLabel>Foto Barang</FormLabel>
+                  {imagePreview ? (
+                    <div className="relative inline-block rounded-lg border overflow-hidden">
+                      <img src={imagePreview} alt="Preview" className="max-h-48 object-contain" />
+                      <button type="button" onClick={handleRemoveImage} className="absolute top-1 right-1 bg-background/80 rounded-full p-1 hover:bg-destructive hover:text-destructive-foreground transition-colors">
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ) : form.watch('image_url') ? (
+                    <div className="relative inline-block rounded-lg border overflow-hidden">
+                      <img src={form.watch('image_url')} alt="Current" className="max-h-48 object-contain" />
+                    </div>
+                  ) : null}
+                  <div
+                    className="relative flex flex-col items-center justify-center rounded-lg border-2 border-dashed p-6 transition-colors cursor-pointer bg-muted/30 hover:bg-muted/50"
+                    onClick={() => document.getElementById('barang-image-input')?.click()}
+                  >
+                    <Upload className="h-8 w-8 mb-2 text-muted-foreground" />
+                    <p className="text-sm font-medium">Klik untuk upload foto barang</p>
+                    <p className="text-xs text-muted-foreground mt-1">JPG, PNG, WebP — maks. 5MB, 1920px</p>
+                    <input id="barang-image-input" type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={handlePickImage} />
+                  </div>
+                  {imageUploading && (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Mengupload...
+                    </div>
                   )}
-                />
+                  <FormField
+                    control={form.control}
+                    name="image_url"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-xs text-muted-foreground">Atau URL manual</FormLabel>
+                        <FormControl>
+                          <Input {...field} placeholder="https://..." className="text-xs" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
                 <div className="grid grid-cols-2 gap-4">
                   <FormField
                     control={form.control}

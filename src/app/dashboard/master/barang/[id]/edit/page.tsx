@@ -1,15 +1,17 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { apiFetch } from '@/lib/api/client';
+import { apiFetch, apiFetchFormData } from '@/lib/api/client';
 import { useRouter, usePathname } from 'next/navigation';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Upload, X } from 'lucide-react';
 import { useUnsavedChanges } from '@/hooks/use-unsaved-changes';
 import { ConfirmLeaveDialog } from '@/components/confirm-leave-dialog';
+import { toast } from 'sonner';
+import imageCompression from 'browser-image-compression';
 
 const barangSchema = z.object({
   nama: z.string().min(2, { message: "Nama barang harus diisi" }),
@@ -30,13 +32,15 @@ export default function EditBarangPage() {
   const router = useRouter();
   const pathname = usePathname();
   const id = pathname.split('/').at(-2);
-  const { register, handleSubmit, formState: { errors, isDirty }, reset } = useForm<BarangFormValues>({ resolver: zodResolver(barangSchema) });
+  const { register, handleSubmit, formState: { errors, isDirty }, reset, watch, setValue } = useForm<BarangFormValues>({ resolver: zodResolver(barangSchema) });
   const { confirmLeave, showDialog, handleConfirm, handleCancel } = useUnsavedChanges(isDirty);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [kategoriOptions, setKategoriOptions] = useState<Array<{ value: string; label: string }>>([]);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -56,18 +60,67 @@ export default function EditBarangPage() {
     return () => { cancelled = true; };
   }, [id, reset]);
 
+  const handlePickImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const allowed = ['image/jpeg', 'image/png', 'image/webp']
+    if (!allowed.includes(file.type)) { toast.error('Hanya JPG, PNG, atau WebP'); return }
+    if (file.size > 5 * 1024 * 1024) { toast.error('Maksimal 5MB'); return }
+    setImageFile(file)
+    setImagePreview(URL.createObjectURL(file))
+    if (e.target) e.target.value = ''
+  }
+
+  const handleRemoveImage = () => {
+    setImageFile(null)
+    if (imagePreview) URL.revokeObjectURL(imagePreview)
+    setImagePreview(null)
+    setValue('image_url', '')
+  }
+
+  const handleDeleteImage = async () => {
+    if (!id) return
+    const toastId = toast.loading('Menghapus gambar...')
+    try {
+      await apiFetch(`/api/v1/master/barang/${id}/image`, { method: 'DELETE' })
+      setValue('image_url', '')
+      toast.success('Gambar berhasil dihapus', { id: toastId })
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Gagal hapus gambar', { id: toastId })
+    }
+  }
+
   const onSubmit = async (data: BarangFormValues) => {
     if (!id) return;
     setLoading(true); setError(null); setSuccess(null);
+    const toastId = toast.loading('Memperbarui barang...');
     try {
       await apiFetch(`/api/v1/master/barang/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+      if (imageFile) {
+        const compressed = await imageCompression(imageFile, {
+          maxSizeMB: 1,
+          maxWidthOrHeight: 1920,
+          useWebWorker: true,
+          fileType: 'image/webp',
+        })
+        const formData = new FormData()
+        formData.append('file', compressed, 'foto-1.webp')
+        await apiFetchFormData(`/api/v1/master/barang/${id}/image`, formData)
+      }
       setSuccess('Barang berhasil diperbarui!');
+      toast.success('Barang berhasil diperbarui!', { id: toastId });
       setTimeout(() => router.push('/dashboard/master/barang'), 2000);
-    } catch { setError('Terjadi kesalahan'); }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Terjadi kesalahan'
+      setError(msg)
+      toast.error(msg, { id: toastId });
+    }
     finally { setLoading(false); }
   };
 
   if (isLoading) return <div className="min-h-[200px] flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /><p className="ml-3 text-muted-foreground">Memuat data...</p></div>;
+
+  const currentUrl = watch('image_url')
 
   return (
     <div className="max-w-xl">
@@ -114,10 +167,39 @@ export default function EditBarangPage() {
           <label className="block text-sm font-medium mb-1">Justification</label>
           <textarea {...register('justification')} rows={2} className="w-full px-3 py-2 border rounded-md focus:outline-none focus-visible:ring-3 focus-visible:ring-ring" />
         </div>
-        <div>
-          <label className="block text-sm font-medium mb-1">Image URL</label>
-          <input type="text" {...register('image_url')} placeholder="https://..." className="w-full px-3 py-2 border rounded-md focus:outline-none focus-visible:ring-3 focus-visible:ring-ring" />
+
+        <div className="space-y-3">
+          <label className="block text-sm font-medium">Foto Barang</label>
+          {imagePreview ? (
+            <div className="relative inline-block rounded-lg border overflow-hidden">
+              <img src={imagePreview} alt="Preview" className="max-h-48 object-contain" />
+              <button type="button" onClick={handleRemoveImage} className="absolute top-1 right-1 bg-background/80 rounded-full p-1 hover:bg-destructive hover:text-destructive-foreground transition-colors">
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          ) : currentUrl ? (
+            <div className="relative inline-block rounded-lg border overflow-hidden">
+              <img src={currentUrl} alt="Current" className="max-h-48 object-contain" />
+              <button type="button" onClick={handleDeleteImage} className="absolute top-1 right-1 bg-background/80 rounded-full p-1 hover:bg-destructive hover:text-destructive-foreground transition-colors">
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          ) : null}
+          <div
+            className="relative flex flex-col items-center justify-center rounded-lg border-2 border-dashed p-6 transition-colors cursor-pointer bg-muted/30 hover:bg-muted/50"
+            onClick={() => document.getElementById('barang-edit-image-input')?.click()}
+          >
+            <Upload className="h-8 w-8 mb-2 text-muted-foreground" />
+            <p className="text-sm font-medium">Klik untuk upload foto barang</p>
+            <p className="text-xs text-muted-foreground mt-1">JPG, PNG, WebP — maks. 5MB, 1920px</p>
+            <input id="barang-edit-image-input" type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={handlePickImage} />
+          </div>
+          <div>
+            <label className="block text-xs text-muted-foreground mb-1">Atau URL manual</label>
+            <input type="text" {...register('image_url')} placeholder="https://..." className="w-full px-3 py-2 border rounded-md text-xs focus:outline-none focus-visible:ring-3 focus-visible:ring-ring" />
+          </div>
         </div>
+
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium mb-1">Harga Beli Default</label>

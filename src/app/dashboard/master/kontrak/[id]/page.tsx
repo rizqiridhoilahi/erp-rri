@@ -5,7 +5,7 @@ import { useRouter, usePathname } from "next/navigation"
 import { apiFetch } from "@/lib/api/client"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Loader2, Upload, FileText, ExternalLink, Trash2 } from "lucide-react"
+import { Loader2, Upload, FileText, ExternalLink, Trash2, Plus } from "lucide-react"
 import { BreadcrumbNav, BreadcrumbItem } from "@/components/breadcrumb-nav"
 import { PageHeader } from "@/components/page-header"
 import { EmptyState } from "@/components/empty-state"
@@ -260,13 +260,18 @@ export default function DetailKontrakPage() {
         </CardContent>
       </Card>
 
-      {items.length > 0 && (
-        <div className="mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Item Barang</CardTitle>
-            </CardHeader>
-            <CardContent className="p-0">
+      <div className="mt-6">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle className="text-lg">Item Barang ({items.length})</CardTitle>
+            {items.length > 0 && (
+              <Button variant="outline" size="sm" onClick={() => router.push(`/dashboard/master/barang/tambah`)}>
+                <Plus className="h-4 w-4 mr-1" />Buat Barang dari Kontrak
+              </Button>
+            )}
+          </CardHeader>
+          <CardContent className="p-0">
+            {items.length > 0 ? (
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -294,10 +299,17 @@ export default function DetailKontrakPage() {
                   })}
                 </TableBody>
               </Table>
-            </CardContent>
-          </Card>
-        </div>
-      )}
+            ) : (
+              <div className="flex flex-col items-center justify-center py-10 px-4">
+                <p className="text-sm text-muted-foreground mb-4">Belum ada item barang untuk kontrak ini.</p>
+                <Button variant="outline" onClick={() => router.push(`/dashboard/master/barang/tambah`)}>
+                  <Plus className="h-4 w-4 mr-1" />Buat Barang dari Kontrak
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   )
 }

@@ -4,6 +4,14 @@ import { supabaseAdmin } from '@/lib/api/supabase-server'
 import { verifyAuth } from '@/lib/api/auth'
 import { badRequest, notFound, internalError } from '@/lib/api/errors'
 
+const itemSchema = z.object({
+  barang_id: z.string().nullable().optional(),
+  kode_barang: z.string(),
+  nama_barang: z.string(),
+  satuan: z.string(),
+  harga_satuan: z.number(),
+})
+
 const schema = z.object({
   customer_id: z.string().optional(),
   nomor_kontrak: z.string().optional(),
@@ -17,6 +25,7 @@ const schema = z.object({
   penandatangan_customer_jabatan: z.string().optional(),
   catatan: z.string().optional(),
   is_active: z.boolean().optional(),
+  items: z.array(itemSchema).optional(),
 })
 
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -39,13 +48,36 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
   if (!body) return badRequest('Invalid JSON body')
   const parsed = schema.safeParse(body)
   if (!parsed.success) return badRequest(parsed.error.issues.map(e => e.message).join(', '))
+  const { items, ...headerData } = parsed.data
+
   const { data, error } = await supabaseAdmin.from('kontrak')
-    .update({ ...parsed.data, updated_at: new Date().toISOString() })
+    .update({ ...headerData, updated_at: new Date().toISOString() })
     .eq('id', id)
     .select('*, customer!customer_id(nama)')
     .single()
   if (error) return internalError(error)
   if (!data) return notFound('Kontrak tidak ditemukan')
+
+  if (items) {
+    await supabaseAdmin.from('kontrak_item').delete().eq('kontrak_id', id)
+    if (items.length > 0) {
+      const now = new Date().toISOString()
+      const rows = items.map(item => ({
+        id: crypto.randomUUID(),
+        kontrak_id: id,
+        barang_id: item.barang_id ?? null,
+        kode_barang: item.kode_barang,
+        nama_barang: item.nama_barang,
+        satuan: item.satuan,
+        harga_satuan: item.harga_satuan,
+        created_at: now,
+        updated_at: now,
+      }))
+      const { error: itemsError } = await supabaseAdmin.from('kontrak_item').insert(rows)
+      if (itemsError) return internalError(itemsError)
+    }
+  }
+
   return NextResponse.json({ data })
 }
 
