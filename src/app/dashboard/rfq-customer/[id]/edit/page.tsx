@@ -14,7 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select'
 import { DatePicker } from '@/components/ui/date-picker'
-import { Plus, Trash2, ArrowLeft, Loader2, ImageIcon, X } from 'lucide-react'
+import { Plus, Trash2, ArrowLeft, Loader2, ImageIcon, X, Upload, FileText } from 'lucide-react'
 import { toast } from 'sonner'
 
 const itemSchema = z.object({
@@ -48,6 +48,8 @@ export default function EditRfqCustomerPage() {
   const [picOptions, setPicOptions] = useState<Array<{ value: string; label: string }>>([])
   const [barangOptions, setBarangOptions] = useState<Array<{ value: string; label: string; satuan: string }>>([])
   const [uploadingItemImage, setUploadingItemImage] = useState<string | null>(null)
+  const [documents, setDocuments] = useState<Array<{ id: string; file_name: string; file_url: string }>>([])
+  const [uploadingDoc, setUploadingDoc] = useState(false)
   const [nomor, setNomor] = useState('')
   const [nomorChecking, setNomorChecking] = useState(false)
   const [editId, setEditId] = useState<string>('')
@@ -132,6 +134,10 @@ export default function EditRfqCustomerPage() {
       toast.error('Gagal memuat data RFQ Customer')
       setLoading(false)
     })
+
+    apiFetch<Array<{ id: string; file_name: string; file_url: string }>>(`/api/v1/rfq-customer/${id}/documents`)
+      .then(res => setDocuments(res.data ?? []))
+      .catch(() => {})
   }, [params?.id, reset])
 
   useEffect(() => {
@@ -187,22 +193,12 @@ export default function EditRfqCustomerPage() {
   }, [nomorRfqCustomer, form, editId])
 
   async function handleUploadItemImage(index: number, file: File) {
-    const selectedCustomerId = form.getValues('customer_id')
-    const nomorRef = form.getValues('nomor_rfq_customer')
-    if (!selectedCustomerId || !nomorRef) {
-      toast.error('Pilih customer dan isi nomor RFQ terlebih dahulu')
-      return
-    }
-    const customer = customerOptions.find(c => c.value === selectedCustomerId)
-    const customerName = customer ? customer.label.replace(/^\[\w+\]\s*/, '') : ''
-
     setUploadingItemImage(String(index))
     try {
       const formData = new FormData()
       formData.append('file', file)
-      formData.append('customerName', customerName)
-      formData.append('nomorRfqCustomer', nomorRef)
       formData.append('type', 'gambar')
+      formData.append('recordId', editId)
       const res = await apiFetchFormData<{ fileId: string; fileName: string; fileUrl: string }>('/api/v1/rfq-customer/upload-temp', formData)
       setValue(`items.${index}.image_url`, res.data.fileUrl)
       toast.success('Gambar berhasil diupload')
@@ -210,6 +206,31 @@ export default function EditRfqCustomerPage() {
       toast.error(err instanceof Error ? err.message : 'Gagal upload gambar')
     } finally {
       setUploadingItemImage(null)
+    }
+  }
+
+  async function handleUploadDoc(file: File) {
+    setUploadingDoc(true)
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      const res = await apiFetchFormData<{ id: string; file_name: string; file_url: string }>(`/api/v1/rfq-customer/${editId}/documents`, formData)
+      setDocuments(prev => [res.data, ...prev])
+      toast.success('File berhasil diupload')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Gagal upload file')
+    } finally {
+      setUploadingDoc(false)
+    }
+  }
+
+  async function handleDeleteDoc(docId: string) {
+    try {
+      await apiFetch(`/api/v1/rfq-customer/${editId}/documents?docId=${docId}`, { method: 'DELETE' })
+      setDocuments(prev => prev.filter(d => d.id !== docId))
+      toast.success('File berhasil dihapus')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Gagal hapus file')
     }
   }
 
@@ -430,6 +451,57 @@ export default function EditRfqCustomerPage() {
               {fields.length === 0 && (
                 <p className="text-sm text-muted-foreground text-center py-4">Belum ada item. Klik Tambah Item untuk menambahkan.</p>
               )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Dokumen RFQ dari Customer</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                <div
+                  className="relative flex flex-col items-center justify-center rounded-lg border-2 border-dashed p-6 transition-colors cursor-pointer bg-muted/30 hover:bg-muted/50"
+                  onClick={() => {
+                    const input = document.createElement('input')
+                    input.type = 'file'
+                    input.accept = '.pdf,.xlsx,.xls,.doc,.docx,.jpg,.jpeg,.png,.webp'
+                    input.onchange = (e) => {
+                      const file = (e.target as HTMLInputElement).files?.[0]
+                      if (file) handleUploadDoc(file)
+                    }
+                    input.click()
+                  }}
+                >
+                  <Upload className="h-8 w-8 mb-2 text-muted-foreground" />
+                  <p className="text-sm font-medium">Klik untuk upload dokumen RFQ</p>
+                  <p className="text-xs text-muted-foreground mt-1">PDF, Excel, Word, Gambar (maks. 10MB)</p>
+                </div>
+                {uploadingDoc && (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Mengupload...
+                  </div>
+                )}
+                {documents.length > 0 && (
+                  <div className="space-y-2">
+                    {documents.map((d) => (
+                      <div key={d.id} className="flex items-center justify-between rounded-lg border p-3">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <FileText className="h-5 w-5 shrink-0 text-muted-foreground" />
+                          <a href={d.file_url} target="_blank" rel="noopener noreferrer" className="text-sm font-medium truncate hover:underline">{d.file_name}</a>
+                        </div>
+                        <Button variant="ghost" size="icon" onClick={() => handleDeleteDoc(d.id)} type="button">
+                          <X className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {documents.length === 0 && (
+                  <p className="text-sm text-muted-foreground text-center py-2">Belum ada dokumen</p>
+                )}
+              </div>
             </CardContent>
           </Card>
 

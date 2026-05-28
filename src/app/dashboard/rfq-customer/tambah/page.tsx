@@ -57,6 +57,7 @@ export default function TambahRfqCustomerPage() {
   const [nomorAuto, setNomorAuto] = useState('')
   const [nomorChecking, setNomorChecking] = useState(false)
   const checkNomorRef = useRef<ReturnType<typeof setTimeout>>(undefined)
+  const recordIdRef = useRef<string>(crypto.randomUUID())
 
   const today = new Date().toISOString().split('T')[0]
 
@@ -144,26 +145,12 @@ export default function TambahRfqCustomerPage() {
   }, [nomorRfqCustomer, form])
 
   async function handleUploadRfqDoc(file: File) {
-    const selectedCustomerId = form.getValues('customer_id')
-    const nomorRef = form.getValues('nomor_rfq_customer')
-    if (!selectedCustomerId) {
-      toast.error('Pilih customer terlebih dahulu')
-      return
-    }
-    if (!nomorRef) {
-      toast.error('Isi Nomor RFQ Customer terlebih dahulu')
-      return
-    }
-    const customer = customerOptions.find(c => c.value === selectedCustomerId)
-    const customerName = customer ? customer.label.replace(/^\[\w+\]\s*/, '') : ''
-
     setUploadingFile(true)
     try {
       const formData = new FormData()
       formData.append('file', file)
-      formData.append('customerName', customerName)
-      formData.append('nomorRfqCustomer', nomorRef)
       formData.append('type', 'rfq')
+      formData.append('recordId', recordIdRef.current)
       const res = await apiFetchFormData<{ fileId: string; fileName: string; fileUrl: string }>('/api/v1/rfq-customer/upload-temp', formData)
       setPendingFiles(prev => [...prev, res.data])
       toast.success('File berhasil diupload')
@@ -179,22 +166,12 @@ export default function TambahRfqCustomerPage() {
   }
 
   async function handleUploadItemImage(index: number, file: File) {
-    const selectedCustomerId = form.getValues('customer_id')
-    const nomorRef = form.getValues('nomor_rfq_customer')
-    if (!selectedCustomerId || !nomorRef) {
-      toast.error('Pilih customer dan isi nomor RFQ terlebih dahulu')
-      return
-    }
-    const customer = customerOptions.find(c => c.value === selectedCustomerId)
-    const customerName = customer ? customer.label.replace(/^\[\w+\]\s*/, '') : ''
-
     setUploadingItemImage(String(index))
     try {
       const formData = new FormData()
       formData.append('file', file)
-      formData.append('customerName', customerName)
-      formData.append('nomorRfqCustomer', nomorRef)
       formData.append('type', 'gambar')
+      formData.append('recordId', recordIdRef.current)
       const res = await apiFetchFormData<{ fileId: string; fileName: string; fileUrl: string }>('/api/v1/rfq-customer/upload-temp', formData)
       setValue(`items.${index}.image_url`, res.data.fileUrl)
       toast.success('Gambar berhasil diupload')
@@ -209,6 +186,7 @@ export default function TambahRfqCustomerPage() {
     setSubmitting(true)
     try {
       const payload = {
+        id: recordIdRef.current,
         ...data,
         nomor_rfq_customer: data.nomor_rfq_customer || null,
         pic_customer_id: data.pic_customer_id || null,

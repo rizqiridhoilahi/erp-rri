@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/api/supabase-server'
 import { verifyAuth } from '@/lib/api/auth'
 import { badRequest, notFound, internalError } from '@/lib/api/errors'
+import { storageService } from '@/lib/storage'
 
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const auth = await verifyAuth(_request); if (auth.error) return auth.error
@@ -80,6 +81,11 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
   if (!data) return notFound('RFQ Customer tidak ditemukan')
 
   if (body.items) {
+    const { data: oldItems } = await supabaseAdmin
+      .from('rfq_customer_item')
+      .select('image_url')
+      .eq('rfq_customer_id', id)
+
     await supabaseAdmin.from('rfq_customer_item').delete().eq('rfq_customer_id', id)
 
     const now = new Date().toISOString()
@@ -97,6 +103,18 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
     const { error: itemsError } = await supabaseAdmin.from('rfq_customer_item').insert(items)
     if (itemsError) return internalError(itemsError)
+
+    if (oldItems) {
+      const oldUrls = oldItems.map(i => i.image_url).filter(Boolean) as string[]
+      const newUrls = (body.items as Array<{ image_url?: string }>).map(i => i.image_url).filter(Boolean) as string[]
+      const orphanedUrls = oldUrls.filter(url => !newUrls.includes(url))
+      for (const url of orphanedUrls) {
+        const match = url.match(/\/public\/dokumen\/(.+)/)
+        if (match) {
+          await storageService.delete(match[1]).catch(() => {})
+        }
+      }
+    }
   }
 
   return NextResponse.json({ data })

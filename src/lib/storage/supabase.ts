@@ -29,6 +29,21 @@ export const storageService: IStorageService = {
     }
   },
 
+  async copy(fromPath: string, toPath: string): Promise<{ fileId: string; webViewLink: string }> {
+    const { error: copyError } = await supabaseAdmin.storage
+      .from(BUCKET)
+      .copy(fromPath, toPath)
+
+    if (copyError) throw new Error('Gagal copy file: ' + copyError.message)
+
+    const { data: { publicUrl } } = supabaseAdmin.storage.from(BUCKET).getPublicUrl(toPath)
+
+    return {
+      fileId: toPath,
+      webViewLink: publicUrl,
+    }
+  },
+
   async delete(fileId: string): Promise<void> {
     const { error } = await supabaseAdmin.storage.from(BUCKET).remove([fileId])
     if (error) throw new Error(error.message)

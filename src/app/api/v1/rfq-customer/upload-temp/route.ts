@@ -11,13 +11,12 @@ export async function POST(request: NextRequest) {
   if (!formData) return badRequest('Invalid form data')
 
   const file = formData.get('file') as File | null
-  const customerName = formData.get('customerName') as string | null
-  const nomorRfqCustomer = formData.get('nomorRfqCustomer') as string | null
   const type = formData.get('type') as string | null
+  const recordId = formData.get('recordId') as string | null
 
   if (!file) return badRequest('File harus diupload')
-  if (!customerName || !nomorRfqCustomer) return badRequest('customerName dan nomorRfqCustomer diperlukan')
   if (!type || !['rfq', 'gambar'].includes(type)) return badRequest('type harus rfq atau gambar')
+  if (!recordId) return badRequest('recordId diperlukan')
 
   const maxSize = 10 * 1024 * 1024
   if (file.size > maxSize) return badRequest('Ukuran file maksimal 10MB')
@@ -30,8 +29,10 @@ export async function POST(request: NextRequest) {
     if (!allowedTypes.includes(file.type)) return badRequest('Tipe file tidak didukung')
   }
 
-  const folder = type === 'gambar' ? 'gambar' : 'rfq'
-  const filePath = `dokumen/temp/rfq-customer/${folder}/${Date.now()}-${file.name}`
+  const subfolder = type === 'gambar' ? 'item-images' : ''
+  const filePath = subfolder
+    ? `dokumen/rfq-customer/${recordId}/${subfolder}/${file.name}`
+    : `dokumen/rfq-customer/${recordId}/${file.name}`
 
   const buffer = Buffer.from(await file.arrayBuffer())
 

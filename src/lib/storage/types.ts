@@ -19,6 +19,7 @@ export interface IStorageService {
     filePath: string,
     mimeType: string,
   ): Promise<UploadResult>
+  copy(fromPath: string, toPath: string): Promise<{ fileId: string; webViewLink: string }>
   getUrl(fileId: string): Promise<{ webViewLink: string; webContentLink: string }>
   delete(fileId: string): Promise<void>
   list(prefix: string): Promise<StoredFile[]>

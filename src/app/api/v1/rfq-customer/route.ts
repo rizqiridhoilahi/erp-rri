@@ -21,6 +21,7 @@ const fileSchema = z.object({
 })
 
 const schema = z.object({
+  id: z.string().uuid().optional(), // client-generated UUID for direct storage path
   customer_id: z.string().min(1, 'Customer harus dipilih'),
   tanggal: z.string().min(1, 'Tanggal harus diisi'),
   nomor_rfq_customer: z.string().optional().nullable(),
@@ -57,10 +58,12 @@ export async function POST(request: NextRequest) {
 
   const nomor = await generateDocumentNumber('RFQC')
   const now = new Date().toISOString()
+  const recordId = parsed.data.id || crypto.randomUUID()
 
   const { data: rfq, error: rfqError } = await supabaseAdmin
     .from('rfq_customer')
     .insert({
+      id: recordId,
       nomor,
       customer_id: parsed.data.customer_id,
       nomor_rfq_customer: parsed.data.nomor_rfq_customer ?? null,
@@ -78,7 +81,7 @@ export async function POST(request: NextRequest) {
   if (rfqError) return internalError(rfqError)
 
   const items = (parsed.data.items ?? []).map(item => ({
-    rfq_customer_id: rfq.id,
+    rfq_customer_id: recordId,
     barang_id: item.barang_id ?? null,
     nama_barang: item.nama_barang ?? null,
     jumlah: item.jumlah,
@@ -92,14 +95,14 @@ export async function POST(request: NextRequest) {
   if (items.length > 0) {
     const { error: itemsError } = await supabaseAdmin.from('rfq_customer_item').insert(items)
     if (itemsError) {
-      await supabaseAdmin.from('rfq_customer').delete().eq('id', rfq.id)
+      await supabaseAdmin.from('rfq_customer').delete().eq('id', recordId)
       return internalError(itemsError)
     }
   }
 
   const fileRecords = (parsed.data.files ?? []).map(f => ({
     id: crypto.randomUUID(),
-    rfq_customer_id: rfq.id,
+    rfq_customer_id: recordId,
     file_name: f.fileName,
     file_url: f.fileUrl,
     drive_file_id: f.fileId,
@@ -108,7 +111,7 @@ export async function POST(request: NextRequest) {
   if (fileRecords.length > 0) {
     const { error: filesError } = await supabaseAdmin.from('rfq_customer_document').insert(fileRecords)
     if (filesError) {
-      await supabaseAdmin.from('rfq_customer').delete().eq('id', rfq.id)
+      await supabaseAdmin.from('rfq_customer').delete().eq('id', recordId)
       return internalError(filesError)
     }
   }
