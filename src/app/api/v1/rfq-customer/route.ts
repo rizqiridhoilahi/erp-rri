@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
       customer_id: parsed.data.customer_id,
       nomor_rfq_customer: parsed.data.nomor_rfq_customer ?? null,
       tanggal: parsed.data.tanggal,
-      pic_customer_id: parsed.data.pic_customer_id ?? null,
+      pic_customer_id: parsed.data.pic_customer_id || null,
       perihal: parsed.data.perihal ?? 'Permintaan Penawaran',
       status: parsed.data.status ?? 'draft',
       keterangan: parsed.data.keterangan ?? null,

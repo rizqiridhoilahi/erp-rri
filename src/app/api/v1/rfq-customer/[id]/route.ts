@@ -63,7 +63,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
   if (body.customer_id !== undefined) updateData.customer_id = body.customer_id
   if (body.tanggal !== undefined) updateData.tanggal = body.tanggal
   if (body.nomor_rfq_customer !== undefined) updateData.nomor_rfq_customer = body.nomor_rfq_customer ?? null
-  if (body.pic_customer_id !== undefined) updateData.pic_customer_id = body.pic_customer_id ?? null
+  if (body.pic_customer_id !== undefined) updateData.pic_customer_id = body.pic_customer_id || null
   if (body.perihal !== undefined) updateData.perihal = body.perihal
   if (body.status !== undefined) updateData.status = body.status
   if (body.keterangan !== undefined) updateData.keterangan = body.keterangan ?? null

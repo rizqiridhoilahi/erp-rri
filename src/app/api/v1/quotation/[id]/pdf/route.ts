@@ -76,7 +76,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
   let picCustomerNoHp: string | null = null
   if (qtn.pic_customer_id) {
     const { data: pic } = await supabaseAdmin
-      .from('pic_customer')
+      .from('customer_pic')
       .select('nama, no_hp')
       .eq('id', qtn.pic_customer_id)
       .single()

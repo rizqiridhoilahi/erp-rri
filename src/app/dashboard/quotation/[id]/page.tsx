@@ -58,6 +58,7 @@ interface Quotation {
   lampiran: string | null
   perihal: string | null
   pic_customer_id: string | null
+  pic_customer: { id: string; nama: string; jabatan: string; no_hp: string } | null
   alamat: string | null
   tanggal: string
   status: string
@@ -235,6 +236,14 @@ export default function QuotationDetailPage() {
               <p className="font-medium">{data.customer?.nama || "-"}</p>
               <p className="text-xs text-muted-foreground">{data.customer?.kode || ""}</p>
             </div>
+            {data.pic_customer && (
+              <div>
+                <p className="text-sm text-muted-foreground">PIC Customer</p>
+                <p className="font-medium">{data.pic_customer.nama}</p>
+                {data.pic_customer.jabatan && <p className="text-xs text-muted-foreground">{data.pic_customer.jabatan}</p>}
+                {data.pic_customer.no_hp && <p className="text-xs text-muted-foreground">{data.pic_customer.no_hp}</p>}
+              </div>
+            )}
             <div>
               <p className="text-sm text-muted-foreground">Alamat</p>
               <p className="font-medium whitespace-pre-wrap">{data.alamat || "-"}</p>

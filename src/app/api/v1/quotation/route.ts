@@ -95,6 +95,16 @@ export async function POST(request: NextRequest) {
     ? calcTanggalBerlaku(parsed.data.masa_berlaku, tanggal)
     : null
 
+  let picCustomerId = parsed.data.pic_customer_id || null
+  if (!picCustomerId && parsed.data.rfq_id) {
+    const { data: rfq } = await supabaseAdmin
+      .from('rfq_customer')
+      .select('pic_customer_id')
+      .eq('id', parsed.data.rfq_id)
+      .single()
+    if (rfq?.pic_customer_id) picCustomerId = rfq.pic_customer_id
+  }
+
   const { data: qtn, error: qtnError } = await supabaseAdmin
     .from('quotation')
     .insert({
@@ -104,7 +114,7 @@ export async function POST(request: NextRequest) {
       referensi: parsed.data.referensi ?? null,
       lampiran: parsed.data.lampiran ?? null,
       perihal: parsed.data.perihal ?? 'Penawaran Harga',
-      pic_customer_id: parsed.data.pic_customer_id ?? null,
+      pic_customer_id: picCustomerId,
       alamat: parsed.data.alamat ?? null,
       tanggal: parsed.data.tanggal,
       masa_berlaku: parsed.data.masa_berlaku ?? null,

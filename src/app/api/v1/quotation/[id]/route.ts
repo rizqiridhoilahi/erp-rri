@@ -103,13 +103,23 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
     rfqItemNames = rfqItems?.map(i => i.nama_barang) ?? []
   }
 
+  let picCustomer = null
+  if (qtn.pic_customer_id) {
+    const { data: pic } = await supabaseAdmin
+      .from('customer_pic')
+      .select('id, nama, jabatan, no_hp')
+      .eq('id', qtn.pic_customer_id)
+      .single()
+    if (pic) picCustomer = pic
+  }
+
   const itemsWithBarang = (items ?? []).map((item, idx) => ({
     ...item,
     barang: item.barang_id ? (barangMap.get(item.barang_id) ?? null) : null,
     nama_barang: idx < rfqItemNames.length ? rfqItemNames[idx] : null,
   }))
 
-  return NextResponse.json({ data: { ...qtn, customer, rfq_customer: rfqCustomer, items: itemsWithBarang } })
+  return NextResponse.json({ data: { ...qtn, customer, rfq_customer: rfqCustomer, pic_customer: picCustomer, items: itemsWithBarang } })
 }
 
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -129,7 +139,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
   if (parsed.data.referensi !== undefined) updateData.referensi = parsed.data.referensi ?? null
   if (parsed.data.lampiran !== undefined) updateData.lampiran = parsed.data.lampiran ?? null
   if (parsed.data.perihal !== undefined) updateData.perihal = parsed.data.perihal
-  if (parsed.data.pic_customer_id !== undefined) updateData.pic_customer_id = parsed.data.pic_customer_id ?? null
+  if (parsed.data.pic_customer_id !== undefined) updateData.pic_customer_id = parsed.data.pic_customer_id || null
   if (parsed.data.alamat !== undefined) updateData.alamat = parsed.data.alamat ?? null
   if (parsed.data.tanggal !== undefined) updateData.tanggal = parsed.data.tanggal
   if (parsed.data.status !== undefined) updateData.status = parsed.data.status

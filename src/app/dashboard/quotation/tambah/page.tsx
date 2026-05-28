@@ -84,6 +84,7 @@ export default function TambahQuotationPage() {
     defaultValues: {
       tanggal: today,
       perihal: 'Penawaran Harga',
+      lampiran: '',
       ppn_rate: 0.11,
       ppn_enabled: true,
       items: [{ barang_id: '', jumlah: 1, harga_satuan: 0, specification: '', justification: '', image_url: '', satuan: '' }],

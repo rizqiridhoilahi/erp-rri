@@ -219,7 +219,7 @@ export function QuotationPDF({ data }: { data: QuotData }) {
       H(View, { style: styles.alamatSection },
         H(Text, { style: styles.alamatTitle }, 'Kepada Yth.:'),
         H(Text, { style: styles.alamatName }, data.customer.nama),
-        data.pic_customer_nama && H(Text, { style: { fontSize: 11, marginBottom: 2 } }, 'u.p. ' + data.pic_customer_nama),
+        data.pic_customer_nama ? H(Text, { style: { fontSize: 11, marginBottom: 2 } }, 'u.p. ' + data.pic_customer_nama) : null,
         H(View, { style: styles.alamatAddress },
           H(Text, null, data.alamat || '')
         )
