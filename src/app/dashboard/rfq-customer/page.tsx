@@ -26,11 +26,12 @@ interface RfqCustomer {
   customer: Customer | null
 }
 
-const statusLabel: Record<string, { label: string; variant: 'secondary' | 'warning' | 'success' | 'outline' }> = {
+const statusLabel: Record<string, { label: string; variant: 'secondary' | 'warning' | 'success' | 'outline' | 'destructive' }> = {
   draft: { label: 'Draft', variant: 'secondary' },
   sent: { label: 'Terkirim', variant: 'warning' },
   responded: { label: 'Direspon', variant: 'success' },
   closed: { label: 'Ditutup', variant: 'outline' },
+  Dibatalkan: { label: 'Dibatalkan', variant: 'destructive' },
 }
 
 export default function RfqCustomerPage() {
@@ -48,10 +49,10 @@ export default function RfqCustomerPage() {
   const handleDelete = async (id: string, nomor: string) => {
     try {
       await apiFetch(`/api/v1/rfq-customer/${id}`, { method: 'DELETE' })
-      toast.success(`RFQ ${nomor} berhasil dihapus`)
+      toast.success(`RFQ ${nomor} berhasil dibatalkan`)
       loadData()
     } catch {
-      toast.error('Gagal menghapus RFQ')
+      toast.error('Gagal membatalkan RFQ')
     }
   }
 
@@ -98,13 +99,13 @@ export default function RfqCustomerPage() {
               {data.map((item) => (
                 <TableRow key={item.id}>
                   <TableCell className="font-medium">{item.nomor}</TableCell>
-                  <TableCell className="text-muted-foreground">{item.nomor_rfq_customer || '-'}</TableCell>
+                  <TableCell className="font-medium">{item.nomor_rfq_customer || '-'}</TableCell>
                   <TableCell>
                     <span className="text-muted-foreground text-xs">{item.customer?.kode}</span>
                     <br />
                     {item.customer?.nama}
                   </TableCell>
-                  <TableCell className="text-muted-foreground">
+                  <TableCell className="font-medium">
                     {new Date(item.tanggal).toLocaleDateString('id-ID')}
                   </TableCell>
                   <TableCell>
@@ -135,10 +136,12 @@ export default function RfqCustomerPage() {
                       <DeleteConfirmationDialog
                         onConfirm={() => handleDelete(item.id, item.nomor)}
                         itemName={`RFQ Customer ${item.nomor}`}
+                        title="Konfirmasi Batalkan"
+                        description="Apakah Anda yakin ingin membatalkan RFQ Customer ini? Data akan tetap tersimpan di database."
                         trigger={
                           <Button variant="ghost" size="sm">
                             <Trash2 className="h-4 w-4 text-destructive" />
-                            <span className="sr-only">Hapus</span>
+                            <span className="sr-only">Batalkan</span>
                           </Button>
                         }
                       />

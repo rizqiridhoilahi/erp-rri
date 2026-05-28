@@ -16,11 +16,12 @@ import {
 } from "@/components/ui/table"
 import { toast } from "sonner"
 
-const statusLabel: Record<string, { label: string; variant: "secondary" | "warning" | "success" | "outline" }> = {
+const statusLabel: Record<string, { label: string; variant: "secondary" | "warning" | "success" | "outline" | "destructive" }> = {
   draft: { label: "Draft", variant: "secondary" },
   sent: { label: "Terkirim", variant: "warning" },
   responded: { label: "Direspon", variant: "success" },
   closed: { label: "Ditutup", variant: "outline" },
+  Dibatalkan: { label: "Dibatalkan", variant: "destructive" },
 }
 
 interface RFQCustomerItem {
@@ -105,6 +106,7 @@ export default function RfqCustomerDetailPage() {
   const handleDelete = async () => {
     if (!id) return
     await apiFetch(`/api/v1/rfq-customer/${id}`, { method: "DELETE" })
+    toast.success("RFQ Customer berhasil dibatalkan")
     router.push("/dashboard/rfq-customer")
   }
 
@@ -128,7 +130,9 @@ export default function RfqCustomerDetailPage() {
             <DeleteConfirmationDialog
               onConfirm={handleDelete}
               itemName={`RFQ Customer ${data.nomor}`}
-              trigger={<Button variant="outline" className="text-destructive hover:text-destructive"><Trash2 className="h-4 w-4 mr-2" />Hapus</Button>}
+              title="Konfirmasi Batalkan"
+              description="Apakah Anda yakin ingin membatalkan RFQ Customer ini? Data akan tetap tersimpan di database."
+              trigger={<Button variant="outline" className="text-destructive hover:text-destructive"><Trash2 className="h-4 w-4 mr-2" />Batalkan</Button>}
             />
           </div>
         }

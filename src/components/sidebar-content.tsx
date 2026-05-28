@@ -136,7 +136,7 @@ const labelToModule: Record<string, string> = {
 
 function isActive(href: string, pathname: string): boolean {
   if (href === '/dashboard') return pathname === '/dashboard'
-  return pathname.startsWith(href)
+  return pathname === href || pathname.startsWith(href + '/')
 }
 
 function groupHasActive(group: MenuGroup, pathname: string): boolean {

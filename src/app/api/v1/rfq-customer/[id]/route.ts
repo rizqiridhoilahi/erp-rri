@@ -108,12 +108,12 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
 
   const { id } = await params
 
-  await supabaseAdmin.from('rfq_customer_item').delete().eq('rfq_customer_id', id)
-  await supabaseAdmin.from('rfq_customer_document').delete().eq('rfq_customer_id', id)
-  await supabaseAdmin.from('rfq_customer_pic').delete().eq('rfq_customer_id', id)
+  const { error } = await supabaseAdmin
+    .from('rfq_customer')
+    .update({ status: 'Dibatalkan', updated_at: new Date().toISOString() })
+    .eq('id', id)
 
-  const { error } = await supabaseAdmin.from('rfq_customer').delete().eq('id', id)
   if (error) return internalError(error)
 
-  return NextResponse.json({ message: 'RFQ Customer berhasil dihapus' })
+  return NextResponse.json({ message: 'RFQ Customer berhasil dibatalkan' })
 }
