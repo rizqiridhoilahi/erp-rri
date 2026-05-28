@@ -225,7 +225,7 @@ export function QuotationPDF({ data }: { data: QuotData }) {
         )
       ),
 
-      H(View, { style: { marginBottom: 20 } },
+      H(View, { style: { marginBottom: 18 } },
         H(Text, { style: styles.bodyText }, 'Dengan hormat,'),
         H(Text, { style: styles.bodyText }, 'Dengan ini kami bermaksud mengirimkan penawaran harga untuk melaksanakan pekerjaan tersebut.'),
         H(Text, { style: { ...styles.bodyText, marginTop: 4 } },
@@ -238,10 +238,9 @@ export function QuotationPDF({ data }: { data: QuotData }) {
           H(Text, { style: styles.bodyBold }, 'Keterangan:'),
           H(Text, { style: { fontSize: 11 } }, data.keterangan)
         ),
-        data.masa_berlaku && data.tanggal_berlaku_sampai && H(Text, { style: { fontSize: 11, marginTop: 4 } },
+        data.masa_berlaku && data.tanggal_berlaku_sampai && H(Text, { style: { fontSize: 11, marginTop: 2 } },
           '- Informasi harga ini berlaku sampai ' + data.tanggal_berlaku_sampai
         ),
-
         H(Text, { style: styles.penutupText },
           'Demikian surat penawaran ini kami sampaikan, atas perhatian dan pertimbangannya diucapkan terimakasih.'
         )
@@ -258,8 +257,7 @@ export function QuotationPDF({ data }: { data: QuotData }) {
         ),
         H(View, { style: { marginTop: (c.tanda_tangan_stempel_url || c.tanda_tangan_url) ? 0 : 40 } },
           H(Text, { style: styles.signatureName }, c.penandatangan_nama || 'Mohamad Marzuqi'),
-          H(Text, { style: styles.signatureJabatan }, c.penandatangan_jabatan || 'Direktur'),
-          H(Text, { style: styles.signaturePhone }, c.penandatangan_no_hp || '0812-607-5500')
+          H(Text, { style: styles.signatureJabatan }, c.penandatangan_jabatan || 'Direktur')
         )
       ),
 
@@ -337,8 +335,8 @@ export function QuotationPDF({ data }: { data: QuotData }) {
 
         isLast && (data.keterangan || (data.masa_berlaku && data.tanggal_berlaku_sampai)) ? H(View, { style: { marginTop: 12 } },
           H(Text, { style: styles.keteranganFootnote }, '* Keterangan:'),
-          data.keterangan ? H(Text, { style: styles.keteranganFootnote }, data.keterangan) : null,
           data.masa_berlaku && data.tanggal_berlaku_sampai ? H(Text, { style: styles.keteranganFootnote }, '- Informasi harga ini berlaku sampai ' + data.tanggal_berlaku_sampai) : null,
+          data.keterangan ? H(Text, { style: styles.keteranganFootnote }, data.keterangan) : null,
         ) : null,
         H(View, { style: styles.footer },
           H(Text, { style: styles.footerText }, c.company_alamat || 'Jerukwangi - Bangsri, Jepara'),
