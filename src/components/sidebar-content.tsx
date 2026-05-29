@@ -215,11 +215,11 @@ export function SidebarContent({ collapsed }: { collapsed?: boolean }) {
           {!collapsed && (theme === 'light' ? 'Mode Gelap' : 'Mode Terang')}
         </button>
         <Button
-          variant="ghost"
-          className="flex items-center gap-2 w-full px-4 py-2 rounded-lg text-sm text-destructive hover:bg-destructive/10 hover:text-destructive transition-colors duration-200"
+          variant="destructive"
+          className="flex items-center gap-2 w-full px-4 py-2 rounded-lg text-sm transition-colors duration-200"
           onClick={handleLogout}
         >
-          <LogOut className="h-4 w-4 text-destructive" />
+          <LogOut className="h-4 w-4" />
           {!collapsed && 'Keluar'}
         </Button>
         {user && !collapsed && (

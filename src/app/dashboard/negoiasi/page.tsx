@@ -30,8 +30,8 @@ export default async function NegoiasiPage() {
         {data.map((item: { id: string; nomor: string; quotation: { nomor: string } | null; tanggal: string; status: string }) => (
           <TableRow key={item.id}>
             <TableCell className="font-medium">{item.nomor}</TableCell>
-            <TableCell>{item.quotation?.nomor ?? '-'}</TableCell>
-            <TableCell className="text-muted-foreground">{new Date(item.tanggal).toLocaleDateString('id-ID')}</TableCell>
+            <TableCell className="font-medium">{item.quotation?.nomor ?? '-'}</TableCell>
+            <TableCell className="font-medium">{new Date(item.tanggal).toLocaleDateString('id-ID')}</TableCell>
             <TableCell><Badge variant={s[item.status]?.v ?? 'outline'}>{s[item.status]?.label ?? item.status}</Badge></TableCell>
             <TableCell className="text-right"><Button variant="ghost" size="sm" asChild><Link href={`/dashboard/negoiasi/${item.id}`}><Eye className="h-4 w-4" /><span className="sr-only">Detail</span></Link></Button><Button variant="ghost" size="sm" asChild><Link href={`/dashboard/negoiasi/${item.id}/edit`}><Pencil className="h-4 w-4" /><span className="sr-only">Edit</span></Link></Button></TableCell>
           </TableRow>

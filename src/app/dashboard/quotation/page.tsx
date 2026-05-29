@@ -58,12 +58,12 @@ export default async function QuotationPage() {
               {qtnData.map((item) => (
                 <TableRow key={item.id}>
                   <TableCell className="font-medium">{item.nomor}</TableCell>
-                  <TableCell>
+                  <TableCell className="font-medium">
                     <span className="text-muted-foreground text-xs">{item.customer?.kode}</span>
                     <br />
                     {item.customer?.nama}
                   </TableCell>
-                  <TableCell className="text-muted-foreground">
+                  <TableCell className="font-medium">
                     {new Date(item.tanggal).toLocaleDateString('id-ID')}
                   </TableCell>
                   <TableCell>

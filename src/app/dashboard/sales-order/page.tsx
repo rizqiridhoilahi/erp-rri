@@ -38,9 +38,9 @@ export default async function SalesOrderPage() {
           return (
           <TableRow key={item.id}>
             <TableCell className="font-medium">{item.nomor}</TableCell>
-            <TableCell className="text-muted-foreground">{customer?.nama as string ?? '-'}</TableCell>
-            <TableCell className="text-muted-foreground">{item.customer_po?.nomor ?? '-'}</TableCell>
-            <TableCell className="text-muted-foreground">{new Date(item.tanggal).toLocaleDateString('id-ID')}</TableCell>
+            <TableCell className="font-medium">{customer?.nama as string ?? '-'}</TableCell>
+            <TableCell className="font-medium">{item.customer_po?.nomor ?? '-'}</TableCell>
+            <TableCell className="font-medium">{new Date(item.tanggal).toLocaleDateString('id-ID')}</TableCell>
             <TableCell><Badge variant={s[item.status]?.v ?? 'outline'}>{s[item.status]?.label ?? item.status}</Badge></TableCell>
             <TableCell><Badge variant={item.is_active ? 'default' : 'secondary'} className="text-xs">{item.is_active ? 'Ya' : 'Tidak'}</Badge></TableCell>
             <TableCell>{doItem ? <Badge variant="secondary">{doItem.nomor}</Badge> : '-'}</TableCell>

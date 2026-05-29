@@ -36,9 +36,9 @@ export default async function CustomerPoPage() {
           return (
           <TableRow key={item.id}>
             <TableCell className="font-medium">{item.nomor}</TableCell>
-            <TableCell>{item.customer?.nama}</TableCell>
-            <TableCell className="text-muted-foreground">{item.nomor_po_customer ?? '-'}</TableCell>
-            <TableCell className="text-muted-foreground">{new Date(item.tanggal).toLocaleDateString('id-ID')}</TableCell>
+            <TableCell className="font-medium">{item.customer?.nama}</TableCell>
+            <TableCell className="font-medium">{item.nomor_po_customer ?? '-'}</TableCell>
+            <TableCell className="font-medium">{new Date(item.tanggal).toLocaleDateString('id-ID')}</TableCell>
             <TableCell><Badge variant={s[item.status]?.v ?? 'outline'}>{s[item.status]?.label ?? item.status}</Badge></TableCell>
             <TableCell>{so ? <Badge variant="secondary">{so.nomor}</Badge> : '-'}</TableCell>
             <TableCell className="text-right space-x-1"><Button variant="ghost" size="sm" asChild><Link href={`/dashboard/customer-po/${item.id}`}><Eye className="h-4 w-4" /></Link></Button><Button variant="ghost" size="sm" asChild><Link href={`/dashboard/customer-po/${item.id}/edit`}><Pencil className="h-4 w-4" /></Link></Button></TableCell>
