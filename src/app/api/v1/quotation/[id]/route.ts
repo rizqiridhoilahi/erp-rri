@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { supabaseAdmin } from '@/lib/api/supabase-server'
 import { verifyAuth } from '@/lib/api/auth'
 import { badRequest, notFound, internalError } from '@/lib/api/errors'
+import { logAudit } from '@/lib/audit'
 
 const itemSchema = z.object({
   barang_id: z.string().optional().nullable(),
@@ -234,6 +235,12 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
   if (error) return internalError(error)
   if (!data) return notFound('Quotation tidak ditemukan')
 
+  const changes: Record<string, unknown> = { ...updateData }
+  if (parsed.data.status) {
+    changes.status = { old: current.status, new: parsed.data.status }
+  }
+  await logAudit({ userId: auth.user?.id, action: 'UPDATE', tableName: 'quotation', recordId: id, changes })
+
   return NextResponse.json({ data })
 }
 
@@ -243,10 +250,14 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
 
   const { id } = await params
 
+  const { data: deleted } = await supabaseAdmin.from('quotation').select('nomor').eq('id', id).single()
+
   await supabaseAdmin.from('quotation_item').delete().eq('quotation_id', id)
 
   const { error } = await supabaseAdmin.from('quotation').delete().eq('id', id)
   if (error) return internalError(error)
+
+  await logAudit({ userId: auth.user?.id, action: 'DELETE', tableName: 'quotation', recordId: id, changes: { nomor: deleted?.nomor } })
 
   return NextResponse.json({ message: 'Quotation berhasil dihapus' })
 }

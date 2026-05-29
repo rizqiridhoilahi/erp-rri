@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm"
-import { pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, integer } from "drizzle-orm/pg-core";
 
 export const negoiasi = pgTable("negoiasi", {
  id: text("id").primaryKey().default(sql`gen_random_uuid()::text`),
@@ -7,6 +7,7 @@ export const negoiasi = pgTable("negoiasi", {
  quotationId: text("quotation_id").notNull(),
  tanggal: timestamp("tanggal").notNull(),
  status: text("status").notNull().default("draft"),
+ revision: integer("revision").notNull().default(1),
  keterangan: text("keterangan"),
  createdAt: timestamp("created_at").notNull().defaultNow(),
  updatedAt: timestamp("updated_at").notNull().defaultNow(),

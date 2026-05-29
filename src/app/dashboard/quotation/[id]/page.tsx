@@ -88,7 +88,7 @@ export default function QuotationDetailPage() {
   const [previewLoading, setPreviewLoading] = useState(false)
   const [downloadLoading, setDownloadLoading] = useState(false)
   const [statusLoading, setStatusLoading] = useState(false)
-  const [negoList, setNegoList] = useState<Array<{ id: string; nomor: string; status: string; tanggal: string }>>([])
+  const [negoList, setNegoList] = useState<Array<{ id: string; nomor: string; status: string; tanggal: string; revision: number }>>([])
   const [negoLoading, setNegoLoading] = useState(true)
   const [poList, setPoList] = useState<Array<{ id: string; nomor: string; status: string; tanggal: string }>>([])
   const [poLoading, setPoLoading] = useState(true)
@@ -99,7 +99,7 @@ export default function QuotationDetailPage() {
       .then((res) => { setData(res.data); setLoading(false) })
       .catch((err) => { setError(err.message); setLoading(false) })
 
-    apiFetch<Array<{ id: string; nomor: string; status: string; tanggal: string; quotation_id: string }>>('/api/v1/negoiasi')
+    apiFetch<Array<{ id: string; nomor: string; status: string; tanggal: string; quotation_id: string; revision: number }>>('/api/v1/negoiasi')
       .then((res) => {
         const filtered = (res.data ?? []).filter((n) => n.quotation_id === id)
         setNegoList(filtered)
@@ -245,6 +245,10 @@ export default function QuotationDetailPage() {
               <>
                 <Button variant="default" onClick={() => router.push(`/dashboard/customer-po/tambah?quotation_id=${id}`)}>
                   <ShoppingCart className="h-4 w-4 mr-2" />Buat PO Customer
+                </Button>
+                <Button variant="outline" onClick={() => handleStatusChange('sent')} disabled={statusLoading}>
+                  {statusLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Send className="h-4 w-4 mr-2" />}
+                  Kirim Ulang
                 </Button>
                 <Button variant="outline" onClick={() => handleStatusChange('closed')} disabled={statusLoading}>
                   {statusLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <XCircle className="h-4 w-4 mr-2" />}
@@ -406,7 +410,7 @@ export default function QuotationDetailPage() {
               {negoList.map((n) => (
                 <div key={n.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 cursor-pointer" onClick={() => router.push(`/dashboard/negoiasi/${n.id}`)}>
                   <div>
-                    <p className="font-medium text-sm">{n.nomor}</p>
+                    <p className="font-medium text-sm">{n.nomor} <span className="text-xs text-muted-foreground">(Rev #{n.revision})</span></p>
                     <p className="text-xs text-muted-foreground">{new Date(n.tanggal).toLocaleDateString('id-ID')}</p>
                   </div>
                   <Badge variant={n.status === 'approved' ? 'success' : n.status === 'rejected' ? 'destructive' : 'secondary'}>

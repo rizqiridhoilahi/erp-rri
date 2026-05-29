@@ -5,6 +5,7 @@ import { verifyAuth } from '@/lib/api/auth'
 import { badRequest, internalError } from '@/lib/api/errors'
 import { generateDocumentNumber } from '@/lib/utils/document-number'
 import { sendWhatsapp } from '@/lib/utils/whatsapp'
+import { logAudit } from '@/lib/audit'
 import { getConfigNumber } from '@/lib/utils/config'
 
 const itemSchema = z.object({
@@ -159,6 +160,8 @@ export async function POST(request: NextRequest) {
     const msg = `Halo *${pic.nama}*,\n\nQuotation *${nomor}* telah diterbitkan untuk Anda oleh RRI.\n\nSilakan cek detailnya di portal customer RRI.\n\nTerima kasih.`
     await sendWhatsapp(pic.no_hp, msg, auth.user?.id)
   }
+
+  await logAudit({ userId: auth.user?.id, action: 'CREATE', tableName: 'quotation', recordId: qtn.id, changes: { nomor, customer_id: parsed.data.customer_id, total_harga: totalHarga, items_count: items.length } })
 
   return NextResponse.json({ data: { ...qtn, items: dbItems } }, { status: 201 })
 }

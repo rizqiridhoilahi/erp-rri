@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { supabaseAdmin } from '@/lib/api/supabase-server'
 import { verifyAuth } from '@/lib/api/auth'
 import { badRequest, internalError } from '@/lib/api/errors'
+import { logAudit } from '@/lib/audit'
 import { generateDocumentNumber } from '@/lib/utils/document-number'
 
 const itemSchema = z.object({
@@ -52,24 +53,47 @@ export async function POST(request: NextRequest) {
     return badRequest(`Quotation ini sudah memiliki PO Customer (${existingPO[0].nomor}) yang dikonfirmasi. Tidak bisa membuat negosiasi baru.`)
   }
 
+  // Calculate revision number
+  const { count } = await supabaseAdmin
+    .from('negoiasi')
+    .select('*', { count: 'exact', head: true })
+    .eq('quotation_id', parsed.data.quotation_id)
+  const revision = (count ?? 0) + 1
+
   const nomor = await generateDocumentNumber('NEG')
   const now = new Date().toISOString()
 
   const { data: neg, error: negError } = await supabaseAdmin
     .from('negoiasi')
-    .insert({ nomor, quotation_id: parsed.data.quotation_id, tanggal: parsed.data.tanggal, status: 'draft', keterangan: parsed.data.keterangan ?? null, created_at: now, updated_at: now })
+    .insert({ nomor, quotation_id: parsed.data.quotation_id, tanggal: parsed.data.tanggal, status: 'draft', revision, keterangan: parsed.data.keterangan ?? null, created_at: now, updated_at: now })
     .select().single()
 
   if (negError) return internalError(negError)
 
-  const items = parsed.data.items.map(item => ({
-    negoiasi_id: neg.id,
-    quotation_item_id: item.quotation_item_id,
-    harga_satuan_baru: item.harga_satuan_baru,
-    diskon_baru: item.diskon_baru ?? 0,
-    alasan: item.alasan ?? null,
-    created_at: now, updated_at: now,
-  }))
+  // Fetch current quotation_item prices as snapshot
+  const qtnItemIds = parsed.data.items.map(i => i.quotation_item_id)
+  const { data: qtnItems } = await supabaseAdmin
+    .from('quotation_item')
+    .select('id, harga_satuan, diskon')
+    .in('id', qtnItemIds)
+  const qtnPriceMap = (qtnItems ?? []).reduce((acc, qi) => {
+    acc[qi.id] = { harga_satuan: qi.harga_satuan, diskon: qi.diskon ?? 0 }
+    return acc
+  }, {} as Record<string, { harga_satuan: number; diskon: number }>)
+
+  const items = parsed.data.items.map(item => {
+    const lama = qtnPriceMap[item.quotation_item_id]
+    return {
+      negoiasi_id: neg.id,
+      quotation_item_id: item.quotation_item_id,
+      harga_satuan_lama: lama?.harga_satuan ?? null,
+      diskon_lama: lama?.diskon ?? null,
+      harga_satuan_baru: item.harga_satuan_baru,
+      diskon_baru: item.diskon_baru ?? 0,
+      alasan: item.alasan ?? null,
+      created_at: now, updated_at: now,
+    }
+  })
 
   const { error: itemsError } = await supabaseAdmin.from('negoiasi_item').insert(items)
   if (itemsError) { await supabaseAdmin.from('negoiasi').delete().eq('id', neg.id); return internalError(itemsError) }
@@ -79,6 +103,8 @@ export async function POST(request: NextRequest) {
     .update({ status: 'proses_negosiasi', updated_at: now })
     .eq('id', parsed.data.quotation_id)
     .eq('status', 'sent')
+
+  await logAudit({ userId: auth.user?.id, action: 'CREATE', tableName: 'negoiasi', recordId: neg.id, changes: { nomor: neg.nomor, quotation_id: parsed.data.quotation_id, revision, items_count: items.length } })
 
   return NextResponse.json({ data: { ...neg, items } }, { status: 201 })
 }

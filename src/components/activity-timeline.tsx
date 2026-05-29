@@ -1,8 +1,8 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { supabase } from "@/lib/db/client"
 import { Loader2 } from "lucide-react"
+import { apiFetch } from "@/lib/api/client"
 
 interface Activity {
   id: string
@@ -22,25 +22,12 @@ export function ActivityTimeline({ tableName, recordId }: ActivityTimelineProps)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    supabase
-      .from("audit_log")
-      .select("id, action, changes, created_at, users!user_id(email)")
-      .eq("table_name", tableName)
-      .eq("record_id", recordId)
-      .order("created_at", { ascending: false })
-      .limit(20)
-      .then(({ data }) => {
-        if (data) {
-          setActivities(data.map((r: Record<string, unknown>) => ({
-            id: r.id as string,
-            action: r.action as string,
-            changes: r.changes as Record<string, unknown> | null,
-            created_at: r.created_at as string,
-            users: Array.isArray(r.users) ? (r.users[0] as { email: string } | null) : (r.users as { email: string } | null),
-          })))
-        }
+    apiFetch<Activity[]>(`/api/v1/audit-log?table_name=${encodeURIComponent(tableName)}&record_id=${encodeURIComponent(recordId)}`)
+      .then((res) => {
+        setActivities(res.data ?? [])
         setLoading(false)
       })
+      .catch(() => setLoading(false))
   }, [tableName, recordId])
 
   if (loading) return <div className="flex items-center gap-2 py-4 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />Memuat riwayat...</div>

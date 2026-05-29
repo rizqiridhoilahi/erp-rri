@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { supabaseAdmin } from '@/lib/api/supabase-server'
 import { verifyAuth } from '@/lib/api/auth'
 import { badRequest, notFound, internalError } from '@/lib/api/errors'
+import { logAudit } from '@/lib/audit'
 
 const VALID_STATUSES = ['draft', 'sent', 'proses_negosiasi', 'approved', 'rejected', 'closed'] as const
 
@@ -10,7 +11,7 @@ const ALLOWED_TRANSITIONS: Record<string, string[]> = {
   draft: ['sent', 'rejected'],
   sent: ['approved', 'rejected', 'proses_negosiasi'],
   proses_negosiasi: ['approved', 'rejected'],
-  approved: ['closed'],
+  approved: ['sent', 'closed'],
   rejected: ['draft'],
   closed: [],
 }
@@ -58,6 +59,14 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
 
   if (error) return internalError(error)
   if (!data) return notFound('Quotation tidak ditemukan')
+
+  await logAudit({
+    userId: auth.user?.id,
+    action: 'UPDATE',
+    tableName: 'quotation',
+    recordId: id,
+    changes: { status: { old: current.status, new: parsed.data.status } },
+  })
 
   return NextResponse.json({ data })
 }
