@@ -60,8 +60,8 @@ export default function TambahPoPage() {
     ]).then(([c, b, q]) => {
       setCustOpts((c.data ?? []).map(x => ({ value: x.id, label: `[${x.kode}] ${x.nama}` })))
       setBarangOpts((b.data ?? []).map(x => ({ value: x.id, label: `[${x.kode}] ${x.nama}` })))
-      const approved = (q.data ?? []).filter((x: any) => x.status === 'approved' || x.status === 'proses_negosiasi')
-      setQtnOpts(approved.map((x: any) => ({ value: x.id, label: `${x.nomor} - ${x.customer?.nama || ''}` })))
+      const approved = (q.data ?? []).filter((x: { status: string }) => x.status === 'approved' || x.status === 'proses_negosiasi')
+      setQtnOpts(approved.map((x: { id: string; nomor: string; customer?: { nama: string } }) => ({ value: x.id, label: `${x.nomor} - ${x.customer?.nama || ''}` })))
     }).catch(() => toast.error('Gagal memuat data'))
   }, [])
 

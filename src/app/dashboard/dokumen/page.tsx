@@ -13,13 +13,13 @@ import { Search, ExternalLink, FileText, Loader2, RotateCcw } from 'lucide-react
 
 interface Document {
   id: string
-  fileName: string
-  fileUrl: string
-  uploadedAt: string
+  filename: string
+  fileurl: string
+  uploadedat: string
   modul: string
-  nomorDokumen: string
-  customerId: string
-  customerNama: string
+  nomordokumen: string
+  customerid: string
+  customernama: string
 }
 
 interface Customer {
@@ -72,10 +72,10 @@ export default function DokumenPage() {
       .then((res) => setCustomerOptions(res.data ?? []))
       .catch(() => {})
 
-    apiFetch<{ data: Document[]; count: number }>('/api/v1/dokumen')
+    apiFetch<Document[]>('/api/v1/dokumen')
       .then((res) => {
-        setData(res.data.data ?? [])
-        setCount(res.data.count ?? 0)
+        setData(res.data ?? [])
+        setCount((res as { data: Document[]; count: number }).count ?? 0)
       })
       .catch(() => {})
       .finally(() => setLoading(false))
@@ -90,10 +90,10 @@ export default function DokumenPage() {
     if (startDate) params.set('startDate', startDate)
     if (endDate) params.set('endDate', endDate)
 
-    apiFetch<{ data: Document[]; count: number }>(`/api/v1/dokumen?${params.toString()}`)
+    apiFetch<Document[]>(`/api/v1/dokumen?${params.toString()}`)
       .then((res) => {
-        setData(res.data.data ?? [])
-        setCount(res.data.count ?? 0)
+        setData(res.data ?? [])
+        setCount((res as { data: Document[]; count: number }).count ?? 0)
       })
       .catch(() => {})
       .finally(() => setLoading(false))
@@ -108,17 +108,24 @@ export default function DokumenPage() {
     setStartDate('')
     setEndDate('')
     setLoading(true)
-    apiFetch<{ data: Document[]; count: number }>('/api/v1/dokumen')
+    apiFetch<Document[]>('/api/v1/dokumen')
       .then((res) => {
-        setData(res.data.data ?? [])
-        setCount(res.data.count ?? 0)
+        setData(res.data ?? [])
+        setCount((res as { data: Document[]; count: number }).count ?? 0)
       })
       .catch(() => {})
       .finally(() => setLoading(false))
   }
 
-  const openFile = (url: string) => {
-    window.open(url, '_blank', 'noopener,noreferrer')
+  const officeExts = ['.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx']
+
+  const openFile = (url: string, filename: string) => {
+    const ext = filename.slice(filename.lastIndexOf('.')).toLowerCase()
+    if (officeExts.includes(ext)) {
+      window.open(`https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true`, '_blank', 'noopener,noreferrer')
+    } else {
+      window.open(url, '_blank', 'noopener,noreferrer')
+    }
   }
 
   return (
@@ -233,23 +240,23 @@ export default function DokumenPage() {
                     {data.map((doc) => (
                       <TableRow key={doc.id}>
                         <TableCell className="max-w-[250px]">
-                          <span className="truncate block text-sm font-medium">{doc.fileName}</span>
+                          <span className="truncate block text-sm font-medium">{doc.filename}</span>
                         </TableCell>
                         <TableCell>
                           <Badge variant={modulColors[doc.modul] ?? 'outline'}>
                             {doc.modul}
                           </Badge>
                         </TableCell>
-                        <TableCell className="font-mono text-xs">{doc.nomorDokumen || '-'}</TableCell>
-                        <TableCell className="text-muted-foreground">{doc.customerNama}</TableCell>
+                        <TableCell className="font-mono text-xs">{doc.nomordokumen || '-'}</TableCell>
+                        <TableCell className="text-muted-foreground">{doc.customernama}</TableCell>
                         <TableCell className="text-muted-foreground text-sm">
-                          {formatDate(doc.uploadedAt)}
+                          {formatDate(doc.uploadedat)}
                         </TableCell>
                         <TableCell className="text-right">
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => openFile(doc.fileUrl)}
+                            onClick={() => openFile(doc.fileurl, doc.filename)}
                           >
                             <ExternalLink className="h-4 w-4 mr-1" />
                             Buka

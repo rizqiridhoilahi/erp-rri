@@ -667,6 +667,28 @@ Notifikasi otomatis via WhatsApp API (Fonnte) untuk komunikasi dengan Customer &
 
 **Catatan Biaya:** Fonnte menyediakan **500 pesan gratis per hari** – lebih dari cukup untuk kebutuhan ERP RRI (estimasi ~20 pesan/hari). Vercel Cron gratis di Hobby Plan (maks 1x/hari).
 
+### 8.5 Email Notification via Gmail SMTP (Planned)
+
+Rencana implementasi pengiriman email dari akun Gmail RRI ke customer.
+
+| Item | Detail |
+|------|--------|
+| **Metode** | Nodemailer via Gmail SMTP (`smtp.gmail.com` port 587) |
+| **Biaya** | Gratis — pakai Gmail yang sudah ada (App Password) |
+| **Kuota** | 500 email/hari (standar Gmail) |
+| **Setup** | Buat App Password di Google Account → simpan di env var |
+| **Trigger** | Saat tombol "Tandai Terkirim" di Quotation detail |
+| **Attachment** | PDF Quotation otomatis di-generate & dilampirkan |
+| **Template** | Body email auto-generated: nomor quotation, link, pesan standar |
+| **Status** | 🔜 Future — lihat ROADMAP.md |
+
+**Alur:**
+```
+Quotation siap → Klik "Tandai Terkirim" → Generate PDF → 
+Kirim via Nodemailer (SMTP Gmail) → Attachment PDF + Body auto →
+Catat log di tabel email_log → Tampilkan status di halaman Quotation
+```
+
 ## 9. Professional Features
 
 | Fitur | Deskripsi |

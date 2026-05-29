@@ -25,6 +25,19 @@
 | E | **Validasi transisi nego** — hanya `sent`/`proses_negosiasi` bisa dinego | ✅ Done | `negoiasi/[id]/route.ts` |
 | F | **Button visibility** — Edit hanya di draft/rejected, Buat Negosiasi hanya di sent/proses_negosiasi | ✅ Done | `[id]/page.tsx` |
 
+## 📧 Future — Email Delivery (Gmail SMTP via Nodemailer)
+
+| # | Task | Status | Priority |
+|---|------|--------|----------|
+| 1 | Install `nodemailer` + types | Pending | Medium |
+| 2 | Buat utility `src/lib/utils/email.ts` — kirim email via Gmail SMTP | Pending | Medium |
+| 3 | Buat email template untuk Quotation (body + subject auto) | Pending | Medium |
+| 4 | Generate PDF Quotation + attach ke email saat Kirim | Pending | Medium |
+| 5 | Simpan log pengiriman ke tabel `email_log` | Pending | Low |
+| 6 | Tampilkan status email di halaman Quotation detail | Pending | Low |
+
+**Setup:** App Password di Google Account → `GMAIL_USER` + `GMAIL_APP_PASSWORD` di env.
+
 ## 📄 Documentation
 
 | # | Task | Status | File |

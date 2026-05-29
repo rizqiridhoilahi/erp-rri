@@ -109,7 +109,7 @@ export default function QuotationDetailPage() {
 
     apiFetch<Array<{ id: string; nomor: string; status: string; tanggal: string; quotation_id: string }>>('/api/v1/customer-po')
       .then((res) => {
-        const filtered = (res.data ?? []).filter((p: any) => p.quotation_id === id)
+        const filtered = (res.data ?? []).filter((p: { quotation_id: string }) => p.quotation_id === id)
         setPoList(filtered)
         setPoLoading(false)
       })
@@ -215,7 +215,7 @@ export default function QuotationDetailPage() {
               <>
                 <Button variant="default" onClick={() => handleStatusChange('sent')} disabled={statusLoading}>
                   {statusLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Send className="h-4 w-4 mr-2" />}
-                  Kirim ke Customer
+                  Tandai Terkirim
                 </Button>
                 <Button variant="outline" onClick={() => router.push(`/dashboard/quotation/${id}/edit`)}><Pencil className="h-4 w-4 mr-2" />Edit</Button>
               </>

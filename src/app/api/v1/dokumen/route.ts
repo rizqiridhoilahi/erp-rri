@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
     .select('*', { count: 'exact' })
 
   if (customerId) {
-    query = query.eq('customerId', customerId)
+    query = query.eq('customerid', customerId)
   }
 
   if (modul) {
@@ -27,18 +27,18 @@ export async function GET(request: NextRequest) {
   }
 
   if (search) {
-    query = query.ilike('fileName', `%${search}%`)
+    query = query.ilike('filename', `%${search}%`)
   }
 
   if (startDate) {
-    query = query.gte('uploadedAt', startDate)
+    query = query.gte('uploadedat', startDate)
   }
 
   if (endDate) {
-    query = query.lte('uploadedAt', `${endDate}T23:59:59.999Z`)
+    query = query.lte('uploadedat', `${endDate}T23:59:59.999Z`)
   }
 
-  query = query.order('uploadedAt', { ascending: false })
+  query = query.order('uploadedat', { ascending: false })
 
   const { data, error, count } = await query
 

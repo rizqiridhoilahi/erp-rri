@@ -73,6 +73,7 @@ export default function TambahQuotationPage() {
   const [rfqOptions, setRfqOptions] = useState<Array<{ value: string; label: string }>>([])
   const [submitting, setSubmitting] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [nomorAuto, setNomorAuto] = useState('')
   const [rfqPicLabel, setRfqPicLabel] = useState('')
   const [rfqItemLabels, setRfqItemLabels] = useState<string[]>([])
   const [isRfqLoaded, setIsRfqLoaded] = useState(false)
@@ -98,6 +99,9 @@ export default function TambahQuotationPage() {
   const selectedRfqId = watch('rfq_id')
 
   useEffect(() => {
+    apiFetch<{ nomor: string }>('/api/v1/quotation/next-number')
+      .then(res => setNomorAuto(res.data.nomor))
+      .catch(() => {})
     const rfqIdFromUrl = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('rfq_id') : null
     Promise.all([
       apiFetch<Array<{ id: string; nama: string; kode: string; alamat?: string }>>('/api/v1/master/customer'),
@@ -258,6 +262,10 @@ export default function TambahQuotationPage() {
           <Card>
             <CardHeader><CardTitle className="text-base">Header Surat</CardTitle></CardHeader>
             <CardContent className="space-y-4">
+              <FormItem>
+                <FormLabel>Nomor Quotation (Auto)</FormLabel>
+                <Input value={nomorAuto} placeholder="Memuat..." disabled className="bg-muted" />
+              </FormItem>
               <div className="grid grid-cols-2 gap-4">
                 <FormField control={control} name="rfq_id" render={({ field }) => (
                   <FormItem><FormLabel>No. Referensi (RFQ)</FormLabel>
