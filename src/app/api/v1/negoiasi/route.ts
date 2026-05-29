@@ -42,6 +42,16 @@ export async function POST(request: NextRequest) {
   const parsed = schema.safeParse(body)
   if (!parsed.success) return badRequest(parsed.error.issues.map(e => e.message).join(', '))
 
+  const { data: existingPO } = await supabaseAdmin
+    .from('customer_po')
+    .select('id, nomor')
+    .eq('quotation_id', parsed.data.quotation_id)
+    .eq('status', 'confirmed')
+    .limit(1)
+  if (existingPO && existingPO.length > 0) {
+    return badRequest(`Quotation ini sudah memiliki PO Customer (${existingPO[0].nomor}) yang dikonfirmasi. Tidak bisa membuat negosiasi baru.`)
+  }
+
   const nomor = await generateDocumentNumber('NEG')
   const now = new Date().toISOString()
 
@@ -63,6 +73,12 @@ export async function POST(request: NextRequest) {
 
   const { error: itemsError } = await supabaseAdmin.from('negoiasi_item').insert(items)
   if (itemsError) { await supabaseAdmin.from('negoiasi').delete().eq('id', neg.id); return internalError(itemsError) }
+
+  await supabaseAdmin
+    .from('quotation')
+    .update({ status: 'proses_negosiasi', updated_at: now })
+    .eq('id', parsed.data.quotation_id)
+    .eq('status', 'sent')
 
   return NextResponse.json({ data: { ...neg, items } }, { status: 201 })
 }

@@ -92,6 +92,7 @@ interface CompanyData {
 
 interface QuotData {
   nomor: string
+  revisi: number
   referensi: string | null
   lampiran: string | null
   perihal: string | null
@@ -149,6 +150,7 @@ function createEl(type: any, props: Record<string, unknown> | null, ...children:
 }
 
 export function QuotationPDF({ data }: { data: QuotData }) {
+  const displayNomor = `${data.nomor}${data.revisi > 0 ? `-R${data.revisi}` : ''}`
   const subtotal = data.items.reduce((s, i) => s + i.jumlah * i.hargaSatuan, 0)
   const totalDiskon = data.items.reduce((s, i) => s + (i.jumlah * i.hargaSatuan * (i.diskon || 0)) / 100, 0)
   const totalSebelumPpn = subtotal - totalDiskon
@@ -194,7 +196,7 @@ export function QuotationPDF({ data }: { data: QuotData }) {
           H(View, { style: styles.labelValueRow },
             H(Text, { style: styles.labelText }, 'No. Surat'),
             H(Text, { style: styles.colonText }, ':'),
-            H(Text, { style: styles.valueText }, data.nomor)
+            H(Text, { style: styles.valueText }, displayNomor)
           ),
           H(View, { style: styles.labelValueRow },
             H(Text, { style: styles.labelText }, 'No. Ref.'),
@@ -276,7 +278,7 @@ export function QuotationPDF({ data }: { data: QuotData }) {
 
       return H(Page, { key: pageIdx, size: 'A4', style: styles.page, wrap: true },
         H(Text, { style: styles.lampiranTitle }, 'LAMPIRAN RINCIAN PENAWARAN HARGA'),
-        H(Text, { style: styles.lampiranSub }, 'No. Surat : ' + data.nomor),
+        H(Text, { style: styles.lampiranSub }, 'No. Surat : ' + displayNomor),
 
         H(View, { style: styles.table },
           (() => {

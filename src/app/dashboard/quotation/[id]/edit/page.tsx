@@ -18,11 +18,11 @@ import { Plus, Trash2, ArrowLeft, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 const itemSchema = z.object({
-  barang_id: z.string().optional(),
+  barang_id: z.string().optional().nullable(),
   specification: z.string().optional(),
   justification: z.string().optional(),
   image_url: z.string().optional(),
-  satuan: z.string().min(1),
+  satuan: z.string().optional(),
   jumlah: z.coerce.number().int().positive(),
   harga_satuan: z.coerce.number().nonnegative(),
   diskon: z.coerce.number().nonnegative().optional(),
@@ -51,6 +51,7 @@ type QtnFormValues = z.input<typeof qtnSchema>
 const statusOptions = [
   { value: 'draft', label: 'Draft' },
   { value: 'sent', label: 'Terkirim' },
+  { value: 'proses_negosiasi', label: 'Proses Negosiasi' },
   { value: 'approved', label: 'Disetujui' },
   { value: 'rejected', label: 'Ditolak' },
   { value: 'closed', label: 'Ditutup' },
@@ -162,7 +163,7 @@ export default function EditQuotationPage() {
           ppn_enabled: qtn.ppn_enabled,
           keterangan: qtn.keterangan ?? '',
           items: qtn.items.length > 0 ? qtn.items.map(i => ({
-            barang_id: i.barang_id ?? '',
+            barang_id: i.barang_id ?? null,
             specification: i.specification ?? '',
             justification: i.justification ?? '',
             image_url: i.image_url ?? '',

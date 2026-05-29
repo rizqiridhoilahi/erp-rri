@@ -16,6 +16,22 @@ const itemSchema = z.object({
   keterangan: z.string().optional().nullable(),
 })
 
+const VALID_STATUSES = ['draft', 'sent', 'proses_negosiasi', 'approved', 'rejected', 'closed'] as const
+
+const ALLOWED_TRANSITIONS: Record<string, string[]> = {
+  draft: ['sent', 'rejected'],
+  sent: ['approved', 'rejected', 'proses_negosiasi'],
+  proses_negosiasi: ['approved', 'rejected'],
+  approved: ['closed'],
+  rejected: ['draft'],
+  closed: [],
+}
+
+function isValidTransition(from: string, to: string): boolean {
+  if (from === to) return true
+  return ALLOWED_TRANSITIONS[from]?.includes(to) ?? false
+}
+
 const schema = z.object({
   customer_id: z.string().min(1).optional(),
   rfq_id: z.string().optional().nullable(),
@@ -25,7 +41,7 @@ const schema = z.object({
   pic_customer_id: z.string().optional().nullable(),
   alamat: z.string().optional().nullable(),
   tanggal: z.string().optional(),
-  status: z.string().optional(),
+  status: z.enum(VALID_STATUSES).optional(),
   masa_berlaku: z.string().optional().nullable(),
   ppn_rate: z.coerce.number().nonnegative().optional(),
   ppn_enabled: z.coerce.boolean().optional(),
@@ -133,6 +149,13 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
   const parsed = schema.safeParse(body)
   if (!parsed.success) return badRequest(parsed.error.issues.map(e => e.message).join(', '))
 
+  const { data: current } = await supabaseAdmin.from('quotation').select('status').eq('id', id).single()
+  if (!current) return notFound('Quotation tidak ditemukan')
+
+  if (parsed.data.status && !isValidTransition(current.status, parsed.data.status)) {
+    return badRequest(`Status tidak bisa diubah dari '${current.status}' ke '${parsed.data.status}'`)
+  }
+
   const updateData: Record<string, unknown> = {}
   if (parsed.data.customer_id !== undefined) updateData.customer_id = parsed.data.customer_id
   if (parsed.data.rfq_id !== undefined) updateData.rfq_id = parsed.data.rfq_id ?? null
@@ -159,35 +182,46 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
   updateData.updated_at = new Date().toISOString()
 
   if (parsed.data.items) {
-    const items = parsed.data.items.map(item => {
-      const totalHarga = item.jumlah * item.harga_satuan
-      return {
-        quotation_id: id,
-        barang_id: item.barang_id,
-        specification: item.specification ?? null,
-        justification: item.justification ?? null,
-        image_url: item.image_url ?? null,
-        satuan: item.satuan ?? null,
-        jumlah: item.jumlah,
-        harga_satuan: item.harga_satuan,
-        diskon: item.diskon ?? 0,
-        total_harga: totalHarga,
-        keterangan: item.keterangan ?? null,
-      }
+    const normalizeItem = (item: typeof parsed.data.items extends (infer U)[] ? U : never) => ({
+      barang_id: item.barang_id ?? null,
+      specification: item.specification ?? null,
+      justification: item.justification ?? null,
+      image_url: item.image_url ?? null,
+      satuan: item.satuan ?? null,
+      jumlah: item.jumlah,
+      harga_satuan: item.harga_satuan,
+      diskon: item.diskon ?? 0,
+      keterangan: item.keterangan ?? null,
     })
-    const totalHarga = items.reduce((sum, i) => sum + (i.total_harga ?? 0), 0)
-    updateData.total_harga = totalHarga
 
-    const ppnRate = parsed.data.ppn_rate ?? 0.11
-    await supabaseAdmin.from('quotation_item').delete().eq('quotation_id', id)
+    const { data: existingItems } = await supabaseAdmin
+      .from('quotation_item')
+      .select('barang_id, specification, justification, image_url, satuan, jumlah, harga_satuan, diskon, keterangan')
+      .eq('quotation_id', id)
+      .order('created_at', { ascending: true })
 
-    const dbItems = items.map(item => ({
-      ...item,
-      ppn_per_item: (parsed.data.ppn_enabled ?? true) ? (item.total_harga ?? 0) * ppnRate : 0,
-    }))
+    const newItemsNormalized = parsed.data.items.map(normalizeItem)
+    const existingNormalized = (existingItems ?? []).map(i => ({ ...i }))
 
-    const { error: itemsError } = await supabaseAdmin.from('quotation_item').insert(dbItems)
-    if (itemsError) return internalError(itemsError)
+    if (JSON.stringify(newItemsNormalized) !== JSON.stringify(existingNormalized)) {
+      const items = newItemsNormalized.map(item => {
+        const totalHarga = item.jumlah * item.harga_satuan
+        return { ...item, quotation_id: id, total_harga: totalHarga }
+      })
+      const totalHarga = items.reduce((sum, i) => sum + (i.total_harga ?? 0), 0)
+      updateData.total_harga = totalHarga
+
+      const ppnRate = parsed.data.ppn_rate ?? 0.11
+      await supabaseAdmin.from('quotation_item').delete().eq('quotation_id', id)
+
+      const dbItems = items.map(item => ({
+        ...item,
+        ppn_per_item: (parsed.data.ppn_enabled ?? true) ? (item.total_harga ?? 0) * ppnRate : 0,
+      }))
+
+      const { error: itemsError } = await supabaseAdmin.from('quotation_item').insert(dbItems)
+      if (itemsError) return internalError(itemsError)
+    }
   }
 
   const { data, error } = await supabaseAdmin

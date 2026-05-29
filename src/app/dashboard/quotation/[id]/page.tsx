@@ -6,7 +6,7 @@ import { apiFetch, getAuthToken } from "@/lib/api/client"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Loader2, Eye, Download, Pencil, Trash2, FileText } from "lucide-react"
+import { Loader2, Eye, Download, Pencil, Trash2, FileText, Send, CheckCircle, XCircle, MessageSquare, ShoppingCart } from "lucide-react"
 import { toast } from "sonner"
 import { CopyButton } from "@/components/copy-button"
 import { StatusWorkflow } from "@/components/status-workflow"
@@ -21,6 +21,7 @@ import {
 const statusLabel: Record<string, { label: string; variant: "secondary" | "warning" | "success" | "destructive" | "outline" }> = {
   draft: { label: "Draft", variant: "secondary" },
   sent: { label: "Terkirim", variant: "warning" },
+  proses_negosiasi: { label: "Proses Negosiasi", variant: "warning" },
   approved: { label: "Disetujui", variant: "success" },
   rejected: { label: "Ditolak", variant: "destructive" },
   closed: { label: "Ditutup", variant: "outline" },
@@ -29,6 +30,7 @@ const statusLabel: Record<string, { label: string; variant: "secondary" | "warni
 const workflowSteps = [
   { key: "draft", label: "Draft" },
   { key: "sent", label: "Terkirim" },
+  { key: "proses_negosiasi", label: "Negosiasi" },
   { key: "approved", label: "Disetujui" },
 ]
 
@@ -62,6 +64,7 @@ interface Quotation {
   alamat: string | null
   tanggal: string
   status: string
+  revisi: number
   masa_berlaku: string | null
   tanggal_berlaku_sampai: string | null
   ppn_rate: number
@@ -84,13 +87,52 @@ export default function QuotationDetailPage() {
   const [loading, setLoading] = useState(true)
   const [previewLoading, setPreviewLoading] = useState(false)
   const [downloadLoading, setDownloadLoading] = useState(false)
+  const [statusLoading, setStatusLoading] = useState(false)
+  const [negoList, setNegoList] = useState<Array<{ id: string; nomor: string; status: string; tanggal: string }>>([])
+  const [negoLoading, setNegoLoading] = useState(true)
+  const [poList, setPoList] = useState<Array<{ id: string; nomor: string; status: string; tanggal: string }>>([])
+  const [poLoading, setPoLoading] = useState(true)
 
   useEffect(() => {
     if (!id) return
     apiFetch<Quotation>(`/api/v1/quotation/${id}`)
       .then((res) => { setData(res.data); setLoading(false) })
       .catch((err) => { setError(err.message); setLoading(false) })
+
+    apiFetch<Array<{ id: string; nomor: string; status: string; tanggal: string; quotation_id: string }>>('/api/v1/negoiasi')
+      .then((res) => {
+        const filtered = (res.data ?? []).filter((n) => n.quotation_id === id)
+        setNegoList(filtered)
+        setNegoLoading(false)
+      })
+      .catch(() => setNegoLoading(false))
+
+    apiFetch<Array<{ id: string; nomor: string; status: string; tanggal: string; quotation_id: string }>>('/api/v1/customer-po')
+      .then((res) => {
+        const filtered = (res.data ?? []).filter((p: any) => p.quotation_id === id)
+        setPoList(filtered)
+        setPoLoading(false)
+      })
+      .catch(() => setPoLoading(false))
   }, [id])
+
+  const handleStatusChange = async (newStatus: string) => {
+    if (!id) return
+    setStatusLoading(true)
+    try {
+      await apiFetch(`/api/v1/quotation/${id}/status`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status: newStatus }),
+      })
+      toast.success('Status berhasil diubah!')
+      const res = await apiFetch<Quotation>(`/api/v1/quotation/${id}`)
+      setData(res.data)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Gagal mengubah status')
+    } finally {
+      setStatusLoading(false)
+    }
+  }
 
   const handleDelete = async () => {
     if (!id) return
@@ -147,6 +189,7 @@ export default function QuotationDetailPage() {
   if (loading) return <div className="mx-auto max-w-4xl px-4 sm:px-6 py-8"><div className="min-h-[200px] flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /><p className="ml-3 text-muted-foreground">Memuat data...</p></div></div>
   if (error || !data) return <div className="mx-auto max-w-4xl px-4 sm:px-6 py-8"><EmptyState title="Gagal memuat data" description={error || "Data tidak ditemukan"} /></div>
 
+  const displayNomor = `${data.nomor}${data.revisi > 0 ? `-R${data.revisi}` : ''}`
   const subtotal = data.items.reduce((s, i) => s + i.jumlah * i.harga_satuan, 0)
   const totalDiskon = data.items.reduce((s, i) => s + (i.jumlah * i.harga_satuan * (i.diskon || 0)) / 100, 0)
   const totalPpn = data.ppn_enabled ? data.items.reduce((s, i) => s + i.ppn_per_item, 0) : 0
@@ -156,7 +199,7 @@ export default function QuotationDetailPage() {
     <div className="mx-auto max-w-5xl px-4 sm:px-6 py-8 space-y-6 print:space-y-4">
       <PageHeader
         title="Detail Quotation"
-        description={`${data.nomor} - ${data.customer?.nama || ""}`}
+        description={`${displayNomor} - ${data.customer?.nama || ""}`}
         actions={
           <div className="flex gap-2">
             <Button variant="back" onClick={() => router.push("/dashboard/quotation")}>Kembali</Button>
@@ -168,7 +211,47 @@ export default function QuotationDetailPage() {
               {downloadLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Download className="h-4 w-4 mr-2" />}
               Download PDF
             </Button>
-            <Button variant="outline" onClick={() => router.push(`/dashboard/quotation/${id}/edit`)}><Pencil className="h-4 w-4 mr-2" />Edit</Button>
+            {data.status === 'draft' && (
+              <>
+                <Button variant="default" onClick={() => handleStatusChange('sent')} disabled={statusLoading}>
+                  {statusLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Send className="h-4 w-4 mr-2" />}
+                  Kirim ke Customer
+                </Button>
+                <Button variant="outline" onClick={() => router.push(`/dashboard/quotation/${id}/edit`)}><Pencil className="h-4 w-4 mr-2" />Edit</Button>
+              </>
+            )}
+            {(data.status === 'sent' || data.status === 'proses_negosiasi') && (
+              <>
+                <Button variant="default" onClick={() => handleStatusChange('approved')} disabled={statusLoading}>
+                  {statusLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <CheckCircle className="h-4 w-4 mr-2" />}
+                  Setujui
+                </Button>
+                <Button variant="destructive" onClick={() => handleStatusChange('rejected')} disabled={statusLoading}>
+                  {statusLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <XCircle className="h-4 w-4 mr-2" />}
+                  Tolak
+                </Button>
+              </>
+            )}
+            {data.status === 'rejected' && (
+              <>
+                <Button variant="outline" onClick={() => handleStatusChange('draft')} disabled={statusLoading}>
+                  {statusLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Pencil className="h-4 w-4 mr-2" />}
+                  Revisi
+                </Button>
+                <Button variant="outline" onClick={() => router.push(`/dashboard/quotation/${id}/edit`)}><Pencil className="h-4 w-4 mr-2" />Edit</Button>
+              </>
+            )}
+            {data.status === 'approved' && (
+              <>
+                <Button variant="default" onClick={() => router.push(`/dashboard/customer-po/tambah?quotation_id=${id}`)}>
+                  <ShoppingCart className="h-4 w-4 mr-2" />Buat PO Customer
+                </Button>
+                <Button variant="outline" onClick={() => handleStatusChange('closed')} disabled={statusLoading}>
+                  {statusLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <XCircle className="h-4 w-4 mr-2" />}
+                  Tutup
+                </Button>
+              </>
+            )}
             <DeleteConfirmationDialog
               onConfirm={handleDelete}
               itemName={`Quotation ${data.nomor}`}
@@ -182,8 +265,8 @@ export default function QuotationDetailPage() {
         <CardContent className="pt-6 space-y-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <h2 className="text-xl font-bold font-mono">{data.nomor}</h2>
-              <CopyButton text={data.nomor} />
+              <h2 className="text-xl font-bold font-mono">{displayNomor}</h2>
+              <CopyButton text={displayNomor} />
             </div>
             <Badge variant={statusLabel[data.status]?.variant ?? "outline"}>
               {statusLabel[data.status]?.label ?? data.status}
@@ -303,6 +386,65 @@ export default function QuotationDetailPage() {
           </CardContent>
         </Card>
       )}
+
+      <Card>
+        <CardContent className="pt-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold">Negosiasi</h3>
+            {(data.status === 'sent' || data.status === 'proses_negosiasi') && (
+              <Button variant="outline" size="sm" onClick={() => router.push(`/dashboard/negoiasi/tambah?quotation_id=${id}`)}>
+                <MessageSquare className="h-4 w-4 mr-2" />Buat Negosiasi
+              </Button>
+            )}
+          </div>
+          {negoLoading ? (
+            <div className="flex items-center justify-center py-4"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
+          ) : negoList.length === 0 ? (
+            <p className="text-sm text-muted-foreground">Belum ada negosiasi untuk quotation ini.</p>
+          ) : (
+            <div className="space-y-2">
+              {negoList.map((n) => (
+                <div key={n.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 cursor-pointer" onClick={() => router.push(`/dashboard/negoiasi/${n.id}`)}>
+                  <div>
+                    <p className="font-medium text-sm">{n.nomor}</p>
+                    <p className="text-xs text-muted-foreground">{new Date(n.tanggal).toLocaleDateString('id-ID')}</p>
+                  </div>
+                  <Badge variant={n.status === 'approved' ? 'success' : n.status === 'rejected' ? 'destructive' : 'secondary'}>
+                    {n.status === 'approved' ? 'Disetujui' : n.status === 'rejected' ? 'Ditolak' : 'Draft'}
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardContent className="pt-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold">Customer PO</h3>
+          </div>
+          {poLoading ? (
+            <div className="flex items-center justify-center py-4"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
+          ) : poList.length === 0 ? (
+            <p className="text-sm text-muted-foreground">Belum ada PO Customer untuk quotation ini.</p>
+          ) : (
+            <div className="space-y-2">
+              {poList.map((p) => (
+                <div key={p.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 cursor-pointer" onClick={() => router.push(`/dashboard/customer-po/${p.id}`)}>
+                  <div>
+                    <p className="font-medium text-sm">{p.nomor}</p>
+                    <p className="text-xs text-muted-foreground">{new Date(p.tanggal).toLocaleDateString('id-ID')}</p>
+                  </div>
+                  <Badge variant={p.status === 'confirmed' ? 'success' : p.status === 'cancelled' ? 'destructive' : 'secondary'}>
+                    {p.status === 'confirmed' ? 'Dikonfirmasi' : p.status === 'cancelled' ? 'Batal' : 'Draft'}
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       <Card>
         <CardContent className="pt-6">

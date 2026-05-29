@@ -1,6 +1,6 @@
 "use client"
 import Link from 'next/link'
-import { useState, useEffect } from 'react'; import { useRouter } from 'next/navigation'; import { z } from 'zod'; import { useForm, useFieldArray } from 'react-hook-form'; import { zodResolver } from '@hookform/resolvers/zod'
+import { useState, useEffect, useCallback } from 'react'; import { useRouter, useSearchParams } from 'next/navigation'; import { z } from 'zod'; import { useForm, useFieldArray } from 'react-hook-form'; import { zodResolver } from '@hookform/resolvers/zod'
 import { apiFetch } from '@/lib/api/client'; import { Button } from '@/components/ui/button'; import { Input } from '@/components/ui/input'; import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'; import { DatePicker } from '@/components/ui/date-picker'
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select'
@@ -11,16 +11,72 @@ const schema = z.object({ customer_id: z.string().min(1), quotation_id: z.string
 type FV = z.input<typeof schema>
 
 export default function TambahPoPage() {
-  const router = useRouter(); const [custOpts, setCustOpts] = useState<Array<{ value: string; label: string }>>([]); const [barangOpts, setBarangOpts] = useState<Array<{ value: string; label: string }>>([]); const [submitting, setSubmitting] = useState(false)
+  const router = useRouter(); const searchParams = useSearchParams()
+  const [custOpts, setCustOpts] = useState<Array<{ value: string; label: string }>>([])
+  const [barangOpts, setBarangOpts] = useState<Array<{ value: string; label: string }>>([])
+  const [qtnOpts, setQtnOpts] = useState<Array<{ value: string; label: string }>>([])
+  const [submitting, setSubmitting] = useState(false)
+  const [populating, setPopulating] = useState(false)
+  interface QuotationItem { barang_id: string; jumlah: number; harga_satuan: number }
+  interface QuotationData { customer_id: string; items: QuotationItem[] }
   const today = new Date().toISOString().split('T')[0]
   const form = useForm<FV>({ resolver: zodResolver(schema), defaultValues: { tanggal: today, items: [{ barang_id: '', jumlah: 1, harga_satuan: 0 }] } })
-  const { register, handleSubmit, control } = form
+  const { register, handleSubmit, control, setValue, watch } = form
   const { fields, append, remove } = useFieldArray({ control, name: 'items' })
+  const watchQuotationId = watch('quotation_id')
+
+  const populateFromQuotation = useCallback(async (qtnId: string) => {
+    setPopulating(true)
+    try {
+      const res = await apiFetch<QuotationData>(`/api/v1/quotation/${qtnId}`)
+      const qtn = res.data
+      if (!qtn) { toast.error('Quotation tidak ditemukan'); return }
+      if (qtn.customer_id) setValue('customer_id', qtn.customer_id)
+      if (qtn.items?.length) {
+        const mapped = qtn.items
+          .filter((i: QuotationItem) => i.barang_id)
+          .map((i: QuotationItem) => ({
+            barang_id: i.barang_id,
+            jumlah: i.jumlah,
+            harga_satuan: i.harga_satuan,
+          }))
+        if (mapped.length > 0) {
+          setValue('items', mapped)
+        }
+      }
+      toast.success('Data dari quotation berhasil diisi')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Gagal memuat quotation')
+    } finally {
+      setPopulating(false)
+    }
+  }, [setValue])
+
   useEffect(() => {
-    Promise.all([apiFetch<Array<{ id: string; nama: string; kode: string }>>('/api/v1/master/customer'), apiFetch<Array<{ id: string; nama: string; kode: string }>>('/api/v1/master/barang')])
-      .then(([c, b]) => { setCustOpts((c.data ?? []).map(x => ({ value: x.id, label: `[${x.kode}] ${x.nama}` }))); setBarangOpts((b.data ?? []).map(x => ({ value: x.id, label: `[${x.kode}] ${x.nama}` }))) })
-      .catch(() => toast.error('Gagal memuat data'))
+    Promise.all([
+      apiFetch<Array<{ id: string; nama: string; kode: string }>>('/api/v1/master/customer'),
+      apiFetch<Array<{ id: string; nama: string; kode: string }>>('/api/v1/master/barang'),
+      apiFetch<Array<{ id: string; nomor: string; status: string; customer: { id: string; nama: string } }>>('/api/v1/quotation'),
+    ]).then(([c, b, q]) => {
+      setCustOpts((c.data ?? []).map(x => ({ value: x.id, label: `[${x.kode}] ${x.nama}` })))
+      setBarangOpts((b.data ?? []).map(x => ({ value: x.id, label: `[${x.kode}] ${x.nama}` })))
+      const approved = (q.data ?? []).filter((x: any) => x.status === 'approved' || x.status === 'proses_negosiasi')
+      setQtnOpts(approved.map((x: any) => ({ value: x.id, label: `${x.nomor} - ${x.customer?.nama || ''}` })))
+    }).catch(() => toast.error('Gagal memuat data'))
   }, [])
+
+  useEffect(() => {
+    const preSelected = searchParams.get('quotation_id')
+    if (preSelected && qtnOpts.length > 0) {
+      setValue('quotation_id', preSelected)
+      populateFromQuotation(preSelected)
+    }
+  }, [searchParams, qtnOpts, setValue, populateFromQuotation])
+
+  useEffect(() => {
+    if (watchQuotationId) populateFromQuotation(watchQuotationId)
+  }, [watchQuotationId, populateFromQuotation])
+
   const onSubmit = async (data: FV) => {
     setSubmitting(true); try { await apiFetch('/api/v1/customer-po', { method: 'POST', body: JSON.stringify(data) }); toast.success('PO berhasil!'); router.push('/dashboard/customer-po') }
     catch (err) { toast.error(err instanceof Error ? err.message : 'Terjadi kesalahan') } finally { setSubmitting(false) }
@@ -32,6 +88,16 @@ export default function TambahPoPage() {
       <Form {...form}>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <Card><CardHeader><CardTitle className="text-base">Informasi PO</CardTitle></CardHeader><CardContent className="space-y-4">
+            <FormField control={control} name="quotation_id" render={({ field }) => (
+              <FormItem><FormLabel>Quotation (opsional)</FormLabel>
+                <Select onValueChange={field.onChange} value={field.value ?? ''}>
+                  <FormControl><SelectTrigger><SelectValue placeholder="Pilih quotation - auto isi data" /></SelectTrigger></FormControl>
+                  <SelectContent>{qtnOpts.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}</SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )} />
+            {populating && <div className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />Mengisi data dari quotation...</div>}
             <div className="grid grid-cols-2 gap-4">
               <FormField control={control} name="customer_id" render={({ field }) => (
                 <FormItem><FormLabel>Customer *</FormLabel>
@@ -75,7 +141,7 @@ export default function TambahPoPage() {
               </div>
             ))}</CardContent></Card>
           <div className="flex justify-end gap-3"><Button type="button" variant="cancel"><Link href="/dashboard/customer-po">Batal</Link></Button>
-            <Button type="submit" disabled={submitting}>{submitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}{submitting ? 'Menyimpan...' : 'Simpan PO'}</Button></div>
+            <Button type="submit" disabled={submitting || populating}>{submitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}{submitting ? 'Menyimpan...' : 'Simpan PO'}</Button></div>
         </form>
       </Form>
     </div>

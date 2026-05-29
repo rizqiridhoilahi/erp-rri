@@ -35,16 +35,6 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
     customer = c
   }
 
-  let rfqCustomer = null
-  if (qtn.rfq_id) {
-    const { data: r } = await supabaseAdmin
-      .from('rfq_customer')
-      .select('nomor')
-      .eq('id', qtn.rfq_id)
-      .single()
-    if (r) rfqCustomer = r
-  }
-
   const { data: items } = await supabaseAdmin
     .from('quotation_item')
     .select('*')
@@ -112,6 +102,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
 
   const pdfData = {
     nomor: qtn.nomor,
+    revisi: qtn.revisi ?? 0,
     referensi: qtn.referensi ?? null,
     lampiran: qtn.lampiran ?? null,
     perihal: qtn.perihal ?? null,
@@ -149,10 +140,12 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
 
   try {
     const blob = await pdf(QuotationPDF({ data: pdfData }) as React.ReactElement<DocumentProps>).toBlob()
+    const pdfNomor = `${qtn.nomor}${(qtn.revisi ?? 0) > 0 ? `-R${qtn.revisi}` : ''}`
+
     return new NextResponse(blob, {
       headers: {
         'Content-Type': 'application/pdf',
-        'Content-Disposition': `inline; filename="SPH-${qtn.nomor}.pdf"`,
+        'Content-Disposition': `inline; filename="SPH-${pdfNomor}.pdf"`,
       },
     })
   } catch (e) {

@@ -177,6 +177,13 @@
       "when": 1779930000000,
       "tag": "0025_add_customer_pic_jenis_kelamin",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1779933600000,
+      "tag": "0026_add_quotation_revisi",
+      "breakpoints": true
     }
   ]
 }

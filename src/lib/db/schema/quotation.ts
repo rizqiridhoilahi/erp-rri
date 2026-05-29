@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm"
-import { pgTable, text, timestamp, boolean, real, date } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, boolean, real, date, integer } from "drizzle-orm/pg-core";
 
 export const quotation = pgTable("quotation", {
   id: text("id").primaryKey().default(sql`gen_random_uuid()::text`),
@@ -18,6 +18,7 @@ export const quotation = pgTable("quotation", {
   ppnRate: real("ppn_rate").notNull().default(0.11),
   ppnEnabled: boolean("ppn_enabled").notNull().default(true),
   totalHarga: real("total_harga"),
+  revisi: integer("revisi").notNull().default(0),
   keterangan: text("keterangan"),
   isActive: boolean("is_active").notNull().default(true),
   createdAt: timestamp("created_at").notNull().defaultNow(),

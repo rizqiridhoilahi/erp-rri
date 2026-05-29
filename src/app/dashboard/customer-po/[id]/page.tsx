@@ -24,13 +24,12 @@ interface CustomerPo {
   nomor_po_customer: string | null
   terms_of_payment: string | null
   customer: { nama: string; kode: string } | null
-}
-
-interface CustomerPoItem {
-  id: string
-  jumlah: number
-  harga_satuan: number
-  barang: { nama: string; kode: string; satuan: string } | null
+  items: Array<{
+    id: string
+    jumlah: number
+    harga_satuan: number
+    barang: { nama: string; kode: string; satuan: string } | null
+  }>
 }
 
 export default function CustomerPoDetailPage() {
@@ -38,7 +37,6 @@ export default function CustomerPoDetailPage() {
   const pathname = usePathname()
   const id = pathname.split("/").pop()
   const [po, setPo] = useState<CustomerPo | null>(null)
-  const [items, setItems] = useState<CustomerPoItem[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [documents, setDocuments] = useState<DocumentFile[]>([])
@@ -48,11 +46,9 @@ export default function CustomerPoDetailPage() {
     if (!id) return
     Promise.all([
       apiFetch<CustomerPo>(`/api/v1/customer-po/${id}`),
-      apiFetch<CustomerPoItem[]>(`/api/v1/customer-po/${id}/items`),
       apiFetch<DocumentFile[]>(`/api/v1/customer-po/${id}/documents`),
-    ]).then(([poRes, itemRes, docRes]) => {
+    ]).then(([poRes, docRes]) => {
       setPo(poRes.data)
-      setItems(itemRes.data ?? [])
       setDocuments(docRes.data ?? [])
       setLoading(false)
     }).catch((err) => {
@@ -130,7 +126,7 @@ export default function CustomerPoDetailPage() {
         </CardContent>
       </Card>
 
-      {!!items.length && (
+      {!!po.items?.length && (
         <Card>
           <CardContent className="pt-6">
             <h3 className="text-lg font-semibold mb-4 flex items-center gap-2"><FileText className="h-4 w-4" />Item Barang</h3>
@@ -146,7 +142,7 @@ export default function CustomerPoDetailPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {items.map((item) => (
+                {po.items.map((item) => (
                   <TableRow key={item.id}>
                     <TableCell className="font-medium">{item.barang?.nama}</TableCell>
                     <TableCell className="text-muted-foreground">{item.barang?.kode}</TableCell>
@@ -159,7 +155,7 @@ export default function CustomerPoDetailPage() {
               </TableBody>
             </Table>
             <div className="mt-4 text-right font-bold text-lg">
-              Total: {items.reduce((sum, i) => sum + i.jumlah * i.harga_satuan, 0).toLocaleString("id-ID")}
+              Total: {po.items.reduce((sum, i) => sum + i.jumlah * i.harga_satuan, 0).toLocaleString("id-ID")}
             </div>
           </CardContent>
         </Card>
