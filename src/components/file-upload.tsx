@@ -142,7 +142,7 @@ export function FileUpload({ documents, onUpload, onDelete, uploading = false, a
                     </TooltipProvider>
                   </>
                 ) : (
-                  <Button variant="outline" size="sm" asChild>
+                  <Button variant="outline" size="sm" className="text-success hover:bg-success/10 border-success/30" asChild>
                     <a href={doc.file_url} target="_blank" rel="noopener noreferrer">
                       <ExternalLink className="h-4 w-4 mr-1" />
                       Buka File

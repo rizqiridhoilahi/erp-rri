@@ -146,7 +146,7 @@ export default function SalesOrderDetailPage() {
             </Button>
           ))}
           {doDoc ? (
-            <Button variant="outline" size="sm" asChild>
+            <Button variant="outline" size="sm" className="text-success hover:bg-success/10 border-success/30" asChild>
               <Link href={`/dashboard/delivery-order/${doDoc.id as string}`}>
                 Lihat DO <ExternalLink className="h-4 w-4 ml-1" />
               </Link>

@@ -38,6 +38,12 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
   const { data: old } = await supabaseAdmin.from('customer_po').select('status, quotation_id').eq('id', id).single()
   if (!old) return notFound('PO tidak ditemukan')
 
+  if (body.action === 'generate_so' && old.status === 'confirmed') {
+    const result = await generateSOFromPO(id)
+    if (!result.success) return badRequest(result.error ?? 'Gagal generate SO')
+    return NextResponse.json({ data: { action: 'generate_so', salesOrder: result.data } })
+  }
+
   if (body.status && !isValidPoTransition(old.status, body.status)) {
     return badRequest(`Status PO tidak bisa diubah dari '${old.status}' ke '${body.status}'`)
   }

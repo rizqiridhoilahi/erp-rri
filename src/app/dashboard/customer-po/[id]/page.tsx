@@ -134,13 +134,28 @@ export default function CustomerPoDetailPage() {
               </Button>
             </>
           )}
-          {po.sales_order && (
-            <Button variant="outline" size="sm" asChild>
+          {po.sales_order ? (
+            <Button variant="outline" size="sm" className="text-success hover:bg-success/10 border-success/30" asChild>
               <Link href={`/dashboard/sales-order/${po.sales_order.id}`}>
                 Lihat SO <ExternalLink className="h-4 w-4 ml-1" />
               </Link>
             </Button>
-          )}
+          ) : po.status === 'confirmed' ? (
+            <Button variant="outline" size="sm" className="text-success hover:bg-success/10 border-success/30" onClick={async () => {
+              try {
+                const res = await apiFetch<{ salesOrder: { id: string; nomor: string } }>(`/api/v1/customer-po/${po.id}`, { method: 'PUT', body: JSON.stringify({ action: 'generate_so' }) })
+                toast.success(`SO ${res.data.salesOrder.nomor} berhasil dibuat!`, {
+                  action: { label: 'Lihat SO', onClick: () => router.push(`/dashboard/sales-order/${res.data.salesOrder.id}`) },
+                })
+                const refreshed = await apiFetch<CustomerPo>(`/api/v1/customer-po/${po.id}`)
+                setPo(refreshed.data)
+              } catch (err) {
+                toast.error(err instanceof Error ? err.message : 'Gagal generate SO')
+              }
+            }}>
+              Buat SO <ExternalLink className="h-4 w-4 ml-1" />
+            </Button>
+          ) : null}
         </div>
       </div>
 
