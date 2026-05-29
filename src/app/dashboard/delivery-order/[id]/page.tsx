@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
 import { ArrowLeft, Truck } from 'lucide-react'
 import { DOScanPanel } from '@/components/do-scan-panel'
+import { DoDocuments } from '@/components/do-documents'
 
 const s: Record<string, { label: string; v: 'secondary' | 'warning' | 'success' | 'outline' }> = {
   draft: { label: 'Draft', v: 'secondary' }, awaiting_pickup: { label: 'Siap Kirim', v: 'warning' }, dikirim: { label: 'Dikirim', v: 'success' }, selesai: { label: 'Selesai', v: 'outline' },
@@ -86,6 +87,13 @@ export default async function DeliveryOrderDetailPage({ params }: { params: Prom
         doNomor={doDoc.nomor}
         items={items ?? []}
       />
+
+      <Card>
+        <CardContent className="pt-6">
+          <h3 className="text-lg font-semibold mb-4">Lampiran</h3>
+          <DoDocuments doId={doDoc.id} />
+        </CardContent>
+      </Card>
     </div>
   )
 }

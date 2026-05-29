@@ -18,7 +18,7 @@ const supplierSchema = z.object({
   linkToko: z.string().optional(),
   noRekening: z.string().optional(),
   kontak: z.string().optional(),
-  termsOfPayment: z.enum(['Net 30', 'Net 60', 'Cash', 'Custom'], {
+  termsOfPayment: z.enum(['Net 14', 'Net 30', 'Net 60', 'Net 90', 'Cash', 'Custom'], {
     message: "Pilih terms of payment yang valid",
   }).optional().or(z.literal('')),
   isMarketplace: z.boolean().default(false),
@@ -223,8 +223,10 @@ export default function EditSupplierPage() {
             className={`w-full px-3 py-2 border rounded-md focus:outline-none focus-visible:ring-3 focus-visible:ring-ring ${errors.termsOfPayment ? 'border-destructive' : ''}`}
           >
             <option value="">Pilih Terms of Payment</option>
+            <option value="Net 14">Net 14</option>
             <option value="Net 30">Net 30</option>
             <option value="Net 60">Net 60</option>
+            <option value="Net 90">Net 90</option>
             <option value="Cash">Cash</option>
             <option value="Custom">Custom</option>
           </select>

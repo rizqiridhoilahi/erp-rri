@@ -2,6 +2,13 @@ import { supabaseAdmin } from '@/lib/api/supabase-server'
 import { generateDocumentNumber } from '@/lib/utils/document-number'
 
 export async function generateSOFromPO(customerPoId: string) {
+  const existing = await supabaseAdmin
+    .from('sales_order')
+    .select('id, nomor')
+    .eq('customer_po_id', customerPoId)
+    .maybeSingle()
+  if (existing.data) return { success: true, data: { id: existing.data.id, nomor: existing.data.nomor, type: 'SO' } }
+
   const { data: po, error } = await supabaseAdmin
     .from('customer_po')
     .select('*')
@@ -48,7 +55,81 @@ export async function generateSOFromPO(customerPoId: string) {
   return { success: true, data: { id: so.id, nomor: so.nomor, type: 'SO' } }
 }
 
+export async function generateSOFromDI(diId: string) {
+  const existing = await supabaseAdmin
+    .from('sales_order')
+    .select('id, nomor')
+    .eq('di_id', diId)
+    .maybeSingle()
+  if (existing.data) return { success: true, data: { id: existing.data.id, nomor: existing.data.nomor, type: 'SO' } }
+
+  const { data: diDoc, error } = await supabaseAdmin
+    .from('di')
+    .select('*')
+    .eq('id', diId)
+    .single()
+  if (error || !diDoc) return { success: false, error: 'DI not found' }
+
+  const { data: diItems } = await supabaseAdmin
+    .from('di_item')
+    .select('*')
+    .eq('di_id', diId)
+  if (!diItems?.length) return { success: false, error: 'No items in DI' }
+
+  const { data: kontrakItems } = diDoc.kontrak_id
+    ? await supabaseAdmin
+        .from('kontrak_item')
+        .select('barang_id, harga_satuan')
+        .eq('kontrak_id', diDoc.kontrak_id)
+    : { data: null }
+
+  const hargaMap = new Map<string, number>()
+  if (kontrakItems) {
+    for (const ki of kontrakItems) {
+      hargaMap.set(ki.barang_id, ki.harga_satuan)
+    }
+  }
+
+  const nomor = await generateDocumentNumber('SO')
+  const now = new Date().toISOString()
+
+  const { data: so, error: soError } = await supabaseAdmin.from('sales_order').insert({
+    nomor,
+    di_id: diId,
+    tanggal: diDoc.tanggal,
+    status: 'draft',
+    created_at: now,
+    updated_at: now,
+  }).select().single()
+  if (soError) return { success: false, error: soError.message }
+
+  const soItems = diItems.map(i => ({
+    sales_order_id: so.id,
+    barang_id: i.barang_id,
+    jumlah: i.jumlah,
+    harga_satuan: hargaMap.get(i.barang_id) ?? 0,
+    keterangan: i.keterangan ?? null,
+    created_at: now,
+    updated_at: now,
+  }))
+
+  const { error: itemsError } = await supabaseAdmin.from('sales_order_item').insert(soItems)
+  if (itemsError) {
+    await supabaseAdmin.from('sales_order').delete().eq('id', so.id)
+    return { success: false, error: itemsError.message }
+  }
+
+  return { success: true, data: { id: so.id, nomor: so.nomor, type: 'SO' } }
+}
+
 export async function generateDOFromSO(salesOrderId: string) {
+  const existing = await supabaseAdmin
+    .from('delivery_order')
+    .select('id, nomor')
+    .eq('sales_order_id', salesOrderId)
+    .maybeSingle()
+  if (existing.data) return { success: true, data: { id: existing.data.id, nomor: existing.data.nomor, type: 'DO' } }
+
   const { data: so, error } = await supabaseAdmin
     .from('sales_order')
     .select('*')

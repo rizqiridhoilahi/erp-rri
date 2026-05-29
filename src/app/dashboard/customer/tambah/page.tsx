@@ -9,18 +9,19 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 import { Loader2 } from 'lucide-react';
+
+const allTopOptions = ['Net 14', 'Net 30', 'Net 60', 'Net 90', 'Cash', 'Custom'] as const;
 
 const customerSchema = z.object({
   nama: z.string().min(2, { message: "Nama customer harus diisi" }),
   kode: z.string().min(2, { message: "Kode customer harus diisi" }),
   alamat: z.string().optional(),
   kontak: z.string().optional(),
-  termsOfPayment: z.enum(['Net 30', 'Net 60', 'Cash', 'Custom'], {
-    message: "Pilih terms of payment yang valid",
-  }),
+  selectedTops: z.array(z.string()).min(1, { message: "Pilih minimal 1 Terms of Payment" }),
   isActive: z.boolean().default(true),
 });
 
@@ -30,6 +31,7 @@ export default function TambahCustomerPage() {
   const router = useRouter();
   const form = useForm<CustomerFormValues>({
     resolver: zodResolver(customerSchema),
+    defaultValues: { selectedTops: [], isActive: true },
   });
 
   const [loading, setLoading] = useState(false);
@@ -49,14 +51,15 @@ export default function TambahCustomerPage() {
           kode: data.kode,
           alamat: data.alamat,
           kontak: data.kontak,
-          terms_of_payment: data.termsOfPayment,
+          terms_of_payment: data.selectedTops[0],
           is_active: data.isActive,
+          customer_tops: data.selectedTops,
         }),
       });
 
       setSuccess('Customer berhasil ditambahkan!');
       form.reset();
-      
+
       setTimeout(() => {
         router.push('/dashboard/customer');
       }, 2000);
@@ -100,16 +103,38 @@ export default function TambahCustomerPage() {
           <FormField control={form.control} name="kontak" render={({ field }) => (
             <FormItem><FormLabel>Kontak</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
           )} />
-          <FormField control={form.control} name="termsOfPayment" render={({ field }) => (
-            <FormItem><FormLabel>Terms of Payment</FormLabel><Select onValueChange={field.onChange} value={field.value}>
-              <FormControl><SelectTrigger><SelectValue placeholder="Pilih Terms of Payment" /></SelectTrigger></FormControl>
-              <SelectContent>
-                <SelectItem value="Net 30">Net 30</SelectItem>
-                <SelectItem value="Net 60">Net 60</SelectItem>
-                <SelectItem value="Cash">Cash</SelectItem>
-                <SelectItem value="Custom">Custom</SelectItem>
-              </SelectContent>
-            </Select><FormMessage /></FormItem>
+          <FormField control={form.control} name="selectedTops" render={() => (
+            <FormItem>
+              <FormLabel>Terms of Payment</FormLabel>
+              <div className="grid grid-cols-2 gap-2 pt-1">
+                {allTopOptions.map((opt) => (
+                  <FormField
+                    key={opt}
+                    control={form.control}
+                    name="selectedTops"
+                    render={({ field }) => (
+                      <FormItem className="flex items-center gap-2 space-y-0">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value?.includes(opt)}
+                            onCheckedChange={(checked) => {
+                              const current = field.value ?? []
+                              if (checked) {
+                                field.onChange([...current, opt])
+                              } else {
+                                field.onChange(current.filter(v => v !== opt))
+                              }
+                            }}
+                          />
+                        </FormControl>
+                        <Label className="text-sm font-normal cursor-pointer">{opt}</Label>
+                      </FormItem>
+                    )}
+                  />
+                ))}
+              </div>
+              <FormMessage />
+            </FormItem>
           )} />
           <FormField control={form.control} name="isActive" render={({ field }) => (
             <FormItem><div className="flex items-center gap-2 pt-2"><FormControl><input type="checkbox" checked={field.value} onChange={field.onChange} className="h-4 w-4 text-primary focus-visible:ring-ring border-border rounded" /></FormControl><FormLabel className="mb-0">Aktif</FormLabel></div><FormMessage /></FormItem>

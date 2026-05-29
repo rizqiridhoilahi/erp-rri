@@ -32,8 +32,10 @@ const supplierSchema = z.object({
 type SupplierFormValues = z.input<typeof supplierSchema>;
 
 const TERMS_OPTIONS = [
+  { value: 'Net 14', label: 'Net 14' },
   { value: 'Net 30', label: 'Net 30' },
   { value: 'Net 60', label: 'Net 60' },
+  { value: 'Net 90', label: 'Net 90' },
   { value: 'Cash', label: 'Cash' },
   { value: 'Custom', label: 'Custom' },
 ];

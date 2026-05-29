@@ -22,9 +22,16 @@ const schema = z.object({
 export async function GET(request: NextRequest) {
   const auth = await verifyAuth(request)
   if (auth.error) return auth.error
-  const { data, error } = await supabaseAdmin.from('kontrak')
+  const { searchParams } = new URL(request.url)
+  const customerId = searchParams.get('customer_id')
+
+  let query = supabaseAdmin.from('kontrak')
     .select('*, customer!customer_id(nama)')
     .order('created_at', { ascending: false })
+
+  if (customerId) query = query.eq('customer_id', customerId)
+
+  const { data, error } = await query
   if (error) return internalError(error)
   return NextResponse.json({ data: data ?? [] })
 }

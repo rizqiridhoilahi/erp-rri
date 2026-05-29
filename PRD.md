@@ -171,6 +171,7 @@ Bucket: dokumen
 ├── dokumen/customer-po/{id}/{file}.pdf                # Customer PO documents
 ├── dokumen/kontrak/{id}/{file}.pdf                    # Kontrak documents (all jenis)
 ├── dokumen/di/{id}/{file}.pdf                         # Delivery Instruction documents
+├── dokumen/sales-order/{id}/{file}.pdf                # Sales Order documents
 ├── dokumen/invoice/{id}/{file}.pdf                    # Invoice documents
 ├── dokumen/grn/{id}/{file}.pdf                        # GRN documents
 ├── dokumen/retur-penjualan/{id}/{file}.pdf            # Retur Penjualan documents
@@ -247,7 +248,7 @@ Tidak ada timestamp prefix — langsung nama file asli (`file.name`). Untuk modu
 
 Contoh: `dokumen/rfq-customer/abc123/PO-001.pdf`
 
-### 5.8 Document Upload Modules (10 Modul)
+### 5.8 Document Upload Modules (11 Modul)
 
 Setiap modul transaksi memiliki fitur upload dokumen lampiran (PDF/gambar) dengan pola yang identik:
 
@@ -258,6 +259,7 @@ Setiap modul transaksi memiliki fitur upload dokumen lampiran (PDF/gambar) denga
 | Quotation | `/api/v1/quotation/{id}/documents` | `quotation_document` | `dokumen/quotation/{id}/` |
 | Customer PO | `/api/v1/customer-po/{id}/documents` | `customer_po_document` | `dokumen/customer-po/{id}/` |
 | DI | `/api/v1/di/{id}/documents` | `di_document` | `dokumen/di/{id}/` |
+| Sales Order | `/api/v1/sales-order/{id}/documents` | `sales_order_document` | `dokumen/sales-order/{id}/` |
 | Invoice | `/api/v1/invoice/{id}/documents` | `invoice_document` | `dokumen/invoice/{id}/` |
 | Retur Penjualan | `/api/v1/retur-penjualan/{id}/documents` | `retur_penjualan_document` | `dokumen/retur-penjualan/{id}/` |
 | Retur Pembelian | `/api/v1/retur-pembelian/{id}/documents` | `retur_pembelian_document` | `dokumen/retur-pembelian/{id}/` |
@@ -435,7 +437,7 @@ Modul ini menangani proses sebelum terjadinya penjualan, dengan tracking per PIC
 
 | Sub-Modul | Deskripsi |
 |---|---|
-| **Sales Order (SO)** | Order penjualan internal (berdasarkan PO Customer atau DI). Auto-generate saat PO/DI deal. Meneruskan `waktu_pengiriman` (hari) dari Customer PO |
+| **Sales Order (SO)** | Order penjualan internal (berdasarkan Customer PO atau DI). Auto-generate saat PO/DI deal. Meneruskan `waktu_pengiriman` (hari) dari Customer PO. **Status workflow:** `draft → confirmed → processed → delivered` (cancelled hanya dari draft). **Detail page:** menampilkan customer info (nama, PO/PIC/TOP), estimasi kirim, items dengan harga satuan, tab dokumen upload. **Edit page:** dynamic items row (add/remove), update harga & keterangan. **Document upload:** `sales_order_document` table + API, UI di detail page |
 | **Delivery Order (DO)** | Surat jalan untuk pengiriman barang. Nomor otomatis: `RRI-SJ-YY-MM-0001`. Auto-generate draft saat SO siap kirim. Meneruskan `waktu_pengiriman` (hari) dari Sales Order |
 | **Tracking Pengiriman** | Status pengiriman barang. Begitu DO status "Dikirim", auto-generate draft Invoice |
 | **Retur Penjualan** | Barang dikembalikan oleh customer karena cacat/rusak/tidak sesuai. Proses: Retur → GRN Retur → Stok masuk → Invoice Adjustment / Refund. Dokumen: Nota Retur. Upload bukti retur via Lampiran. Memiliki kolom `waktu_pengiriman` untuk referensi |
@@ -738,7 +740,8 @@ Customer buat KONTRAK (fixed price list)
   ↓
 Customer kirim DI (Delivery Instruction) — assign PIC Customer
   ↓
-Auto-generate SALES ORDER (dengan TOP dari kontrak)
+Auto-generate SALES ORDER (dengan TOP dari kontrak, harga satuan dari kontrak_item via `di.kontrak_id`)
+  Atau manual: Tab "Dari DI" di halaman tambah SO → pilih DI → auto-load customer + items + harga
   ↓
 Cek: Apakah stok tersedia?
   ├── YES → Auto-generate DO → Kirim barang
@@ -788,7 +791,8 @@ Negosiai? ← Procurement customer nego harga
   ↓
 Customer SETUJU (deal) → Customer terbitkan PO (TOP sesuai master customer)
   ↓
-Auto-generate SALES ORDER
+Auto-generate SALES ORDER (Tab "Dari Customer PO" di halaman tambah SO)
+  Atau dari DI: Tab "Dari Delivery Instruction" → pilih DI → auto-load + review harga
   ↓
 Cek stok → jika kurang → PROCUREMENT FLOW (sama seperti Jalur A)
   ↓
@@ -1148,8 +1152,9 @@ di                       → delivery instruction
 di_item                  → item dalam di
 di_pic                   → assign PIC customer ke di
 
-sales_order              → sales order internal (field: waktu_pengiriman INTEGER — dari Customer PO)
+sales_order              → sales order internal (field: waktu_pengiriman INTEGER — dari Customer PO, di_id — opsional untuk SO dari DI, is_active)
 sales_order_item         → item dalam so
+sales_order_document     → dokumen lampiran SO
 
 delivery_order           → surat jalan (field: waktu_pengiriman INTEGER — dari Sales Order)
 delivery_order_item      → item dalam do

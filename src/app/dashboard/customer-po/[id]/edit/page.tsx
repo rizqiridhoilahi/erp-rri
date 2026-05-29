@@ -1,9 +1,9 @@
 "use client"
 import Link from 'next/link'
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { z } from 'zod'
-import { useForm } from 'react-hook-form'
+import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { apiFetch } from '@/lib/api/client'
 import { Button } from '@/components/ui/button'
@@ -11,11 +11,14 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select'
-import { ArrowLeft, Loader2, Settings2 } from 'lucide-react'
+import { ArrowLeft, Loader2, Settings2, FileText } from 'lucide-react'
 import { toast } from 'sonner'
 import { KelolaKategoriDialog } from '@/components/kelola-kategori-dialog'
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
+import { FileUpload } from '@/components/file-upload'
+import type { DocumentFile } from '@/components/file-upload'
 
-const schema = z.object({ status: z.string().optional(), nomor_po_customer: z.string().optional(), terms_of_payment: z.string().optional(), waktu_pengiriman: z.coerce.number().int().positive().optional(), pic_customer_id: z.string().optional() })
+const schema = z.object({ status: z.string().optional(), nomor_po_customer: z.string().optional(), terms_of_payment: z.enum(['Net 14', 'Net 30', 'Net 60', 'Net 90', 'Cash', 'Custom']).optional().or(z.literal('')), waktu_pengiriman: z.coerce.number().int().positive().optional() })
 type FV = z.input<typeof schema>
 const statusOpts = [{ value: 'draft', label: 'Draft' }, { value: 'confirmed', label: 'Dikonfirmasi' }, { value: 'cancelled', label: 'Batal' }]
 
@@ -31,6 +34,13 @@ interface KategoriOption {
   label: string
 }
 
+interface PoItem {
+  id: string
+  jumlah: number
+  harga_satuan: number
+  barang: { nama: string; kode: string; satuan: string; image_url: string | null } | null
+}
+
 export default function EditPoPage() {
   const router = useRouter()
   const params = useParams()
@@ -42,30 +52,92 @@ export default function EditPoPage() {
   const [kategoriMap, setKategoriMap] = useState<Record<string, string>>({})
   const [kategoriDialogOpen, setKategoriDialogOpen] = useState(false)
   const [pendingFormData, setPendingFormData] = useState<FV | null>(null)
+  const [items, setItems] = useState<PoItem[]>([])
+  const [documents, setDocuments] = useState<DocumentFile[]>([])
+  const [uploading, setUploading] = useState(false)
 
-  const { register, handleSubmit, reset } = useForm<FV>({ resolver: zodResolver(schema) })
-  const [picOpts, setPicOpts] = useState<Array<{ value: string; label: string }>>([])
+  const { register, handleSubmit, reset, control } = useForm<FV>({ resolver: zodResolver(schema) })
+  const [customerLabel, setCustomerLabel] = useState('')
+  const [customerId, setCustomerId] = useState('')
+  const [quotationLabel, setQuotationLabel] = useState('')
+  const [picLabel, setPicLabel] = useState('')
+  const [termsOfPayment, setTermsOfPayment] = useState('')
+  const [waktuPengirimanVal, setWaktuPengirimanVal] = useState<number | null>(null)
+  const [tanggal, setTanggal] = useState('')
+  const [topOpts, setTopOpts] = useState<string[]>([])
+
+  const topDays = useMemo(() => {
+    if (!termsOfPayment) return null
+    if (termsOfPayment === 'Cash') return 'Cash'
+    const match = termsOfPayment.match(/\d+/)
+    return match ? Number(match[0]) : null
+  }, [termsOfPayment])
+
+  const deliveryDate = useMemo(() => {
+    if (!tanggal || !waktuPengirimanVal) return null
+    const d = new Date(tanggal + 'T00:00:00')
+    d.setDate(d.getDate() + waktuPengirimanVal)
+    return d.toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })
+  }, [tanggal, waktuPengirimanVal])
 
   useEffect(() => {
-    apiFetch<{ status: string; nomor_po_customer: string | null; terms_of_payment: string | null; waktu_pengiriman: number | null; pic_customer_id: string | null; customer_id: string }>(`/api/v1/customer-po/${params.id}`)
-      .then(async r => {
+    Promise.all([
+      apiFetch<{ customer_id: string; status: string; nomor_po_customer: string | null; terms_of_payment: string | null; waktu_pengiriman: number | null; tanggal: string; customer: { nama: string; kode: string } | null; quotation: { nomor: string } | null; customer_pic: { nama: string; jabatan: string | null } | null; items?: PoItem[] }>(`/api/v1/customer-po/${params.id}`),
+      apiFetch<DocumentFile[]>(`/api/v1/customer-po/${params.id}/documents`).catch(() => ({ data: [] })),
+    ])
+      .then(async ([poRes, docRes]) => {
         reset({
-          status: r.data.status,
-          nomor_po_customer: r.data.nomor_po_customer ?? '',
-          terms_of_payment: r.data.terms_of_payment ?? '',
-          waktu_pengiriman: r.data.waktu_pengiriman ?? undefined,
-          pic_customer_id: r.data.pic_customer_id ?? '',
+          status: poRes.data.status,
+          nomor_po_customer: poRes.data.nomor_po_customer ?? '',
+          terms_of_payment: (poRes.data.terms_of_payment ?? '') as FV['terms_of_payment'],
+          waktu_pengiriman: poRes.data.waktu_pengiriman ?? undefined,
         })
-        if (r.data.customer_id) {
+        setCustomerLabel(poRes.data.customer ? `[${poRes.data.customer.kode}] ${poRes.data.customer.nama}` : '-')
+        setCustomerId(poRes.data.customer_id ?? '')
+        setQuotationLabel(poRes.data.quotation?.nomor ?? '-')
+        setPicLabel(poRes.data.customer_pic ? `${poRes.data.customer_pic.nama}${poRes.data.customer_pic.jabatan ? ` - ${poRes.data.customer_pic.jabatan}` : ''}` : '-')
+        setTermsOfPayment(poRes.data.terms_of_payment ?? '')
+        setWaktuPengirimanVal(poRes.data.waktu_pengiriman)
+        setTanggal(poRes.data.tanggal ?? '')
+        setItems(poRes.data.items ?? [])
+        setDocuments(docRes.data ?? [])
+        setLoading(false)
+
+        if (poRes.data.customer_id) {
           try {
-            const picRes = await apiFetch<Array<{ id: string; nama: string; jabatan: string | null }>>(`/api/v1/master/pic-customer?customer_id=${r.data.customer_id}`)
-            setPicOpts((picRes.data ?? []).map(x => ({ value: x.id, label: x.jabatan ? `${x.nama} - ${x.jabatan}` : x.nama })))
+            const topsRes = await apiFetch<Array<{ top: string }>>(`/api/v1/master/customer-top?customer_id=${poRes.data.customer_id}`)
+            setTopOpts((topsRes.data ?? []).map(t => t.top))
           } catch { /* ignore */ }
         }
-        setLoading(false)
       })
       .catch(() => { toast.error('Gagal memuat data'); router.push('/dashboard/customer-po') })
   }, [params.id, reset, router])
+
+  const handleUpload = async (file: File) => {
+    setUploading(true)
+    try {
+      const formData = new FormData()
+      formData.append("file", file)
+      const { apiFetchFormData } = await import("@/lib/api/client")
+      const r = await apiFetchFormData(`/api/v1/customer-po/${params.id}/documents`, formData)
+      setDocuments((prev) => [r.data as DocumentFile, ...prev].filter(Boolean))
+      toast.success("File berhasil diupload")
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Gagal upload file")
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  const handleDeleteDocument = async (docId: string) => {
+    try {
+      await apiFetch(`/api/v1/customer-po/${params.id}/documents?docId=${docId}`, { method: "DELETE" })
+      setDocuments((prev) => prev.filter((d) => d.id !== docId))
+      toast.success("File berhasil dihapus")
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Gagal hapus file")
+    }
+  }
 
   const openBarangDialog = async (data: FV) => {
     try {
@@ -151,7 +223,7 @@ export default function EditPoPage() {
 
   return (
     <>
-      <div className="max-w-xl space-y-6">
+      <div className="max-w-4xl space-y-6">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" asChild>
             <Link href="/dashboard/customer-po"><ArrowLeft className="h-5 w-5" /></Link>
@@ -168,24 +240,68 @@ export default function EditPoPage() {
                 </select>
               </div>
               <div className="space-y-2">
+                <label className="text-sm font-medium">Customer</label>
+                <Input value={customerLabel} disabled className="bg-muted" />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Quotation</label>
+                <Input value={quotationLabel} disabled className="bg-muted" />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">PIC Customer</label>
+                <Input value={picLabel} disabled className="bg-muted" />
+              </div>
+              <div className="space-y-2">
                 <label className="text-sm font-medium">Nomor PO Customer</label>
                 <Input {...register('nomor_po_customer')} />
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium">Terms of Payment</label>
-                <Input {...register('terms_of_payment')} />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">PIC Customer</label>
-                <select {...register('pic_customer_id')} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring">
-                  <option value="">Pilih PIC</option>
-                  {picOpts.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-                </select>
+                <Controller
+                  name="terms_of_payment"
+                  control={control}
+                  render={({ field }) => (
+                    <Select
+                      value={field.value ?? ''}
+                      onValueChange={(v) => {
+                        field.onChange(v)
+                        setTermsOfPayment(v)
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Pilih TOP" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {(topOpts.length > 0 ? topOpts : ['Net 14', 'Net 30', 'Net 60', 'Net 90', 'Cash', 'Custom']).map(o => (
+                          <SelectItem key={o} value={o}>{o}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium">Waktu Pengiriman (hari)</label>
                 <Input type="number" min="1" placeholder="Contoh: 7" {...register('waktu_pengiriman')} />
               </div>
+              {(termsOfPayment || waktuPengirimanVal) && (
+                <div className="text-sm bg-blue-50 border border-blue-200 rounded-md px-4 py-3 space-y-1">
+                  <p className="font-medium text-blue-800">📋 Estimasi Waktu</p>
+                  {termsOfPayment && (
+                    <p className="text-blue-700">
+                      • {topDays === 'Cash'
+                        ? 'Jatuh tempo pembayaran Invoice adalah Cash (lunas saat penerimaan invoice).'
+                        : `Jatuh tempo pembayaran Invoice adalah ${topDays} hari setelah hardcopy invoice diterima Customer.`
+                      }
+                    </p>
+                  )}
+                  {waktuPengirimanVal && (
+                    <p className="text-blue-700">
+                      • Waktu pengiriman {waktuPengirimanVal} hari setelah PO terbit{deliveryDate ? `, maksimal pengiriman sampai ${deliveryDate}` : ''}.
+                    </p>
+                  )}
+                </div>
+              )}
             </CardContent>
           </Card>
           <div className="flex justify-end gap-3">
@@ -196,6 +312,60 @@ export default function EditPoPage() {
             </Button>
           </div>
         </form>
+
+        {!!items.length && (
+          <Card>
+            <CardContent className="pt-6">
+              <h3 className="text-lg font-semibold mb-4 flex items-center gap-2"><FileText className="h-4 w-4" />Item Barang</h3>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-14">Picture</TableHead>
+                    <TableHead>Barang</TableHead>
+                    <TableHead>Kode</TableHead>
+                    <TableHead>Satuan</TableHead>
+                    <TableHead className="text-right">Jumlah</TableHead>
+                    <TableHead className="text-right">Harga</TableHead>
+                    <TableHead className="text-right">Subtotal</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {items.map((item) => (
+                    <TableRow key={item.id}>
+                      <TableCell>
+                        {item.barang?.image_url
+                          ? <img src={item.barang.image_url} alt={item.barang.nama} className="h-10 w-10 object-cover rounded" />
+                          : <div className="h-10 w-10 rounded bg-muted flex items-center justify-center text-muted-foreground text-xs">-</div>
+                        }
+                      </TableCell>
+                      <TableCell className="font-medium">{item.barang?.nama}</TableCell>
+                      <TableCell className="text-muted-foreground">{item.barang?.kode}</TableCell>
+                      <TableCell>{item.barang?.satuan}</TableCell>
+                      <TableCell className="text-right">{item.jumlah}</TableCell>
+                      <TableCell className="text-right">{item.harga_satuan?.toLocaleString("id-ID")}</TableCell>
+                      <TableCell className="text-right">{(item.jumlah * item.harga_satuan).toLocaleString("id-ID")}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+              <div className="mt-4 text-right font-bold text-lg">
+                Total: {items.reduce((sum, i) => sum + i.jumlah * i.harga_satuan, 0).toLocaleString("id-ID")}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        <Card>
+          <CardContent className="pt-6">
+            <h3 className="text-lg font-semibold mb-4">Lampiran</h3>
+            <FileUpload
+              documents={documents}
+              onUpload={handleUpload}
+              onDelete={handleDeleteDocument}
+              uploading={uploading}
+            />
+          </CardContent>
+        </Card>
       </div>
 
       <Dialog open={showBarangDialog} onOpenChange={setShowBarangDialog}>

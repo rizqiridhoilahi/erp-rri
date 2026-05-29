@@ -28,7 +28,6 @@ import { negoiasi } from "./negoiasi";
 import { negoiasiItem } from "./negoiasi-item";
 import { customerPo } from "./customer-po";
 import { customerPoItem } from "./customer-po-item";
-import { customerPoPic } from "./customer-po-pic";
 import { di } from "./di";
 import { diItem } from "./di-item";
 import { diPic } from "./di-pic";
@@ -82,6 +81,8 @@ import { dataArchive } from "./data-archive";
 import { customerPoDocument } from "./customer-po-document";
 import { diDocument } from "./di-document";
 import { grnDocument } from "./grn-document";
+import { deliveryOrderDocument } from "./delivery-order-document";
+import { salesOrderDocument } from "./sales-order-document";
 
 export {
   users,
@@ -114,7 +115,6 @@ export {
   negoiasiItem,
   customerPo,
   customerPoItem,
-  customerPoPic,
   di,
   diItem,
   diPic,
@@ -167,5 +167,7 @@ export {
   dataArchive,
   customerPoDocument,
   diDocument,
-  grnDocument
+  grnDocument,
+  deliveryOrderDocument,
+  salesOrderDocument
 };

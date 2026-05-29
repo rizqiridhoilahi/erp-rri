@@ -15,9 +15,15 @@ export async function apiFetch<T = unknown>(url: string, options?: RequestInit):
       ...options?.headers,
     },
   })
-  const json = await res.json()
-  if (!res.ok) throw new Error(json.error || 'Gagal menghubungi server')
-  return json
+  let json: Record<string, unknown>
+  try {
+    json = await res.json()
+  } catch {
+    if (!res.ok) throw new Error(res.statusText || 'Gagal menghubungi server')
+    return { data: null as T }
+  }
+  if (!res.ok) throw new Error((json.error as string) || 'Gagal menghubungi server')
+  return json as { data: T } & { message?: string }
 }
 
 export async function apiFetchFormData<T = unknown>(url: string, body: FormData, options?: RequestInit): Promise<{ data: T } & { message?: string }> {
@@ -31,7 +37,13 @@ export async function apiFetchFormData<T = unknown>(url: string, body: FormData,
       ...options?.headers,
     },
   })
-  const json = await res.json()
-  if (!res.ok) throw new Error(json.error || 'Gagal menghubungi server')
-  return json
+  let json: Record<string, unknown>
+  try {
+    json = await res.json()
+  } catch {
+    if (!res.ok) throw new Error(res.statusText || 'Gagal menghubungi server')
+    return { data: null as T }
+  }
+  if (!res.ok) throw new Error((json.error as string) || 'Gagal menghubungi server')
+  return json as { data: T } & { message?: string }
 }

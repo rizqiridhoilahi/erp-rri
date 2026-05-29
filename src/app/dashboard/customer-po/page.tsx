@@ -11,6 +11,8 @@ const s: Record<string, { label: string; v: 'secondary' | 'warning' | 'success' 
 
 export default async function CustomerPoPage() {
   const { data, error } = await supabase.from('customer_po').select('*, customer!customer_id(nama, kode)').order('created_at', { ascending: false })
+  const { data: soData } = await supabase.from('sales_order').select('customer_po_id, nomor, status')
+  const soByPoId = new Map(soData?.map(s => [s.customer_po_id, s]) ?? [])
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -26,18 +28,22 @@ export default async function CustomerPoPage() {
         <TableHead>PO Customer</TableHead>
         <TableHead>Tgl</TableHead>
         <TableHead>Status</TableHead>
+        <TableHead>SO</TableHead>
         <TableHead className="text-right">Aksi</TableHead>
       </TableRow></TableHeader><TableBody>
-        {data.map((item) => (
+        {data.map((item) => {
+          const so = soByPoId.get(item.id)
+          return (
           <TableRow key={item.id}>
             <TableCell className="font-medium">{item.nomor}</TableCell>
             <TableCell>{item.customer?.nama}</TableCell>
             <TableCell className="text-muted-foreground">{item.nomor_po_customer ?? '-'}</TableCell>
             <TableCell className="text-muted-foreground">{new Date(item.tanggal).toLocaleDateString('id-ID')}</TableCell>
             <TableCell><Badge variant={s[item.status]?.v ?? 'outline'}>{s[item.status]?.label ?? item.status}</Badge></TableCell>
+            <TableCell>{so ? <Badge variant="secondary">{so.nomor}</Badge> : '-'}</TableCell>
             <TableCell className="text-right space-x-1"><Button variant="ghost" size="sm" asChild><Link href={`/dashboard/customer-po/${item.id}`}><Eye className="h-4 w-4" /></Link></Button><Button variant="ghost" size="sm" asChild><Link href={`/dashboard/customer-po/${item.id}/edit`}><Pencil className="h-4 w-4" /></Link></Button></TableCell>
           </TableRow>
-        ))}
+        )})}
       </TableBody></Table></div>}
     </div>
   )

@@ -5,12 +5,14 @@ import { Button } from '@/components/ui/button'
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
 import { Plus, Pencil, Eye } from 'lucide-react'
 
-const s: Record<string, { label: string; v: 'secondary' | 'warning' | 'success' | 'outline' }> = {
-  draft: { label: 'Draft', v: 'secondary' }, confirmed: { label: 'Dikonfirmasi', v: 'warning' }, processed: { label: 'Diproses', v: 'success' }, delivered: { label: 'Dikirim', v: 'outline' },
+const s: Record<string, { label: string; v: 'secondary' | 'warning' | 'success' | 'outline' | 'destructive' }> = {
+  draft: { label: 'Draft', v: 'secondary' }, confirmed: { label: 'Dikonfirmasi', v: 'warning' }, processed: { label: 'Diproses', v: 'success' }, delivered: { label: 'Dikirim', v: 'outline' }, cancelled: { label: 'Dibatalkan', v: 'destructive' },
 }
 
 export default async function SalesOrderPage() {
-  const { data, error } = await supabase.from('sales_order').select('*, customer_po!customer_po_id(nomor)').order('created_at', { ascending: false })
+  const { data, error } = await supabase.from('sales_order').select('*, customer_po!customer_po_id(nomor, customer!customer_id(nama))').order('created_at', { ascending: false })
+  const { data: doData } = await supabase.from('delivery_order').select('sales_order_id, nomor, status')
+  const doBySoId = new Map(doData?.map(d => [d.sales_order_id, d]) ?? [])
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -22,20 +24,29 @@ export default async function SalesOrderPage() {
         <Button asChild className="mt-4"><Link href="/dashboard/sales-order/tambah">Buat SO Pertama</Link></Button></div> :
       <div className="rounded-lg border bg-card"><Table><TableHeader><TableRow>
         <TableHead>Nomor</TableHead>
+        <TableHead>Customer</TableHead>
         <TableHead>PO Reference</TableHead>
         <TableHead>Tanggal</TableHead>
         <TableHead>Status</TableHead>
+        <TableHead>Aktif</TableHead>
+        <TableHead>DO</TableHead>
         <TableHead className="text-right">Aksi</TableHead>
       </TableRow></TableHeader><TableBody>
-        {data.map((item) => (
+        {data.map((item) => {
+          const doItem = doBySoId.get(item.id)
+          const customer = (item.customer_po as Record<string, unknown>)?.customer as Record<string, unknown> | null
+          return (
           <TableRow key={item.id}>
             <TableCell className="font-medium">{item.nomor}</TableCell>
+            <TableCell className="text-muted-foreground">{customer?.nama as string ?? '-'}</TableCell>
             <TableCell className="text-muted-foreground">{item.customer_po?.nomor ?? '-'}</TableCell>
             <TableCell className="text-muted-foreground">{new Date(item.tanggal).toLocaleDateString('id-ID')}</TableCell>
             <TableCell><Badge variant={s[item.status]?.v ?? 'outline'}>{s[item.status]?.label ?? item.status}</Badge></TableCell>
+            <TableCell><Badge variant={item.is_active ? 'default' : 'secondary'} className="text-xs">{item.is_active ? 'Ya' : 'Tidak'}</Badge></TableCell>
+            <TableCell>{doItem ? <Badge variant="secondary">{doItem.nomor}</Badge> : '-'}</TableCell>
             <TableCell className="text-right space-x-1"><Button variant="ghost" size="sm" asChild><Link href={`/dashboard/sales-order/${item.id}`}><Eye className="h-4 w-4" /></Link></Button><Button variant="ghost" size="sm" asChild><Link href={`/dashboard/sales-order/${item.id}/edit`}><Pencil className="h-4 w-4" /></Link></Button></TableCell>
           </TableRow>
-        ))}
+        )})}
       </TableBody></Table></div>}
     </div>
   )

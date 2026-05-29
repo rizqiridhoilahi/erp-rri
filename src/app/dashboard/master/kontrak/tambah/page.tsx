@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { apiFetch } from '@/lib/api/client';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -42,6 +42,7 @@ type KontrakFormValues = z.input<typeof kontrakSchema>;
 
 export default function TambahKontrakPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [loading, setLoading] = useState(false);
   const [customerOptions, setCustomerOptions] = useState<Array<{ value: string; label: string }>>([]);
   const [activeTab, setActiveTab] = useState('manual');
@@ -67,18 +68,22 @@ export default function TambahKontrakPage() {
   const { confirmLeave, showDialog, handleConfirm, handleCancel } = useUnsavedChanges(form.formState.isDirty);
 
   useEffect(() => {
-    (async () => {
+    const preselectedCustomerId = searchParams.get('customer_id')
+    ;(async () => {
       try {
         const { data } = await apiFetch<Array<{ id: string; kode: string; nama: string }>>('/api/v1/master/customer');
         setCustomerOptions(data.map(item => ({
           value: item.id,
           label: `[${item.kode}] ${item.nama}`,
         })));
+        if (preselectedCustomerId) {
+          form.setValue('customerId', preselectedCustomerId)
+        }
       } catch (err) {
         console.error('Error loading customers:', err);
       }
     })();
-  }, []);
+  }, [searchParams, form]);
 
   const onSubmit = async (data: KontrakFormValues) => {
     setLoading(true);

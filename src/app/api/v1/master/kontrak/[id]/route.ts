@@ -37,7 +37,8 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
     .single()
   if (error) return internalError(error)
   if (!data) return notFound('Kontrak tidak ditemukan')
-  return NextResponse.json({ data })
+  const { data: items } = await supabaseAdmin.from('kontrak_item').select('*').eq('kontrak_id', id)
+  return NextResponse.json({ data: { ...data, items: items ?? [] } })
 }
 
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {

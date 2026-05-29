@@ -142,18 +142,12 @@ export function FileUpload({ documents, onUpload, onDelete, uploading = false, a
                     </TooltipProvider>
                   </>
                 ) : (
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button variant="ghost" size="icon" asChild>
-                          <a href={doc.file_url} target="_blank" rel="noopener noreferrer">
-                            <ExternalLink className="h-4 w-4" />
-                          </a>
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>Buka file</TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
+                  <Button variant="outline" size="sm" asChild>
+                    <a href={doc.file_url} target="_blank" rel="noopener noreferrer">
+                      <ExternalLink className="h-4 w-4 mr-1" />
+                      Buka File
+                    </a>
+                  </Button>
                 )}
                 <Button variant="ghost" size="icon" onClick={() => onDelete(doc.id)}>
                   <Trash2 className="h-4 w-4 text-destructive" />

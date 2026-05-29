@@ -14,6 +14,7 @@ const itemSchema = z.object({
   keterangan: z.string().optional(),
   nama_barang: z.string().optional(),
   satuan: z.string().optional(),
+  image_url: z.string().optional().nullable(),
   create_barang: z.boolean().optional().default(false),
 })
 
@@ -71,7 +72,8 @@ export async function POST(request: NextRequest) {
         item.nama_barang || '',
         item.satuan || null,
         parsed.data.kategori_baru_id || null,
-        null,
+        item.image_url ?? null,
+        item.harga_satuan ?? null,
       )
       barangId = newBarang.id
     }
@@ -90,6 +92,12 @@ export async function POST(request: NextRequest) {
       created_at: now,
       updated_at: now,
     })
+  }
+  
+  for (const pi of parsed.data.items) {
+    if (pi.image_url && pi.barang_id) {
+      await supabaseAdmin.from('barang').update({ image_url: pi.image_url }).eq('id', pi.barang_id).is('image_url', null)
+    }
   }
 
   const { error: itemsError } = await supabaseAdmin.from('customer_po_item').insert(processedItems)

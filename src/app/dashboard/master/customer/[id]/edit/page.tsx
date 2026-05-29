@@ -7,18 +7,20 @@ import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 import { Loader2 } from 'lucide-react';
 import { useUnsavedChanges } from '@/hooks/use-unsaved-changes';
 import { ConfirmLeaveDialog } from '@/components/confirm-leave-dialog';
+
+const allTopOptions = ['Net 14', 'Net 30', 'Net 60', 'Net 90', 'Cash', 'Custom'] as const;
 
 const customerSchema = z.object({
   nama: z.string().min(2, { message: "Nama customer harus diisi" }),
   kode: z.string().min(2, { message: "Kode customer harus diisi" }),
   alamat: z.string().optional(),
   kontak: z.string().optional(),
-  termsOfPayment: z.enum(['Net 30', 'Net 60', 'Cash', 'Custom'], {
-    message: "Pilih terms of payment yang valid",
-  }),
+  selectedTops: z.array(z.string()).min(1, { message: "Pilih minimal 1 Terms of Payment" }),
   isActive: z.boolean().default(true),
 });
 
@@ -28,11 +30,14 @@ export default function EditCustomerPage() {
   const router = useRouter();
   const pathname = usePathname();
   const id = pathname.split('/').at(-2);
-  
-  const { register, handleSubmit, formState: { errors, isDirty }, reset } = useForm<CustomerFormValues>({
+
+  const { register, handleSubmit, formState: { errors, isDirty }, reset, setValue, watch } = useForm<CustomerFormValues>({
     resolver: zodResolver(customerSchema),
+    defaultValues: { selectedTops: [], isActive: true },
   });
   const { confirmLeave, showDialog, handleConfirm, handleCancel } = useUnsavedChanges(isDirty);
+
+  const selectedTops = watch('selectedTops', []);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -45,21 +50,25 @@ export default function EditCustomerPage() {
     (async () => {
       if (!id) return;
       try {
-        const { data } = await apiFetch<{
-          nama: string; kode: string; alamat: string | null;
-          kontak: string | null; terms_of_payment: string; is_active: boolean;
-        }>(`/api/v1/master/customer/${id}`);
+        const [customerRes, topsRes] = await Promise.all([
+          apiFetch<{
+            nama: string; kode: string; alamat: string | null;
+            kontak: string | null; terms_of_payment: string; is_active: boolean;
+          }>(`/api/v1/master/customer/${id}`),
+          apiFetch<Array<{ top: string }>>(`/api/v1/master/customer-top?customer_id=${id}`),
+        ])
 
         if (cancelled) return;
 
-        if (data) {
+        if (customerRes.data) {
+          const existingTops = (topsRes.data ?? []).map(t => t.top)
           reset({
-            nama: data.nama,
-            kode: data.kode,
-            alamat: data.alamat || '',
-            kontak: data.kontak || '',
-            termsOfPayment: data.terms_of_payment as CustomerFormValues['termsOfPayment'],
-            isActive: data.is_active,
+            nama: customerRes.data.nama,
+            kode: customerRes.data.kode,
+            alamat: customerRes.data.alamat || '',
+            kontak: customerRes.data.kontak || '',
+            selectedTops: existingTops,
+            isActive: customerRes.data.is_active,
           });
         }
       } catch (err) {
@@ -78,9 +87,17 @@ export default function EditCustomerPage() {
     };
   }, [id, reset]);
 
+  const toggleTop = (opt: string) => {
+    const current = selectedTops ?? []
+    const next = current.includes(opt)
+      ? current.filter(v => v !== opt)
+      : [...current, opt]
+    setValue('selectedTops', next, { shouldDirty: true })
+  }
+
   const onSubmit = async (data: CustomerFormValues) => {
     if (!id) return;
-    
+
     setLoading(true);
     setError(null);
     setSuccess(null);
@@ -93,13 +110,14 @@ export default function EditCustomerPage() {
           kode: data.kode,
           alamat: data.alamat,
           kontak: data.kontak,
-          terms_of_payment: data.termsOfPayment,
+          terms_of_payment: data.selectedTops[0] ?? '',
           is_active: data.isActive,
+          customer_tops: data.selectedTops,
         }),
       });
 
       setSuccess('Customer berhasil diperbarui!');
-      
+
       setTimeout(() => {
         router.push('/dashboard/customer');
       }, 2000);
@@ -200,23 +218,21 @@ export default function EditCustomerPage() {
         </div>
 
         <div>
-          <label htmlFor="termsOfPayment" className="block text-sm font-medium mb-1">
+          <label className="block text-sm font-medium mb-1">
             Terms of Payment <span className="text-destructive">*</span>
           </label>
-          <select
-            id="termsOfPayment"
-            {...register('termsOfPayment')}
-            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus-visible:ring-3 focus-visible:ring-ring ${
-              errors.termsOfPayment ? 'border-destructive' : ''
-            }`}
-          >
-            <option value="">Pilih Terms of Payment</option>
-            <option value="Net 30">Net 30</option>
-            <option value="Net 60">Net 60</option>
-            <option value="Cash">Cash</option>
-            <option value="Custom">Custom</option>
-          </select>
-          {errors.termsOfPayment && <p className="text-destructive text-sm mt-1">{errors.termsOfPayment.message}</p>}
+          <div className="grid grid-cols-2 gap-2 pt-1">
+            {allTopOptions.map((opt) => (
+              <label key={opt} className="flex items-center gap-2 cursor-pointer">
+                <Checkbox
+                  checked={(selectedTops ?? []).includes(opt)}
+                  onCheckedChange={() => toggleTop(opt)}
+                />
+                <span className="text-sm">{opt}</span>
+              </label>
+            ))}
+          </div>
+          {errors.selectedTops && <p className="text-destructive text-sm mt-1">{errors.selectedTops.message}</p>}
         </div>
 
         <div className="flex items-center">

@@ -184,6 +184,20 @@
       "when": 1779933600000,
       "tag": "0026_add_quotation_revisi",
       "breakpoints": true
+    },
+    {
+      "idx": 27,
+      "version": "7",
+      "when": 1779937200000,
+      "tag": "0027_negoiasi_revision",
+      "breakpoints": true
+    },
+    {
+      "idx": 28,
+      "version": "7",
+      "when": 1779937800000,
+      "tag": "0028_add_delivery_order_document",
+      "breakpoints": true
     }
   ]
 }

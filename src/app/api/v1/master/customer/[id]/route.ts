@@ -11,6 +11,7 @@ const schema = z.object({
   kontak: z.string().optional(),
   terms_of_payment: z.string().optional(),
   is_active: z.boolean().optional(),
+  customer_tops: z.array(z.string()).optional(),
 })
 
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -30,9 +31,24 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
   if (!body) return badRequest('Invalid JSON body')
   const parsed = schema.safeParse(body)
   if (!parsed.success) return badRequest(parsed.error.issues.map(e => e.message).join(', '))
-  const { data, error } = await supabaseAdmin.from('customer').update({ ...parsed.data, updated_at: new Date().toISOString() }).eq('id', id).select().single()
+  const { customer_tops, ...updateData } = parsed.data
+  const { data, error } = await supabaseAdmin.from('customer').update({ ...updateData, updated_at: new Date().toISOString() }).eq('id', id).select().single()
   if (error) return internalError(error)
   if (!data) return notFound('Customer tidak ditemukan')
+
+  if (customer_tops) {
+    await supabaseAdmin.from('customer_top').delete().eq('customer_id', id)
+    const tops = customer_tops.map(top => ({
+      id: crypto.randomUUID(),
+      customer_id: id,
+      top,
+    }))
+    if (tops.length > 0) {
+      const { error: topsError } = await supabaseAdmin.from('customer_top').insert(tops)
+      if (topsError) console.error('Failed to sync customer_tops:', topsError)
+    }
+  }
+
   return NextResponse.json({ data })
 }
 

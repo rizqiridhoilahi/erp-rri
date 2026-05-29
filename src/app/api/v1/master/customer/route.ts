@@ -11,6 +11,7 @@ const schema = z.object({
   kontak: z.string().optional(),
   terms_of_payment: z.string().optional(),
   is_active: z.boolean().default(true),
+  customer_tops: z.array(z.string()).optional(),
 })
 
 export async function GET(request: NextRequest) {
@@ -28,7 +29,19 @@ export async function POST(request: NextRequest) {
   if (!body) return badRequest('Invalid JSON body')
   const parsed = schema.safeParse(body)
   if (!parsed.success) return badRequest(parsed.error.issues.map(e => e.message).join(', '))
-  const { data, error } = await supabaseAdmin.from('customer').insert(parsed.data).select().single()
+  const { customer_tops, ...customerData } = parsed.data
+  const { data, error } = await supabaseAdmin.from('customer').insert(customerData).select().single()
   if (error) return internalError(error)
+
+  if (customer_tops?.length) {
+    const tops = customer_tops.map(top => ({
+      id: crypto.randomUUID(),
+      customer_id: data.id,
+      top,
+    }))
+    const { error: topsError } = await supabaseAdmin.from('customer_top').insert(tops)
+    if (topsError) console.error('Failed to insert customer_tops:', topsError)
+  }
+
   return NextResponse.json({ data }, { status: 201 })
 }

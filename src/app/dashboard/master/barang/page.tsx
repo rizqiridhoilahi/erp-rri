@@ -25,6 +25,7 @@ interface Barang {
   id: string
   nama: string
   kode: string
+  image_url: string | null
   kategori_barang: { nama: string }
   kontrak: { nomor_kontrak: string } | null
   satuan: string | null
@@ -49,6 +50,7 @@ export default function BarangPage() {
         id,
         nama,
         kode,
+        image_url,
         kategori_barang!inner(nama),
         kontrak!left(nomor_kontrak),
         satuan,
@@ -151,6 +153,11 @@ export default function BarangPage() {
   )
 
   const columns: Column<Barang>[] = [
+    { header: "Picture", accessor: (item) =>
+      item.image_url
+        ? <img src={item.image_url} alt={item.nama} className="h-10 w-10 object-cover rounded" />
+        : <div className="h-10 w-10 rounded bg-muted flex items-center justify-center text-muted-foreground text-xs">-</div>
+    },
     { header: "Kode", accessor: (item) => item.kode, sortKey: "kode" },
     { header: "Nama Barang", accessor: (item) => item.nama, sortKey: "nama" },
     { header: "Kategori", accessor: (item) => item.kategori_barang?.nama || "-" },

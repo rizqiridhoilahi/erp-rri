@@ -15,7 +15,7 @@ import { ArrowLeft, Loader2, Trash2, FileText, Plus, Settings2 } from 'lucide-re
 import { toast } from 'sonner'
 import { KelolaKategoriDialog } from '@/components/kelola-kategori-dialog'
 
-const topOptions = ['Net 14', 'Net 30', 'Net 60', 'Net 90', 'Cash', 'Custom']
+const fallbackTopOptions = ['Net 14', 'Net 30', 'Net 60', 'Net 90', 'Cash', 'Custom']
 
 interface ItemRow {
   key: string
@@ -26,6 +26,7 @@ interface ItemRow {
   harga_satuan: number
   has_barang_id: boolean
   save_to_master: boolean
+  image_url?: string | null
 }
 
 interface QtnOption {
@@ -52,6 +53,7 @@ export default function TambahPoPage() {
   const [top, setTop] = useState('')
   const [topCustom, setTopCustom] = useState('')
   const [picOpts, setPicOpts] = useState<Array<{ value: string; label: string }>>([])
+  const [dynamicTopOpts, setDynamicTopOpts] = useState<string[]>([])
   const [picCustomerId, setPicCustomerId] = useState('')
   const [waktuPengiriman, setWaktuPengiriman] = useState('')
   const [kategoriBaruId, setKategoriBaruId] = useState('')
@@ -61,6 +63,22 @@ export default function TambahPoPage() {
   const [manualHargaSatuan, setManualHargaSatuan] = useState(0)
 
   const effectiveTop = top === 'Custom' ? topCustom : top
+
+  const hasQuotation = !!selectedQtnId && items.length > 0
+
+  const topDays = useMemo(() => {
+    if (!effectiveTop) return null
+    if (effectiveTop === 'Cash') return 'Cash'
+    const match = effectiveTop.match(/\d+/)
+    return match ? Number(match[0]) : null
+  }, [effectiveTop])
+
+  const deliveryDate = useMemo(() => {
+    if (!tanggal || !waktuPengiriman) return null
+    const d = new Date(tanggal + 'T00:00:00')
+    d.setDate(d.getDate() + Number(waktuPengiriman))
+    return d.toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })
+  }, [tanggal, waktuPengiriman])
 
   const total = useMemo(() =>
     items.reduce((sum, i) => sum + i.jumlah * i.harga_satuan, 0),
@@ -75,11 +93,14 @@ export default function TambahPoPage() {
     satuan?: string | null
     jumlah: number
     harga_satuan: number
-    barang?: { id: string; nama: string; kode: string; satuan?: string } | null
+    image_url?: string | null
+    barang?: { id: string; nama: string; kode: string; satuan?: string; image_url?: string | null } | null
   }
   interface QuotationFullData {
     id: string
     customer_id: string
+    pic_customer_id?: string | null
+    pic_customer?: { id: string; nama: string; jabatan: string | null } | null
     items?: QuotationItemData[]
     [key: string]: unknown
   }
@@ -90,7 +111,19 @@ export default function TambahPoPage() {
       const res = await apiFetch<QuotationFullData>(`/api/v1/quotation/${qtnId}`)
       const qtn = res.data
       if (!qtn) { toast.error('Quotation tidak ditemukan'); return }
-      if (qtn.customer_id) setCustomerId(qtn.customer_id)
+      if (qtn.pic_customer) {
+        setPicOpts([{ value: qtn.pic_customer.id, label: qtn.pic_customer.jabatan ? `${qtn.pic_customer.nama} - ${qtn.pic_customer.jabatan}` : qtn.pic_customer.nama }])
+        setPicCustomerId(qtn.pic_customer.id)
+      }
+      if (qtn.customer_id) {
+        setCustomerId(qtn.customer_id)
+        if (!qtn.pic_customer) {
+          try {
+            const picRes = await apiFetch<Array<{ id: string; nama: string; jabatan: string | null }>>(`/api/v1/master/pic-customer?customer_id=${qtn.customer_id}`)
+            setPicOpts((picRes.data ?? []).map(x => ({ value: x.id, label: x.jabatan ? `${x.nama} - ${x.jabatan}` : x.nama })))
+          } catch { /* ignore */ }
+        }
+      }
       if (qtn.items?.length) {
         const rows: ItemRow[] = qtn.items.map((i, idx) => ({
           key: `qtn-${idx}`,
@@ -101,6 +134,7 @@ export default function TambahPoPage() {
           harga_satuan: i.harga_satuan,
           has_barang_id: !!i.barang_id,
           save_to_master: !i.barang_id,
+          image_url: i.image_url ?? i.barang?.image_url ?? null,
         }))
         setItems(rows)
       }
@@ -154,12 +188,25 @@ export default function TambahPoPage() {
   useEffect(() => {
     if (customerId && customerId !== prevCustomerRef.current) {
       prevCustomerRef.current = customerId
-      setPicCustomerId('')
-      apiFetch<Array<{ id: string; nama: string; jabatan: string | null }>>(`/api/v1/master/pic-customer?customer_id=${customerId}`)
-        .then(res => setPicOpts((res.data ?? []).map(x => ({ value: x.id, label: x.jabatan ? `${x.nama} - ${x.jabatan}` : x.nama }))))
-        .catch(() => { setPicOpts([]) })
+      if (!hasQuotation) {
+        apiFetch<Array<{ id: string; nama: string; jabatan: string | null }>>(`/api/v1/master/pic-customer?customer_id=${customerId}`)
+          .then(res => {
+            setPicCustomerId('')
+            setPicOpts((res.data ?? []).map(x => ({ value: x.id, label: x.jabatan ? `${x.nama} - ${x.jabatan}` : x.nama })))
+          })
+          .catch(() => { setPicCustomerId(''); setPicOpts([]) })
+      }
+      apiFetch<Array<{ top: string }>>(`/api/v1/master/customer-top?customer_id=${customerId}`)
+        .then(res => {
+          const tops = res.data ?? []
+          setDynamicTopOpts(tops.map(t => t.top))
+          if (tops.length > 0 && !top) {
+            setTop(tops[0].top)
+          }
+        })
+        .catch(() => { setDynamicTopOpts([]) })
     }
-  }, [customerId])
+  }, [customerId, hasQuotation, top])
 
   const handleKategoriSuccess = useCallback(async () => {
     try {
@@ -218,6 +265,7 @@ export default function TambahPoPage() {
           harga_satuan: i.harga_satuan,
           nama_barang: i.has_barang_id ? undefined : i.nama_barang,
           satuan: i.has_barang_id ? undefined : i.satuan,
+          image_url: i.image_url ?? undefined,
           create_barang: !i.has_barang_id,
         })),
       }
@@ -257,9 +305,9 @@ export default function TambahPoPage() {
           </div>
 
           <div>
-            <Label>Quotation (opsional)</Label>
-            <Select onValueChange={setSelectedQtnId} value={selectedQtnId}>
-              <SelectTrigger><SelectValue placeholder="Pilih quotation - auto isi data" /></SelectTrigger>
+            <Label>Quotation *</Label>
+            <Select onValueChange={setSelectedQtnId} value={selectedQtnId} disabled={hasQuotation}>
+              <SelectTrigger><SelectValue placeholder={hasQuotation ? undefined : 'Pilih quotation - auto isi data'} /></SelectTrigger>
               <SelectContent>
                 {qtnOpts.map(o => (
                   <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
@@ -276,7 +324,7 @@ export default function TambahPoPage() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label>Customer *</Label>
-              <Select onValueChange={setCustomerId} value={customerId}>
+              <Select onValueChange={setCustomerId} value={customerId} disabled={hasQuotation}>
                 <SelectTrigger><SelectValue placeholder="Pilih" /></SelectTrigger>
                 <SelectContent>
                   {custOpts.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
@@ -297,9 +345,9 @@ export default function TambahPoPage() {
             <div>
               <Label>Terms of Payment</Label>
               <Select onValueChange={setTop} value={top}>
-                <SelectTrigger><SelectValue placeholder="Pilih" /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder={customerId ? (dynamicTopOpts.length === 0 ? 'TOP belum diatur' : 'Pilih') : 'Pilih customer dulu'} /></SelectTrigger>
                 <SelectContent>
-                  {topOptions.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+                  {(customerId && dynamicTopOpts.length > 0 ? dynamicTopOpts : fallbackTopOptions).map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
                 </SelectContent>
               </Select>
               {top === 'Custom' && (
@@ -315,8 +363,8 @@ export default function TambahPoPage() {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label>PIC Customer</Label>
-              <Select onValueChange={setPicCustomerId} value={picCustomerId} disabled={!customerId}>
+              <Label>PIC Customer *</Label>
+              <Select onValueChange={setPicCustomerId} value={picCustomerId} disabled={hasQuotation || !customerId}>
                 <SelectTrigger><SelectValue placeholder={customerId ? 'Pilih PIC' : 'Pilih customer dulu'} /></SelectTrigger>
                 <SelectContent>
                   {picOpts.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
@@ -333,9 +381,24 @@ export default function TambahPoPage() {
             </div>
           </div>
 
-          <div className="text-xs text-muted-foreground bg-muted/50 rounded-md px-3 py-2">
-            Jatuh tempo dihitung setelah invoice hardcopy diterima customer, bukan saat PO dibuat.
-          </div>
+          {(effectiveTop || waktuPengiriman) && (
+            <div className="text-sm bg-blue-50 border border-blue-200 rounded-md px-4 py-3 space-y-1">
+              <p className="font-medium text-blue-800">📋 Estimasi Waktu</p>
+              {effectiveTop && (
+                <p className="text-blue-700">
+                  • {topDays === 'Cash'
+                    ? 'Jatuh tempo pembayaran Invoice adalah Cash (lunas saat penerimaan invoice).'
+                    : `Jatuh tempo pembayaran Invoice adalah ${topDays} hari setelah hardcopy invoice diterima Customer.`
+                  }
+                </p>
+              )}
+              {waktuPengiriman && deliveryDate && (
+                <p className="text-blue-700">
+                  • Waktu pengiriman {waktuPengiriman} hari setelah PO terbit, maksimal pengiriman sampai {deliveryDate}.
+                </p>
+              )}
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -373,9 +436,10 @@ export default function TambahPoPage() {
               <TableHeader>
                 <TableRow>
                   {hasNewItems && <TableHead className="w-10">Simpan</TableHead>}
+                  <TableHead className="w-14">Picture</TableHead>
                   <TableHead>Nama Barang</TableHead>
-                  <TableHead>Satuan</TableHead>
                   <TableHead className="text-right w-20">Jumlah</TableHead>
+                  <TableHead>Satuan</TableHead>
                   <TableHead className="text-right">Harga</TableHead>
                   <TableHead className="text-right">Subtotal</TableHead>
                   <TableHead className="w-10"></TableHead>
@@ -394,14 +458,20 @@ export default function TambahPoPage() {
                         )}
                       </TableCell>
                     )}
+                    <TableCell>
+                      {item.image_url
+                        ? <img src={item.image_url} alt={item.nama_barang} className="h-10 w-10 object-cover rounded" />
+                        : <div className="h-10 w-10 rounded bg-muted flex items-center justify-center text-muted-foreground text-xs">-</div>
+                      }
+                    </TableCell>
                     <TableCell className="font-medium">
                       {item.has_barang_id
                         ? (barangOpts.find(b => b.value === item.barang_id)?.label ?? item.nama_barang)
                         : item.nama_barang
                       }
                     </TableCell>
-                    <TableCell className="text-muted-foreground">{item.satuan}</TableCell>
                     <TableCell className="text-right">{item.jumlah}</TableCell>
+                    <TableCell className="text-muted-foreground">{item.satuan}</TableCell>
                     <TableCell className="text-right">{item.harga_satuan.toLocaleString('id-ID')}</TableCell>
                     <TableCell className="text-right">{(item.jumlah * item.harga_satuan).toLocaleString('id-ID')}</TableCell>
                     <TableCell>
