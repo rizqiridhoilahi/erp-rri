@@ -10,9 +10,24 @@ const s: Record<string, { label: string; v: 'secondary' | 'warning' | 'success' 
 }
 
 export default async function SalesOrderPage() {
-  const { data, error } = await supabase.from('sales_order').select('*, customer_po!customer_po_id(nomor, customer!customer_id(nama))').order('created_at', { ascending: false })
+  const { data, error } = await supabase.from('sales_order').select('*, customer_po!customer_po_id(nomor, customer!customer_id(nama), customer_id), di_id').order('created_at', { ascending: false })
   const { data: doData } = await supabase.from('delivery_order').select('sales_order_id, nomor, status')
   const doBySoId = new Map(doData?.map(d => [d.sales_order_id, d]) ?? [])
+
+  // Fetch DI data separately for SOs with di_id
+  const diIds = data?.filter(s => s.di_id).map(s => s.di_id) ?? []
+  const { data: diData } = diIds.length > 0
+    ? await supabase.from('di').select('id, nomor, customer_id').in('id', diIds)
+    : { data: null }
+  const diById = new Map(diData?.map(d => [d.id, d]) ?? [])
+
+  // Fetch customer names for DI
+  const diCustomerIds = [...diById.values()].map(d => d.customer_id).filter(Boolean)
+  const { data: diCustomers } = diCustomerIds.length > 0
+    ? await supabase.from('customer').select('id, nama').in('id', diCustomerIds)
+    : { data: null }
+  const customerById = new Map(diCustomers?.map(c => [c.id, c.nama]) ?? [])
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -25,26 +40,31 @@ export default async function SalesOrderPage() {
       <div className="rounded-lg border bg-card"><Table><TableHeader><TableRow>
         <TableHead>Nomor</TableHead>
         <TableHead>Customer</TableHead>
-        <TableHead>PO Reference</TableHead>
+        <TableHead>No PO Ref / No. DI Ref</TableHead>
         <TableHead>Tanggal</TableHead>
         <TableHead>Status</TableHead>
         <TableHead>Aktif</TableHead>
         <TableHead>DO</TableHead>
         <TableHead className="text-right">Aksi</TableHead>
       </TableRow></TableHeader><TableBody>
-        {data.map((item) => {
-          const doItem = doBySoId.get(item.id)
-          const customer = (item.customer_po as Record<string, unknown>)?.customer as Record<string, unknown> | null
+        {data.map((item: Record<string, unknown>) => {
+          const doItem = doBySoId.get(item.id as string)
+          const diFromMap = item.di_id ? diById.get(item.di_id as string) : null
+          const customerPo = item.customer_po as { nomor?: string; customer?: { nama?: string } } | null
+          const customerFromPo = customerPo?.customer?.nama
+          const customerFromDi = diFromMap?.customer_id ? customerById.get(diFromMap.customer_id as string) : null
+          const customerNama = customerFromDi ?? customerFromPo ?? '-'
+          const poRef = diFromMap?.nomor ?? customerPo?.nomor ?? '-'
           return (
-          <TableRow key={item.id}>
-            <TableCell className="font-medium">{item.nomor}</TableCell>
-            <TableCell className="font-medium">{customer?.nama as string ?? '-'}</TableCell>
-            <TableCell className="font-medium">{item.customer_po?.nomor ?? '-'}</TableCell>
-            <TableCell className="font-medium">{new Date(item.tanggal).toLocaleDateString('id-ID')}</TableCell>
-            <TableCell><Badge variant={s[item.status]?.v ?? 'outline'}>{s[item.status]?.label ?? item.status}</Badge></TableCell>
+          <TableRow key={item.id as string}>
+            <TableCell className="font-medium">{item.nomor as string}</TableCell>
+            <TableCell className="font-medium">{customerNama}</TableCell>
+            <TableCell className="font-medium">{poRef}</TableCell>
+            <TableCell className="font-medium">{new Date(item.tanggal as string).toLocaleDateString('id-ID')}</TableCell>
+            <TableCell><Badge variant={s[item.status as string]?.v ?? 'outline'}>{s[item.status as string]?.label ?? item.status}</Badge></TableCell>
             <TableCell><Badge variant={item.is_active ? 'default' : 'secondary'} className="text-xs">{item.is_active ? 'Ya' : 'Tidak'}</Badge></TableCell>
             <TableCell>{doItem ? <Badge variant="secondary">{doItem.nomor}</Badge> : '-'}</TableCell>
-            <TableCell className="text-right"><Button variant="ghost" size="sm" asChild><Link href={`/dashboard/sales-order/${item.id}`}><Eye className="h-4 w-4" /></Link></Button></TableCell>
+            <TableCell className="text-right"><Button variant="ghost" size="sm" asChild><Link href={`/dashboard/sales-order/${item.id as string}`}><Eye className="h-4 w-4" /></Link></Button></TableCell>
           </TableRow>
         )})}
       </TableBody></Table></div>}

@@ -10,7 +10,7 @@ const s: Record<string, { label: string; v: 'secondary' | 'warning' | 'success' 
 }
 
 export default async function DiPage() {
-  const { data, error } = await supabase.from('di').select('*, customer!customer_id(nama, kode)').order('created_at', { ascending: false })
+  const { data, error } = await supabase.from('di').select('*, customer!customer_id(nama, kode), customer_pic!pic_customer_id(nama, no_hp)').order('created_at', { ascending: false })
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -28,12 +28,12 @@ export default async function DiPage() {
         <TableHead>Status</TableHead>
         <TableHead className="text-right">Aksi</TableHead>
       </TableRow></TableHeader><TableBody>
-        {data.map((item: { id: string; nomor: string; customer: { nama: string } | null; tanggal: string; status: string }) => (
+        {data.map((item: { id: string; nomor: string; customer: { nama: string } | null; customer_pic: { nama: string } | null; tanggal: string; status: string }) => (
           <TableRow key={item.id}>
             <TableCell className="font-medium">{item.nomor}</TableCell>
             <TableCell>{item.customer?.nama}</TableCell>
-            <TableCell className="text-muted-foreground">-</TableCell>
-            <TableCell className="text-muted-foreground">{new Date(item.tanggal).toLocaleDateString('id-ID')}</TableCell>
+            <TableCell className="font-medium">{item.customer_pic?.nama ?? '-'}</TableCell>
+            <TableCell className="font-medium">{new Date(item.tanggal).toLocaleDateString('id-ID')}</TableCell>
             <TableCell><Badge variant={s[item.status]?.v ?? 'outline'}>{s[item.status]?.label ?? item.status}</Badge></TableCell>
             <TableCell className="text-right space-x-1"><Button variant="ghost" size="sm" asChild><Link href={`/dashboard/di/${item.id}`}><Eye className="h-4 w-4" /></Link></Button><Button variant="ghost" size="sm" asChild><Link href={`/dashboard/di/${item.id}/edit`}><Pencil className="h-4 w-4" /></Link></Button></TableCell>
           </TableRow>

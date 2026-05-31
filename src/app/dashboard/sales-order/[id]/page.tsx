@@ -177,7 +177,9 @@ export default function SalesOrderDetailPage() {
   const statusConfig = STATUS_MAP[statusKey] ?? { label: statusKey, v: 'outline' as const }
   const actions = QUICK_ACTIONS[statusKey] ?? []
   const customerPo = so.customer_po as Record<string, unknown> | null
-  const customer = customerPo?.customer as Record<string, unknown> | null
+  const customerFromPo = customerPo?.customer as Record<string, unknown> | null
+  const customerFromDi = so.customer as Record<string, unknown> | null
+  const customer = customerFromDi ?? customerFromPo
   const picCustomer = so.pic_customer as Record<string, unknown> | null
 
   const total = items.reduce((sum: number, i: Record<string, unknown>) => {

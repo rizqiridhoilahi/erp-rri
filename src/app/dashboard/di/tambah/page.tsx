@@ -29,6 +29,7 @@ interface AddedItem {
   kode_barang: string
   nama_barang: string
   satuan: string
+  satuan_kontrak: string
   jumlah: number
   harga_satuan: number
   harga_satuan_kontrak: number
@@ -87,6 +88,7 @@ export default function TambahDiPage() {
   const [copied, setCopied] = useState(false)
   const [priceDiffDialogOpen, setPriceDiffDialogOpen] = useState(false)
   const [priceDiffs, setPriceDiffs] = useState<Array<{ kode: string; nama: string; harga: number; kontrak: number }>>([])
+  const [satuanDiffs, setSatuanDiffs] = useState<Array<{ kode: string; nama: string; satuan: string; kontrak: string }>>([])
   const confirmedRef = useRef(false)
 
   const effectiveTop = top === 'Custom' ? topCustom : top
@@ -242,14 +244,16 @@ export default function TambahDiPage() {
         return
       }
       const geminiHarga = item.harga_satuan !== undefined ? Number(item.harga_satuan) : 0
+      const geminiSatuan = String(item.satuan ?? match?.satuan ?? '')
       setAddedItems(prev => [...prev, {
         key: `json-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
         barang_id: match?.barang_id ?? '',
         kode_barang: String(item.kode),
         nama_barang: match?.nama_barang ?? String(item.nama ?? '(unknown)'),
-        satuan: match?.satuan ?? String(item.satuan ?? ''),
+        satuan: geminiSatuan,
+        satuan_kontrak: match?.satuan ?? geminiSatuan,
         jumlah: Number(item.jumlah),
-        harga_satuan: match?.harga_satuan ?? geminiHarga,
+        harga_satuan: geminiHarga,
         harga_satuan_kontrak: match?.harga_satuan ?? geminiHarga,
       }])
       added++
@@ -282,6 +286,7 @@ export default function TambahDiPage() {
       kode_barang: match.kode_barang ?? '',
       nama_barang: match.nama_barang ?? '',
       satuan: match.satuan ?? '',
+      satuan_kontrak: match.satuan ?? '',
       jumlah: manualJumlah,
       harga_satuan: match.harga_satuan,
       harga_satuan_kontrak: match.harga_satuan,
@@ -339,9 +344,11 @@ export default function TambahDiPage() {
     if (validItems.length === 0) { toast.error('Minimal 1 item harus ditambahkan'); return }
 
     if (!confirmedRef.current) {
-      const diffs = validItems.filter(i => i.harga_satuan_kontrak && i.harga_satuan !== i.harga_satuan_kontrak)
-      if (diffs.length > 0) {
-        setPriceDiffs(diffs.map(i => ({ kode: i.kode_barang, nama: i.nama_barang, harga: i.harga_satuan, kontrak: i.harga_satuan_kontrak })))
+      const hargaDiffs = validItems.filter(i => i.harga_satuan_kontrak && i.harga_satuan !== i.harga_satuan_kontrak)
+      const satuanDiffsItems = validItems.filter(i => i.satuan_kontrak && i.satuan !== i.satuan_kontrak)
+      if (hargaDiffs.length > 0 || satuanDiffsItems.length > 0) {
+        setPriceDiffs(hargaDiffs.map(i => ({ kode: i.kode_barang, nama: i.nama_barang, harga: i.harga_satuan, kontrak: i.harga_satuan_kontrak })))
+        setSatuanDiffs(satuanDiffsItems.map(i => ({ kode: i.kode_barang, nama: i.nama_barang, satuan: i.satuan, kontrak: i.satuan_kontrak })))
         setPriceDiffDialogOpen(true)
         return
       }
@@ -590,7 +597,24 @@ export default function TambahDiPage() {
                         <TableCell className="text-xs text-muted-foreground text-center">{idx + 1}</TableCell>
                         <TableCell className="font-mono text-xs">{item.kode_barang}</TableCell>
                         <TableCell>{item.nama_barang}</TableCell>
-                        <TableCell className="text-xs text-muted-foreground">{item.satuan}</TableCell>
+                        <TableCell>
+                          <div className="flex flex-col gap-1">
+                            <Input type="text" value={item.satuan}
+                              className={item.satuan !== item.satuan_kontrak ? 'text-black dark:text-black border-amber-400 bg-amber-50' : ''}
+                              onChange={e => {
+                                const val = e.target.value
+                                setAddedItems(prev => prev.map(a =>
+                                  a.key === item.key ? { ...a, satuan: val } : a
+                                ))
+                              }} />
+                            {item.satuan !== item.satuan_kontrak && (
+                              <span className="text-xs text-amber-600 flex items-center gap-1">
+                                <AlertTriangle className="h-3 w-3" />
+                                ≠ kontrak: {item.satuan_kontrak}
+                              </span>
+                            )}
+                          </div>
+                        </TableCell>
                         <TableCell>
                           <Input type="number" min="1" value={item.jumlah}
                             onChange={e => {
@@ -603,7 +627,7 @@ export default function TambahDiPage() {
                         <TableCell>
                           <div className="flex flex-col gap-1">
                             <Input type="number" min="0" value={item.harga_satuan}
-                              className={item.harga_satuan !== item.harga_satuan_kontrak ? 'border-amber-400 bg-amber-50' : ''}
+                              className={item.harga_satuan !== item.harga_satuan_kontrak ? 'text-black dark:text-black border-amber-400 bg-amber-50' : ''}
                               onChange={e => {
                                 const hg = Number(e.target.value)
                                 setAddedItems(prev => prev.map(a =>
@@ -653,39 +677,69 @@ export default function TambahDiPage() {
       </div>
 
       {priceDiffDialogOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="bg-white rounded-lg shadow-xl max-w-lg w-full mx-4 p-6">
+<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-white dark:bg-white rounded-lg shadow-xl max-w-lg w-full mx-4 p-6 max-h-[90vh] overflow-y-auto text-slate-900">
             <div className="flex items-center gap-2 mb-3">
               <AlertTriangle className="h-5 w-5 text-amber-500" />
-              <h3 className="text-lg font-semibold">Perbedaan Harga Satuan</h3>
+              <h3 className="text-lg font-semibold text-slate-900">Perbedaan dengan Kontrak</h3>
             </div>
-            <p className="text-muted-foreground mb-4">
-              {priceDiffs.length} item memiliki harga satuan berbeda dengan kontrak:
+            <p className="text-slate-600 mb-4">
+              Ada perbedaan data antara DI dan kontrak:
             </p>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Kode</TableHead>
-                  <TableHead>Nama</TableHead>
-                  <TableHead className="text-right">Harga DI</TableHead>
-                  <TableHead className="text-right">Harga Kontrak</TableHead>
-                  <TableHead className="text-right">Selisih</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {priceDiffs.map(d => (
-                  <TableRow key={d.kode}>
-                    <TableCell>{d.kode}</TableCell>
-                    <TableCell>{d.nama}</TableCell>
-                    <TableCell className="text-right">{d.harga.toLocaleString('id-ID')}</TableCell>
-                    <TableCell className="text-right">{d.kontrak.toLocaleString('id-ID')}</TableCell>
-                    <TableCell className="text-right font-medium text-amber-600">
-                      {(d.harga - d.kontrak) > 0 ? '+' : ''}{(d.harga - d.kontrak).toLocaleString('id-ID')}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+            {priceDiffs.length > 0 && (
+              <>
+                <p className="text-sm font-medium mb-2 text-slate-800">Harga Satuan:</p>
+                <Table className="mb-4">
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="text-slate-700">Kode</TableHead>
+                      <TableHead className="text-slate-700">Nama</TableHead>
+                      <TableHead className="text-right text-slate-700">Harga DI</TableHead>
+                      <TableHead className="text-right text-slate-700">Harga Kontrak</TableHead>
+                      <TableHead className="text-right text-slate-700">Selisih</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {priceDiffs.map(d => (
+                      <TableRow key={d.kode}>
+                        <TableCell className="text-slate-800">{d.kode}</TableCell>
+                        <TableCell className="text-slate-800">{d.nama}</TableCell>
+                        <TableCell className="text-right text-slate-800">{d.harga.toLocaleString('id-ID')}</TableCell>
+                        <TableCell className="text-right text-slate-800">{d.kontrak.toLocaleString('id-ID')}</TableCell>
+                        <TableCell className="text-right font-medium text-amber-600">
+                          {(d.harga - d.kontrak) > 0 ? '+' : ''}{(d.harga - d.kontrak).toLocaleString('id-ID')}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </>
+            )}
+            {satuanDiffs.length > 0 && (
+              <>
+                <p className="text-sm font-medium mb-2 text-slate-800">Satuan:</p>
+                <Table className="mb-4">
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="text-slate-700">Kode</TableHead>
+                      <TableHead className="text-slate-700">Nama</TableHead>
+                      <TableHead className="text-slate-700">Satuan DI</TableHead>
+                      <TableHead className="text-slate-700">Satuan Kontrak</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {satuanDiffs.map(d => (
+                      <TableRow key={d.kode}>
+                        <TableCell className="text-slate-800">{d.kode}</TableCell>
+                        <TableCell className="text-slate-800">{d.nama}</TableCell>
+                        <TableCell className="text-amber-600 font-medium">{d.satuan}</TableCell>
+                        <TableCell className="text-slate-800">{d.kontrak}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </>
+            )}
             <div className="flex justify-end gap-3 mt-4">
               <Button variant="cancel" onClick={() => setPriceDiffDialogOpen(false)}>
                 Kembali Edit

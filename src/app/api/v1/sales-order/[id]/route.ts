@@ -26,7 +26,8 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
       customer_po!customer_po_id(
         id, nomor, waktu_pengiriman, pic_customer_id,
         customer!customer_id(nama, kode)
-      )
+      ),
+      di_id
     `)
     .eq('id', id)
     .single()
@@ -34,11 +35,29 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
   if (error) return internalError(error)
   if (!so) return notFound('Sales Order tidak ditemukan')
 
-  const picCustomerId = (so.customer_po as Record<string, unknown> | null)?.pic_customer_id as string | null
+  let customerFromDi: Record<string, unknown> | null = null
   let picCustomer = null
+
+  const picCustomerId = (so.customer_po as Record<string, unknown> | null)?.pic_customer_id as string | null
   if (picCustomerId) {
     const { data } = await supabaseAdmin.from('customer_pic').select('nama, no_hp').eq('id', picCustomerId).maybeSingle()
     picCustomer = data
+  } else if (so.di_id) {
+    const { data: diData } = await supabaseAdmin
+      .from('di')
+      .select('customer_id, customer!customer_id(nama, kode)')
+      .eq('id', so.di_id as string)
+      .single()
+    customerFromDi = ((diData as Record<string, unknown>)?.customer ?? null) as Record<string, unknown> | null
+
+    const { data: diWithPic } = await supabaseAdmin
+      .from('di')
+      .select('customer_pic!pic_customer_id(nama, no_hp)')
+      .eq('id', so.di_id as string)
+      .maybeSingle()
+    if (diWithPic?.customer_pic) {
+      picCustomer = (diWithPic as Record<string, unknown>).customer_pic as { nama: string; no_hp: string }
+    }
   }
 
   const { data: items } = await supabaseAdmin
@@ -102,7 +121,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
     rfq_suppliers: rfqs ?? []
   }
 
-  return NextResponse.json({ data: { ...so, items: items ?? [], delivery_order: doDoc ?? null, pic_customer: picCustomer, procurement } })
+  return NextResponse.json({ data: { ...so, items: items ?? [], delivery_order: doDoc ?? null, pic_customer: picCustomer, procurement, customer: customerFromDi } })
 }
 
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
