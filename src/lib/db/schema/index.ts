@@ -30,7 +30,7 @@ import { customerPo } from "./customer-po";
 import { customerPoItem } from "./customer-po-item";
 import { di } from "./di";
 import { diItem } from "./di-item";
-import { diPic } from "./di-pic";
+
 import { salesOrder } from "./sales-order";
 import { salesOrderItem } from "./sales-order-item";
 import { deliveryOrder } from "./delivery-order";
@@ -117,7 +117,6 @@ export {
   customerPoItem,
   di,
   diItem,
-  diPic,
   salesOrder,
   salesOrderItem,
   deliveryOrder,

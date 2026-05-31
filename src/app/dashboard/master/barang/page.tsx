@@ -27,7 +27,7 @@ interface Barang {
   kode: string
   image_url: string | null
   kategori_barang: { nama: string }
-  kontrak: { nomor_kontrak: string } | null
+  kontrak: { nomor_kontrak: string; tanggal_selesai: string | null } | null
   satuan: string | null
   spesifikasi: string | null
   harga_beli_default: number | null
@@ -52,7 +52,7 @@ export default function BarangPage() {
         kode,
         image_url,
         kategori_barang!inner(nama),
-        kontrak!left(nomor_kontrak),
+        kontrak!left(nomor_kontrak, tanggal_selesai),
         satuan,
         spesifikasi,
         harga_beli_default,
@@ -69,6 +69,12 @@ export default function BarangPage() {
       })
   }, [])
 
+  const today = new Date().toISOString().split('T')[0]
+  const kontrakIsExpired = (kontrak: { tanggal_selesai: string | null } | null) => {
+    if (!kontrak?.tanggal_selesai) return false
+    return kontrak.tanggal_selesai < today
+  }
+
   const handleDelete = (id: string) => async () => {
     await apiFetch(`/api/v1/master/barang/${id}`, { method: "DELETE" })
     setData((prev) => prev.filter((item) => item.id !== id))
@@ -79,13 +85,16 @@ export default function BarangPage() {
     return `Rp ${Number(value).toLocaleString("id-ID")}`
   }
 
-  const statusBadge = (isActive: boolean) => (
-    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-      isActive ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"
-    }`}>
-      {isActive ? "Active" : "Non-Active"}
-    </span>
-  )
+  const statusBadge = (item: Barang) => {
+    const active = item.is_active && !kontrakIsExpired(item.kontrak)
+    return (
+      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+        active ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"
+      }`}>
+        {active ? "Active" : "Non-Active"}
+      </span>
+    )
+  }
 
   const actionButtons = (id: string, name: string) => (
     <div className="flex items-center justify-end gap-1">
@@ -166,7 +175,7 @@ export default function BarangPage() {
     { header: "Harga Beli", accessor: (item) => formatCurrency(item.harga_beli_default), sortKey: "harga_beli_default" },
     { header: "Harga Jual", accessor: (item) => formatCurrency(item.harga_jual_default), sortKey: "harga_jual_default" },
     { header: "Stok Min", accessor: (item) => item.stok_minimum ?? "-", sortKey: "stok_minimum" },
-    { header: "Status", accessor: (item) => statusBadge(item.is_active), sortKey: "is_active" },
+    { header: "Status", accessor: (item) => statusBadge(item), sortKey: "is_active" },
     { header: "Aksi", accessor: (item) => actionButtons(item.id, item.nama), className: "text-right" },
   ]
 

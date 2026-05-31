@@ -73,13 +73,17 @@ export default function KontrakPage() {
     })
   }
 
-  const statusBadge = (isActive: boolean) => (
-    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-      isActive ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"
-    }`}>
-      {isActive ? "Active" : "Non-Active"}
-    </span>
-  )
+  const today = new Date().toISOString().split('T')[0]
+  const statusBadge = (item: Kontrak) => {
+    const active = item.is_active && (!item.tanggal_selesai || item.tanggal_selesai >= today)
+    return (
+      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+        active ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"
+      }`}>
+        {active ? "Active" : "Non-Active"}
+      </span>
+    )
+  }
 
   const actionButtons = (id: string, name: string) => (
     <div className="flex items-center justify-end gap-1">
@@ -147,7 +151,7 @@ export default function KontrakPage() {
     { header: "Customer", accessor: (item) => item.customer?.nama || "-" },
     { header: "Tanggal Mulai", accessor: (item) => formatDate(item.tanggal_mulai), sortKey: "tanggal_mulai" },
     { header: "Tanggal Selesai", accessor: (item) => formatDate(item.tanggal_selesai), sortKey: "tanggal_selesai" },
-    { header: "Status", accessor: (item) => statusBadge(item.is_active), sortKey: "is_active" },
+    { header: "Status", accessor: (item) => statusBadge(item), sortKey: "is_active" },
     { header: "Aksi", accessor: (item) => actionButtons(item.id, item.nama), className: "text-right" },
   ]
 

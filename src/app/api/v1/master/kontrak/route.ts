@@ -33,7 +33,12 @@ export async function GET(request: NextRequest) {
 
   const { data, error } = await query
   if (error) return internalError(error)
-  return NextResponse.json({ data: data ?? [] })
+  const today = new Date().toISOString().split('T')[0]
+  const mapped = (data ?? []).map(k => ({
+    ...k,
+    is_active: k.is_active && (!k.tanggal_selesai || k.tanggal_selesai >= today),
+  }))
+  return NextResponse.json({ data: mapped })
 }
 
 export async function POST(request: NextRequest) {

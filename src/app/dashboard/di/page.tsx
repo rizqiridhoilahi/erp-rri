@@ -6,7 +6,7 @@ import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@
 import { Plus, Pencil, Eye } from 'lucide-react'
 
 const s: Record<string, { label: string; v: 'secondary' | 'warning' | 'success' | 'outline' }> = {
-  draft: { label: 'Draft', v: 'secondary' }, active: { label: 'Aktif', v: 'warning' }, completed: { label: 'Selesai', v: 'success' },
+  draft: { label: 'Draft', v: 'secondary' }, confirmed: { label: 'Dikonfirmasi', v: 'success' }, cancelled: { label: 'Batal', v: 'outline' },
 }
 
 export default async function DiPage() {
@@ -23,14 +23,16 @@ export default async function DiPage() {
       <div className="rounded-lg border bg-card"><Table><TableHeader><TableRow>
         <TableHead>Nomor</TableHead>
         <TableHead>Customer</TableHead>
+        <TableHead>PIC</TableHead>
         <TableHead>Tanggal</TableHead>
         <TableHead>Status</TableHead>
         <TableHead className="text-right">Aksi</TableHead>
       </TableRow></TableHeader><TableBody>
-        {data.map((item) => (
+        {data.map((item: { id: string; nomor: string; customer: { nama: string } | null; tanggal: string; status: string }) => (
           <TableRow key={item.id}>
             <TableCell className="font-medium">{item.nomor}</TableCell>
             <TableCell>{item.customer?.nama}</TableCell>
+            <TableCell className="text-muted-foreground">-</TableCell>
             <TableCell className="text-muted-foreground">{new Date(item.tanggal).toLocaleDateString('id-ID')}</TableCell>
             <TableCell><Badge variant={s[item.status]?.v ?? 'outline'}>{s[item.status]?.label ?? item.status}</Badge></TableCell>
             <TableCell className="text-right space-x-1"><Button variant="ghost" size="sm" asChild><Link href={`/dashboard/di/${item.id}`}><Eye className="h-4 w-4" /></Link></Button><Button variant="ghost" size="sm" asChild><Link href={`/dashboard/di/${item.id}/edit`}><Pencil className="h-4 w-4" /></Link></Button></TableCell>

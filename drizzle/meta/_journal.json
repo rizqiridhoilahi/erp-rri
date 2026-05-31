@@ -198,6 +198,20 @@
       "when": 1779937800000,
       "tag": "0028_add_delivery_order_document",
       "breakpoints": true
+    },
+    {
+      "idx": 38,
+      "version": "7",
+      "when": 1748674800000,
+      "tag": "0038_add_di_harga_satuan_pic_drop_di_pic",
+      "breakpoints": true
+    },
+    {
+      "idx": 39,
+      "version": "7",
+      "when": 1748995200000,
+      "tag": "0039_add_di_top_waktu_nomor_customer",
+      "breakpoints": true
     }
   ]
 }

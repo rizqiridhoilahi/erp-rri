@@ -130,6 +130,41 @@ User pilih tab "Dari DI"
   → Submit → POST /api/v1/sales-order (set di_id & customer_po_id=null)
 ```
 
+## 🟡 DI Module Overhaul — Delivery Instruction Professionalization
+
+### Status Transition DI
+
+```
+draft ──→ confirmed ──→ (terminal, locked)
+  │
+  └──→ cancelled
+```
+
+### DI → SO Auto-Generation
+
+```
+DI diterbitkan (draft)
+  → User setujui DI (confirmed)
+    → Auto-generate SO via generateSOFromDI()
+    → WhatsApp notification ke PIC Customer
+  → SO dibuat dengan di_id = DI.id
+```
+
+### Migration Overview
+
+| # | Task | Status | File |
+|---|------|--------|------|
+| 1 | **Migration 0038** — add `harga_satuan` to `di_item`, `pic_customer_id` to `di`, drop `di_pic` | ✅ Done | `0038_add_di_harga_satuan_pic.sql` |
+| 2 | **API POST** — Zod + handler for `pic_customer_id`, `harga_satuan` | ✅ Done | `api/v1/di/route.ts` |
+| 3 | **API PUT** — status transitions (draft→confirmed|cancelled), full edit, SO auto-gen on confirmed | ✅ Done | `api/v1/di/[id]/route.ts` |
+| 4 | **Auto-sales** — `generateSOFromDI()` prefers `di_item.harga_satuan` over kontrak | ✅ Done | `auto-sales.ts` |
+| 5 | **Detail page** — CPO-style: Konfirmasi/Batal buttons, PIC/kontrak info, pricing, SO link | ✅ Done | `di/[id]/page.tsx` |
+| 6 | **Create page** — kontrak picker (non-expired), PIC dropdown, harga_satuan, auto-populate | ✅ Done | `di/tambah/page.tsx` |
+| 7 | **Edit page** — full edit form (same as create, pre-populated) | ✅ Done | `di/[id]/edit/page.tsx` |
+| 8 | **List page** — add PIC Customer column | ✅ Done | `di/page.tsx` |
+| 9 | **Item Barang card redesign** — ganti 137-row table + Select dengan 2 opsi input: Import JSON dari Gemini AI (paste array kode+nama+jumlah → auto-match harga_satuan) + Input Manual (ketik kode → auto-lookup). Hapus fetch master barang, hapus render 137 Select options. Performance: load kontrak <500ms (dari 10s), ganti PIC <50ms (dari 4s) | ✅ Done | `di/tambah/page.tsx`, `di/[id]/edit/page.tsx` |
+| 10 | **Harga cross-check validation** — simpan `harga_satuan_kontrak` di AddedItem (client-side), visual warning saat harga berbeda dari kontrak (amber bg + AlertTriangle icon + "≠ kontrak: Rp X"), modal konfirmasi submit jika ada perbedaan dengan tabel selisih, user bisa "Kembali Edit" atau "Lanjutkan Simpan" | ✅ Done | `di/tambah/page.tsx`, `di/[id]/edit/page.tsx` |
+
 ## 📄 Documentation
 
 | # | Task | Status | File |

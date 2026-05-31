@@ -435,7 +435,7 @@ Modul ini menangani proses sebelum terjadinya penjualan, dengan tracking per PIC
 | Sub-Modul | Deskripsi |
 |---|---|
 | **Kontrak Customer** | Kontrak fixed price list. Upload PDF → AI OCR → simpan harga kontrak. Assign PIC Customer. Upload dokumen fisik kontrak via Lampiran |
-| **DI (Delivery Instruction)** | Instruksi pengiriman dari customer berdasarkan kontrak. Assign PIC Customer. Upload dokumen pendukung via Lampiran |
+| **DI (Delivery Instruction)** | Instruksi pengiriman dari customer berdasarkan kontrak. Assign PIC Customer. Upload dokumen pendukung via Lampiran. **Input Item Barang:** 2 opsi — (1) Import JSON dari Gemini AI: paste JSON array hasil ekstraksi PDF kontrak (+ kode + jumlah + nama) → auto-match harga_satuan dari kontrak. (2) Input Manual: ketik kode barang + jumlah → auto-lookup dari kontrak. Tidak ada tabel Select 137 item — hanya tabel item yang sudah ditambahkan (editable qty & harga_satuan). **Harga cross-check:** setiap item menyimpan `harga_satuan_kontrak` (client-side) — jika user mengubah `harga_satuan` sehingga berbeda dengan kontrak, tampil visual warning (amber bg + icon AlertTriangle + teks "≠ kontrak: Rp X"). Saat submit, jika ada perbedaan harga, muncul modal konfirmasi berisi tabel selisih harga — user bisa "Kembali Edit" atau "Lanjutkan Simpan". |
 
 ### D. Sales Order & Pengiriman
 

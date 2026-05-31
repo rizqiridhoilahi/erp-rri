@@ -37,8 +37,13 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
     .single()
   if (error) return internalError(error)
   if (!data) return notFound('Kontrak tidak ditemukan')
+  const today = new Date().toISOString().split('T')[0]
+  const kontrak = {
+    ...data,
+    is_active: data.is_active && (!data.tanggal_selesai || data.tanggal_selesai >= today),
+  }
   const { data: items } = await supabaseAdmin.from('kontrak_item').select('*').eq('kontrak_id', id)
-  return NextResponse.json({ data: { ...data, items: items ?? [] } })
+  return NextResponse.json({ data: { ...kontrak, items: items ?? [] } })
 }
 
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {

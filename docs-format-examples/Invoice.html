@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice - PT. Rizqi Ridho Ilahi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Menggunakan font Arial secara global */
+        body { 
+            font-family: Arial, Helvetica, sans-serif; 
+            background-color: #d1d5db; /* gray-300 */
+        }
+        
+        /* Pengaturan ukuran kertas A4 untuk tampilan cetak/PDF */
+        @page { size: A4; margin: 0; }
+        
+        /* Kontainer untuk halaman A4 */
+        .a4-page {
+            width: 210mm;
+            min-height: 297mm;
+            margin: 20mm auto;
+            background-color: white;
+            padding: 20mm; /* Padding standar dokumen */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            position: relative;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Hilangkan bayangan dan margin saat dicetak */
+        @media print {
+            body { background: white; margin: 0; padding: 0; }
+            .a4-page { margin: 0; box-shadow: none; border: none; }
+        }
+
+        /* Styling khusus tabel invoice */
+        table.tabel-invoice {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            margin-bottom: 20px;
+        }
+        table.tabel-invoice th, table.tabel-invoice td {
+            border: 1px solid black;
+            padding: 6px 8px;
+            font-size: 13px;
+            vertical-align: middle;
+        }
+        table.tabel-invoice th {
+            text-align: center;
+            font-weight: bold;
+            background-color: #f3f4f6;
+        }
+        
+        .rp-cell {
+            display: flex;
+            justify-content: space-between;
+        }
+    </style>
+</head>
+<body class="py-8 text-gray-900 leading-relaxed">
+
+    <div class="a4-page">
+
+        <!-- HEADER / KOP SURAT -->
+        <header class="flex justify-between items-center border-b-[3px] border-black pb-4 mb-6">
+            <!-- Logo Perusahaan -->
+            <div class="w-20 h-20 bg-blue-900 text-white flex justify-center items-center rounded-full text-5xl font-bold">
+                R
+            </div>
+            <!-- Nama & Bidang Usaha (Rata Kanan) -->
+            <div class="text-right">
+                <h1 class="text-[22px] font-bold tracking-wide uppercase text-black mb-1">PT. Rizqi Ridho Ilahi</h1>
+                <p class="text-sm font-semibold text-black">Furniture, Welding</p>
+                <p class="text-sm font-semibold text-black">General Trading</p>
+                <p class="text-sm font-semibold text-black">Services</p>
+            </div>
+        </header>
+
+        <!-- KEPALA INVOICE (No, Hal, Tanggal) -->
+        <div class="flex justify-between items-start text-sm mb-6">
+            <table class="border-none text-left">
+                <tbody>
+                    <tr>
+                        <td class="pr-2 py-1 align-top w-20">No</td>
+                        <td class="px-2 py-1 align-top">:</td>
+                        <td class="py-1">RRI-INV-26-044</td>
+                    </tr>
+                    <tr>
+                        <td class="pr-2 py-1 align-top">Hal</td>
+                        <td class="px-2 py-1 align-top">:</td>
+                        <td class="py-1">Tagihan</td>
+                    </tr>
+                    <tr>
+                        <td class="pr-2 py-1 align-top">DI Number</td>
+                        <td class="px-2 py-1 align-top">:</td>
+                        <td class="py-1">C -BJS-25-0004-HRGA-25</td>
+                    </tr>
+                </tbody>
+            </table>
+            <!-- Tanggal (Rata Kanan) -->
+            <div class="text-right">
+                <p>Jepara, 2 Juni 2026</p>
+            </div>
+        </div>
+
+        <!-- ALAMAT TUJUAN -->
+        <div class="text-sm mb-6">
+            <p>Kepada Yth,</p>
+            <p class="font-bold">PT. Bumi Jepara Service</p>
+            <p>UP Bapak Agung Wahyu Nugroho</p>
+            <div class="max-w-[350px]">
+                <p>PLTU Tanjung Jati B Unit 5&6</p>
+                <p>Desa Tubanan, Kecamatan Kembang,</p>
+                <p>Jepara 59458</p>
+            </div>
+        </div>
+
+        <!-- ISI SURAT (Pengantar) -->
+        <div class="text-sm text-justify mb-2">
+            <p class="mb-2">Dengan Hormat,</p>
+            <p>Dengan ini kami bermaksud untuk meminta pembayaran atas pembelian barang sebagai berikut :</p>
+        </div>
+
+        <!-- TABEL TAGIHAN -->
+        <table class="tabel-invoice">
+            <thead>
+                <tr>
+                    <th style="width: 5%;">No</th>
+                    <th style="width: 45%;">Item Description</th>
+                    <th style="width: 10%;">Unit</th>
+                    <th style="width: 5%;">Qty</th>
+                    <th style="width: 15%;">Unit price</th>
+                    <th style="width: 20%;">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td class="text-center">1</td><td>PTR003 Coffee/Nescaffe Classic_in Pcs</td><td class="text-center">PCS</td><td class="text-center">4</td><td><div class="rp-cell"><span>Rp</span><span>120,000</span></div></td><td><div class="rp-cell"><span>Rp</span><span>480,000</span></div></td></tr>
+                <tr><td class="text-center">2</td><td>PTR005_Instant Cereal Drink_inPack</td><td class="text-center">PACK</td><td class="text-center">10</td><td><div class="rp-cell"><span>Rp</span><span>22,200</span></div></td><td><div class="rp-cell"><span>Rp</span><span>222,000</span></div></td></tr>
+                <tr><td class="text-center">3</td><td>PTR016 Sugar in Pack</td><td class="text-center">PACK</td><td class="text-center">8</td><td><div class="rp-cell"><span>Rp</span><span>21,000</span></div></td><td><div class="rp-cell"><span>Rp</span><span>168,000</span></div></td></tr>
+                <tr><td class="text-center">4</td><td>SNT064 Ameneties ToothBrush_in Pack</td><td class="text-center">PACK</td><td class="text-center">40</td><td><div class="rp-cell"><span>Rp</span><span>18,500</span></div></td><td><div class="rp-cell"><span>Rp</span><span>740,000</span></div></td></tr>
+                <tr><td class="text-center">5</td><td>SNT022 Naphthalene in Pack</td><td class="text-center">PACK</td><td class="text-center">30</td><td><div class="rp-cell"><span>Rp</span><span>23,000</span></div></td><td><div class="rp-cell"><span>Rp</span><span>690,000</span></div></td></tr>
+                <tr><td class="text-center">6</td><td>SNT024_Room Air FreshenerAerosol in Bottle</td><td class="text-center">BOTTLE</td><td class="text-center">20</td><td><div class="rp-cell"><span>Rp</span><span>19,500</span></div></td><td><div class="rp-cell"><span>Rp</span><span>390,000</span></div></td></tr>
+                <tr><td class="text-center">7</td><td>SNT025_Room Air FreshnerHanging in Pcs</td><td class="text-center">PCS</td><td class="text-center">40</td><td><div class="rp-cell"><span>Rp</span><span>13,000</span></div></td><td><div class="rp-cell"><span>Rp</span><span>520,000</span></div></td></tr>
+                <tr><td class="text-center">8</td><td>SNT027 Shampoo in Pcs</td><td class="text-center">PCS</td><td class="text-center">6</td><td><div class="rp-cell"><span>Rp</span><span>69,000</span></div></td><td><div class="rp-cell"><span>Rp</span><span>414,000</span></div></td></tr>
+                <tr><td class="text-center">9</td><td>SNT028 Soap Body Soap_in Pcs</td><td class="text-center">PCS</td><td class="text-center">10</td><td><div class="rp-cell"><span>Rp</span><span>17,000</span></div></td><td><div class="rp-cell"><span>Rp</span><span>170,000</span></div></td></tr>
+                <tr><td class="text-center">10</td><td>SNT034 Softener Liquid in Pcs</td><td class="text-center">PCS</td><td class="text-center">50</td><td><div class="rp-cell"><span>Rp</span><span>27,000</span></div></td><td><div class="rp-cell"><span>Rp</span><span>1,350,000</span></div></td></tr>
+                <tr><td class="text-center">11</td><td>SNT038 Tissue Facial in Pack</td><td class="text-center">PACK</td><td class="text-center">25</td><td><div class="rp-cell"><span>Rp</span><span>12,000</span></div></td><td><div class="rp-cell"><span>Rp</span><span>300,000</span></div></td></tr>
+                <tr><td class="text-center">12</td><td>SNT039 Tissue Hand Towel in Pack</td><td class="text-center">PACK</td><td class="text-center">30</td><td><div class="rp-cell"><span>Rp</span><span>22,000</span></div></td><td><div class="rp-cell"><span>Rp</span><span>660,000</span></div></td></tr>
+                <tr><td class="text-center">13</td><td>SNT041 Tissue Toilet_in Roll</td><td class="text-center">ROLL</td><td class="text-center">15</td><td><div class="rp-cell"><span>Rp</span><span>39,000</span></div></td><td><div class="rp-cell"><span>Rp</span><span>585,000</span></div></td></tr>
+                
+                <!-- GRAND TOTAL ROW -->
+                <tr>
+                    <td colspan="5" class="text-right font-bold" style="padding-right: 15px;">GRAND TOTAL</td>
+                    <td class="font-bold"><div class="rp-cell"><span>Rp</span><span>6,689,000</span></div></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- INFORMASI PEMBAYARAN & PENUTUP -->
+        <div class="text-sm space-y-4 mb-8">
+            <div>
+                <p>Pembayaran untuk dapat dilakukan kepada :</p>
+                <table class="mt-2 font-bold">
+                    <tr><td class="pr-4 py-1">Nama</td><td class="px-2 py-1">:</td><td>RIZQI RIDHO ILAHI PT</td></tr>
+                    <tr><td class="pr-4 py-1">Bank</td><td class="px-2 py-1">:</td><td>BCA KCP JEPARA</td></tr>
+                    <tr><td class="pr-4 py-1">Nomor Rekening</td><td class="px-2 py-1">:</td><td>2471266266</td></tr>
+                </table>
+            </div>
+            
+            <p>Demikian permintaan pembayaran ini kami kirimkan untuk dapat dibayarkan, atas perhatian dan kerjasamanya kami ucapkan terima kasih.</p>
+        </div>
+
+        <!-- TANDA TANGAN -->
+        <div class="text-sm text-left mt-auto">
+            <p class="mb-1">Hormat kami,</p>
+            
+            <!-- Ruang Tanda Tangan -->
+            <div class="h-24"></div>
+            
+            <p class="font-bold underline">Mohamad Marzuqi</p>
+            <p>Direktur</p>
+        </div>
+
+    </div>
+
+</body>
+</html>

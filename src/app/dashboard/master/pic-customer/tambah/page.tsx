@@ -36,7 +36,15 @@ export default function TambahPICCustomerPage() {
 
   const form = useForm<PICFormValues>({
     resolver: zodResolver(picSchema),
-    defaultValues: { isActive: true },
+    defaultValues: {
+      customerId: '',
+      nama: '',
+      jenisKelamin: undefined,
+      jabatan: '',
+      noHp: '',
+      email: '',
+      isActive: true,
+    },
   });
   const { confirmLeave, showDialog, handleConfirm, handleCancel } = useUnsavedChanges(form.formState.isDirty);
 

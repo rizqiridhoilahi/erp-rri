@@ -98,6 +98,7 @@ export async function generateSOFromDI(diId: string) {
     di_id: diId,
     tanggal: diDoc.tanggal,
     status: 'draft',
+    waktu_pengiriman: diDoc.waktu_pengiriman ?? null,
     created_at: now,
     updated_at: now,
   }).select().single()
@@ -107,7 +108,7 @@ export async function generateSOFromDI(diId: string) {
     sales_order_id: so.id,
     barang_id: i.barang_id,
     jumlah: i.jumlah,
-    harga_satuan: hargaMap.get(i.barang_id) ?? 0,
+    harga_satuan: i.harga_satuan > 0 ? i.harga_satuan : (hargaMap.get(i.barang_id) ?? 0),
     keterangan: i.keterangan ?? null,
     created_at: now,
     updated_at: now,
