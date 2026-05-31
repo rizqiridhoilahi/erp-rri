@@ -8,6 +8,8 @@ import { ArrowLeft, Truck, AlertTriangle, CheckCircle2, Camera } from 'lucide-re
 import { DOScanPanel } from '@/components/do-scan-panel'
 import { DoDocuments } from '@/components/do-documents'
 import { DOPhotoConfirmation } from '@/components/do-delivery-confirmation'
+import { DOKendaraanSelect } from '@/components/do-kendaraan-select'
+import { DOPdfDownload } from '@/components/do-pdf-download'
 
 const s: Record<string, { label: string; v: 'secondary' | 'warning' | 'success' | 'outline' | 'destructive' }> = {
   draft: { label: 'Draft', v: 'secondary' }, awaiting_pickup: { label: 'Siap Kirim', v: 'warning' }, dikirim: { label: 'Dikirim', v: 'success' }, selesai: { label: 'Selesai', v: 'outline' }, ditolak: { label: 'Ditolak', v: 'destructive' },
@@ -15,7 +17,7 @@ const s: Record<string, { label: string; v: 'secondary' | 'warning' | 'success' 
 
 export default async function DeliveryOrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const { data: doDoc, error } = await supabase.from('delivery_order').select('*, sales_order!sales_order_id(nomor)').eq('id', id).single()
+  const { data: doDoc, error } = await supabase.from('delivery_order').select('*, sales_order!sales_order_id(nomor), kendaraan!kendaraan_id(nama, no_polisi)').eq('id', id).single()
   if (error || !doDoc) return <div className="text-center py-20 text-muted-foreground">DO tidak ditemukan</div>
   const { data: items } = await supabase.from('delivery_order_item').select('*, barang!barang_id(nama, kode, satuan, barcode, image_url)').eq('delivery_order_id', id)
 
@@ -35,7 +37,8 @@ export default async function DeliveryOrderDetailPage({ params }: { params: Prom
     <div className="space-y-6">
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" asChild><Link href="/dashboard/delivery-order"><ArrowLeft className="h-5 w-5" /></Link></Button>
-        <div><h1 className="text-3xl font-heading font-bold">Detail DO</h1><p className="text-muted-foreground mt-1">{doDoc.nomor}</p></div>
+        <div className="flex-1"><h1 className="text-3xl font-heading font-bold">Detail DO</h1><p className="text-muted-foreground mt-1">{doDoc.nomor}</p></div>
+        <DOPdfDownload doId={id} />
       </div>
 
       <Card>
@@ -86,6 +89,10 @@ export default async function DeliveryOrderDetailPage({ params }: { params: Prom
                 </div>
               </div>
             )}
+            <div>
+              <p className="text-sm text-muted-foreground">Kendaraan</p>
+              <p className="font-medium">{doDoc.kendaraan ? `${doDoc.kendaraan.nama} (${doDoc.kendaraan.no_polisi})` : '-'}</p>
+            </div>
             <div className="col-span-2">
               <p className="text-sm text-muted-foreground">Keterangan</p>
               <p className="font-medium">{doDoc.keterangan ?? '-'}</p>
@@ -93,6 +100,8 @@ export default async function DeliveryOrderDetailPage({ params }: { params: Prom
           </div>
         </CardContent>
       </Card>
+
+      <DOKendaraanSelect doId={doDoc.id} currentKendaraanId={doDoc.kendaraan_id} />
 
       {!!items?.length && (
         <Card>

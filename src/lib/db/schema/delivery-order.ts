@@ -10,6 +10,7 @@ export const deliveryOrder = pgTable("delivery_order", {
  keterangan: text("keterangan"),
  kodeBarcode: text("kode_barcode"),
  waktuPengiriman: integer("waktu_pengiriman"),
+ kendaraanId: text("kendaraan_id"),
  fotoBarangDiterimaUrl: text("foto_barang_diterima_url"),
  fotoSuratJalanUrl: text("foto_surat_jalan_url"),
  alasanPenolakan: text("alasan_penolakan"),

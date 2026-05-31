@@ -79,6 +79,7 @@ import { aiAutomationLog } from "./ai-automation-log";
 import { siteSettings } from "./site-settings";
 import { dataArchive } from "./data-archive";
 import { customerPoDocument } from "./customer-po-document";
+import { kendaraan } from "./kendaraan";
 import { diDocument } from "./di-document";
 import { grnDocument } from "./grn-document";
 import { deliveryOrderDocument } from "./delivery-order-document";
@@ -167,5 +168,6 @@ export {
   customerPoDocument,
   diDocument,
   grnDocument,
-  deliveryOrderDocument
+  deliveryOrderDocument,
+  kendaraan
 };

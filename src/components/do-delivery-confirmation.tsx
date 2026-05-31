@@ -4,10 +4,11 @@ import { useState, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Textarea } from '@/components/ui/textarea'
-import { Camera, CheckCircle, XCircle, Loader2, Upload, Trash2 } from 'lucide-react'
+import { CheckCircle, XCircle, Loader2, Upload } from 'lucide-react'
 import { apiFetch, apiFetchFormData } from '@/lib/api/client'
 import { toast } from 'sonner'
 import imageCompression from 'browser-image-compression'
+import { PhotoCard } from '@/components/do-photo-card'
 
 interface PhotoState {
   file: File | null
@@ -24,8 +25,6 @@ interface Props {
 }
 
 export function DOPhotoConfirmation({ doId, status, existingFotoBarang, existingFotoSuratJalan }: Props) {
-  if (status !== 'awaiting_pickup') return null
-
   const [fotoBarang, setFotoBarang] = useState<PhotoState>({
     file: null, preview: existingFotoBarang ?? '', uploading: false, url: existingFotoBarang,
   })
@@ -40,6 +39,8 @@ export function DOPhotoConfirmation({ doId, status, existingFotoBarang, existing
   const suratRef = useRef<HTMLInputElement>(null)
 
   const bothUploaded = !!fotoBarang.url && !!fotoSurat.url
+
+  if (status !== 'awaiting_pickup') return null
 
   async function handleFileSelect(type: 'barang_diterima' | 'surat_jalan', file: File) {
     if (file.size > 5 * 1024 * 1024) {
@@ -116,68 +117,6 @@ export function DOPhotoConfirmation({ doId, status, existingFotoBarang, existing
     }
   }
 
-  function PhotoCard({
-    label, description, state, inputRef, type,
-  }: {
-    label: string
-    description: string
-    state: PhotoState
-    inputRef: React.RefObject<HTMLInputElement | null>
-    type: 'barang_diterima' | 'surat_jalan'
-  }) {
-    return (
-      <div className="border rounded-lg p-4 space-y-3">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="font-medium text-sm">{label}</p>
-            <p className="text-xs text-muted-foreground">{description}</p>
-          </div>
-          {state.url && (
-            <Button variant="ghost" size="icon" onClick={() => handleDelete(type)} disabled={state.uploading}>
-              <Trash2 className="h-4 w-4 text-destructive" />
-            </Button>
-          )}
-        </div>
-
-        {state.preview ? (
-          <div className="relative">
-            <img src={state.preview} alt={label} className="w-full h-40 object-cover rounded-md" />
-            <div className="absolute top-2 right-2">
-              <CheckCircle className="h-5 w-5 text-green-500 bg-white rounded-full" />
-            </div>
-          </div>
-        ) : (
-          <div
-            className="border-2 border-dashed rounded-md h-40 flex flex-col items-center justify-center cursor-pointer hover:bg-muted/50 transition-colors"
-            onClick={() => inputRef.current?.click()}
-          >
-            <Camera className="h-8 w-8 text-muted-foreground mb-2" />
-            <p className="text-sm text-muted-foreground">Ketuk untuk upload foto</p>
-          </div>
-        )}
-
-        <input
-          ref={inputRef}
-          type="file"
-          accept="image/*"
-          capture="environment"
-          className="hidden"
-          onChange={(e) => {
-            const f = e.target.files?.[0]
-            if (f) handleFileSelect(type, f)
-            e.target.value = ''
-          }}
-        />
-
-        {state.uploading && (
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Loader2 className="h-4 w-4 animate-spin" /> Mengupload...
-          </div>
-        )}
-      </div>
-    )
-  }
-
   return (
     <Card>
       <CardContent className="pt-6 space-y-4">
@@ -195,6 +134,8 @@ export function DOPhotoConfirmation({ doId, status, existingFotoBarang, existing
             state={fotoBarang}
             inputRef={barangRef}
             type="barang_diterima"
+            onDelete={handleDelete}
+            onFileSelect={handleFileSelect}
           />
           <PhotoCard
             label="Foto Surat Jalan"
@@ -202,6 +143,8 @@ export function DOPhotoConfirmation({ doId, status, existingFotoBarang, existing
             state={fotoSurat}
             inputRef={suratRef}
             type="surat_jalan"
+            onDelete={handleDelete}
+            onFileSelect={handleFileSelect}
           />
         </div>
 

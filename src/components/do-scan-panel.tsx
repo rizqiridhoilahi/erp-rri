@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { QRCodeSVG } from 'qrcode.react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -35,11 +35,11 @@ export function DOScanPanel({ doId, doNomor, items, initialVerifiedIds }: DOScan
   const [scannedItems, setScannedItems] = useState<DOScanItem[]>([])
   const [manualVerifiedIds, setManualVerifiedIds] = useState<Set<string>>(new Set(initialVerifiedIds ?? []))
   const [confirmed, setConfirmed] = useState(hasConfirmed ?? false)
-  const [qrUrl, setQrUrl] = useState('')
-
-  useEffect(() => {
-    setQrUrl(window.location.origin + '/dashboard/delivery-order/' + doId)
-  }, [doId])
+  const [qrUrl] = useState(() =>
+    typeof window !== 'undefined'
+      ? window.location.origin + '/dashboard/delivery-order/' + doId
+      : ''
+  )
 
   const barangOptions = items.map(i => ({
     id: i.id,

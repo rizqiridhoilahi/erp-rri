@@ -10,7 +10,7 @@ import { generateInvoiceJournal } from '@/lib/auto-jurnal'
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const auth = await verifyAuth(_request); if (auth.error) return auth.error
   const { id } = await params
-  const { data: sj, error } = await supabaseAdmin.from('delivery_order').select('*, sales_order!sales_order_id(nomor)').eq('id', id).single()
+  const { data: sj, error } = await supabaseAdmin.from('delivery_order').select('*, sales_order!sales_order_id(nomor), kendaraan!kendaraan_id(nama, no_polisi)').eq('id', id).single()
   if (error) return internalError(error)
   if (!sj) return notFound('Delivery Order tidak ditemukan')
   const { data: items } = await supabaseAdmin.from('delivery_order_item').select('*, barang!barang_id(nama, kode, satuan, barcode)').eq('delivery_order_id', id)
@@ -24,7 +24,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
   const { data: doDoc } = await supabaseAdmin
     .from('delivery_order')
-    .select('id, nomor, status, sales_order_id, foto_barang_diterima_url, foto_surat_jalan_url')
+    .select('id, nomor, status, sales_order_id, foto_barang_diterima_url, foto_surat_jalan_url, kendaraan_id')
     .eq('id', id)
     .single()
   if (!doDoc) return notFound('Delivery Order tidak ditemukan')
@@ -44,6 +44,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
   if (body.status) upd.status = body.status
   if (body.keterangan !== undefined) upd.keterangan = body.keterangan
   if (body.alasan_penolakan !== undefined) upd.alasan_penolakan = body.alasan_penolakan
+  if (body.kendaraan_id !== undefined) upd.kendaraan_id = body.kendaraan_id || null
   upd.updated_at = new Date().toISOString()
 
   const { data, error } = await supabaseAdmin.from('delivery_order').update(upd).eq('id', id).select().single()

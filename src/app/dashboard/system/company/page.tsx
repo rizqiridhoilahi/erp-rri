@@ -6,8 +6,10 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
+import { Badge } from "@/components/ui/badge"
 import { Label } from "@/components/ui/label"
-import { Loader2, Save, Upload } from "lucide-react"
+import { Loader2, Save, Upload, Plus, Pencil, Trash2, X } from "lucide-react"
 import { toast } from "sonner"
 import { BreadcrumbNav } from "@/components/breadcrumb-nav"
 
@@ -17,11 +19,27 @@ const breadcrumbItems = [
   { label: "Company Profile", href: "/dashboard/system/company" },
 ]
 
+interface Kendaraan {
+  id: string
+  nama: string
+  no_polisi: string
+  is_active: boolean
+}
+
 export default function CompanySettingsPage() {
   const [data, setData] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [uploadingKey, setUploadingKey] = useState<string | null>(null)
+
+  const [kendaraan, setKendaraan] = useState<Kendaraan[]>([])
+  const [kendaraanLoading, setKendaraanLoading] = useState(true)
+
+  const [showKendaraanForm, setShowKendaraanForm] = useState(false)
+  const [editKendaraanId, setEditKendaraanId] = useState<string | null>(null)
+  const [kendaraanNama, setKendaraanNama] = useState("")
+  const [kendaraanNoPolisi, setKendaraanNoPolisi] = useState("")
+  const [kendaraanSaving, setKendaraanSaving] = useState(false)
 
   const logoInputRef = useRef<HTMLInputElement>(null)
   const ttdInputRef = useRef<HTMLInputElement>(null)
@@ -29,10 +47,19 @@ export default function CompanySettingsPage() {
   const ttdStempelInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    apiFetch<Record<string, string>>('/api/v1/system/company')
-      .then((res) => setData(res.data ?? {}))
+    Promise.all([
+      apiFetch<Record<string, string>>('/api/v1/system/company'),
+      apiFetch<Kendaraan[]>('/api/v1/system/kendaraan'),
+    ])
+      .then(([companyRes, kendaraanRes]) => {
+        setData(companyRes.data ?? {})
+        setKendaraan(kendaraanRes.data ?? [])
+      })
       .catch(() => toast.error('Gagal memuat pengaturan'))
-      .finally(() => setLoading(false))
+      .finally(() => {
+        setLoading(false)
+        setKendaraanLoading(false)
+      })
   }, [])
 
   const handleChange = (key: string, value: string) => {
@@ -76,6 +103,73 @@ export default function CompanySettingsPage() {
       toast.error(err instanceof Error ? err.message : 'Gagal menyimpan')
     } finally {
       setSaving(false)
+    }
+  }
+
+  const resetKendaraanForm = () => {
+    setShowKendaraanForm(false)
+    setEditKendaraanId(null)
+    setKendaraanNama("")
+    setKendaraanNoPolisi("")
+  }
+
+  const openEditKendaraan = (item: Kendaraan) => {
+    setEditKendaraanId(item.id)
+    setKendaraanNama(item.nama)
+    setKendaraanNoPolisi(item.no_polisi)
+    setShowKendaraanForm(true)
+  }
+
+  const handleSaveKendaraan = async () => {
+    if (!kendaraanNama.trim()) return toast.error('Nama kendaraan wajib diisi')
+    if (!kendaraanNoPolisi.trim()) return toast.error('No. Polisi wajib diisi')
+    setKendaraanSaving(true)
+    try {
+      if (editKendaraanId) {
+        await apiFetch(`/api/v1/system/kendaraan/${editKendaraanId}`, {
+          method: 'PUT',
+          body: JSON.stringify({ nama: kendaraanNama.trim(), no_polisi: kendaraanNoPolisi.trim() }),
+        })
+        toast.success('Kendaraan berhasil diupdate')
+      } else {
+        await apiFetch('/api/v1/system/kendaraan', {
+          method: 'POST',
+          body: JSON.stringify({ nama: kendaraanNama.trim(), no_polisi: kendaraanNoPolisi.trim() }),
+        })
+        toast.success('Kendaraan berhasil ditambahkan')
+      }
+      resetKendaraanForm()
+      const res = await apiFetch<Kendaraan[]>('/api/v1/system/kendaraan')
+      setKendaraan(res.data ?? [])
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Gagal menyimpan kendaraan')
+    } finally {
+      setKendaraanSaving(false)
+    }
+  }
+
+  const handleToggleKendaraan = async (item: Kendaraan) => {
+    try {
+      await apiFetch(`/api/v1/system/kendaraan/${item.id}`, {
+        method: 'PUT',
+        body: JSON.stringify({ is_active: !item.is_active }),
+      })
+      const res = await apiFetch<Kendaraan[]>('/api/v1/system/kendaraan')
+      setKendaraan(res.data ?? [])
+      toast.success(`Kendaraan ${item.is_active ? 'dinonaktifkan' : 'diaktifkan'}`)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Gagal mengubah status')
+    }
+  }
+
+  const handleDeleteKendaraan = async (id: string) => {
+    if (!confirm('Hapus kendaraan ini?')) return
+    try {
+      await apiFetch(`/api/v1/system/kendaraan/${id}`, { method: 'DELETE' })
+      setKendaraan(prev => prev.filter(k => k.id !== id))
+      toast.success('Kendaraan berhasil dihapus')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Gagal menghapus')
     }
   }
 
@@ -190,6 +284,79 @@ export default function CompanySettingsPage() {
               <img src={data.tanda_tangan_stempel_url} alt="Tanda Tangan + Stempel" className="mt-2 h-24 object-contain rounded border" />
             )}
           </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle className="text-base">Data Kendaraan</CardTitle>
+          {!showKendaraanForm && (
+            <Button size="sm" onClick={() => setShowKendaraanForm(true)}>
+              <Plus className="h-4 w-4 mr-1" />Tambah
+            </Button>
+          )}
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {showKendaraanForm && (
+            <div className="flex items-end gap-2 border rounded-lg p-3 bg-muted/30">
+              <div className="flex-1 space-y-1">
+                <Label className="text-xs">Nama Kendaraan</Label>
+                <Input value={kendaraanNama} onChange={e => setKendaraanNama(e.target.value)} placeholder="Mitsubishi L300" />
+              </div>
+              <div className="flex-1 space-y-1">
+                <Label className="text-xs">No. Polisi</Label>
+                <Input value={kendaraanNoPolisi} onChange={e => setKendaraanNoPolisi(e.target.value)} placeholder="B 1234 XYZ" />
+              </div>
+              <Button size="sm" onClick={handleSaveKendaraan} disabled={kendaraanSaving}>
+                {kendaraanSaving && <Loader2 className="h-3 w-3 mr-1 animate-spin" />}
+                Simpan
+              </Button>
+              <Button size="sm" variant="ghost" onClick={resetKendaraanForm}>
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
+
+          {kendaraanLoading ? (
+            <div className="flex justify-center py-4"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
+          ) : kendaraan.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-4">Belum ada data kendaraan</p>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Nama Kendaraan</TableHead>
+                  <TableHead>No. Polisi</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Aksi</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {kendaraan.map((item) => (
+                  <TableRow key={item.id}>
+                    <TableCell className="font-medium">{item.nama}</TableCell>
+                    <TableCell>{item.no_polisi}</TableCell>
+                    <TableCell>
+                      <Badge variant={item.is_active ? 'success' : 'secondary'}>
+                        {item.is_active ? 'Aktif' : 'Nonaktif'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right space-x-1">
+                      <Button variant="ghost" size="sm" onClick={() => openEditKendaraan(item)}>
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="sm" onClick={() => handleToggleKendaraan(item)}>
+                        {item.is_active ? 'Nonaktifkan' : 'Aktifkan'}
+                      </Button>
+                      <Button variant="ghost" size="sm" onClick={() => handleDeleteKendaraan(item.id)}>
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
         </CardContent>
       </Card>
 
