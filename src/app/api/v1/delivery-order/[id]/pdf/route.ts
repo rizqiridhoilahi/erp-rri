@@ -112,7 +112,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
     return new NextResponse(blob, {
       headers: {
         'Content-Type': 'application/pdf',
-        'Content-Disposition': `inline; filename="SJ-${sj.nomor}.pdf"`,
+        'Content-Disposition': `inline; filename="${sj.nomor}.pdf"`,
       },
     })
   } catch {

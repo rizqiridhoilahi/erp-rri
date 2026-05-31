@@ -32,17 +32,17 @@ const styles = StyleSheet.create({
   signatureBox: { width: '45%', alignItems: 'center' },
   signatureTitle: { fontSize: 11, marginBottom: 2 },
   signatureCompany: { fontSize: 11, fontWeight: 'bold', marginBottom: 2 },
-  signatureWrap: { position: 'relative', marginTop: 4, minHeight: 105, alignItems: 'center' },
+  signatureWrap: { marginTop: 4, minHeight: 105, alignItems: 'center' },
   signatureName: { fontSize: 11, fontWeight: 'bold', textDecoration: 'underline' },
   signatureJabatan: { fontSize: 11 },
   footer: { position: 'absolute', bottom: 24, left: 50, right: 50, borderTopWidth: 1.5, borderTopColor: '#000', paddingTop: 6, alignItems: 'center' },
   footerText: { fontSize: 10 },
   pageNum: { position: 'absolute', bottom: 28, right: 50, fontSize: 10, color: '#0000FF' },
-  table: { width: '100%', borderStyle: 'solid', borderWidth: 1, borderColor: '#000' },
+  table: { width: '100%' },
   tableRow: { flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: '#000' },
-  tableHeader: { flexDirection: 'row', backgroundColor: '#f0f0f0', borderBottomWidth: 1, borderBottomColor: '#000' },
+  tableHeader: { flexDirection: 'row', backgroundColor: '#f0f0f0', borderTopWidth: 1, borderTopColor: '#000', borderBottomWidth: 1, borderBottomColor: '#000' },
   tableCell: { fontSize: 9, padding: 4, borderRightWidth: 1, borderRightColor: '#000' },
-  tableHeaderCell: { fontSize: 9, fontWeight: 'bold', padding: 4, textAlign: 'center', borderRightWidth: 1, borderRightColor: '#000' },
+  tableHeaderCell: { fontSize: 9, fontWeight: 'bold', textAlign: 'center' },
   tableCellLast: { fontSize: 9, padding: 4, textAlign: 'right' },
   tableCellCenter: { fontSize: 9, padding: 4, textAlign: 'center', borderRightWidth: 1, borderRightColor: '#000' },
   tableCellCenterLast: { fontSize: 9, padding: 4, textAlign: 'center' },
@@ -127,108 +127,117 @@ export function DeliveryOrderPDF({ data }: { data: DOData }): ReactElement {
 
   const H = createEl
 
+  const COL_BORDER = { borderLeftWidth: 1, borderLeftColor: '#000' } as const
+  const ROW_BORDER = { borderRightWidth: 1, borderRightColor: '#000' } as const
+  const v = (child: any, style: any) => H(View, { style: { justifyContent: 'center', ...style } }, child)
+
   return H(Document, null,
     H(Page, { size: 'A4', style: styles.page, wrap: true },
-      H(View, { style: { marginBottom: 18 } },
-        H(View, { style: styles.header },
-          c.company_logo_url
-            ? H(Image, { src: c.company_logo_url, style: { width: 80, height: 80, marginTop: -5 } })
-            : H(View, { style: styles.logoBox },
-                H(Text, { style: styles.logoText }, 'R')
-              ),
-          H(View, { style: styles.headerRight },
-            H(Text, { style: styles.companyName }, c.company_nama || 'PT. RIZQI RIDHO ILAHI'),
-            ...bidangLines.map((line, i) =>
-              H(Text, { key: i, style: styles.companyLine }, line)
+      H(View, { fixed: true },
+        H(View, { style: { marginBottom: 6 } },
+          H(View, { style: styles.header },
+            c.company_logo_url
+              ? H(Image, { src: c.company_logo_url, style: { width: 80, height: 80, marginTop: -5 } })
+              : H(View, { style: styles.logoBox },
+                  H(Text, { style: styles.logoText }, 'R')
+                ),
+            H(View, { style: styles.headerRight },
+              H(Text, { style: styles.companyName }, c.company_nama || 'PT. RIZQI RIDHO ILAHI'),
+              ...bidangLines.map((line, i) =>
+                H(Text, { key: i, style: styles.companyLine }, line)
+              )
             )
+          ),
+          H(View, { style: { borderBottomWidth: 2, borderBottomColor: '#000', marginTop: 3 } }),
+          H(View, { style: { height: 3 } }),
+          H(View, { style: { borderBottomWidth: 0.5, borderBottomColor: '#000' } }),
+        ),
+
+        H(View, { style: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 } },
+          H(View, null,
+            H(View, { style: styles.labelValueRow },
+              H(Text, { style: styles.labelText }, 'No. Surat'),
+              H(Text, { style: styles.colonText }, ':'),
+              H(Text, { style: styles.valueText }, data.nomor)
+            ),
+            H(View, { style: styles.labelValueRow },
+              H(Text, { style: styles.labelText }, 'No. Ref.'),
+              H(Text, { style: styles.colonText }, ':'),
+              H(Text, { style: styles.valueText }, data.ref || '-')
+            ),
+            H(View, { style: styles.labelValueRow },
+              H(Text, { style: styles.labelText }, 'Perihal'),
+              H(Text, { style: styles.colonText }, ':'),
+              H(Text, { style: [styles.valueText, { fontWeight: 'bold' }] }, 'Surat Jalan')
+            )
+          ),
+          H(View, null,
+            H(Text, { style: styles.valueText }, formatDateWithCity(data.tanggal))
           )
         ),
-        H(View, { style: { borderBottomWidth: 2, borderBottomColor: '#000', marginTop: 3 } }),
-        H(View, { style: { height: 3 } }),
-        H(View, { style: { borderBottomWidth: 0.5, borderBottomColor: '#000' } }),
+
+        H(Text, { style: styles.bodyText }, 'Harap diterima dengan baik Barang-barang dibawah Ini:'),
+
+        H(View, { style: styles.table },
+          H(View, { style: styles.tableHeader },
+            v(H(Text, { style: styles.tableHeaderCell }, 'No'), { width: 25, padding: 4, borderRightWidth: 1, borderRightColor: '#000', ...COL_BORDER }),
+            v(H(Text, { style: styles.tableHeaderCell }, 'Code'), { width: 90, padding: 4, borderRightWidth: 1, borderRightColor: '#000' }),
+            v(H(Text, { style: styles.tableHeaderCell }, 'Item Description'), { flex: 1, padding: 4, borderRightWidth: 1, borderRightColor: '#000' }),
+            v(H(Text, { style: styles.tableHeaderCell }, 'Unit'), { width: 50, padding: 4, borderRightWidth: 1, borderRightColor: '#000' }),
+            v(H(Text, { style: styles.tableHeaderCell }, 'Qty'), { width: 40, padding: 4, borderRightWidth: 1, borderRightColor: '#000' }),
+            v(H(Text, { style: styles.tableHeaderCell }, 'Keterangan'), { width: 100, padding: 4, ...ROW_BORDER })
+          ),
+        ),
       ),
 
-      H(View, { style: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 18 } },
-        H(View, null,
-          H(View, { style: styles.labelValueRow },
-            H(Text, { style: styles.labelText }, 'No. Surat'),
-            H(Text, { style: styles.colonText }, ':'),
-            H(Text, { style: styles.valueText }, data.nomor)
-          ),
-          H(View, { style: styles.labelValueRow },
-            H(Text, { style: styles.labelText }, 'No. Ref.'),
-            H(Text, { style: styles.colonText }, ':'),
-            H(Text, { style: styles.valueText }, data.ref || '-')
-          ),
-          H(View, { style: styles.labelValueRow },
-            H(Text, { style: styles.labelText }, 'Perihal'),
-            H(Text, { style: styles.colonText }, ':'),
-            H(Text, { style: [styles.valueText, { textDecoration: 'underline' }] }, 'Surat Jalan')
-          )
-        ),
-        H(View, null,
-          H(Text, { style: styles.valueText }, formatDateWithCity(data.tanggal))
+      ...data.items.map((item, i) => {
+        const v = (child: any, style: any) => H(View, { style: { justifyContent: 'center', ...style } }, child)
+        return H(View, { key: i, style: styles.tableRow },
+          v(H(Text, { style: { fontSize: 9, textAlign: 'center' } }, String(i + 1)), { width: 25, padding: 4, borderRightWidth: 1, borderRightColor: '#000', ...COL_BORDER }),
+          v(H(Text, { style: { fontSize: 9, textAlign: 'center' } }, item.kode), { width: 90, padding: 4, borderRightWidth: 1, borderRightColor: '#000' }),
+          v(H(Text, { style: { fontSize: 9 } }, item.nama), { flex: 1, padding: 4, borderRightWidth: 1, borderRightColor: '#000' }),
+          v(H(Text, { style: { fontSize: 9, textAlign: 'center' } }, item.satuan), { width: 50, padding: 4, borderRightWidth: 1, borderRightColor: '#000' }),
+          v(H(Text, { style: { fontSize: 9, textAlign: 'center' } }, String(item.jumlah)), { width: 40, padding: 4, borderRightWidth: 1, borderRightColor: '#000' }),
+          v(H(Text, { style: { fontSize: 9 } }, item.keterangan || ''), { width: 100, padding: 4, textAlign: 'left', ...ROW_BORDER }),
         )
-      ),
+      }),
 
-      H(Text, { style: styles.bodyText }, 'Harap diterima dengan baik Barang-barang dibawah Ini:'),
-
-      H(View, { style: styles.table },
-        H(View, { style: styles.tableHeader },
-          H(Text, { style: [styles.tableHeaderCell, { width: 25 }] }, 'No'),
-          H(Text, { style: [styles.tableHeaderCell, { width: 90 }] }, 'Code'),
-          H(Text, { style: [styles.tableHeaderCell, { flex: 1 }] }, 'Item Description'),
-          H(Text, { style: [styles.tableHeaderCell, { width: 50 }] }, 'Unit'),
-          H(Text, { style: [styles.tableHeaderCell, { width: 40 }] }, 'Qty'),
-          H(Text, { style: [styles.tableHeaderCell, { width: 100, borderRightWidth: 0 }] }, 'Keterangan')
-        ),
-        ...data.items.map((item, i) => {
-          const v = (child: any, style: any) => H(View, { style: { justifyContent: 'center', ...style } }, child)
-          return H(View, { key: i, style: styles.tableRow },
-            v(H(Text, { style: { fontSize: 9, textAlign: 'center' } }, String(i + 1)), { width: 25, padding: 4, borderRightWidth: 1, borderRightColor: '#000' }),
-            v(H(Text, { style: { fontSize: 9, textAlign: 'center' } }, item.kode), { width: 90, padding: 4, borderRightWidth: 1, borderRightColor: '#000' }),
-            v(H(Text, { style: { fontSize: 9 } }, item.nama), { flex: 1, padding: 4, borderRightWidth: 1, borderRightColor: '#000' }),
-            v(H(Text, { style: { fontSize: 9, textAlign: 'center' } }, item.satuan), { width: 50, padding: 4, borderRightWidth: 1, borderRightColor: '#000' }),
-            v(H(Text, { style: { fontSize: 9, textAlign: 'center' } }, String(item.jumlah)), { width: 40, padding: 4, borderRightWidth: 1, borderRightColor: '#000' }),
-            v(H(Text, { style: { fontSize: 9 } }, item.keterangan || ''), { width: 100, padding: 4, textAlign: 'left' }),
-          )
-        }),
-      ),
-
-      H(View, { style: styles.infoSection },
-        H(View, { style: styles.infoRow },
-          H(Text, { style: styles.infoLabel }, 'Kendaraan'),
-          H(Text, { style: { width: 10 } }, ':'),
-          H(Text, { style: styles.infoValue }, data.kendaraanNama || '.....................................................')
-        ),
-        H(View, { style: styles.infoRow },
-          H(Text, { style: styles.infoLabel }, 'No. Polisi'),
-          H(Text, { style: { width: 10 } }, ':'),
-          H(Text, { style: styles.infoValue }, data.kendaraanNoPolisi || '.....................................................')
-        ),
-      ),
-
-      H(Text, { style: styles.penutupText }, 'Demikian yang kita sampaikan atas kerjasamanya kami ucapkan terima kasih.'),
-
-      H(View, { style: styles.signatureSection },
-        H(View, { style: styles.signatureBox },
-          H(Text, { style: styles.signatureTitle }, 'Yang Menyerahkan,'),
-          H(Text, { style: styles.signatureCompany }, c.company_nama || 'PT. RIZQI RIDHO ILAHI'),
-          H(View, { style: styles.signatureWrap },
-            c.tanda_tangan_stempel_url
-              ? H(Image, { src: c.tanda_tangan_stempel_url, style: { height: 100, marginBottom: 2, objectFit: 'contain', position: 'absolute', left: -10 } })
-              : null
+      H(View, { wrap: false },
+        H(View, { style: styles.infoSection },
+          H(View, { style: styles.infoRow },
+            H(Text, { style: styles.infoLabel }, 'Kendaraan'),
+            H(Text, { style: { width: 10 } }, ':'),
+            H(Text, { style: styles.infoValue }, data.kendaraanNama || '.....................................................')
           ),
-          H(Text, { style: styles.signatureName }, c.penandatangan_nama || 'Mohamad Marzuqi'),
-          H(Text, { style: styles.signatureJabatan }, c.penandatangan_jabatan || 'Direktur')
+          H(View, { style: styles.infoRow },
+            H(Text, { style: styles.infoLabel }, 'No. Polisi'),
+            H(Text, { style: { width: 10 } }, ':'),
+            H(Text, { style: styles.infoValue }, data.kendaraanNoPolisi || '.....................................................')
+          ),
         ),
-        H(View, { style: styles.signatureBox },
-          H(Text, { style: styles.signatureTitle }, 'Diterima Oleh,'),
-          H(Text, { style: styles.signatureCompany }, data.customerNama),
-          H(View, { style: styles.signatureWrap }),
-          H(Text, { style: styles.signatureName }, '..................................................'),
-          H(Text, { style: styles.signatureJabatan }, '')
-        )
+
+        H(Text, { style: styles.penutupText }, 'Demikian yang kita sampaikan atas kerjasamanya kami ucapkan terima kasih.'),
+
+        H(View, { style: styles.signatureSection },
+          H(View, { style: styles.signatureBox },
+            H(Text, { style: styles.signatureTitle }, 'Yang Menyerahkan,'),
+            H(Text, { style: styles.signatureCompany }, c.company_nama || 'PT. RIZQI RIDHO ILAHI'),
+            H(View, { style: styles.signatureWrap },
+              c.tanda_tangan_stempel_url
+                ? H(Image, { src: c.tanda_tangan_stempel_url, style: { height: 100, objectFit: 'contain' } })
+                : null
+            ),
+            H(Text, { style: styles.signatureName }, c.penandatangan_nama || 'Mohamad Marzuqi'),
+            H(Text, { style: styles.signatureJabatan }, c.penandatangan_jabatan || 'Direktur')
+          ),
+          H(View, { style: styles.signatureBox },
+            H(Text, { style: styles.signatureTitle }, 'Diterima Oleh,'),
+            H(Text, { style: styles.signatureCompany }, data.customerNama),
+            H(View, { style: styles.signatureWrap }),
+            H(Text, { style: styles.signatureName }, '..................................................'),
+            H(Text, { style: styles.signatureJabatan }, '')
+          )
+        ),
       ),
 
       H(View, { style: styles.footer },
@@ -237,7 +246,7 @@ export function DeliveryOrderPDF({ data }: { data: DOData }): ReactElement {
           (c.company_no_hp || '+6281 2607 5500') + ', ' + (c.company_email || 'mazzjoeq@gmail.com')
         )
       ),
-      H(Text, { style: styles.pageNum }, 'Page 1 of 1')
+      H(Text, { style: styles.pageNum, render: ({ pageNumber, totalPages }: { pageNumber: number; totalPages: number }) => `Page ${pageNumber} of ${totalPages}` })
     )
   )
 }

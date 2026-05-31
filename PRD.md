@@ -524,6 +524,11 @@ Semua dokumen berikut digenerate dalam format PDF yang bisa diprint dan disave:
 - Diimplementasikan dengan sequence/counter table PostgreSQL — di-reset otomatis setiap tahun via trigger atau cron job
 - Contoh reset: Desember 2026 nomor `RRI-INV-26-12-0015`, Januari 2027 menjadi `RRI-INV-27-01-0001`
 
+**Nama File Download PDF:** Menggunakan nomor dokumen saja (tanpa prefix kode dokumen).
+- Contoh: `RRI-SJ-26-06-0001.pdf`, `RRI-SPH-26-06-0001.pdf`
+- TIDAK menggunakan `SJ-RRI-SJ-26-06-0001.pdf` atau `SPH-RRI-SPH-26-06-0001.pdf`
+- Berlaku untuk: Content-Disposition header (`filename="..."`) dan atribut `a.download` di client
+
 Format dokumen akan mengikuti template yang akan disediakan customer di direktori `/docs/templates/`.
 
 ### I.1 Panduan Implementasi PDF

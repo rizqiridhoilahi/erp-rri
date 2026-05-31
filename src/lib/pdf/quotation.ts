@@ -211,7 +211,7 @@ export function QuotationPDF({ data }: { data: QuotData }) {
           H(View, { style: styles.labelValueRow },
             H(Text, { style: styles.labelText }, 'Perihal'),
             H(Text, { style: styles.colonText }, ':'),
-            H(Text, { style: styles.valueText }, data.perihal || 'Penawaran Harga')
+            H(Text, { style: [styles.valueText, { fontWeight: 'bold' }] }, data.perihal || 'Penawaran Harga')
           )
         ),
         H(View, null,

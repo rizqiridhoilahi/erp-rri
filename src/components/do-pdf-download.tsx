@@ -2,41 +2,70 @@
 
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { Download, Loader2 } from 'lucide-react'
+import { Eye, Download, Loader2 } from 'lucide-react'
 import { getAuthToken } from '@/lib/api/client'
 import { toast } from 'sonner'
 
 interface Props {
   doId: string
+  nomor: string
 }
 
-export function DOPdfDownload({ doId }: Props) {
-  const [loading, setLoading] = useState(false)
+export function DOPdfDownload({ doId, nomor }: Props) {
+  const [previewLoading, setPreviewLoading] = useState(false)
+  const [downloadLoading, setDownloadLoading] = useState(false)
 
-  const handleDownload = async () => {
-    setLoading(true)
+  const fetchPdfBlob = async () => {
+    const token = await getAuthToken()
+    const res = await fetch(`/api/v1/delivery-order/${doId}/pdf`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    })
+    if (!res.ok) {
+      const err = await res.json().catch(() => null)
+      throw new Error(err?.error || 'Gagal memuat PDF')
+    }
+    return res.blob()
+  }
+
+  const handlePreview = async () => {
+    setPreviewLoading(true)
     try {
-      const token = await getAuthToken()
-      const res = await fetch(`/api/v1/delivery-order/${doId}/pdf`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      })
-      if (!res.ok) {
-        const err = await res.json().catch(() => null)
-        throw new Error(err?.error || 'Gagal memuat PDF')
-      }
-      const blob = await res.blob()
+      const blob = await fetchPdfBlob()
       window.open(URL.createObjectURL(blob), '_blank')
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Gagal memuat PDF')
     } finally {
-      setLoading(false)
+      setPreviewLoading(false)
+    }
+  }
+
+  const handleDownload = async () => {
+    setDownloadLoading(true)
+    try {
+      const blob = await fetchPdfBlob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `${nomor}.pdf`
+      a.click()
+      URL.revokeObjectURL(url)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Gagal download PDF')
+    } finally {
+      setDownloadLoading(false)
     }
   }
 
   return (
-    <Button variant="default" onClick={handleDownload} disabled={loading}>
-      {loading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Download className="h-4 w-4 mr-2" />}
-      PDF Surat Jalan
-    </Button>
+    <div className="flex gap-2">
+      <Button variant="outline" onClick={handlePreview} disabled={previewLoading}>
+        {previewLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Eye className="h-4 w-4 mr-2" />}
+        Preview PDF
+      </Button>
+      <Button variant="default" onClick={handleDownload} disabled={downloadLoading}>
+        {downloadLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Download className="h-4 w-4 mr-2" />}
+        Download PDF
+      </Button>
+    </div>
   )
 }

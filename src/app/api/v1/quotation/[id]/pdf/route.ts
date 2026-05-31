@@ -145,7 +145,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
     return new NextResponse(blob, {
       headers: {
         'Content-Type': 'application/pdf',
-        'Content-Disposition': `inline; filename="SPH-${pdfNomor}.pdf"`,
+        'Content-Disposition': `inline; filename="${pdfNomor}.pdf"`,
       },
     })
   } catch (e) {

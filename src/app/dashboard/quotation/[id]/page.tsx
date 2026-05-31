@@ -177,7 +177,7 @@ export default function QuotationDetailPage() {
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = `SPH-${data?.nomor ?? id}.pdf`
+      a.download = `${data?.nomor ?? id}.pdf`
       a.click()
       URL.revokeObjectURL(url)
     } catch (err) {
