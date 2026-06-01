@@ -24,6 +24,7 @@ const schema = z.object({
   top: z.string().min(1, 'TOP harus diisi'),
   ppn_rate: z.coerce.number().optional(),
   pph_rate: z.coerce.number().optional(),
+  grn_customer_nomor: z.string().optional(),
   items: z.array(itemSchema).min(1),
 })
 
@@ -65,6 +66,7 @@ export async function POST(request: NextRequest) {
     nomor, sales_order_id: parsed.data.sales_order_id, customer_id: parsed.data.customer_id,
     tanggal: parsed.data.tanggal, top: parsed.data.top, ppn_rate: ppnRate,
     pph_rate: parsed.data.pph_rate ?? null, status: 'draft',
+    grn_customer_nomor: parsed.data.grn_customer_nomor ?? null,
     created_at: now, updated_at: now,
   }).select().single()
   if (invError) return internalError(invError)
@@ -83,6 +85,16 @@ export async function POST(request: NextRequest) {
   })
   const { error: itemsError } = await supabaseAdmin.from('invoice_item').insert(items)
   if (itemsError) { await supabaseAdmin.from('invoice').delete().eq('id', inv.id); return internalError(itemsError) }
+
+  const nomorKwt = await generateDocumentNumber('KWT')
+  await supabaseAdmin.from('kwitansi').insert({
+    nomor: nomorKwt,
+    invoice_id: inv.id,
+    tanggal: now,
+    status: 'draft',
+    created_at: now,
+    updated_at: now,
+  })
 
   const jurnalResult = await generateInvoiceJournal(inv.id)
 

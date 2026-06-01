@@ -10,6 +10,7 @@ import { DoDocuments } from '@/components/do-documents'
 import { DOPhotoConfirmation } from '@/components/do-delivery-confirmation'
 import { DOKendaraanSelect } from '@/components/do-kendaraan-select'
 import { DOHeaderActions } from '@/components/do-header-actions'
+import { DoDeliverySlip } from '@/components/do-delivery-slip'
 
 const s: Record<string, { label: string; v: 'secondary' | 'warning' | 'success' | 'outline' | 'destructive' }> = {
   draft: { label: 'Draft', v: 'secondary' }, awaiting_pickup: { label: 'Siap Kirim', v: 'warning' }, dikirim: { label: 'Dikirim', v: 'success' }, selesai: { label: 'Selesai', v: 'outline' }, ditolak: { label: 'Ditolak', v: 'destructive' },
@@ -146,6 +147,13 @@ export default async function DeliveryOrderDetailPage({ params }: { params: Prom
         doNomor={doDoc.nomor}
         items={items ?? []}
         initialVerifiedIds={(items ?? []).filter(i => i.scanned_at).map(i => i.id)}
+      />
+
+      <DoDeliverySlip
+        doId={doDoc.id}
+        status={doDoc.status}
+        existingNomor={doDoc.delivery_slip_nomor}
+        existingFileUrl={doDoc.delivery_slip_file_url}
       />
 
       <DOPhotoConfirmation

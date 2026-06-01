@@ -6,6 +6,7 @@ export const grn = pgTable("grn", {
  nomor: text("nomor").notNull().unique(),
  purchaseReceivingId: text("purchase_receiving_id"),
  diId: text("di_id"),
+ invoiceId: text("invoice_id"),
  tanggal: timestamp("tanggal").notNull(),
  status: text("status").notNull().default("draft"),
  keterangan: text("keterangan"),

@@ -10,7 +10,7 @@ import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@
 import { Input } from "@/components/ui/input"
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
 import { DatePicker } from "@/components/ui/date-picker"
-import { ArrowLeft, FileText, Pencil, FileSpreadsheet, Save, Wallet, Receipt, Loader2 } from "lucide-react"
+import { ArrowLeft, FileText, Pencil, FileSpreadsheet, Wallet, Receipt, Loader2 } from "lucide-react"
 import { InvoicePdfActions } from "@/components/invoice-pdf-actions"
 import { TandaTerimaPdfActions } from "@/components/tanda-terima-pdf-actions"
 import { FileUpload, type DocumentFile } from "@/components/file-upload"
@@ -37,7 +37,6 @@ interface Invoice {
   top: number
   ppn_rate: number
   pph_rate: number | null
-  nomor_grn: string | null
   sales_order: {
     nomor: string
     di: { nomor: string; nomor_di_customer: string | null; kontrak_id: string | null } | null
@@ -47,6 +46,7 @@ interface Invoice {
   do_nomor: string | null
   pic_nama: string | null
   pic_jabatan: string | null
+  grn_customer_nomor: string | null
 }
 
 interface InvoiceItem {
@@ -70,10 +70,10 @@ export default function InvoiceDetailPage() {
   const [error, setError] = useState<string | null>(null)
   const [documents, setDocuments] = useState<DocumentFile[]>([])
   const [uploading, setUploading] = useState(false)
-  const [nomorGrn, setNomorGrn] = useState("")
   const [kwitansiList, setKwitansiList] = useState<Array<{ id: string; nomor: string; invoice_id: string; status: string }>>([])
-  const [savingGrn, setSavingGrn] = useState(false)
   const [payments, setPayments] = useState<Array<{ id: string; amount: number; metode: string; tanggal: string; keterangan: string | null }>>([])
+  const [grnCustomerNomor, setGrnCustomerNomor] = useState("")
+  const [savingGrn, setSavingGrn] = useState(false)
   const [payAmount, setPayAmount] = useState("")
   const [payMetode, setPayMetode] = useState("transfer")
   const [payTanggal, setPayTanggal] = useState("")
@@ -94,9 +94,9 @@ export default function InvoiceDetailPage() {
       setInv(invData)
       setItems(invData?.items ?? [])
       setDocuments(docRes.data ?? [])
-      setNomorGrn(invData?.nomor_grn ?? "")
       setKwitansiList((kwtRes.data ?? []).filter((k: { invoice_id: string }) => k.invoice_id === id))
       setPayments(payRes.data ?? [])
+      setGrnCustomerNomor(invData?.grn_customer_nomor ?? "")
       setLoading(false)
     }).catch((err) => {
       setError(err.message)
@@ -132,22 +132,6 @@ export default function InvoiceDetailPage() {
     }
   }
 
-  const handleSaveNomorGrn = async () => {
-    if (!id) return
-    setSavingGrn(true)
-    try {
-      await apiFetch(`/api/v1/invoice/${id}`, {
-        method: "PUT",
-        body: JSON.stringify({ nomor_grn: nomorGrn || null }),
-      })
-      toast.success("Nomor GRN berhasil disimpan")
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Gagal simpan nomor GRN")
-    } finally {
-      setSavingGrn(false)
-    }
-  }
-
   const handleRecordPayment = async () => {
     if (!id) return
     const amount = parseFloat(payAmount)
@@ -174,6 +158,22 @@ export default function InvoiceDetailPage() {
       toast.error(err instanceof Error ? err.message : "Gagal mencatat pembayaran")
     } finally {
       setRecording(false)
+    }
+  }
+
+  const handleSaveGrnNomor = async () => {
+    if (!id) return
+    setSavingGrn(true)
+    try {
+      await apiFetch(`/api/v1/invoice/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify({ grn_customer_nomor: grnCustomerNomor || null }),
+      })
+      toast.success('Nomor GRN Customer disimpan')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Gagal simpan')
+    } finally {
+      setSavingGrn(false)
     }
   }
 
@@ -312,30 +312,6 @@ export default function InvoiceDetailPage() {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardContent className="pt-6">
-          <h3 className="text-lg font-semibold mb-4">GRN Customer</h3>
-          <div className="flex items-end gap-4">
-            <div className="flex-1">
-              <label className="text-sm text-muted-foreground block mb-1">Nomor GRN</label>
-              <input
-                type="text"
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                placeholder="Input nomor GRN dari customer"
-                value={nomorGrn}
-                onChange={(e) => setNomorGrn(e.target.value)}
-              />
-            </div>
-            <Button onClick={handleSaveNomorGrn} disabled={savingGrn}>
-              <Save className="h-4 w-4 mr-2" />{savingGrn ? "Menyimpan..." : "Simpan"}
-            </Button>
-          </div>
-          <p className="text-xs text-muted-foreground mt-2">
-            File GRN customer bisa diupload via Lampiran di bawah.
-          </p>
-        </CardContent>
-      </Card>
-
       {kwitansiList.length > 0 && (
         <Card>
           <CardContent className="pt-6">
@@ -352,6 +328,41 @@ export default function InvoiceDetailPage() {
           </CardContent>
         </Card>
       )}
+
+      <Card>
+        <CardContent className="pt-6">
+          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+            <FileText className="h-4 w-4" />GRN Customer
+          </h3>
+          <p className="text-sm text-muted-foreground mb-4">
+            Input nomor GRN dari customer dan upload dokumen GRN.
+          </p>
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm text-muted-foreground block mb-1">Nomor GRN Customer</label>
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Input nomor GRN dari customer"
+                  value={grnCustomerNomor}
+                  onChange={(e) => setGrnCustomerNomor(e.target.value)}
+                />
+                <Button onClick={handleSaveGrnNomor} disabled={savingGrn} size="sm">
+                  {savingGrn ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Simpan'}
+                </Button>
+              </div>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground mb-2">Dokumen GRN</p>
+              <FileUpload
+                documents={documents.filter(d => d.file_name?.includes('GRN') || documents.length === 0)}
+                onUpload={handleUpload}
+                onDelete={handleDeleteDocument}
+                uploading={uploading}
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardContent className="pt-6">

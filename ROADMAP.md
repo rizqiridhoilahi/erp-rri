@@ -261,6 +261,20 @@ DI diterbitkan (draft)
 | EM-5 | Tabel `email_log` — migration + schema Drizzle | ✅ Done | Low |
 | EM-6 | SMTP config di `.env.example` — Gmail App Password | ✅ Done | Low |
 
+## ✅ Done — Tanda Terima PDF Revision & Delivery Slip Integration
+
+| # | Task | Status | File |
+|---|------|--------|------|
+| TT-1 | **Font + layout revisions** — font sizes 10pt/9pt, "No. Ref. PO/DI" → "No. PO Ref./No. DI Ref.", "Tanggal" → "Tempat/Tanggal", checkbox gap 8, tighter margins/padding, signature stamp image, Page 1 of 1 footer | ✅ Done | `src/lib/pdf/tanda-terima.ts` |
+| TT-2 | **API route updated** — fetch referensi PO/DI + signature stamp from site_settings | ✅ Done | `api/v1/invoice/[id]/tanda-terima/pdf/route.ts` |
+| TT-3 | **Schema changes** — add `invoice_id` to `grn`, remove `nomor_grn` from `invoice`, add `delivery_slip_nomor` + `delivery_slip_file_url` to `delivery_order` | ✅ Done | `grn.ts`, `invoice.ts`, `delivery-order.ts` |
+| TT-4 | **Migration 0024** — all 3 schema changes applied | ✅ Done | `migrations/0024_fix_grn_invoice_delivery_slip.sql` |
+| TT-5 | **DO API PUT** — include delivery_slip fields in select/update, auto-link GRN → Invoice via `grn.invoice_id` | ✅ Done | `api/v1/delivery-order/[id]/route.ts` |
+| TT-6 | **DO detail page** — add `DoDeliverySlip` client component (nomor input + file upload) | ✅ Done | `do-delivery-slip.tsx`, `delivery-order/[id]/page.tsx` |
+| TT-7 | **Invoice detail/edit** — remove nomor_grn field from detail & edit pages + API | ✅ Done | `invoice/[id]/page.tsx`, `invoice/[id]/edit/page.tsx`, `api/v1/invoice/[id]/route.ts` |
+| TT-8 | **API route rewrite** — fetch all 11 document numbers (RFQ, SPH, PO, Kontrak, DI, Delivery Slip, Surat Jalan, GRN, Invoice, Kwitansi) via joined chain | ✅ Done | `api/v1/invoice/[id]/tanda-terima/pdf/route.ts` |
+| TT-9 | **PDF component** — change "Jenis Dokumen" → "Nama Dokumen", replace "Kelengkapan" checkbox column with "Nomor Dokumen" text column, dynamic `dokumenList` data | ✅ Done | `lib/pdf/tanda-terima.ts` |
+
 ## Catatan
 
 ### Flow Quotation Status

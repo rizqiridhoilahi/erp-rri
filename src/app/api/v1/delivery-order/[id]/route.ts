@@ -24,7 +24,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
   const { data: doDoc } = await supabaseAdmin
     .from('delivery_order')
-    .select('id, nomor, status, sales_order_id, foto_barang_diterima_url, foto_surat_jalan_url, kendaraan_id')
+    .select('id, nomor, status, sales_order_id, foto_barang_diterima_url, foto_surat_jalan_url, kendaraan_id, delivery_slip_nomor, delivery_slip_file_url')
     .eq('id', id)
     .single()
   if (!doDoc) return notFound('Delivery Order tidak ditemukan')
@@ -46,6 +46,8 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
   if (body.keterangan !== undefined) upd.keterangan = body.keterangan
   if (body.alasan_penolakan !== undefined) upd.alasan_penolakan = body.alasan_penolakan
   if (body.kendaraan_id !== undefined) upd.kendaraan_id = body.kendaraan_id || null
+  if (body.delivery_slip_nomor !== undefined) upd.delivery_slip_nomor = body.delivery_slip_nomor
+  if (body.delivery_slip_file_url !== undefined) upd.delivery_slip_file_url = body.delivery_slip_file_url
   upd.updated_at = new Date().toISOString()
 
   const { data, error } = await supabaseAdmin.from('delivery_order').update(upd).eq('id', id).select().single()
@@ -145,6 +147,19 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
           })
           const { data: createdItems } = await supabaseAdmin.from('invoice_item').insert(invItems).select()
           await generateInvoiceJournal(inv.id)
+
+          // Auto-link GRN to Invoice if GRN exists for this SO's DI
+          if (so.di_id) {
+            const { data: grnMatch } = await supabaseAdmin
+              .from('grn')
+              .select('id')
+              .eq('di_id', so.di_id)
+              .is('invoice_id', null)
+              .maybeSingle()
+            if (grnMatch) {
+              await supabaseAdmin.from('grn').update({ invoice_id: inv.id, updated_at: now }).eq('id', grnMatch.id)
+            }
+          }
 
           // Auto-generate draft Kwitansi (barengan)
           if (createdItems && createdItems.length > 0) {

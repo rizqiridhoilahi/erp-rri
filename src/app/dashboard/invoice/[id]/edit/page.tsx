@@ -37,13 +37,11 @@ interface InvoiceData {
   status: string
   ppn_rate: number
   pph_rate: number | null
-  nomor_grn: string | null
   items: InvoiceItem[]
 }
 
 const schema = z.object({
   status: z.string().optional(),
-  nomor_grn: z.string().optional(),
   ppn_rate: z.coerce.number().optional(),
   pph_rate: z.coerce.number().optional(),
   top: z.string().optional(),
@@ -64,7 +62,7 @@ export default function EditInvoicePage() {
 
   const form = useForm<FV>({
     resolver: zodResolver(schema),
-    defaultValues: { status: 'draft', nomor_grn: '', ppn_rate: 0.11, pph_rate: undefined, top: '' },
+    defaultValues: { status: 'draft', ppn_rate: 0.11, pph_rate: undefined, top: '' },
   })
 
   useEffect(() => {
@@ -75,7 +73,6 @@ export default function EditInvoicePage() {
         setInv(d)
         form.reset({
           status: d.status,
-          nomor_grn: d.nomor_grn ?? '',
           ppn_rate: d.ppn_rate,
           pph_rate: d.pph_rate ?? undefined,
           top: d.top,
@@ -159,9 +156,6 @@ export default function EditInvoicePage() {
               <div className="grid grid-cols-2 gap-4">
                 <FormField control={form.control} name="top" render={({ field }) => (
                   <FormItem><FormLabel>TOP</FormLabel><FormControl><Input {...field} placeholder="e.g. 30 Hari" /></FormControl><FormMessage /></FormItem>
-                )} />
-                <FormField control={form.control} name="nomor_grn" render={({ field }) => (
-                  <FormItem><FormLabel>Nomor GRN Customer</FormLabel><FormControl><Input {...field} placeholder="Nomor GRN dari customer" /></FormControl><FormMessage /></FormItem>
                 )} />
                 <div className="space-y-2">
                   <Label>PPN Rate</Label>

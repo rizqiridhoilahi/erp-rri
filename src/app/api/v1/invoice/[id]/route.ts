@@ -42,10 +42,10 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
   const upd: Record<string, unknown> = {}
   if (body.status) upd.status = body.status
-  if (body.nomor_grn !== undefined) upd.nomor_grn = body.nomor_grn
   if (body.top) upd.top = body.top
   if (body.ppn_rate !== undefined) upd.ppn_rate = body.ppn_rate
   if (body.pph_rate !== undefined) upd.pph_rate = body.pph_rate
+  if (body.grn_customer_nomor !== undefined) upd.grn_customer_nomor = body.grn_customer_nomor
   upd.updated_at = new Date().toISOString()
 
   const { data: oldInv } = await supabaseAdmin.from('invoice').select('status').eq('id', id).single()

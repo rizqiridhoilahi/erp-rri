@@ -491,7 +491,7 @@ Modul ini menangani pembelian dari supplier — termasuk supplier marketplace Sh
 | **Laporan PPN Masa** ✅ | Rekap PPN masa untuk pelaporan ke Kantor Pajak. Filter per bulan — Halaman `/dashboard/laporan/ppn-masa` + PDF export |
 | **Financial Precision** | Semua kolom keuangan menggunakan `numeric(18,2)` untuk akurasi akuntansi. Berlaku di: Invoice, Kwitansi, Quotation, PO, Jurnal, dan semua tabel transaksi keuangan. |
 | **Faktur Pajak** | Generate nomor faktur pajak sesuai ketentuan Dirjen Pajak. Full CRUD API + halaman list/detail/create/edit. Auto-generate dari Invoice dengan auto-fill DPP/PPN/PPh. PDF generation dengan layout PKP Penjual/Pembeli, NPWP dari site_settings. Detail page menampilkan company profile dari database. |
-| **Tanda Terima Dokumen Penagihan** | Tanda terima dokumen penagihan (kwitansi/invoice) yang ditandatangani customer. PDF component di `src/lib/pdf/tanda-terima.ts`. API route di `/api/v1/invoice/[id]/tanda-terima/pdf`. Preview + Download buttons di halaman detail invoice. Format nomor: `RRI-TT-YY-MM-0001`. |
+| **Tanda Terima Dokumen Penagihan** | Tanda terima dokumen penagihan (kwitansi/invoice) yang ditandatangani customer. PDF component di `src/lib/pdf/tanda-terima.ts`. API route di `/api/v1/invoice/[id]/tanda-terima/pdf`. Preview + Download buttons di halaman detail invoice. Format nomor: `RRI-TT-YY-MM-0001`. Table columns: No, Nama Dokumen, Nomor Dokumen, Asli, Copy, Keterangan. Data nomor dokumen diambil dari seluruh chain dokumen (RFQ→SPH→PO→Kontrak→DI→Delivery Slip→Surat Jalan→GRN→Invoice→Kwitansi) via sales_order + invoice_id joins. Delivery Slip nomor dari `delivery_order.delivery_slip_nomor`. |
 | **Jurnal Umum** | Jurnal transaksi keuangan. Auto-generate jurnal saat Invoice terbit (debit AR, credit Revenue, debit/kredit PPN) |
 | **Laba / Rugi** | Laporan pendapatan dan biaya |
 | **Neraca** | Laporan posisi keuangan |
@@ -627,6 +627,7 @@ Quotation deal
 
 DO status "Dikirim"
   → Auto-generate draft Invoice + draft Kwitansi (barengan)
+  → Auto-link GRN ke Invoice (set `grn.invoice_id` dari DO yang punya `di_id`)
   → Notifikasi ke Finance
 
 Invoice terbit

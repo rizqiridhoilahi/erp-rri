@@ -22,6 +22,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
   const upd: Record<string, unknown> = {}
   if (body.status) upd.status = body.status; if (body.keterangan !== undefined) upd.keterangan = body.keterangan
+  if (body.nomor !== undefined) upd.nomor = body.nomor
   upd.updated_at = new Date().toISOString()
   const { data, error } = await supabaseAdmin.from('grn').update(upd).eq('id', id).select().single()
   if (error) return internalError(error); if (!data) return notFound('GRN tidak ditemukan')
