@@ -10,7 +10,9 @@ import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@
 import { Input } from "@/components/ui/input"
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
 import { DatePicker } from "@/components/ui/date-picker"
-import { ArrowLeft, FileText, Pencil, Download, Eye, FileSpreadsheet, Save, Wallet } from "lucide-react"
+import { ArrowLeft, FileText, Pencil, FileSpreadsheet, Save, Wallet, Receipt, Loader2 } from "lucide-react"
+import { InvoicePdfActions } from "@/components/invoice-pdf-actions"
+import { TandaTerimaPdfActions } from "@/components/tanda-terima-pdf-actions"
 import { FileUpload, type DocumentFile } from "@/components/file-upload"
 import { toast } from "sonner"
 
@@ -75,6 +77,9 @@ export default function InvoiceDetailPage() {
   const [payAmount, setPayAmount] = useState("")
   const [payMetode, setPayMetode] = useState("transfer")
   const [payTanggal, setPayTanggal] = useState("")
+  const [showFpDialog, setShowFpDialog] = useState(false)
+  const [nomorFaktur, setNomorFaktur] = useState("")
+  const [fpCreating, setFpCreating] = useState(false)
   const [recording, setRecording] = useState(false)
 
   useEffect(() => {
@@ -172,6 +177,25 @@ export default function InvoiceDetailPage() {
     }
   }
 
+  const handleBuatFakturPajak = async () => {
+    if (!nomorFaktur.trim()) { toast.error('Nomor Faktur Pajak wajib diisi'); return }
+    setFpCreating(true)
+    try {
+      const res = await apiFetch<{ id: string }>(`/api/v1/invoice/${id}/auto-faktur-pajak`, {
+        method: 'POST',
+        body: JSON.stringify({ nomor_faktur: nomorFaktur.trim() }),
+      })
+      toast.success('Faktur Pajak berhasil dibuat')
+      setShowFpDialog(false)
+      setNomorFaktur('')
+      router.push(`/dashboard/faktur-pajak/${res.data.id}`)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Gagal membuat Faktur Pajak')
+    } finally {
+      setFpCreating(false)
+    }
+  }
+
   if (loading) return <div className="text-center py-20 text-muted-foreground">Memuat...</div>
   if (error || !inv) return <div className="text-center py-20 text-muted-foreground">Invoice tidak ditemukan</div>
 
@@ -183,23 +207,15 @@ export default function InvoiceDetailPage() {
   const grandTotal = totalDpp - totalPPh
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 overflow-x-hidden">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={() => router.push("/dashboard/invoice")}><ArrowLeft className="h-5 w-5" /></Button>
           <div><h1 className="text-3xl font-heading font-bold">Detail Invoice</h1><p className="text-muted-foreground mt-1">{inv.nomor}</p></div>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" asChild>
-            <a href={`/api/v1/invoice/${id}/pdf`} target="_blank" rel="noopener noreferrer">
-              <Eye className="h-4 w-4 mr-2" />Preview PDF
-            </a>
-          </Button>
-          <Button variant="outline" asChild>
-            <a href={`/api/v1/invoice/${id}/pdf`} download>
-              <Download className="h-4 w-4 mr-2" />Download PDF
-            </a>
-          </Button>
+        <div className="flex gap-2 items-center">
+          <InvoicePdfActions invId={id!} nomor={inv.nomor} />
+          <TandaTerimaPdfActions invId={id!} nomor={inv.nomor} />
           <Button variant="outline" asChild>
             <a href={`/dashboard/invoice/${id}/edit`}>
               <Pencil className="h-4 w-4 mr-2" />Edit
@@ -491,10 +507,10 @@ export default function InvoiceDetailPage() {
       </Card>
 
       <div className="flex justify-end gap-2">
-        <Button variant="outline" asChild>
-          <a href={`/api/v1/invoice/${id}/pdf`} target="_blank" rel="noopener noreferrer">
-            <FileText className="h-4 w-4 mr-2" />Cetak PDF
-          </a>
+        <InvoicePdfActions invId={id!} nomor={inv.nomor} />
+        <TandaTerimaPdfActions invId={id!} nomor={inv.nomor} />
+        <Button variant="outline" onClick={() => setShowFpDialog(true)}>
+          <Receipt className="h-4 w-4 mr-2" />Buat Faktur Pajak
         </Button>
         <Button asChild>
           <a href={`/dashboard/invoice/${id}/edit`}>
@@ -502,6 +518,34 @@ export default function InvoiceDetailPage() {
           </a>
         </Button>
       </div>
+
+      {showFpDialog && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setShowFpDialog(false)}>
+          <div className="bg-background rounded-lg shadow-lg p-6 w-full max-w-md mx-4" onClick={e => e.stopPropagation()}>
+            <h3 className="text-lg font-semibold mb-4">Buat Faktur Pajak</h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              Faktur Pajak akan dibuat dengan data dari Invoice ini. DPP, PPN, dan PPh akan diisi otomatis.
+            </p>
+            <div className="space-y-2 mb-4">
+              <label className="text-sm font-medium">Nomor Faktur Pajak</label>
+              <input
+                type="text"
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                placeholder="010.000-24.00000000"
+                value={nomorFaktur}
+                onChange={e => setNomorFaktur(e.target.value)}
+              />
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setShowFpDialog(false)}>Batal</Button>
+              <Button onClick={handleBuatFakturPajak} disabled={fpCreating}>
+                {fpCreating && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                Buat Faktur Pajak
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

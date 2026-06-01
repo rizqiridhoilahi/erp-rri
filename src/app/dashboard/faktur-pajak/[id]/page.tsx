@@ -7,7 +7,8 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
-import { ArrowLeft, Pencil, Printer } from 'lucide-react'
+import { ArrowLeft, Pencil, FileText } from 'lucide-react'
+import { FakturPajakPdfActions } from '@/components/faktur-pajak-pdf-actions'
 
 const statusMap: Record<string, { label: string; variant: 'secondary' | 'success' | 'outline' }> = {
   draft: { label: 'Draft', variant: 'secondary' },
@@ -74,6 +75,7 @@ export default function FakturPajakDetailPage({ params }: { params: Promise<{ id
     if (totalDpp > 0 && totalPph > 0) return Math.round((totalPph / totalDpp) * 100);
     return null;
   })();
+  const [company, setCompany] = useState<Record<string, string>>({})
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -81,17 +83,31 @@ export default function FakturPajakDetailPage({ params }: { params: Promise<{ id
     if (!id) return;
 
     const fetchData = async () => {
-      const { data: fpData, error: fpError } = await supabase
-        .from('faktur_pajak')
-        .select('*, invoice!invoice_id(nomor, customer_id, customer!customer_id(nama, alamat, kode))')
-        .eq('id', id)
-        .single();
+      const [fpResult, settingsResult] = await Promise.all([
+        supabase
+          .from('faktur_pajak')
+          .select('*, invoice!invoice_id(nomor, customer_id, customer!customer_id(nama, alamat, kode))')
+          .eq('id', id)
+          .single(),
+        supabase
+          .from('site_settings')
+          .select('*')
+          .in('key', ['company_nama', 'company_alamat', 'company_npwp']),
+      ])
 
-      if (fpError || !fpData) {
+      if (fpResult.error || !fpResult.data) {
         setError("Faktur Pajak tidak ditemukan");
         setIsLoading(false);
         return;
       }
+
+      const companyData: Record<string, string> = {}
+      if (settingsResult.data) {
+        for (const row of settingsResult.data) {
+          companyData[row.key] = row.value
+        }
+      }
+      setCompany(companyData)
 
       const { data: items } = await supabase
         .from('faktur_pajak_item')
@@ -99,7 +115,7 @@ export default function FakturPajakDetailPage({ params }: { params: Promise<{ id
         .eq('faktur_pajak_id', id)
         .order('created_at', { ascending: true });
 
-      setFakturPajak(fpData);
+      setFakturPajak(fpResult.data);
       setItems(items || []);
       setIsLoading(false);
     };
@@ -133,10 +149,8 @@ export default function FakturPajakDetailPage({ params }: { params: Promise<{ id
             <p className="text-muted-foreground mt-1">{fakturPajak.nomor}</p>
           </div>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => window.print()}>
-            <Printer className="h-4 w-4 mr-2" />Cetak
-          </Button>
+        <div className="flex gap-2 items-center">
+          <FakturPajakPdfActions fpId={id!} nomor={fakturPajak.nomor} />
           <Button variant="outline" asChild>
            <Link href={`/dashboard/faktur-pajak/${id}/edit`}>
               <Pencil className="h-4 w-4 mr-2" />Edit
@@ -182,15 +196,15 @@ export default function FakturPajakDetailPage({ params }: { params: Promise<{ id
               <div className="space-y-2 text-sm">
                 <div>
                   <p className="text-muted-foreground text-xs">Nama</p>
-                  <p className="font-medium">Radio Republik Indonesia</p>
+                  <p className="font-medium">{company.company_nama || 'Radio Republik Indonesia'}</p>
                 </div>
                 <div>
                   <p className="text-muted-foreground text-xs">NPWP</p>
-                  <p className="font-mono text-muted-foreground">—</p>
+                  <p className="font-mono text-muted-foreground">{company.company_npwp || '—'}</p>
                 </div>
                 <div>
                   <p className="text-muted-foreground text-xs">Alamat</p>
-                  <p className="text-muted-foreground">—</p>
+                  <p className="text-muted-foreground">{company.company_alamat || '—'}</p>
                 </div>
               </div>
             </div>
@@ -319,7 +333,7 @@ export default function FakturPajakDetailPage({ params }: { params: Promise<{ id
           <Link href="/dashboard/faktur-pajak">Kembali</Link>
         </Button>
         <Button variant="outline" onClick={() => window.print()}>
-          <Printer className="h-4 w-4 mr-2" />Cetak
+          <FileText className="h-4 w-4 mr-2" />Cetak
         </Button>
         <Button asChild>
             <Link href={`/dashboard/faktur-pajak/${id}/edit`}>

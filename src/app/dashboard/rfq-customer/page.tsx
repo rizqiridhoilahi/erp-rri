@@ -9,6 +9,7 @@ import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@
 import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog'
 import { Plus, Pencil, Trash2, Eye, Loader2, FileText } from 'lucide-react'
 import { toast } from 'sonner'
+import { ExportButton } from "@/components/export-button"
 
 interface Customer {
   id: string
@@ -63,12 +64,12 @@ export default function RfqCustomerPage() {
           <h1 className="text-3xl font-heading font-bold text-foreground">RFQ Customer</h1>
           <p className="text-muted-foreground mt-1">Request for Quotation dari Customer</p>
         </div>
-        <Button asChild>
+        <div className="flex items-center gap-2"><ExportButton table="rfq_customer" /><Button asChild>
           <Link href="/dashboard/rfq-customer/tambah">
             <Plus className="h-4 w-4 mr-2" />
             Tambah RFQ Customer
           </Link>
-        </Button>
+        </Button></div>
       </div>
 
       {loading ? (

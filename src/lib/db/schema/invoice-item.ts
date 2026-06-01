@@ -1,15 +1,16 @@
 import { sql } from "drizzle-orm"
-import { pgTable, text, timestamp, integer, real } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, integer, numeric } from "drizzle-orm/pg-core";
 
 export const invoiceItem = pgTable("invoice_item", {
  id: text("id").primaryKey().default(sql`gen_random_uuid()::text`),
  invoiceId: text("invoice_id").notNull(),
  barangId: text("barang_id").notNull(),
-  hargaSatuan: real("harga_satuan").notNull(),
- diskon: real("diskon").default(0),
- ppn: real("ppn"),
- pph: real("pph"),
- jumlah: integer("jumlah").notNull(),
+  hargaSatuan: numeric("harga_satuan", { precision: 18, scale: 2 }).notNull().$type<number>(),
+ diskon: numeric("diskon", { precision: 18, scale: 2 }).default("0").$type<number>(),
+ ppn: numeric("ppn", { precision: 18, scale: 2 }).$type<number>(),
+ pph: numeric("pph", { precision: 18, scale: 2 }).$type<number>(),
+  jumlah: integer("jumlah").notNull(),
+  urutan: integer("urutan").notNull(),
  keterangan: text("keterangan"),
  createdAt: timestamp("created_at").notNull().defaultNow(),
  updatedAt: timestamp("updated_at").notNull().defaultNow(),

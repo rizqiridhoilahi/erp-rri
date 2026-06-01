@@ -14,6 +14,7 @@ import { DeleteConfirmationDialog } from "@/components/delete-confirmation-dialo
 import { Eye, Pencil, Trash2 } from "lucide-react"
 import { TableSkeleton } from "@/components/ui/skeleton"
 import { useRouter } from "next/navigation"
+import { ExportButton } from "@/components/export-button"
 
 const breadcrumbItems: BreadcrumbItem[] = [
   { label: "Dashboard", href: "/dashboard" },
@@ -162,9 +163,12 @@ export default function KontrakPage() {
         title="Data Kontrak"
         description={`${data.length} kontrak terdaftar`}
         actions={
-          <Link href="/dashboard/master/kontrak/tambah">
-            <Button>Tambah Kontrak</Button>
-          </Link>
+          <>
+            <ExportButton table="kontrak" />
+            <Link href="/dashboard/master/kontrak/tambah">
+              <Button>Tambah Kontrak</Button>
+            </Link>
+          </>
         }
       />
       {!data.length ? (

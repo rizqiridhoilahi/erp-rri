@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
 import { Plus, Pencil, Eye } from 'lucide-react'
+import { ExportButton } from "@/components/export-button"
 
 const statusLabel: Record<string, { label: string; variant: 'secondary' | 'warning' | 'success' | 'outline' }> = {
   draft: { label: 'Draft', variant: 'secondary' },
@@ -25,12 +26,12 @@ export default async function RfqPage() {
           <h1 className="text-3xl font-heading font-bold text-foreground">RFQ</h1>
           <p className="text-muted-foreground mt-1">Request for Quotation — daftar permintaan penawaran ke supplier</p>
         </div>
-        <Button asChild>
+        <div className="flex items-center gap-2"><ExportButton table="rfq" /><Button asChild>
           <Link href="/dashboard/rfq/tambah">
             <Plus className="h-4 w-4 mr-2" />
             Tambah RFQ
           </Link>
-        </Button>
+        </Button></div>
       </div>
 
       {error ? (

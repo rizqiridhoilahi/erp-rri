@@ -202,6 +202,10 @@ export default function CompanySettingsPage() {
             <Label>Alamat</Label>
             <Textarea value={data.company_alamat ?? ''} onChange={e => handleChange('company_alamat', e.target.value)} rows={2} placeholder="Jerukwangi - Bangsri, Jepara" />
           </div>
+          <div className="space-y-2">
+            <Label>NPWP</Label>
+            <Input value={data.company_npwp ?? ''} onChange={e => handleChange('company_npwp', e.target.value)} placeholder="00.000.000.0-000.000" />
+          </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>No. HP</Label>
@@ -283,6 +287,24 @@ export default function CompanySettingsPage() {
             {data.tanda_tangan_stempel_url && (
               <img src={data.tanda_tangan_stempel_url} alt="Tanda Tangan + Stempel" className="mt-2 h-24 object-contain rounded border" />
             )}
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader><CardTitle className="text-base">Informasi Bank</CardTitle></CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label>Nama Bank</Label>
+            <Input value={data.company_bank_name ?? ''} onChange={e => handleChange('company_bank_name', e.target.value)} placeholder="BCA KCP JEPARA" />
+          </div>
+          <div className="space-y-2">
+            <Label>Nama Rekening</Label>
+            <Input value={data.company_rekening_nama ?? ''} onChange={e => handleChange('company_rekening_nama', e.target.value)} placeholder="RIZQI RIDHO ILAHI PT" />
+          </div>
+          <div className="space-y-2">
+            <Label>Nomor Rekening</Label>
+            <Input value={data.company_rekening_nomor ?? ''} onChange={e => handleChange('company_rekening_nomor', e.target.value)} placeholder="2471266266" />
           </div>
         </CardContent>
       </Card>

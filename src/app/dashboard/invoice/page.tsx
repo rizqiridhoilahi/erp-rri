@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
 import { Plus, Pencil, Download, Eye } from 'lucide-react'
+import { ExportButton } from "@/components/export-button"
 
 const s: Record<string, { label: string; v: 'secondary' | 'warning' | 'success' | 'destructive' | 'outline' }> = {
   draft: { label: 'Draft', v: 'secondary' }, sent: { label: 'Belum Dibayar', v: 'warning' },
@@ -19,6 +20,7 @@ export default async function InvoicePage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div><h1 className="text-3xl font-heading font-bold">Invoice</h1><p className="text-muted-foreground mt-1">Tagihan penjualan</p></div>
+        <ExportButton table="invoice" />
         <Button asChild><Link href="/dashboard/invoice/tambah"><Plus className="h-4 w-4 mr-2" />Tambah Invoice</Link></Button>
       </div>
       {error ? <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-sm text-destructive">{error.message}</div> :

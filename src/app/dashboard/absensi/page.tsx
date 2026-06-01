@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { CalendarSkeleton } from '@/components/ui/skeleton'
 import { useState, useEffect } from 'react'
 import { Plus, ChevronLeft, ChevronRight } from 'lucide-react'
+import { ExportButton } from "@/components/export-button"
 
 interface AbsensiRecord {
   id: string
@@ -69,6 +70,7 @@ export default function AbsensiPage() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div><h1 className="text-3xl font-heading font-bold">Absensi</h1><p className="text-muted-foreground mt-1">Catatan kehadiran karyawan</p></div>
+          <ExportButton table="absensi" />
           <Button asChild><Link href="/dashboard/absensi/tambah"><Plus className="h-4 w-4 mr-2" />Tambah Absensi</Link></Button>
         </div>
         <CalendarSkeleton />
@@ -81,6 +83,7 @@ export default function AbsensiPage() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div><h1 className="text-3xl font-heading font-bold">Absensi</h1><p className="text-muted-foreground mt-1">Catatan kehadiran karyawan</p></div>
+          <ExportButton table="absensi" />
           <Button asChild><Link href="/dashboard/absensi/tambah"><Plus className="h-4 w-4 mr-2" />Tambah Absensi</Link></Button>
         </div>
         <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-sm text-destructive">{error}</div>
@@ -163,6 +166,7 @@ export default function AbsensiPage() {
           <p className="text-muted-foreground mt-1">Kalender kehadiran karyawan</p>
         </div>
         <div className="flex items-center gap-2">
+          <ExportButton table="absensi" />
           <Button variant="outline" size="icon" onClick={prevMonth}>
             <ChevronLeft className="h-4 w-4" />
           </Button>

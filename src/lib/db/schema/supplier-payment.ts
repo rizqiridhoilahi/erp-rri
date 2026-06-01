@@ -1,11 +1,11 @@
 import { sql } from "drizzle-orm"
-import { pgTable, text, timestamp, real } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, numeric } from "drizzle-orm/pg-core";
 
 export const supplierPayment = pgTable("supplier_payment", {
  id: text("id").primaryKey().default(sql`gen_random_uuid()::text`),
  purchaseOrderId: text("purchase_order_id").notNull(),
  supplierId: text("supplier_id").notNull(),
- nominal: real("nominal").notNull(),
+ nominal: numeric("nominal", { precision: 18, scale: 2 }).notNull().$type<number>(),
  tanggalBayar: timestamp("tanggal_bayar").notNull(),
  metode: text("metode").notNull().default("transfer"),
  buktiTransfer: text("bukti_transfer"),

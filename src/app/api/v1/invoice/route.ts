@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
   }).select().single()
   if (invError) return internalError(invError)
 
-  const items = parsed.data.items.map(item => {
+  const items = parsed.data.items.map((item, idx) => {
     const subtotal = item.harga * item.jumlah - (item.diskon ?? 0)
     return {
       invoice_id: inv.id, barang_id: item.barang_id, harga: item.harga,
@@ -77,6 +77,7 @@ export async function POST(request: NextRequest) {
       ppn: item.ppn ?? subtotal * ppnRate,
       pph: item.pph ?? (parsed.data.pph_rate ? subtotal * parsed.data.pph_rate : null),
       keterangan: item.keterangan ?? null,
+      urutan: idx + 1,
       created_at: now, updated_at: now,
     }
   })

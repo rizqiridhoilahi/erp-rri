@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
 import { Plus, Pencil, Download, Eye } from 'lucide-react'
+import { ExportButton } from "@/components/export-button"
 
 const statusLabel: Record<string, { label: string; variant: 'secondary' | 'warning' | 'success' | 'destructive' | 'outline' }> = {
   draft: { label: 'Draft', variant: 'secondary' },
@@ -26,6 +27,7 @@ export default async function QuotationPage() {
           <h1 className="text-3xl font-heading font-bold text-foreground">Quotation</h1>
           <p className="text-muted-foreground mt-1">Penawaran harga untuk customer</p>
         </div>
+        <ExportButton table="quotation" />
         <Button asChild>
           <Link href="/dashboard/quotation/tambah">
             <Plus className="h-4 w-4 mr-2" />

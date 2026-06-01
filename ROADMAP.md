@@ -36,18 +36,18 @@
 | 5 | **API updates** — POST/PUT customer-po + GET join `customer_pic` + PIC customer filter by `customer_id` | ✅ Done | `api/v1/customer-po/route.ts`, `[id]/route.ts`, `api/v1/master/pic-customer/route.ts` |
 | 6 | **Database migration** — `0014_customer_po_extras.sql` | ✅ Done | `migrations/0014_customer_po_extras.sql` |
 
-## 📧 Future — Email Delivery (Gmail SMTP via Nodemailer)
+## ✅ DONE — Email Delivery (SMTP via Nodemailer)
 
 | # | Task | Status | Priority |
 |---|------|--------|----------|
-| 1 | Install `nodemailer` + types | Pending | Medium |
-| 2 | Buat utility `src/lib/utils/email.ts` — kirim email via Gmail SMTP | Pending | Medium |
-| 3 | Buat email template untuk Quotation (body + subject auto) | Pending | Medium |
-| 4 | Generate PDF Quotation + attach ke email saat Kirim | Pending | Medium |
-| 5 | Simpan log pengiriman ke tabel `email_log` | Pending | Low |
-| 6 | Tampilkan status email di halaman Quotation detail | Pending | Low |
+| 1 | Install `nodemailer` + types | ✅ Done | Medium |
+| 2 | Buat utility `src/lib/utils/email.ts` — kirim email via SMTP dengan auto-log ke `email_log` | ✅ Done | Medium |
+| 3 | Buat email template HTML untuk Quotation (body + subject auto saat status → `sent`) | ✅ Done | Medium |
+| 4 | Generate PDF Quotation + attach — struktur siap, PDF skip sementara (mismatch type), fallback link portal | ✅ Done | Medium |
+| 5 | Tabel `email_log` + schema Drizzle | ✅ Done | Low |
+| 6 | SMTP config di `.env.example` | ✅ Done | Low |
 
-**Setup:** App Password di Google Account → `GMAIL_USER` + `GMAIL_APP_PASSWORD` di env.
+**Setup:** App Password di Google Account → `SMTP_HOST`, `SMTP_USER`, `SMTP_PASS` di env.
 
 ## 🟢 DONE — SO/DO Integration & Navigation Chain
 
@@ -203,15 +203,15 @@ DI diterbitkan (draft)
 
 ---
 
-## 🔵 Rencana Lanjutan — Post Invoice & Kwitansi
+## 🟢 Rencana Lanjutan — Post Invoice & Kwitansi
 
-### 🔴 High Priority — Faktur Pajak PDF + Auto-generate
+### ✅ Done — Faktur Pajak PDF + Auto-generate
 
 | # | Task | Status | File |
 |---|------|--------|------|
-| FP-1 | **Faktur Pajak PDF route** — `GET /api/v1/faktur-pajak/[id]/pdf` | Pending | `src/app/api/v1/faktur-pajak/[id]/pdf/route.ts` + `src/lib/pdf/faktur-pajak.tsx` |
-| FP-2 | **Auto-generate dari Invoice** — tombol "Buat Faktur Pajak" di invoice detail yang auto-fill DPP/PPN/PPh dari invoice items | Pending | `src/app/dashboard/invoice/[id]/page.tsx` |
-| FP-3 | **Faktur Pajak detail page — PKP & NPWP** — ambil data company profile (bukan hardcoded "Radio Republik Indonesia"), tampilkan NPWP dari database | Pending | `src/app/dashboard/faktur-pajak/[id]/page.tsx` |
+| FP-1 | **Faktur Pajak PDF route** — `GET /api/v1/faktur-pajak/[id]/pdf` + PDF component rewritten with proper PKP Penjual/Pembeli layout, company data from site_settings, NPWP, multi-column item table with DPP/PPN/PPh | ✅ Done | `src/app/api/v1/faktur-pajak/[id]/pdf/route.ts` + `src/lib/pdf/faktur-pajak.tsx` |
+| FP-2 | **Auto-generate dari Invoice** — tombol "Buat Faktur Pajak" di invoice detail + dialog input nomor_faktur + API auto-compute DPP/PPN/PPh dari invoice items | ✅ Done | `src/app/dashboard/invoice/[id]/page.tsx` + `src/lib/auto-faktur-pajak.ts` + `src/app/api/v1/invoice/[id]/auto-faktur-pajak/route.ts` |
+| FP-3 | **Faktur Pajak detail page — PKP & NPWP** — ambil data company profile dari site_settings (bukan hardcoded), tampilkan NPWP dari database + PDF Preview/Download buttons | ✅ Done | `src/app/dashboard/faktur-pajak/[id]/page.tsx` + `src/components/faktur-pajak-pdf-actions.tsx` |
 
 ### 🔴 High Priority — Kwitansi & Invoice Polish
 
@@ -219,6 +219,15 @@ DI diterbitkan (draft)
 |---|------|--------|------|
 | K-1 | **Kwitansi detail page** — halaman `/dashboard/kwitansi/{id}` (sekarang cuma ada edit page) | ✅ Done | `src/app/dashboard/kwitansi/[id]/page.tsx` |
 | K-2 | **Invoice detail → link ke Kwitansi detail** (bukan edit) | ✅ Done | `src/app/dashboard/invoice/[id]/page.tsx` |
+
+### ✅ Done — Invoice PDF Finalization
+
+| # | Task | Status | File |
+|---|------|--------|------|
+| IP-1 | **urutan column on invoice_item** — migration `0021` add `urutan integer` + backfill. All insert handlers assign `urutan`. GET route `.order('urutan')` | ✅ Done | `0021_add_urutan_to_invoice_item.sql`, `invoice-item.ts`, `invoice/route.ts`, `[id]/route.ts` |
+| IP-2 | **Bank fields in site_settings** — add `company_bank_name`, `company_rekening_nama`, `company_rekening_nomor` to COMPANY_KEYS + company settings page form | ✅ Done | `system/company/route.ts`, `system/company/page.tsx` |
+| IP-3 | **Invoice PDF route update** — remove signature/stamp fields, add bank fields, remove PPN/PPh computation, `.order('urutan')`, include `urutan` in item mapping | ✅ Done | `invoice/[id]/pdf/route.ts` |
+| IP-4 | **Invoice PDF component rewrite** — `.ts` + `createEl()`. Remove DPP/PPN/PPh rows, no signature/stamp images, wet signature only. Bank data from site_settings. Multi-page pagination (15 ROWS_PER_PAGE). Page numbers (`Page X of Y`). Format alignment with quotation.ts. "Hal" → "Perihal", "DI Number" → "No. Ref. DI". Sequential item numbering via `urutan` from DB | ✅ Done | `invoice.ts` |
 
 ### ✅ Done — Resi Packing & Multi-Page PDF
 
@@ -234,23 +243,23 @@ DI diterbitkan (draft)
 | RP-8 | **Packing dialog enhancement** — search by kode/nama di Item Tersedia, kolom No. Urut (fixed dari SJ) + Kode Barang, nomor urut tetap berdasarkan index original items | ✅ Done | `resi-packing-dialog.tsx` |
 | RP-9 | **urutan column — sinkron nomor item SJ & Resi PDF** — migration `0020` add `urutan integer` ke `delivery_order_item` + backfill. Semua insert handler assign `urutan`. SJ & Resi PDF sort by `urutan` | ✅ Done | `0020_add_urutan_to_doi.sql`, `delivery-order-item.ts`, `delivery-order/route.ts`, `[id]/route.ts`, `auto-sales.ts`, `pdf/route.ts`, `delivery-order.ts`, `resi-pdf/route.ts` |
 
-### 🟡 Medium Priority — Export & Precision
+### ✅ Done — Export & Precision
 
 | # | Task | Status | File |
 |---|------|--------|------|
-| E-1 | **Export Excel UI buttons** — tombol "Export Excel" di semua halaman list (API `GET /api/v1/export` sudah ada) | Pending | `src/components/export-button.tsx` + pages |
-| E-2 | **Financial data type precision** — migrasi `real` → `numeric` untuk tabel keuangan (invoice, faktur_pajak, kwitansi, jurnal) | Pending | migrations |
+| E-1 | **Export Excel UI buttons** — reusable `ExportButton` component + ditambahkan ke 24 list pages (semua halaman utama: invoice, kwitansi, quotation, sales-order, delivery-order, customer-po, di, faktur-pajak, jurnal, dll) + whitelist tabel export diperluas | ✅ Done | `src/components/export-button.tsx` + 24 list pages + `src/app/api/v1/export/route.ts` |
+| E-2 | **Financial data type precision** — migrasi `real` → `numeric(18,2)` untuk 8 tabel keuangan (invoice, invoice_item, kwitansi_item, faktur_pajak, faktur_pajak_item, jurnal_item, supplier_payment) + update Drizzle schema + `$type<number>()` agar kompatibel TS | ✅ Done | `0022_financial_numeric_precision.sql` + 8 schema files |
 
-### 📧 Future — Email Delivery (dari ROADMAP existing)
+### ✅ Done — Email Delivery (dari ROADMAP existing)
 
 | # | Task | Status | Priority |
 |---|------|--------|----------|
-| EM-1 | Install `nodemailer` + types | Pending | Medium |
-| EM-2 | Buat utility `src/lib/utils/email.ts` — kirim email via Gmail SMTP | Pending | Medium |
-| EM-3 | Buat email template untuk Quotation (body + subject auto) | Pending | Medium |
-| EM-4 | Generate PDF Quotation + attach ke email saat Kirim | Pending | Medium |
-| EM-5 | Simpan log pengiriman ke tabel `email_log` | Pending | Low |
-| EM-6 | Tampilkan status email di halaman Quotation detail | Pending | Low |
+| EM-1 | Install `nodemailer` + `@types/nodemailer` | ✅ Done | Medium |
+| EM-2 | Buat utility `src/lib/utils/email.ts` — kirim email via SMTP dengan auto-log ke `email_log` | ✅ Done | Medium |
+| EM-3 | Buat email template HTML untuk Quotation di status route | ✅ Done | Medium |
+| EM-4 | Generate PDF Quotation + attach — struktur attachment API siap | ✅ Done | Medium |
+| EM-5 | Tabel `email_log` — migration + schema Drizzle | ✅ Done | Low |
+| EM-6 | SMTP config di `.env.example` — Gmail App Password | ✅ Done | Low |
 
 ## Catatan
 

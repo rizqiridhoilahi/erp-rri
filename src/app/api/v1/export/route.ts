@@ -4,7 +4,7 @@ import { verifyAuth } from '@/lib/api/auth'
 import { badRequest, internalError } from '@/lib/api/errors'
 import * as XLSX from 'xlsx'
 
-const allowedTables = ['barang', 'supplier', 'customer', 'invoice', 'quotation', 'purchase_order', 'purchase_request', 'karyawan', 'jurnal', 'absensi', 'penggajian', 'coa', 'kontrak', 'sales_order', 'delivery_order']
+const allowedTables = ['barang', 'supplier', 'customer', 'invoice', 'quotation', 'purchase_order', 'purchase_request', 'karyawan', 'jurnal', 'absensi', 'penggajian', 'coa', 'kontrak', 'sales_order', 'delivery_order', 'faktur_pajak', 'kwitansi', 'retur_penjualan', 'retur_pembelian', 'purchase_receiving', 'grn', 'customer_po', 'di', 'negoisasi', 'rfq', 'rfq_customer', 'customer_pic', 'kategori_barang', 'satuan', 'kendaraan']
 
 export async function GET(request: NextRequest) {
   const auth = await verifyAuth(request)

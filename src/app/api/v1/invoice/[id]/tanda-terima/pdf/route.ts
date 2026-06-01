@@ -3,13 +3,13 @@ import { pdf } from '@react-pdf/renderer'
 import { supabaseAdmin } from '@/lib/api/supabase-server'
 import { verifyAuth } from '@/lib/api/auth'
 import { notFound, internalError } from '@/lib/api/errors'
-import { InvoicePDF } from '@/lib/pdf/invoice'
+import { generateDocumentNumber } from '@/lib/utils/document-number'
+import { TandaTerimaPDF } from '@/lib/pdf/tanda-terima'
 
 const COMPANY_KEYS = [
   'company_nama', 'company_bidang_usaha', 'company_alamat',
   'company_no_hp', 'company_email', 'company_logo_url',
   'penandatangan_nama', 'penandatangan_jabatan', 'penandatangan_no_hp',
-  'company_bank_name', 'company_rekening_nama', 'company_rekening_nomor',
 ] as const
 
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -19,7 +19,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
 
   const { data: inv, error } = await supabaseAdmin
     .from('invoice')
-    .select('*, sales_order!sales_order_id(nomor, di!fk_sales_order_di(nomor, nomor_di_customer)), customer!customer_id(nama, alamat)')
+    .select('nomor, customer!customer_id(nama)')
     .eq('id', id)
     .single()
   if (error) return internalError(error)
@@ -36,45 +36,19 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
     }
   }
 
-  let picNama: string | null = null
-  const { data: pic } = await supabaseAdmin
-    .from('customer_pic')
-    .select('nama')
-    .eq('customer_id', inv.customer_id)
-    .eq('is_active', true)
-    .limit(1)
-    .maybeSingle()
-  if (pic) picNama = pic.nama
+  const nomor = await generateDocumentNumber('TT')
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const customer = inv.customer as any as { nama: string } | null
 
-  const { data: items } = await supabaseAdmin
-    .from('invoice_item')
-    .select('*, barang!barang_id(nama, kode, satuan)')
-    .eq('invoice_id', id)
-    .order('urutan')
-  if (!items) return internalError('Gagal memuat item')
-
-  const grandTotal = items.reduce((s, i) => s + (i.harga * i.jumlah - (i.diskon ?? 0)), 0)
-
-  const so = inv.sales_order as { nomor: string; di: { nomor: string; nomor_di_customer: string | null } | null } | null
-  const customer = inv.customer as { nama: string; alamat: string } | null
+  const now = new Date()
+  const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember']
+  const tanggalStr = `Jepara, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`
 
   const pdfData = {
-    nomor: inv.nomor,
+    nomor,
+    nomorInvoice: inv.nomor,
+    tanggal: tanggalStr,
     customerNama: customer?.nama ?? '-',
-    customerAlamat: customer?.alamat ?? null,
-    picNama,
-    tanggal: 'Jepara, ' + new Date(inv.tanggal).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }),
-    diCustomerRef: so?.di?.nomor_di_customer ?? null,
-    grandTotal,
-    items: items.map(i => ({
-      nama: (i.barang as { nama: string })?.nama ?? '-',
-      kode: (i.barang as { kode: string })?.kode ?? '-',
-      satuan: (i.barang as { satuan: string })?.satuan ?? '',
-      jumlah: i.jumlah,
-      hargaSatuan: i.harga,
-      diskon: i.diskon ?? 0,
-      urutan: (i as { urutan: number }).urutan,
-    })),
     company: {
       company_nama: company.company_nama ?? null,
       company_bidang_usaha: company.company_bidang_usaha ?? null,
@@ -85,19 +59,16 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
       penandatangan_nama: company.penandatangan_nama ?? null,
       penandatangan_jabatan: company.penandatangan_jabatan ?? null,
       penandatangan_no_hp: company.penandatangan_no_hp ?? null,
-      company_bank_name: company.company_bank_name ?? null,
-      company_rekening_nama: company.company_rekening_nama ?? null,
-      company_rekening_nomor: company.company_rekening_nomor ?? null,
     },
   }
 
   try {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const blob = await pdf(InvoicePDF({ data: pdfData }) as any).toBlob()
+    const blob = await pdf(TandaTerimaPDF({ data: pdfData }) as any).toBlob()
     return new NextResponse(blob, {
       headers: {
         'Content-Type': 'application/pdf',
-        'Content-Disposition': `inline; filename="INVOICE-${inv.nomor}.pdf"`,
+        'Content-Disposition': `inline; filename="${nomor}.pdf"`,
       },
     })
   } catch (e) {

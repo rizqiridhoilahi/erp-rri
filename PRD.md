@@ -1,8 +1,8 @@
 # PRD: ERP PT. RIZKI RIDHO ILAHI
 
-**Versi:** 5.3
+**Versi:** 5.4
 **Status:** Draft
-**Tanggal:** 21 Mei 2026
+**Tanggal:** 1 Juni 2026
 
 ---
 
@@ -489,7 +489,9 @@ Modul ini menangani pembelian dari supplier — termasuk supplier marketplace Sh
 | **Cash & Bank** | Kas dan rekening bank. Mata uang: IDR (single currency untuk MVP) |
 | **PPN & Pajak** | PPN 11% default di setiap Invoice & Quotation. PPh Pasal 22/23 jika berlaku. Auto-kalkulasi pajak di setiap transaksi |
 | **Laporan PPN Masa** ✅ | Rekap PPN masa untuk pelaporan ke Kantor Pajak. Filter per bulan — Halaman `/dashboard/laporan/ppn-masa` + PDF export |
-| **Faktur Pajak** | Generate nomor faktur pajak sesuai ketentuan Dirjen Pajak |
+| **Financial Precision** | Semua kolom keuangan menggunakan `numeric(18,2)` untuk akurasi akuntansi. Berlaku di: Invoice, Kwitansi, Quotation, PO, Jurnal, dan semua tabel transaksi keuangan. |
+| **Faktur Pajak** | Generate nomor faktur pajak sesuai ketentuan Dirjen Pajak. Full CRUD API + halaman list/detail/create/edit. Auto-generate dari Invoice dengan auto-fill DPP/PPN/PPh. PDF generation dengan layout PKP Penjual/Pembeli, NPWP dari site_settings. Detail page menampilkan company profile dari database. |
+| **Tanda Terima Dokumen Penagihan** | Tanda terima dokumen penagihan (kwitansi/invoice) yang ditandatangani customer. PDF component di `src/lib/pdf/tanda-terima.ts`. API route di `/api/v1/invoice/[id]/tanda-terima/pdf`. Preview + Download buttons di halaman detail invoice. Format nomor: `RRI-TT-YY-MM-0001`. |
 | **Jurnal Umum** | Jurnal transaksi keuangan. Auto-generate jurnal saat Invoice terbit (debit AR, credit Revenue, debit/kredit PPN) |
 | **Laba / Rugi** | Laporan pendapatan dan biaya |
 | **Neraca** | Laporan posisi keuangan |
@@ -512,9 +514,10 @@ Semua dokumen berikut digenerate dalam format PDF yang bisa diprint dan disave:
 | **Quotation (SPH)** | `RRI-SPH-YY-MM-0001` | Pre-Sales — 2 halaman PDF: surat utama + lampiran tabel rincian. Font Arial. Include spec/justification/image per item. PPN 11% toggle. Masa berlaku 1 Minggu–1 Bulan. Company info dari site_settings. |
 | **Purchase Order (Internal)** | `RRI-PO-YY-MM-0001` | Procurement |
 | **Delivery Order / Surat Jalan** | `RRI-SJ-YY-MM-0001` | Sales |
-| **Invoice** | `RRI-INV-YY-MM-0001` | Finance — Dok: PO/DI, DO, GRN, Invoice, Kwitansi. Termasuk PPN & PPh |
+| **Invoice** | `RRI-INV-YY-MM-0001` | Finance — Dok: PO/DI, DO, GRN, Invoice, Kwitansi. Grand Total (tanpa DPP/PPN/PPh di tabel). Bank data dari site_settings. Wet signature only (tanpa gambar stempel/tanda tangan digital). Multi-page dengan page numbers |
 | **Goods Received Note (GRN)** | `RRI-GRN-YY-MM-0001` | Procurement / Inventory |
 | **Kwitansi / Receipt** | `RRI-KWT-YY-MM-0001` | Finance |
+| **Tanda Terima Dokumen Penagihan** | `RRI-TT-YY-MM-0001` | Finance — PDF component di `src/lib/pdf/tanda-terima.ts`. API route di `/api/v1/invoice/[id]/tanda-terima/pdf`. Preview + Download buttons di halaman detail invoice. |
 | **Faktur Pajak** | Sesuai aturan Dirjen Pajak | Finance |
 | **Nota Retur** | `RRI-RTJ-YY-MM-0001` (jual) / `RRI-RP-YY-MM-0001` (beli) | Sales / Procurement |
 
@@ -646,6 +649,7 @@ Quotation:  RRI-SPH-26-05-0001
 DO:         RRI-SJ-26-05-0001
 Invoice:    RRI-INV-26-05-0001
 Kwitansi:   RRI-KWT-26-05-0001
+Tanda Terima: RRI-TT-26-05-0001
 RFQ Customer: RRI-RFQC-26-05-0001
 RFQ Supplier: RRI-RFQ-26-05-0001
 Customer PO:  RRI-CPO-26-05-0001
@@ -678,25 +682,25 @@ Notifikasi otomatis via WhatsApp API (Fonnte) untuk komunikasi dengan Customer &
 
 **Catatan Biaya:** Fonnte menyediakan **500 pesan gratis per hari** – lebih dari cukup untuk kebutuhan ERP RRI (estimasi ~20 pesan/hari). Vercel Cron gratis di Hobby Plan (maks 1x/hari).
 
-### 8.5 Email Notification via Gmail SMTP (Planned)
+### 8.5 Email Notification via SMTP (Implemented)
 
-Rencana implementasi pengiriman email dari akun Gmail RRI ke customer.
+Pengiriman email otomatis terintegrasi dengan Nodemailer.
 
 | Item | Detail |
 |------|--------|
-| **Metode** | Nodemailer via Gmail SMTP (`smtp.gmail.com` port 587) |
-| **Biaya** | Gratis — pakai Gmail yang sudah ada (App Password) |
-| **Kuota** | 500 email/hari (standar Gmail) |
-| **Setup** | Buat App Password di Google Account → simpan di env var |
-| **Trigger** | Saat tombol "Tandai Terkirim" di Quotation detail |
+| **Library** | nodemailer (`npm install nodemailer`) |
+| **Utility** | `src/lib/utils/email.ts` — fungsi kirim email dengan auto-logging ke tabel `email_log` |
+| **SMTP Config** | Environment variables: `SMTP_HOST`, `SMTP_USER`, `SMTP_PASS` |
+| **Trigger** | Saat status Quotation berubah menjadi `sent` — notifikasi email ke PIC Customer |
 | **Attachment** | PDF Quotation otomatis di-generate & dilampirkan |
 | **Template** | Body email auto-generated: nomor quotation, link, pesan standar |
-| **Status** | 🔜 Future — lihat ROADMAP.md |
+| **Logging** | Semua pengiriman tercatat di tabel `email_log` untuk monitoring |
+| **Status** | ✅ Implemented |
 
 **Alur:**
 ```
-Quotation siap → Klik "Tandai Terkirim" → Generate PDF → 
-Kirim via Nodemailer (SMTP Gmail) → Attachment PDF + Body auto →
+Quotation siap → Klik "Tandai Terkirim" → Status jadi `sent` → 
+Generate PDF → Kirim via Nodemailer (SMTP) → Attachment PDF + Body auto →
 Catat log di tabel email_log → Tampilkan status di halaman Quotation
 ```
 
@@ -708,7 +712,7 @@ Catat log di tabel email_log → Tampilkan status di halaman Quotation
 | **Activity Log** | Timeline per transaksi — lihat histori lengkap satu SO/PO/Invoice dari awal sampai selesai |
 | **Digital Approval** | Approve/Reject dengan digital signature (nama + timestamp) |
 | **Global Search** | Satu search bar (shortcut `/` atau `Cmd+K`) untuk mencari di tabel: barang, customer, supplier, karyawan, PO, PR, SO, Customer PO, DO, Invoice, Quotation, RFQ Supplier, RFQ Customer, DI, GRN, Faktur Pajak, Kwitansi, Retur Jual/Beli, Jurnal, Negosiasi, Kontrak, Absensi, COA, Jabatan, Kategori Barang, Gudang, PIC Customer, Stock Opname, Pembayaran Supplier, Penggajian |
-| **Export Excel / CSV** | Semua halaman list data bisa di-export — Owner & Manager sering minta data dalam Excel |
+| **Export Excel / CSV** | Semua halaman list data punya tombol "Export Excel" yang memanggil API `/api/v1/export`. Owner & Manager sering minta data dalam Excel. |
 | **Bulk Import Excel** ✅ | Input master data barang, supplier, customer via upload file Excel — Halaman `/dashboard/tools/bulk-import` |
 | **Dark Mode** | Toggle dark/light mode — nyaman dipakai malam hari |
 | **Keyboard Shortcuts** | Power user: `Ctrl+N` = Baru, `Ctrl+S` = Simpan, `/` = Fokus global search, `Escape` = Tutup modal |
@@ -1214,6 +1218,7 @@ faktur_pajak_item        → item faktur pajak
 
 kwitansi                 → receipt
 kwitansi_item            → item dalam kwitansi
+tanda_terima             → tanda terima dokumen penagihan (nomor: RRI-TT-YY-MM-0001)
 
 stok                     → kartu stok / pergerakan stok
 gudang                   → master gudang (untuk future)
@@ -1232,6 +1237,7 @@ ai_ocr_history           → riwayat OCR kontrak
 
 audit_log                → audit trail semua transaksi
 whatsapp_log             → log pengiriman notifikasi WhatsApp (status: terkirim/gagal)
+email_log                → log pengiriman email notifikasi (status: terkirim/gagal)
 ```
 
 ### 12.4 Nomor Dokumen Otomatis
@@ -1240,7 +1246,7 @@ Implementasi counter di PostgreSQL:
 
 ```sql
 CREATE TABLE document_counter (
-  kode_dokumen TEXT NOT NULL,   -- SPH, SJ, INV, KWT, PO, GRN, RTJ, RTB
+  kode_dokumen TEXT NOT NULL,   -- SPH, SJ, INV, KWT, PO, GRN, RTJ, RTB, TT
   tahun INTEGER NOT NULL,       -- 2026
   bulan INTEGER NOT NULL,       -- 1-12
   counter INTEGER NOT NULL DEFAULT 0,

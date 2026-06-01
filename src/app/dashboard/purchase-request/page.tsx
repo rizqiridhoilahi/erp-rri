@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
 import { Plus, Pencil, Eye } from 'lucide-react'
+import { ExportButton } from '@/components/export-button'
 
 const s: Record<string, { label: string; v: 'secondary' | 'warning' | 'success' | 'outline' }> = {
   draft: { label: 'Draft', v: 'secondary' }, approved: { label: 'Disetujui', v: 'success' }, rejected: { label: 'Ditolak', v: 'outline' }, ordered: { label: 'Sudah diPO', v: 'warning' },
@@ -15,7 +16,7 @@ export default async function PurchaseRequestPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div><h1 className="text-3xl font-heading font-bold">Purchase Request</h1><p className="text-muted-foreground mt-1">Permintaan pembelian barang</p></div>
-        <Button asChild><Link href="/dashboard/purchase-request/tambah"><Plus className="h-4 w-4 mr-2" />Tambah PR</Link></Button>
+        <div className="flex items-center gap-2"><ExportButton table="purchase_request" /><Button asChild><Link href="/dashboard/purchase-request/tambah"><Plus className="h-4 w-4 mr-2" />Tambah PR</Link></Button></div>
       </div>
       {error ? <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-sm text-destructive">{error.message}</div> :
       !data?.length ? <div className="text-center py-12 border rounded-lg bg-card"><p className="text-muted-foreground">Belum ada PR.</p>

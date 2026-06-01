@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm"
-import { pgTable, text, timestamp, boolean, real } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, boolean, numeric } from "drizzle-orm/pg-core";
 
 export const invoice = pgTable("invoice", {
  id: text("id").primaryKey().default(sql`gen_random_uuid()::text`),
@@ -9,8 +9,8 @@ export const invoice = pgTable("invoice", {
   tanggal: timestamp("tanggal").notNull(),
   nomorGrn: text("nomor_grn"),
   top: text("top").notNull(),
- ppnRate: real("ppn_rate").notNull().default(0.11),
- pphRate: real("pph_rate"),
+ ppnRate: numeric("ppn_rate", { precision: 5, scale: 4 }).notNull().default("0.11").$type<number>(),
+ pphRate: numeric("pph_rate", { precision: 5, scale: 4 }).$type<number>(),
  status: text("status").notNull().default("draft"),
  isActive: boolean("is_active").notNull().default(true),
  createdAt: timestamp("created_at").notNull().defaultNow(),

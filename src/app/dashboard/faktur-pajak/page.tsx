@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
 import { Plus, Pencil, Eye } from 'lucide-react'
+import { ExportButton } from "@/components/export-button"
 
 const s: Record<string, { label: string; v: 'secondary' | 'success' | 'outline' }> = {
   draft: { label: 'Draft', v: 'secondary' }, approved: { label: 'Disetujui', v: 'success' },
@@ -15,6 +16,7 @@ export default async function FakturPajakPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div><h1 className="text-3xl font-heading font-bold">Faktur Pajak</h1><p className="text-muted-foreground mt-1">Faktur pajak penjualan</p></div>
+        <ExportButton table="faktur_pajak" />
         <Button asChild><Link href="/dashboard/faktur-pajak/tambah"><Plus className="h-4 w-4 mr-2" />Tambah Faktur Pajak</Link></Button>
       </div>
       {error ? <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-sm text-destructive">{error.message}</div> :

@@ -5,9 +5,10 @@ import { badRequest, internalError } from '@/lib/api/errors'
 
 const COMPANY_KEYS = [
   'company_nama', 'company_bidang_usaha', 'company_alamat',
-  'company_no_hp', 'company_email', 'company_logo_url',
+  'company_no_hp', 'company_email', 'company_logo_url', 'company_npwp',
   'penandatangan_nama', 'penandatangan_jabatan', 'penandatangan_no_hp',
   'tanda_tangan_url', 'stempel_url', 'tanda_tangan_stempel_url',
+  'company_bank_name', 'company_rekening_nama', 'company_rekening_nomor',
 ] as const
 
 export async function GET(request: NextRequest) {

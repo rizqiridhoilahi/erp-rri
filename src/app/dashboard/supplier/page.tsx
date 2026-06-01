@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Eye } from 'lucide-react';
+import { ExportButton } from "@/components/export-button";
 
 export default function SupplierPage() {
   const [supplierData, setSupplierData] = useState<Array<{
@@ -64,9 +65,9 @@ export default function SupplierPage() {
     <div className="container mx-auto py-8">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Daftar Supplier</h1>
-        <Link href="/dashboard/supplier/tambah">
+        <div className="flex items-center gap-2"><ExportButton table="supplier" /><Link href="/dashboard/supplier/tambah">
           <Button>Tambah Supplier</Button>
-        </Link>
+        </Link></div>
       </div>
 
       {supplierData.length === 0 ? (

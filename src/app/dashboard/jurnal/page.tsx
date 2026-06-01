@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
 import { Plus, Pencil, Eye } from 'lucide-react'
+import { ExportButton } from "@/components/export-button"
 
 const s: Record<string, { label: string; v: 'secondary' | 'success' | 'outline' }> = {
   draft: { label: 'Draft', v: 'secondary' }, posted: { label: 'Posted', v: 'success' },
@@ -15,6 +16,7 @@ export default async function JurnalPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div><h1 className="text-3xl font-heading font-bold">Jurnal Umum</h1><p className="text-muted-foreground mt-1">Catatan jurnal akuntansi</p></div>
+        <ExportButton table="jurnal" />
         <Button asChild><Link href="/dashboard/jurnal/tambah"><Plus className="h-4 w-4 mr-2" />Tambah Jurnal</Link></Button>
       </div>
       {error ? <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-sm text-destructive">{error.message}</div> :

@@ -12,6 +12,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog';
 import { Eye, Pencil, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { ExportButton } from "@/components/export-button";
 
 export default function CustomerPage() {
   const router = useRouter();
@@ -68,9 +69,9 @@ export default function CustomerPage() {
     <div className="container mx-auto py-8">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Daftar Customer</h1>
-        <Link href="/dashboard/customer/tambah">
+        <div className="flex items-center gap-2"><ExportButton table="customer" /><Link href="/dashboard/customer/tambah">
           <Button>Tambah Customer</Button>
-        </Link>
+        </Link></div>
       </div>
 
       {customerData.length === 0 ? (

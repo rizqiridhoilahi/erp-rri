@@ -10,7 +10,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
   const { data: inv, error } = await supabaseAdmin.from('invoice').select('*, sales_order!sales_order_id(nomor, di!fk_sales_order_di(nomor, nomor_di_customer, kontrak_id)), customer!customer_id(nama, kode)').eq('id', id).single()
   if (error) return internalError(error)
   if (!inv) return notFound('Invoice tidak ditemukan')
-  const { data: items } = await supabaseAdmin.from('invoice_item').select('*, barang!barang_id(nama, kode, satuan)').eq('invoice_id', id)
+  const { data: items } = await supabaseAdmin.from('invoice_item').select('*, barang!barang_id(nama, kode, satuan)').eq('invoice_id', id).order('urutan')
 
   let kontrak_nomor: string | null = null
   if (inv.sales_order?.di?.kontrak_id) {
@@ -61,10 +61,10 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
   if (body.items) {
     await supabaseAdmin.from('invoice_item').delete().eq('invoice_id', id)
     const now = new Date().toISOString()
-    const items = body.items.map((item: { barang_id: string; harga: number; jumlah: number; diskon?: number; ppn?: number; pph?: number; keterangan?: string }) => ({
+    const items = body.items.map((item: { barang_id: string; harga: number; jumlah: number; diskon?: number; ppn?: number; pph?: number; keterangan?: string }, idx: number) => ({
       invoice_id: id, barang_id: item.barang_id, harga: item.harga, jumlah: item.jumlah,
       diskon: item.diskon ?? 0, ppn: item.ppn ?? null, pph: item.pph ?? null,
-      keterangan: item.keterangan ?? null, created_at: now, updated_at: now,
+      keterangan: item.keterangan ?? null, urutan: idx + 1, created_at: now, updated_at: now,
     }))
     const { error: itemsError } = await supabaseAdmin.from('invoice_item').insert(items)
     if (itemsError) return internalError(itemsError)
