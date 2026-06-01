@@ -237,12 +237,12 @@ export default function InvoiceDetailPage() {
             )}
           </div>
           {!isOverdue ? (
-            <div className="flex items-center gap-0">
+            <div className="relative flex items-center gap-0">
               {stepLabels.map((label, i) => {
                 const done = i <= currentIdx
                 const current = i === currentIdx
                 return (
-                  <div key={label} className="flex-1 flex flex-col items-center">
+                  <div key={label} className="relative flex-1 flex flex-col items-center">
                     <div className={`flex items-center justify-center w-8 h-8 rounded-full text-xs font-bold border-2 ${
                       done ? "bg-primary border-primary text-primary-foreground" : "border-muted-foreground/30 text-muted-foreground/50"
                     } ${current ? "ring-3 ring-primary/30" : ""}`}>
@@ -518,8 +518,6 @@ export default function InvoiceDetailPage() {
       </Card>
 
       <div className="flex justify-end gap-2">
-        <InvoicePdfActions invId={id!} nomor={inv.nomor} />
-        <TandaTerimaPdfActions invId={id!} nomor={inv.nomor} />
         <Button variant="outline" onClick={() => setShowFpDialog(true)}>
           <Receipt className="h-4 w-4 mr-2" />Buat Faktur Pajak
         </Button>

@@ -25,6 +25,7 @@ const schema = z.object({
   ppn_rate: z.coerce.number().optional(),
   pph_rate: z.coerce.number().optional(),
   grn_customer_nomor: z.string().optional(),
+  nomor_tanda_terima: z.string().optional(),
   items: z.array(itemSchema).min(1),
 })
 
@@ -67,6 +68,7 @@ export async function POST(request: NextRequest) {
     tanggal: parsed.data.tanggal, top: parsed.data.top, ppn_rate: ppnRate,
     pph_rate: parsed.data.pph_rate ?? null, status: 'draft',
     grn_customer_nomor: parsed.data.grn_customer_nomor ?? null,
+    nomor_tanda_terima: parsed.data.nomor_tanda_terima ?? null,
     created_at: now, updated_at: now,
   }).select().single()
   if (invError) return internalError(invError)

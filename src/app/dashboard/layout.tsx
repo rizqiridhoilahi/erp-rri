@@ -34,7 +34,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
               </aside>
               <MobileSidebar />
               <main className="flex-1 md:ml-0 mt-14 md:mt-0">
-                <div className="p-4 md:p-6 max-w-7xl mx-auto">
+                <div className="p-4 md:p-6 max-w-7xl mx-auto overflow-x-hidden">
                   {children}
                 </div>
               </main>

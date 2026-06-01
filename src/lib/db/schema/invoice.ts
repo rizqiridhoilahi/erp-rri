@@ -11,6 +11,7 @@ export const invoice = pgTable("invoice", {
  ppnRate: numeric("ppn_rate", { precision: 5, scale: 4 }).notNull().default("0.11").$type<number>(),
   pphRate: numeric("pph_rate", { precision: 5, scale: 4 }).$type<number>(),
   grnCustomerNomor: text("grn_customer_nomor"),
+  nomorTandaTerima: text("nomor_tanda_terima"),
   status: text("status").notNull().default("draft"),
  isActive: boolean("is_active").notNull().default(true),
  createdAt: timestamp("created_at").notNull().defaultNow(),

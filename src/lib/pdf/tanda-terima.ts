@@ -147,26 +147,13 @@ export function TandaTerimaPDF({ data }: { data: TandaTerimaData }) {
         H(View, { style: { borderBottomWidth: 0.5, borderBottomColor: '#000' } }),
       ),
 
-      H(Text, { style: styles.title }, 'Tanda Terima Dokumen Penagihan'),
+      H(Text, { style: [styles.title, { textTransform: 'uppercase', marginBottom: 3 }] }, 'Tanda Terima Dokumen Penagihan'),
+
+      H(Text, { style: [styles.title, { fontSize: 14, textDecoration: 'none', marginBottom: 10 }] }, data.nomor),
 
       H(View, { style: { flexDirection: 'row', marginBottom: 8 } },
         H(View, null,
           H(View, { style: styles.labelValueRow },
-            H(Text, { style: styles.labelText }, 'No. Tanda Terima'),
-            H(Text, { style: styles.colonText }, ':'),
-            H(Text, { style: styles.valueText }, data.nomor)
-          ),
-      H(View, { style: styles.labelValueRow },
-        H(Text, { style: styles.labelText }, 'No. Invoice'),
-        H(Text, { style: styles.colonText }, ':'),
-        H(Text, { style: styles.valueText }, data.nomorInvoice)
-      ),
-      data.referensiJenis ? H(View, { style: styles.labelValueRow },
-        H(Text, { style: styles.labelText }, 'No. ' + data.referensiJenis + ' Ref.'),
-        H(Text, { style: styles.colonText }, ':'),
-        H(Text, { style: styles.valueText }, data.referensiNomor || '-')
-      ) : null,
-      H(View, { style: styles.labelValueRow },
             H(Text, { style: styles.labelText }, 'Tempat/Tanggal'),
             H(Text, { style: styles.colonText }, ':'),
             H(Text, { style: styles.valueText }, data.tanggal)

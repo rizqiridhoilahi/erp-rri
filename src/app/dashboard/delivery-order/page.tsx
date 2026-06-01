@@ -10,8 +10,12 @@ const s: Record<string, { label: string; v: 'secondary' | 'warning' | 'success' 
   draft: { label: 'Draft', v: 'secondary' }, awaiting_pickup: { label: 'Siap Kirim', v: 'warning' }, dikirim: { label: 'Dikirim', v: 'success' }, selesai: { label: 'Selesai', v: 'outline' }, ditolak: { label: 'Ditolak', v: 'destructive' },
 }
 
+type SoWithPIC = { nomor?: string; di?: { customer_pic?: { nama?: string } } | null }
+
 export default async function DeliveryOrderPage() {
-  const { data, error } = await supabase.from('delivery_order').select('*, sales_order!sales_order_id(nomor)').order('created_at', { ascending: false })
+  const { data, error } = await supabase.from('delivery_order')
+    .select('*, sales_order!sales_order_id(nomor, di(customer_pic(nama)))')
+    .order('created_at', { ascending: false })
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -25,6 +29,7 @@ export default async function DeliveryOrderPage() {
       <div className="rounded-lg border bg-card"><Table><TableHeader><TableRow>
         <TableHead>Nomor</TableHead>
         <TableHead>SO Reference</TableHead>
+        <TableHead>PIC Customer</TableHead>
         <TableHead>Tanggal</TableHead>
         <TableHead>Status</TableHead>
         <TableHead className="text-right">Aksi</TableHead>
@@ -33,6 +38,7 @@ export default async function DeliveryOrderPage() {
           <TableRow key={item.id}>
             <TableCell className="font-medium">{item.nomor}</TableCell>
             <TableCell className="text-muted-foreground">{item.sales_order?.nomor ?? '-'}</TableCell>
+            <TableCell className="text-muted-foreground">{(item.sales_order as SoWithPIC | null)?.di?.customer_pic?.nama ?? '-'}</TableCell>
             <TableCell className="text-muted-foreground">{new Date(item.tanggal).toLocaleDateString('id-ID')}</TableCell>
             <TableCell><Badge variant={s[item.status]?.v ?? 'outline'}>{s[item.status]?.label ?? item.status}</Badge></TableCell>
             <TableCell className="text-right space-x-1"><Button variant="ghost" size="sm" asChild><Link href={`/dashboard/delivery-order/${item.id}`}><Eye className="h-4 w-4" /></Link></Button><Button variant="ghost" size="sm" asChild><a href={`/api/v1/delivery-order/${item.id}/pdf`} target="_blank"><Download className="h-4 w-4" /></a></Button><Button variant="ghost" size="sm" asChild><Link href={`/dashboard/delivery-order/${item.id}/edit`}><Pencil className="h-4 w-4" /></Link></Button></TableCell>

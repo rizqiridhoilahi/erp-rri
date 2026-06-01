@@ -25,7 +25,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
 
   const { data: inv, error } = await supabaseAdmin
     .from('invoice')
-    .select('nomor, sales_order_id, customer!customer_id(nama)')
+    .select('nomor, sales_order_id, customer!customer_id(nama), nomor_tanda_terima, grn_customer_nomor')
     .eq('id', id)
     .single()
   if (error) return internalError(error)
@@ -138,7 +138,11 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
     }
   }
 
-  const nomor = await generateDocumentNumber('TT')
+  let nomor = inv.nomor_tanda_terima
+  if (!nomor) {
+    nomor = await generateDocumentNumber('TT')
+    await supabaseAdmin.from('invoice').update({ nomor_tanda_terima: nomor }).eq('id', id)
+  }
 
   const now = new Date()
   const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember']
@@ -147,7 +151,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
   const dash = '-'
 
   const dokumenList: DokumenRow[] = [
-    { nama: 'Tanda Terima', nomor: dash },
+    { nama: 'Tanda Terima', nomor: nomor },
     { nama: 'RFQ', nomor: rfqNomor ?? dash },
     { nama: 'SPH', nomor: quotationNomor ?? dash },
     { nama: 'PO', nomor: poNomor ?? dash },
@@ -155,7 +159,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
     { nama: 'DI', nomor: diNomor ?? dash },
     { nama: 'Delivery Slip', nomor: deliverySlipNomor ?? dash },
     { nama: 'Surat Jalan', nomor: doNomor ?? dash },
-    { nama: 'GRN', nomor: (inv as any).grn_customer_nomor ?? dash },
+    { nama: 'GRN', nomor: inv.grn_customer_nomor ?? dash },
     { nama: 'Invoice', nomor: inv.nomor },
     { nama: 'Kwitansi', nomor: kwitansiNomor ?? dash },
   ]

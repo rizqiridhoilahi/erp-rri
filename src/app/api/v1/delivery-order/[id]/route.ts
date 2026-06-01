@@ -108,9 +108,10 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       }
 
       // Auto-generate draft invoice
-      const ppnRate = await getConfigNumber('ppn_rate', 0.11)
-      const nomorInv = await generateDocumentNumber('INV')
-      const now = new Date().toISOString()
+const ppnRate = await getConfigNumber('ppn_rate', 0.11)
+        const nomorInv = await generateDocumentNumber('INV')
+        const nomorTT = await generateDocumentNumber('TT')
+        const now = new Date().toISOString()
 
       const { data: soItems } = await supabaseAdmin
         .from('sales_order_item')
@@ -126,6 +127,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
           top,
           ppn_rate: ppnRate,
           status: 'draft',
+          nomor_tanda_terima: nomorTT,
           created_at: now,
           updated_at: now,
         }).select().single()

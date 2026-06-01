@@ -16,9 +16,16 @@ const s: Record<string, { label: string; v: 'secondary' | 'warning' | 'success' 
   draft: { label: 'Draft', v: 'secondary' }, awaiting_pickup: { label: 'Siap Kirim', v: 'warning' }, dikirim: { label: 'Dikirim', v: 'success' }, selesai: { label: 'Selesai', v: 'outline' }, ditolak: { label: 'Ditolak', v: 'destructive' },
 }
 
+type SalesOrderWithPIC = {
+  nomor: string
+  di?: {
+    customer_pic?: { nama: string; jabatan: string }
+  } | null
+}
+
 export default async function DeliveryOrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const { data: doDoc, error } = await supabase.from('delivery_order').select('*, sales_order!sales_order_id(nomor), kendaraan!kendaraan_id(nama, no_polisi)').eq('id', id).single()
+  const { data: doDoc, error } = await supabase.from('delivery_order').select('*, sales_order!sales_order_id(nomor, di(customer_pic(nama, jabatan))), kendaraan!kendaraan_id(nama, no_polisi)').eq('id', id).single()
   if (error || !doDoc) return <div className="text-center py-20 text-muted-foreground">DO tidak ditemukan</div>
   const { data: items } = await supabase.from('delivery_order_item').select('*, barang!barang_id(nama, kode, satuan, barcode, image_url)').eq('delivery_order_id', id)
 
@@ -93,6 +100,10 @@ export default async function DeliveryOrderDetailPage({ params }: { params: Prom
             <div>
               <p className="text-sm text-muted-foreground">Kendaraan</p>
               <p className="font-medium">{doDoc.kendaraan ? `${doDoc.kendaraan.nama} (${doDoc.kendaraan.no_polisi})` : '-'}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">PIC Customer</p>
+              <p className="font-medium">{((doDoc.sales_order as SalesOrderWithPIC | null | undefined)?.di?.customer_pic?.nama) ?? '-'}{((doDoc.sales_order as SalesOrderWithPIC | null | undefined)?.di?.customer_pic?.jabatan) ? ` - ${(doDoc.sales_order as SalesOrderWithPIC | null | undefined)?.di?.customer_pic?.jabatan}` : ''}</p>
             </div>
             <div className="col-span-2">
               <p className="text-sm text-muted-foreground">Keterangan</p>
