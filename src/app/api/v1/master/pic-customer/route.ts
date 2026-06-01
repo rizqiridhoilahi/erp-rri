@@ -10,7 +10,7 @@ const schema = z.object({
   jenis_kelamin: z.enum(['L', 'P'], { message: 'Jenis kelamin harus dipilih' }),
   jabatan: z.string().optional(),
   email: z.string().email('Email tidak valid').optional().or(z.literal('')),
-  no_telp: z.string().optional(),
+  no_hp: z.string().optional(),
   keterangan: z.string().optional(),
 })
 

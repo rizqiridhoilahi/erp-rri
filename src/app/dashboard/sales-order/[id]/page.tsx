@@ -318,7 +318,7 @@ export default function SalesOrderDetailPage() {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Referensi DI</p>
-                <p className="font-medium">{so.di_id ? (so.di_id as string).slice(0, 8) + '...' : '-'}</p>
+                <p className="font-medium">{(so.di_ref as Record<string, unknown>)?.nomor as string ?? '-'}</p>
               </div>
             </div>
           </CardContent>

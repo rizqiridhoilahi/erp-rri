@@ -37,6 +37,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
 
   let customerFromDi: Record<string, unknown> | null = null
   let picCustomer = null
+  let diRef: Record<string, unknown> | null = null
 
   const picCustomerId = (so.customer_po as Record<string, unknown> | null)?.pic_customer_id as string | null
   if (picCustomerId) {
@@ -58,6 +59,13 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
     if (diWithPic?.customer_pic) {
       picCustomer = (diWithPic as Record<string, unknown>).customer_pic as { nama: string; no_hp: string }
     }
+
+    const { data: fullDi } = await supabaseAdmin
+      .from('di')
+      .select('*')
+      .eq('id', so.di_id as string)
+      .maybeSingle()
+    diRef = fullDi
   }
 
   const { data: items } = await supabaseAdmin
@@ -121,7 +129,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
     rfq_suppliers: rfqs ?? []
   }
 
-  return NextResponse.json({ data: { ...so, items: items ?? [], delivery_order: doDoc ?? null, pic_customer: picCustomer, procurement, customer: customerFromDi } })
+  return NextResponse.json({ data: { ...so, items: items ?? [], delivery_order: doDoc ?? null, pic_customer: picCustomer, procurement, customer: customerFromDi, di_ref: diRef } })
 }
 
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -206,7 +214,8 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       customer_po!customer_po_id(
         id, nomor, waktu_pengiriman, pic_customer_id,
         customer!customer_id(nama, kode)
-      )
+      ),
+      di_id
     `)
     .eq('id', id)
     .single()

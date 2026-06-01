@@ -104,6 +104,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
       stempel_url: company.stempel_url ?? null,
       tanda_tangan_stempel_url: company.tanda_tangan_stempel_url ?? null,
     },
+    sourcePath: (so?.customer_po_id ? 'customer_po' : so?.di_id ? 'di' : null) as 'customer_po' | 'di' | null,
   }
 
   try {

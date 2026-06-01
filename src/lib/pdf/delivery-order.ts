@@ -85,6 +85,7 @@ interface DOData {
   kendaraanNama: string | null
   kendaraanNoPolisi: string | null
   company: CompanyData
+  sourcePath: 'customer_po' | 'di' | null
 }
 
 function formatDateWithCity(dateStr: string): string {
@@ -131,122 +132,137 @@ export function DeliveryOrderPDF({ data }: { data: DOData }): ReactElement {
   const ROW_BORDER = { borderRightWidth: 1, borderRightColor: '#000' } as const
   const v = (child: any, style: any) => H(View, { style: { justifyContent: 'center', ...style } }, child)
 
-  return H(Document, null,
-    H(Page, { size: 'A4', style: styles.page, wrap: true },
-      H(View, { fixed: true },
-        H(View, { style: { marginBottom: 6 } },
-          H(View, { style: styles.header },
-            c.company_logo_url
-              ? H(Image, { src: c.company_logo_url, style: { width: 80, height: 80, marginTop: -5 } })
-              : H(View, { style: styles.logoBox },
-                  H(Text, { style: styles.logoText }, 'R')
-                ),
-            H(View, { style: styles.headerRight },
-              H(Text, { style: styles.companyName }, c.company_nama || 'PT. RIZQI RIDHO ILAHI'),
-              ...bidangLines.map((line, i) =>
-                H(Text, { key: i, style: styles.companyLine }, line)
-              )
-            )
-          ),
-          H(View, { style: { borderBottomWidth: 2, borderBottomColor: '#000', marginTop: 3 } }),
-          H(View, { style: { height: 3 } }),
-          H(View, { style: { borderBottomWidth: 0.5, borderBottomColor: '#000' } }),
-        ),
+  const ROWS_PER_PAGE = data.sourcePath === 'di' ? 20 : 10
+  const totalPages = Math.ceil(data.items.length / ROWS_PER_PAGE) || 1
 
-        H(View, { style: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 } },
-          H(View, null,
-            H(View, { style: styles.labelValueRow },
-              H(Text, { style: styles.labelText }, 'No. Surat'),
-              H(Text, { style: styles.colonText }, ':'),
-              H(Text, { style: styles.valueText }, data.nomor)
+  const tableHeaderRow = [
+    v(H(Text, { style: styles.tableHeaderCell }, 'No'), { width: 25, padding: 4, borderRightWidth: 1, borderRightColor: '#000', ...COL_BORDER }),
+    v(H(Text, { style: styles.tableHeaderCell }, 'Code'), { width: 90, padding: 4, borderRightWidth: 1, borderRightColor: '#000' }),
+    v(H(Text, { style: styles.tableHeaderCell }, 'Item Description'), { flex: 1, padding: 4, borderRightWidth: 1, borderRightColor: '#000' }),
+    v(H(Text, { style: styles.tableHeaderCell }, 'Unit'), { width: 50, padding: 4, borderRightWidth: 1, borderRightColor: '#000' }),
+    v(H(Text, { style: styles.tableHeaderCell }, 'Qty'), { width: 40, padding: 4, borderRightWidth: 1, borderRightColor: '#000' }),
+    v(H(Text, { style: styles.tableHeaderCell }, 'Keterangan'), { width: 100, padding: 4, ...ROW_BORDER }),
+  ]
+
+  const headerView = H(View, { fixed: true },
+    H(View, { style: { marginBottom: 6 } },
+      H(View, { style: styles.header },
+        c.company_logo_url
+          ? H(Image, { src: c.company_logo_url, style: { width: 80, height: 80, marginTop: -5 } })
+          : H(View, { style: styles.logoBox },
+              H(Text, { style: styles.logoText }, 'R')
             ),
-            H(View, { style: styles.labelValueRow },
-              H(Text, { style: styles.labelText }, 'No. Ref.'),
-              H(Text, { style: styles.colonText }, ':'),
-              H(Text, { style: styles.valueText }, data.ref || '-')
-            ),
-            H(View, { style: styles.labelValueRow },
-              H(Text, { style: styles.labelText }, 'Perihal'),
-              H(Text, { style: styles.colonText }, ':'),
-              H(Text, { style: [styles.valueText, { fontWeight: 'bold' }] }, 'Surat Jalan')
-            )
-          ),
-          H(View, null,
-            H(Text, { style: styles.valueText }, formatDateWithCity(data.tanggal))
+        H(View, { style: styles.headerRight },
+          H(Text, { style: styles.companyName }, c.company_nama || 'PT. RIZQI RIDHO ILAHI'),
+          ...bidangLines.map((line, i) =>
+            H(Text, { key: i, style: styles.companyLine }, line)
           )
-        ),
+        )
+      ),
+      H(View, { style: { borderBottomWidth: 2, borderBottomColor: '#000', marginTop: 3 } }),
+      H(View, { style: { height: 3 } }),
+      H(View, { style: { borderBottomWidth: 0.5, borderBottomColor: '#000' } }),
+    ),
 
-        H(Text, { style: styles.bodyText }, 'Harap diterima dengan baik Barang-barang dibawah Ini:'),
+    H(View, { style: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 } },
+      H(View, null,
+        H(View, { style: styles.labelValueRow },
+          H(Text, { style: styles.labelText }, 'No. Surat'),
+          H(Text, { style: styles.colonText }, ':'),
+          H(Text, { style: styles.valueText }, data.nomor)
+        ),
+        H(View, { style: styles.labelValueRow },
+          H(Text, { style: styles.labelText }, 'No. Ref.'),
+          H(Text, { style: styles.colonText }, ':'),
+          H(Text, { style: styles.valueText }, data.ref || '-')
+        ),
+        H(View, { style: styles.labelValueRow },
+          H(Text, { style: styles.labelText }, 'Perihal'),
+          H(Text, { style: styles.colonText }, ':'),
+          H(Text, { style: [styles.valueText, { fontWeight: 'bold' }] }, 'Surat Jalan')
+        )
+      ),
+      H(View, null,
+        H(Text, { style: styles.valueText }, formatDateWithCity(data.tanggal))
+      )
+    ),
+
+    H(Text, { style: styles.bodyText }, 'Harap diterima dengan baik Barang-barang dibawah Ini:'),
+  )
+
+  const footerView = H(View, { style: styles.footer, fixed: true },
+    H(Text, { style: styles.footerText }, c.company_alamat || 'Jerukwangi - Bangsri, Jepara'),
+    H(Text, { style: styles.footerText },
+      (c.company_no_hp || '+6281 2607 5500') + ', ' + (c.company_email || 'mazzjoeq@gmail.com')
+    )
+  )
+
+  const signatureBlock = H(View, { wrap: false },
+    H(View, { style: styles.infoSection },
+      H(View, { style: styles.infoRow },
+        H(Text, { style: styles.infoLabel }, 'Kendaraan'),
+        H(Text, { style: { width: 10 } }, ':'),
+        H(Text, { style: styles.infoValue }, data.kendaraanNama || '.....................................................')
+      ),
+      H(View, { style: styles.infoRow },
+        H(Text, { style: styles.infoLabel }, 'No. Polisi'),
+        H(Text, { style: { width: 10 } }, ':'),
+        H(Text, { style: styles.infoValue }, data.kendaraanNoPolisi || '.....................................................')
+      ),
+    ),
+    H(Text, { style: styles.penutupText }, 'Demikian yang kita sampaikan atas kerjasamanya kami ucapkan terima kasih.'),
+    H(View, { style: styles.signatureSection },
+      H(View, { style: styles.signatureBox },
+        H(Text, { style: styles.signatureTitle }, 'Yang Menyerahkan,'),
+        H(Text, { style: styles.signatureCompany }, c.company_nama || 'PT. RIZQI RIDHO ILAHI'),
+        H(View, { style: styles.signatureWrap },
+          c.tanda_tangan_stempel_url
+            ? H(Image, { src: c.tanda_tangan_stempel_url, style: { height: 100, objectFit: 'contain' } })
+            : null
+        ),
+        H(Text, { style: styles.signatureName }, c.penandatangan_nama || 'Mohamad Marzuqi'),
+        H(Text, { style: styles.signatureJabatan }, c.penandatangan_jabatan || 'Directeur')
+      ),
+      H(View, { style: styles.signatureBox },
+        H(Text, { style: styles.signatureTitle }, 'Diterima Oleh,'),
+        H(Text, { style: styles.signatureCompany }, data.customerNama),
+        H(View, { style: styles.signatureWrap }),
+        H(Text, { style: styles.signatureName }, '..................................................'),
+        H(Text, { style: styles.signatureJabatan }, '')
+      )
+    ),
+  )
+
+  return H(Document, null,
+    ...Array.from({ length: totalPages }, (_, pageIdx) => {
+      const isLastPage = pageIdx === totalPages - 1
+      const startIdx = pageIdx * ROWS_PER_PAGE
+      const pageItems = data.items.slice(startIdx, startIdx + ROWS_PER_PAGE)
+      const pageNumber = pageIdx + 1
+
+      return H(Page, { key: pageIdx, size: 'A4', style: styles.page },
+        headerView,
 
         H(View, { style: styles.table },
-          H(View, { style: styles.tableHeader },
-            v(H(Text, { style: styles.tableHeaderCell }, 'No'), { width: 25, padding: 4, borderRightWidth: 1, borderRightColor: '#000', ...COL_BORDER }),
-            v(H(Text, { style: styles.tableHeaderCell }, 'Code'), { width: 90, padding: 4, borderRightWidth: 1, borderRightColor: '#000' }),
-            v(H(Text, { style: styles.tableHeaderCell }, 'Item Description'), { flex: 1, padding: 4, borderRightWidth: 1, borderRightColor: '#000' }),
-            v(H(Text, { style: styles.tableHeaderCell }, 'Unit'), { width: 50, padding: 4, borderRightWidth: 1, borderRightColor: '#000' }),
-            v(H(Text, { style: styles.tableHeaderCell }, 'Qty'), { width: 40, padding: 4, borderRightWidth: 1, borderRightColor: '#000' }),
-            v(H(Text, { style: styles.tableHeaderCell }, 'Keterangan'), { width: 100, padding: 4, ...ROW_BORDER })
-          ),
-        ),
-      ),
-
-      ...data.items.map((item, i) => {
-        const v = (child: any, style: any) => H(View, { style: { justifyContent: 'center', ...style } }, child)
-        return H(View, { key: i, style: styles.tableRow },
-          v(H(Text, { style: { fontSize: 9, textAlign: 'center' } }, String(i + 1)), { width: 25, padding: 4, borderRightWidth: 1, borderRightColor: '#000', ...COL_BORDER }),
-          v(H(Text, { style: { fontSize: 9, textAlign: 'center' } }, item.kode), { width: 90, padding: 4, borderRightWidth: 1, borderRightColor: '#000' }),
-          v(H(Text, { style: { fontSize: 9 } }, item.nama), { flex: 1, padding: 4, borderRightWidth: 1, borderRightColor: '#000' }),
-          v(H(Text, { style: { fontSize: 9, textAlign: 'center' } }, item.satuan), { width: 50, padding: 4, borderRightWidth: 1, borderRightColor: '#000' }),
-          v(H(Text, { style: { fontSize: 9, textAlign: 'center' } }, String(item.jumlah)), { width: 40, padding: 4, borderRightWidth: 1, borderRightColor: '#000' }),
-          v(H(Text, { style: { fontSize: 9 } }, item.keterangan || ''), { width: 100, padding: 4, textAlign: 'left', ...ROW_BORDER }),
-        )
-      }),
-
-      H(View, { wrap: false },
-        H(View, { style: styles.infoSection },
-          H(View, { style: styles.infoRow },
-            H(Text, { style: styles.infoLabel }, 'Kendaraan'),
-            H(Text, { style: { width: 10 } }, ':'),
-            H(Text, { style: styles.infoValue }, data.kendaraanNama || '.....................................................')
-          ),
-          H(View, { style: styles.infoRow },
-            H(Text, { style: styles.infoLabel }, 'No. Polisi'),
-            H(Text, { style: { width: 10 } }, ':'),
-            H(Text, { style: styles.infoValue }, data.kendaraanNoPolisi || '.....................................................')
-          ),
+          H(View, { style: styles.tableHeader }, ...tableHeaderRow),
+          ...pageItems.map((item, i) => {
+            const itemNum = startIdx + i + 1
+            return H(View, { key: i, style: styles.tableRow },
+              v(H(Text, { style: { fontSize: 9, textAlign: 'center' } }, String(itemNum)), { width: 25, padding: 4, borderRightWidth: 1, borderRightColor: '#000', ...COL_BORDER }),
+              v(H(Text, { style: { fontSize: 9, textAlign: 'center' } }, item.kode), { width: 90, padding: 4, borderRightWidth: 1, borderRightColor: '#000' }),
+              v(H(Text, { style: { fontSize: 9 } }, item.nama), { flex: 1, padding: 4, borderRightWidth: 1, borderRightColor: '#000' }),
+              v(H(Text, { style: { fontSize: 9, textAlign: 'center' } }, item.satuan), { width: 50, padding: 4, borderRightWidth: 1, borderRightColor: '#000' }),
+              v(H(Text, { style: { fontSize: 9, textAlign: 'center' } }, String(item.jumlah)), { width: 40, padding: 4, borderRightWidth: 1, borderRightColor: '#000' }),
+              v(H(Text, { style: { fontSize: 9 } }, item.keterangan || ''), { width: 100, padding: 4, textAlign: 'left', ...ROW_BORDER }),
+            )
+          }),
         ),
 
-        H(Text, { style: styles.penutupText }, 'Demikian yang kita sampaikan atas kerjasamanya kami ucapkan terima kasih.'),
+        isLastPage ? signatureBlock : null,
 
-        H(View, { style: styles.signatureSection },
-          H(View, { style: styles.signatureBox },
-            H(Text, { style: styles.signatureTitle }, 'Yang Menyerahkan,'),
-            H(Text, { style: styles.signatureCompany }, c.company_nama || 'PT. RIZQI RIDHO ILAHI'),
-            H(View, { style: styles.signatureWrap },
-              c.tanda_tangan_stempel_url
-                ? H(Image, { src: c.tanda_tangan_stempel_url, style: { height: 100, objectFit: 'contain' } })
-                : null
-            ),
-            H(Text, { style: styles.signatureName }, c.penandatangan_nama || 'Mohamad Marzuqi'),
-            H(Text, { style: styles.signatureJabatan }, c.penandatangan_jabatan || 'Direktur')
-          ),
-          H(View, { style: styles.signatureBox },
-            H(Text, { style: styles.signatureTitle }, 'Diterima Oleh,'),
-            H(Text, { style: styles.signatureCompany }, data.customerNama),
-            H(View, { style: styles.signatureWrap }),
-            H(Text, { style: styles.signatureName }, '..................................................'),
-            H(Text, { style: styles.signatureJabatan }, '')
-          )
-        ),
-      ),
-
-      H(View, { style: styles.footer },
-        H(Text, { style: styles.footerText }, c.company_alamat || 'Jerukwangi - Bangsri, Jepara'),
-        H(Text, { style: styles.footerText },
-          (c.company_no_hp || '+6281 2607 5500') + ', ' + (c.company_email || 'mazzjoeq@gmail.com')
-        )
-      ),
-      H(Text, { style: styles.pageNum, render: ({ pageNumber, totalPages }: { pageNumber: number; totalPages: number }) => `Page ${pageNumber} of ${totalPages}` })
-    )
+        footerView,
+        H(Text, { style: styles.pageNum }, `Page ${pageNumber} of ${totalPages}`)
+      )
+    })
   )
 }
