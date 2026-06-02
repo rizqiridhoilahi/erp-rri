@@ -29,22 +29,50 @@ const BLUE = '#0000FF'
 
 const styles = StyleSheet.create({
   page: {
-    padding: '10mm',
+    padding: '40 50',
     fontFamily: 'Arial',
     fontSize: 10,
+    flexDirection: 'column',
   },
-  outerBorder: {
-    borderWidth: 3,
-    borderColor: BLUE,
-    padding: 3,
-    height: '50%',
+  // --- Header ---
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
+    marginBottom: 6,
   },
-  innerBorder: {
-    borderWidth: 1,
-    borderColor: BLUE,
-    padding: '6mm 6mm 8mm',
+  logoBox: {
+    width: 80,
+    height: 80,
+    backgroundColor: '#1E3A5F',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  logoText: {
+    color: '#fff',
+    fontSize: 28,
+    fontWeight: 'bold',
+  },
+  headerRight: {
+    alignItems: 'flex-end',
+  },
+  companyName: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 4,
+    color: '#0000FF',
+    textDecoration: 'underline',
+  },
+  companyLine: {
+    fontSize: 13,
+    fontWeight: 'bold',
+    marginBottom: 2,
+  },
+  // --- Content ---
+  contentWrap: {
     flex: 1,
     flexDirection: 'column',
+    padding: '6mm 6mm 8mm',
   },
   titleSection: {
     textAlign: 'center',
@@ -100,12 +128,7 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: 'bold',
   },
-  terbilangBox: {
-    backgroundColor: '#E5E7EB',
-    borderWidth: 1,
-    borderColor: '#9CA3AF',
-    padding: '4pt 4pt 16pt',
-    justifyContent: 'center',
+  terbilangText: {
     fontStyle: 'italic',
     fontWeight: 'bold',
     fontSize: 10,
@@ -115,8 +138,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-end',
-    marginTop: 'auto',
-    paddingTop: 10,
+    marginTop: 10,
   },
   amountBlueBox: {
     backgroundColor: BLUE,
@@ -155,6 +177,17 @@ const styles = StyleSheet.create({
     fontSize: 11,
     marginTop: 2,
   },
+  // --- Footer ---
+  footer: {
+    borderTopWidth: 1.5,
+    borderTopColor: '#000',
+    paddingTop: 6,
+    alignItems: 'center',
+    marginTop: 6,
+  },
+  footerText: {
+    fontSize: 10,
+  },
 })
 
 interface KwitansiPDFData {
@@ -170,6 +203,11 @@ interface KwitansiPDFData {
   companyNama: string
   penandatanganNama: string
   penandatanganJabatan: string
+  companyLogoUrl: string | null
+  companyBidangUsaha: string | null
+  companyAlamat: string | null
+  companyNoHp: string | null
+  companyEmail: string | null
 }
 
 function FormRow(label: string, labelSub: string | undefined, valueEl: ReactElement | null): ReactElement {
@@ -199,74 +237,105 @@ function formatRp(n: number): string {
 
 export function KwitansiPDF({ data }: { data: KwitansiPDFData }): ReactElement {
   const showRef = data.refType && data.refNomor
+
+  // --- Header ---
+  const bidangUsaha = data.companyBidangUsaha || 'Furniture, Welding, General Trading, Services'
+  const bidangLines = bidangUsaha.includes('\n')
+    ? bidangUsaha.split('\n').map(s => s.trim()).filter(Boolean)
+    : bidangUsaha.split(',').map(s => s.trim()).filter(Boolean)
+
+  const headerSection = createEl('VIEW', { style: styles.header },
+    data.companyLogoUrl
+      ? createEl('IMAGE', { src: data.companyLogoUrl, style: { width: 80, height: 80 } })
+      : createEl('VIEW', { style: styles.logoBox },
+          createEl('TEXT', { style: styles.logoText }, 'R')
+        ),
+    createEl('VIEW', { style: styles.headerRight },
+      createEl('TEXT', { style: styles.companyName }, data.companyNama),
+      ...bidangLines.map((line) =>
+        createEl('TEXT', { style: styles.companyLine }, line)
+      ),
+    ),
+  )
+
+  // Double border line (from header style — same as quotation/invoice)
+  const doubleBorder = createEl('VIEW', null,
+    createEl('VIEW', { style: { borderBottomWidth: 2, borderBottomColor: '#000', marginTop: 3 } }),
+    createEl('VIEW', { style: { height: 3 } }),
+    createEl('VIEW', { style: { borderBottomWidth: 0.5, borderBottomColor: '#000' } }),
+  )
+
+  // --- Footer ---
+  const footerSection = createEl('VIEW', { style: styles.footer },
+    createEl('TEXT', { style: styles.footerText }, data.companyAlamat || 'Jerukwangi - Bangsri, Jepara'),
+    createEl('TEXT', { style: styles.footerText },
+      (data.companyNoHp || '+6281 2607 5500') + ', ' + (data.companyEmail || 'mazzjoeq@gmail.com')
+    ),
+  )
+
   return createEl(
     'DOCUMENT',
     null,
     createEl(
       'PAGE',
       { size: 'A4', style: styles.page },
+      headerSection,
+      doubleBorder,
       createEl(
         'VIEW',
-        { style: styles.outerBorder },
+        { style: styles.contentWrap },
         createEl(
           'VIEW',
-          { style: styles.innerBorder },
-          createEl(
-            'VIEW',
-            { style: styles.titleSection },
-            createEl('TEXT', { style: styles.titleText },
-              'KWITANSI / ',
-              createEl('TEXT', { style: { fontStyle: 'italic' } }, 'RECEIPT'),
-            ),
-            createEl('TEXT', { style: styles.titleNomor }, `No : ${data.nomor}`),
+          { style: styles.titleSection },
+          createEl('TEXT', { style: styles.titleText },
+            'KWITANSI / ',
+            createEl('TEXT', { style: { fontStyle: 'italic' } }, 'RECEIPT'),
           ),
-          createEl(
-            'VIEW',
-            { style: styles.formTable },
-            FormRow('Telah terima dari', 'Received from',
-              createEl('TEXT', { style: styles.formValueText }, data.customerNama),
-            ),
+          createEl('TEXT', { style: styles.titleNomor }, `No : ${data.nomor}`),
+        ),
+        createEl(
+          'VIEW',
+          { style: styles.formTable },
+          FormRow('Telah terima dari', 'Received from',
+            createEl('TEXT', { style: styles.formValueText }, data.customerNama),
+          ),
             FormRow('Sejumlah uang', 'Amount received',
-              createEl(
-                'VIEW',
-                { style: styles.terbilangBox },
-                createEl('TEXT', null, `# ${data.terbilangStr} #`),
-              ),
+              createEl('TEXT', { style: styles.terbilangText }, data.terbilangStr),
             ),
-            FormRow('Untuk pembayaran', 'In payment of',
-              createEl('TEXT', { style: styles.formValueText }, data.keterangan || 'Pembelian Barang'),
-            ),
-            showRef ? FormRow('', undefined,
-              createEl('TEXT', { style: { ...styles.formValueText, fontSize: 10 } },
-                `No. Ref. ${data.refType} : ${data.refNomor}`
-              ),
-            ) : null,
-            FormRow('', undefined,
-              createEl('TEXT', { style: { ...styles.formValueText, fontSize: 10 } },
-                `No. Invoice : ${data.invoiceNomor}`
-              ),
-            ),
+          FormRow('Untuk pembayaran', 'In payment of',
+            createEl('TEXT', { style: styles.formValueText }, data.keterangan || 'Pembelian Barang'),
           ),
-          createEl(
-            'VIEW',
-            { style: styles.bottomSection },
-            createEl(
-              'VIEW',
-              { style: styles.amountBlueBox },
-              createEl('TEXT', { style: styles.amountBlueText }, formatRp(data.total)),
+          showRef ? FormRow('', undefined,
+            createEl('TEXT', { style: { ...styles.formValueText, fontSize: 10 } },
+              `No. Ref. ${data.refType} : ${data.refNomor}`
             ),
-            createEl(
-              'VIEW',
-              { style: styles.signatureBlock },
-              createEl('TEXT', { style: styles.signatureDate }, data.tanggal),
-              createEl('TEXT', { style: styles.signatureCompany }, data.companyNama),
-              createEl('VIEW', { style: styles.signatureSpace }),
-              createEl('TEXT', { style: styles.signatureName }, data.penandatanganNama),
-              createEl('TEXT', { style: styles.signatureTitle }, data.penandatanganJabatan),
+          ) : null,
+          FormRow('', undefined,
+            createEl('TEXT', { style: { ...styles.formValueText, fontSize: 10 } },
+              `No. Invoice : ${data.invoiceNomor}`
             ),
           ),
         ),
+        createEl(
+          'VIEW',
+          { style: styles.bottomSection },
+          createEl(
+            'VIEW',
+            { style: styles.amountBlueBox },
+            createEl('TEXT', { style: styles.amountBlueText }, formatRp(data.total)),
+          ),
+          createEl(
+            'VIEW',
+            { style: styles.signatureBlock },
+            createEl('TEXT', { style: styles.signatureDate }, data.tanggal),
+            createEl('TEXT', { style: styles.signatureCompany }, data.companyNama),
+            createEl('VIEW', { style: styles.signatureSpace }),
+            createEl('TEXT', { style: styles.signatureName }, data.penandatanganNama),
+            createEl('TEXT', { style: styles.signatureTitle }, data.penandatanganJabatan),
+          ),
+        ),
       ),
+      footerSection,
     ),
   )
 }

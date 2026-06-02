@@ -9,6 +9,8 @@ import { terbilang } from '@/lib/utils/terbilang'
 const COMPANY_KEYS = [
   'company_nama',
   'penandatangan_nama', 'penandatangan_jabatan',
+  'company_logo_url', 'company_bidang_usaha',
+  'company_alamat', 'company_no_hp', 'company_email',
 ] as const
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -28,7 +30,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       customer!customer_id(nama),
       sales_order!sales_order_id(
         nomor,
-        di!fk_sales_order_di(nomor),
+        di!fk_sales_order_di(nomor, nomor_di_customer),
         customer_po!fk_sales_order_customer_po(nomor)
       )`)
     .eq('id', invoiceId).single()
@@ -61,12 +63,12 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
   const so = inv?.sales_order as {
     nomor: string
-    di?: { nomor: string } | null
+    di?: { nomor: string; nomor_di_customer: string | null } | null
     customer_po?: { nomor: string } | null
   } | null
 
   const refType = so?.di ? 'DI' as const : so?.customer_po ? 'PO' as const : null
-  const refNomor = so?.di?.nomor ?? so?.customer_po?.nomor ?? null
+  const refNomor = so?.di?.nomor_di_customer ?? so?.di?.nomor ?? so?.customer_po?.nomor ?? null
 
   const pdfData = {
     nomor: kwt.nomor,
@@ -83,6 +85,11 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     companyNama: company.company_nama ?? 'PT. RIZQI RIDHO ILAHI',
     penandatanganNama: company.penandatangan_nama ?? 'Mohamad Marzuqi',
     penandatanganJabatan: company.penandatangan_jabatan ?? 'Direktur',
+    companyLogoUrl: company.company_logo_url ?? null,
+    companyBidangUsaha: company.company_bidang_usaha ?? null,
+    companyAlamat: company.company_alamat ?? null,
+    companyNoHp: company.company_no_hp ?? null,
+    companyEmail: company.company_email ?? null,
   }
 
   try {
