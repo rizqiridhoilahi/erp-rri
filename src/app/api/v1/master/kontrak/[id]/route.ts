@@ -40,7 +40,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
   const today = new Date().toISOString().split('T')[0]
   const kontrak = {
     ...data,
-    is_active: data.is_active && (!data.tanggal_selesai || data.tanggal_selesai >= today),
+    is_active: !data.tanggal_selesai || data.tanggal_selesai >= today,
   }
   const { data: items } = await supabaseAdmin.from('kontrak_item').select('*').eq('kontrak_id', id)
   return NextResponse.json({ data: { ...kontrak, items: items ?? [] } })

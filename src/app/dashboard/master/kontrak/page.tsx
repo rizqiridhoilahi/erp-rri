@@ -76,7 +76,7 @@ export default function KontrakPage() {
 
   const today = new Date().toISOString().split('T')[0]
   const statusBadge = (item: Kontrak) => {
-    const active = item.is_active && (!item.tanggal_selesai || item.tanggal_selesai >= today)
+    const active = !item.tanggal_selesai || item.tanggal_selesai >= today
     return (
       <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
         active ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"
