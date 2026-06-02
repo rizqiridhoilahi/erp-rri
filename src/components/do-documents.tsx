@@ -1,7 +1,7 @@
 "use client"
 import { useState, useEffect } from "react"
 import { apiFetch } from "@/lib/api/client"
-import { FileUpload, type DocumentFile } from "@/components/file-upload"
+import { CompactFileUpload, type DocumentFile } from "@/components/compact-file-upload"
 import { toast } from "sonner"
 
 export function DoDocuments({ doId }: { doId: string }) {
@@ -44,7 +44,7 @@ export function DoDocuments({ doId }: { doId: string }) {
   if (loading) return null
 
   return (
-    <FileUpload
+    <CompactFileUpload
       documents={documents}
       onUpload={handleUpload}
       onDelete={handleDelete}

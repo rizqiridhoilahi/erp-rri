@@ -10,7 +10,7 @@ import { Loader2, Pencil, Trash2, ImageIcon, FileText } from "lucide-react"
 import { PageHeader } from "@/components/page-header"
 import { EmptyState } from "@/components/empty-state"
 import { DeleteConfirmationDialog } from "@/components/delete-confirmation-dialog"
-import { FileUpload, type DocumentFile } from "@/components/file-upload"
+import { CompactFileUpload, type DocumentFile } from "@/components/compact-file-upload"
 import {
   Table, TableHeader, TableBody, TableRow, TableHead, TableCell,
 } from "@/components/ui/table"
@@ -239,7 +239,7 @@ export default function RfqCustomerDetailPage() {
       <Card>
         <CardContent className="pt-6">
           <h3 className="text-lg font-semibold mb-4">Lampiran</h3>
-          <FileUpload
+          <CompactFileUpload
             documents={documents}
             onUpload={handleUpload}
             onDelete={handleDeleteDocument}

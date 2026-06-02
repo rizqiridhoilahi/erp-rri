@@ -13,7 +13,7 @@ import { DatePicker } from "@/components/ui/date-picker"
 import { ArrowLeft, FileText, Pencil, FileSpreadsheet, Wallet, Receipt, Loader2 } from "lucide-react"
 import { InvoicePdfActions } from "@/components/invoice-pdf-actions"
 import { TandaTerimaPdfActions } from "@/components/tanda-terima-pdf-actions"
-import { FileUpload, type DocumentFile } from "@/components/file-upload"
+import { CompactFileUpload, type DocumentFile } from "@/components/compact-file-upload"
 import { toast } from "sonner"
 
 const payStatus: Record<string, { label: string; v: "secondary" | "warning" | "success" | "destructive" | "outline" }> = {
@@ -380,7 +380,7 @@ export default function InvoiceDetailPage() {
             </div>
             <div>
               <p className="text-sm text-muted-foreground mb-2">Dokumen GRN</p>
-              <FileUpload
+              <CompactFileUpload
                 documents={documents.filter(d => d.file_name?.includes('GRN') || documents.length === 0)}
                 onUpload={handleUpload}
                 onDelete={handleDeleteDocument}
@@ -541,7 +541,7 @@ export default function InvoiceDetailPage() {
       <Card>
         <CardContent className="pt-6">
           <h3 className="text-lg font-semibold mb-4">Lampiran</h3>
-          <FileUpload
+          <CompactFileUpload
             documents={documents}
             onUpload={handleUpload}
             onDelete={handleDeleteDocument}

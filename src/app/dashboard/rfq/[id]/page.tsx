@@ -13,7 +13,7 @@ import { PageHeader } from "@/components/page-header"
 import { EmptyState } from "@/components/empty-state"
 import { DeleteConfirmationDialog } from "@/components/delete-confirmation-dialog"
 import { ActivityTimeline } from "@/components/activity-timeline"
-import { FileUpload, type DocumentFile } from "@/components/file-upload"
+import { CompactFileUpload, type DocumentFile } from "@/components/compact-file-upload"
 import {
   Table, TableHeader, TableBody, TableRow, TableHead, TableCell,
 } from "@/components/ui/table"
@@ -288,7 +288,7 @@ export default function RfqDetailPage() {
       <Card>
         <CardContent className="pt-6">
           <h3 className="text-lg font-semibold mb-4">Lampiran</h3>
-          <FileUpload
+          <CompactFileUpload
             documents={documents}
             onUpload={handleUpload}
             onDelete={handleDeleteDocument}

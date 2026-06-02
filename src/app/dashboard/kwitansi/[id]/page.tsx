@@ -8,6 +8,8 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
 import { ArrowLeft, Pencil, Download, FileText, Loader2 } from 'lucide-react'
+import { CompactFileUpload, type DocumentFile } from "@/components/compact-file-upload"
+import { toast } from "sonner"
 
 const statusMap: Record<string, { label: string; variant: 'secondary' | 'success' | 'outline' }> = {
   draft: { label: 'Draft', variant: 'secondary' },
@@ -31,6 +33,8 @@ export default function KwitansiDetailPage({ params }: { params: Promise<{ id: s
     }>
   } | null>(null)
   const [loading, setLoading] = useState(true)
+  const [documents, setDocuments] = useState<DocumentFile[]>([])
+  const [uploading, setUploading] = useState(false)
 
   useEffect(() => {
     params.then(p => setId(p.id))
@@ -41,7 +45,39 @@ export default function KwitansiDetailPage({ params }: { params: Promise<{ id: s
     apiFetch<typeof data>(`/api/v1/kwitansi/${id}`)
       .then(r => { setData(r.data); setLoading(false) })
       .catch(() => setLoading(false))
+
+    apiFetch<DocumentFile[]>(`/api/v1/kwitansi/${id}/documents`)
+      .then((res) => setDocuments(res.data ?? []))
+      .catch(() => {})
   }, [id])
+
+  const handleUpload = async (file: File) => {
+    if (!id) return
+    setUploading(true)
+    try {
+      const formData = new FormData()
+      formData.append("file", file)
+      const { apiFetchFormData } = await import("@/lib/api/client")
+      const r = await apiFetchFormData(`/api/v1/kwitansi/${id}/documents`, formData)
+      setDocuments((prev) => [r.data as DocumentFile, ...prev].filter(Boolean))
+      toast.success("File berhasil diupload")
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Gagal upload file")
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  const handleDeleteDocument = async (docId: string) => {
+    if (!id) return
+    try {
+      await apiFetch(`/api/v1/kwitansi/${id}/documents?docId=${docId}`, { method: "DELETE" })
+      setDocuments((prev) => prev.filter((d) => d.id !== docId))
+      toast.success("File berhasil dihapus")
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Gagal hapus file")
+    }
+  }
 
   if (loading) {
     return <div className="flex items-center justify-center py-20 text-muted-foreground"><Loader2 className="h-6 w-6 animate-spin mr-2" />Memuat...</div>
@@ -138,6 +174,18 @@ export default function KwitansiDetailPage({ params }: { params: Promise<{ id: s
           </CardContent>
         </Card>
       )}
+
+      <Card>
+        <CardContent className="pt-6">
+          <h3 className="text-lg font-semibold mb-4">Lampiran</h3>
+          <CompactFileUpload
+            documents={documents}
+            onUpload={handleUpload}
+            onDelete={handleDeleteDocument}
+            uploading={uploading}
+          />
+        </CardContent>
+      </Card>
     </div>
   )
 }

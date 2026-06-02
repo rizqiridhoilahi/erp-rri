@@ -1,16 +1,16 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect } from "react"
 import { useRouter, usePathname } from "next/navigation"
 import { apiFetch } from "@/lib/api/client"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Loader2, Upload, FileText, ExternalLink, Trash2, Plus } from "lucide-react"
+import { CompactFileUpload } from "@/components/compact-file-upload"
+import { Loader2, Plus } from "lucide-react"
 import { BreadcrumbNav, BreadcrumbItem } from "@/components/breadcrumb-nav"
 import { PageHeader } from "@/components/page-header"
 import { EmptyState } from "@/components/empty-state"
 import { toast } from "sonner"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
 
@@ -65,12 +65,9 @@ export default function DetailKontrakPage() {
   const [loading, setLoading] = useState(true)
   const [documents, setDocuments] = useState<DocumentFile[]>([])
   const [uploading, setUploading] = useState(false)
-  const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const handleFileInput = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file || !id) return
-    if (e.target) e.target.value = ""
+  const handleUpload = async (file: File) => {
+    if (!id) return
     setUploading(true)
     try {
       const formData = new FormData()
@@ -168,41 +165,14 @@ export default function DetailKontrakPage() {
         }
       />
 
-      <div className="mt-6 flex items-center gap-3 rounded-lg border bg-card p-3">
-        <span className="text-sm font-medium shrink-0">Dokumen Kontrak:</span>
-        <div className="flex flex-wrap items-center gap-1.5 min-w-0 flex-1 min-h-[36px]">
-          {documents.length === 0 && !uploading && (
-            <span className="text-xs text-muted-foreground">Belum ada file</span>
-          )}
-          {documents.map((doc) => (
-            <span key={doc.id} className="inline-flex items-center gap-1.5 rounded-md border bg-background px-2.5 py-1.5 text-xs max-w-[200px] group">
-              <FileText className="h-4 w-4 shrink-0 text-primary" />
-              <span className="truncate text-primary">{doc.file_name}</span>
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <a href={doc.file_url} target="_blank" rel="noopener noreferrer" className="shrink-0 text-green-600 hover:text-green-700 p-0.5">
-                      <ExternalLink className="h-4 w-4" />
-                    </a>
-                  </TooltipTrigger>
-                  <TooltipContent>Buka file</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-              <button onClick={() => handleDeleteDocument(doc.id)} className="shrink-0 text-red-600 hover:text-red-700 p-0.5">
-                <Trash2 className="h-4 w-4" />
-              </button>
-            </span>
-          ))}
-          {uploading && (
-            <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-              <Loader2 className="h-3 w-3 animate-spin" /> Mengupload...
-            </span>
-          )}
-        </div>
-        <input ref={fileInputRef} type="file" accept=".pdf,.jpg,.jpeg,.png,.webp" className="hidden" onChange={handleFileInput} />
-        <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} className="shrink-0">
-          <Upload className="h-3 w-3 mr-1" /> Upload
-        </Button>
+      <div className="mt-6">
+        <CompactFileUpload
+          documents={documents}
+          onUpload={handleUpload}
+          onDelete={handleDeleteDocument}
+          uploading={uploading}
+          label="Dokumen Kontrak:"
+        />
       </div>
 
       <Card className="mt-6">

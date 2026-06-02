@@ -278,6 +278,59 @@ Setiap modul transaksi memiliki fitur upload dokumen lampiran (PDF/gambar) denga
 
 **Temporary upload:** Sebelum record dibuat (`/api/v1/rfq-customer/upload-temp`), file disimpan sementara di `dokumen/temp/rfq-customer/{type}/{timestamp}-{file.name}`. Setelah record dibuat, file permanen diupload via endpoint dokumen reguler.
 
+### 5.9 Standard UI Component: CompactFileUpload
+
+Semua modul wajib menggunakan komponen **`CompactFileUpload`** (`@/components/compact-file-upload.tsx`) untuk upload dokumen lampiran — menggantikan `FileUpload` (`@/components/file-upload.tsx`) yang bersifat drag-drop vertikal.
+
+**Desain:** Horizontal compact layout — flex row dengan label, file chips di tengah (`w-[300pt]`), dan tombol Upload solid hijau di kanan. Cocok untuk form detail page yang padat.
+
+**Props:**
+```tsx
+export interface DocumentFile {
+  id: string
+  file_name: string
+  file_url: string
+  drive_file_id?: string | null
+  uploaded_at: string
+}
+
+interface CompactFileUploadProps {
+  documents: DocumentFile[]
+  onUpload: (file: File) => void
+  onDelete: (docId: string) => Promise<void>
+  uploading?: boolean
+  accept?: string
+  label?: string
+}
+```
+
+**Styling:**
+- Container: `flex items-center rounded-lg border bg-card px-4 w-full py-2`
+- Chips container: `flex flex-wrap items-center gap-1.5 w-[300pt]`
+- Each chip: `inline-flex items-center gap-1.5 rounded-md border border-primary bg-background px-2.5 py-2 text-xs w-[1250px]`
+- File name span: `flex-1 truncate` — mendorong icon link & delete ke kanan
+- Button: `shrink-0 ml-auto bg-success text-white hover:bg-[#16A34A]`
+- Icon link: `text-green-600 hover:text-green-700`
+- Icon delete: `text-red-600 hover:text-red-700`
+
+**Status:** ✅ All modules migrated to `CompactFileUpload`.
+
+| Modul | Status |
+|-------|--------|
+| Kontrak | ✅ Migrated |
+| RFQ Customer | ✅ Migrated |
+| RFQ Supplier | ✅ Migrated |
+| Quotation | ✅ Migrated |
+| Customer PO | ✅ Migrated |
+| DI | ✅ Migrated |
+| Sales Order | ✅ Migrated |
+| Delivery Order (via DoDocuments) | ✅ Migrated |
+| Invoice | ✅ Migrated |
+| Retur Penjualan | ✅ Migrated |
+| Retur Pembelian | ✅ Migrated |
+| GRN | ✅ Migrated |
+| Kwitansi | ✅ Migrated |
+
 ## 6. Scalability & Arsitektur
 
 ### 6.1 Background Jobs

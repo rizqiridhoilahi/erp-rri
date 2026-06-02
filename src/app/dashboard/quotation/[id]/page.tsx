@@ -18,6 +18,7 @@ import { formatDateTime } from "@/lib/utils/date"
 import {
   Table, TableHeader, TableBody, TableRow, TableHead, TableCell,
 } from "@/components/ui/table"
+import { CompactFileUpload, type DocumentFile } from "@/components/compact-file-upload"
 
 const statusLabel: Record<string, { label: string; variant: "secondary" | "warning" | "success" | "destructive" | "outline" }> = {
   draft: { label: "Draft", variant: "secondary" },
@@ -93,6 +94,8 @@ export default function QuotationDetailPage() {
   const [negoLoading, setNegoLoading] = useState(true)
   const [poList, setPoList] = useState<Array<{ id: string; nomor: string; status: string; tanggal: string }>>([])
   const [poLoading, setPoLoading] = useState(true)
+  const [documents, setDocuments] = useState<DocumentFile[]>([])
+  const [uploading, setUploading] = useState(false)
 
   useEffect(() => {
     if (!id) return
@@ -115,6 +118,10 @@ export default function QuotationDetailPage() {
         setPoLoading(false)
       })
       .catch(() => setPoLoading(false))
+
+    apiFetch<DocumentFile[]>(`/api/v1/quotation/${id}/documents`)
+      .then((res) => setDocuments(res.data ?? []))
+      .catch(() => {})
   }, [id])
 
   const handleStatusChange = async (newStatus: string) => {
@@ -184,6 +191,34 @@ export default function QuotationDetailPage() {
       toast.error(err instanceof Error ? err.message : 'Gagal download PDF')
     } finally {
       setDownloadLoading(false)
+    }
+  }
+
+  const handleUpload = async (file: File) => {
+    if (!id) return
+    setUploading(true)
+    try {
+      const formData = new FormData()
+      formData.append("file", file)
+      const { apiFetchFormData } = await import("@/lib/api/client")
+      const r = await apiFetchFormData(`/api/v1/quotation/${id}/documents`, formData)
+      setDocuments((prev) => [r.data as DocumentFile, ...prev].filter(Boolean))
+      toast.success("File berhasil diupload")
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Gagal upload file")
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  const handleDeleteDocument = async (docId: string) => {
+    if (!id) return
+    try {
+      await apiFetch(`/api/v1/quotation/${id}/documents?docId=${docId}`, { method: "DELETE" })
+      setDocuments((prev) => prev.filter((d) => d.id !== docId))
+      toast.success("File berhasil dihapus")
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Gagal hapus file")
     }
   }
 
@@ -465,6 +500,18 @@ export default function QuotationDetailPage() {
         <CardContent className="pt-6">
           <h3 className="text-lg font-semibold mb-4">Aktivitas</h3>
           <ActivityTimeline tableName="quotation" recordId={id!} />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardContent className="pt-6">
+          <h3 className="text-lg font-semibold mb-4">Lampiran</h3>
+          <CompactFileUpload
+            documents={documents}
+            onUpload={handleUpload}
+            onDelete={handleDeleteDocument}
+            uploading={uploading}
+          />
         </CardContent>
       </Card>
 

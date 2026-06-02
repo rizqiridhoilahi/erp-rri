@@ -9,6 +9,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
 import { ArrowLeft, FileText, ExternalLink, Loader2, ShoppingCart, ClipboardList, Truck, FileSearch, TrendingDown, CheckCircle2, AlertTriangle } from 'lucide-react'
 import { toast } from 'sonner'
+import { CompactFileUpload, type DocumentFile } from "@/components/compact-file-upload"
 
 const STATUS_MAP: Record<string, { label: string; v: 'secondary' | 'warning' | 'success' | 'outline' | 'destructive' }> = {
   draft: { label: 'Draft', v: 'secondary' },
@@ -74,6 +75,8 @@ export default function SalesOrderDetailPage() {
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
   const [fetchKey, setFetchKey] = useState(0)
+  const [documents, setDocuments] = useState<DocumentFile[]>([])
+  const [uploading, setUploading] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -92,6 +95,11 @@ export default function SalesOrderDetailPage() {
         toast.error('Gagal memuat data')
         router.push('/dashboard/sales-order')
       })
+
+    apiFetch<DocumentFile[]>(`/api/v1/sales-order/${id}/documents`)
+      .then((res) => { if (!cancelled) setDocuments(res.data ?? []) })
+      .catch(() => {})
+
     return () => { cancelled = true }
   }, [id, fetchKey])
 
@@ -132,6 +140,32 @@ export default function SalesOrderDetailPage() {
       toast.error(err instanceof Error ? err.message : 'Gagal update status')
     } finally {
       setActionLoading(null)
+    }
+  }
+
+  const handleUpload = async (file: File) => {
+    setUploading(true)
+    try {
+      const formData = new FormData()
+      formData.append("file", file)
+      const { apiFetchFormData } = await import("@/lib/api/client")
+      const r = await apiFetchFormData(`/api/v1/sales-order/${id}/documents`, formData)
+      setDocuments((prev) => [r.data as DocumentFile, ...prev].filter(Boolean))
+      toast.success("File berhasil diupload")
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Gagal upload file")
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  const handleDeleteDocument = async (docId: string) => {
+    try {
+      await apiFetch(`/api/v1/sales-order/${id}/documents?docId=${docId}`, { method: "DELETE" })
+      setDocuments((prev) => prev.filter((d) => d.id !== docId))
+      toast.success("File berhasil dihapus")
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Gagal hapus file")
     }
   }
 
@@ -509,6 +543,18 @@ export default function SalesOrderDetailPage() {
               </Link>
             </Button>
           </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardContent className="pt-6">
+          <h3 className="text-lg font-semibold mb-4">Lampiran</h3>
+          <CompactFileUpload
+            documents={documents}
+            onUpload={handleUpload}
+            onDelete={handleDeleteDocument}
+            uploading={uploading}
+          />
         </CardContent>
       </Card>
     </div>

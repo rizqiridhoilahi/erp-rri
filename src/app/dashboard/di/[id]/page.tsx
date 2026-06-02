@@ -9,7 +9,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
 import Link from "next/link"
 import { ArrowLeft, FileText, CheckCircle, Loader2, ExternalLink } from "lucide-react"
-import { FileUpload, type DocumentFile } from "@/components/file-upload"
+import { CompactFileUpload, type DocumentFile } from "@/components/compact-file-upload"
 import { toast } from "sonner"
 
 const s: Record<string, { label: string; v: "secondary" | "warning" | "success" | "outline" }> = {
@@ -238,7 +238,7 @@ export default function DiDetailPage() {
       <Card>
         <CardContent className="pt-6">
           <h3 className="text-lg font-semibold mb-4">Lampiran</h3>
-          <FileUpload
+          <CompactFileUpload
             documents={documents}
             onUpload={handleUpload}
             onDelete={handleDeleteDocument}
