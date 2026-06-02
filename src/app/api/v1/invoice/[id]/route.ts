@@ -68,9 +68,12 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
   if (body.items) {
     await supabaseAdmin.from('invoice_item').delete().eq('invoice_id', id)
     const now = new Date().toISOString()
-    const items = body.items.map((item: { barang_id: string; harga: number; jumlah: number; diskon?: number; ppn?: number; pph?: number; keterangan?: string }, idx: number) => ({
+    const items = body.items.map((item: { barang_id: string; harga: number; jumlah: number; diskon?: number; ppn?: number; pph?: number; keterangan?: string; nama_barang?: string; kode_barang?: string; satuan?: string }, idx: number) => ({
       invoice_id: id, barang_id: item.barang_id, harga: item.harga, jumlah: item.jumlah,
       diskon: item.diskon ?? 0, ppn: item.ppn ?? null, pph: item.pph ?? null,
+      nama_barang: item.nama_barang ?? null,
+      kode_barang: item.kode_barang ?? null,
+      satuan: item.satuan ?? null,
       keterangan: item.keterangan ?? null, urutan: idx + 1, created_at: now, updated_at: now,
     }))
     const { error: itemsError } = await supabaseAdmin.from('invoice_item').insert(items)

@@ -1,16 +1,17 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Eye, Download, Loader2 } from 'lucide-react'
-import { getAuthToken, apiFetch } from '@/lib/api/client'
+import { getAuthToken } from '@/lib/api/client'
 import { toast } from 'sonner'
 
 interface Props {
   invId: string
   nomor: string
+  totalItems: number
 }
 
 function getDistribution(total: number): { page: number; count: number }[] {
@@ -27,24 +28,11 @@ function getDistribution(total: number): { page: number; count: number }[] {
   return pages
 }
 
-export function InvoicePdfActions({ invId, nomor }: Props) {
+export function InvoicePdfActions({ invId, nomor, totalItems }: Props) {
   const [previewLoading, setPreviewLoading] = useState(false)
   const [downloadLoading, setDownloadLoading] = useState(false)
   const [open, setOpen] = useState(false)
-  const [itemsCount, setItemsCount] = useState<number | null>(null)
-  const [totalItems, setTotalItems] = useState(0)
-
-  useEffect(() => {
-    if (!open) return
-    apiFetch<{ items: unknown[] }>(`/api/v1/invoice/${invId}`).then(res => {
-      const n = res.data?.items?.length ?? 0
-      setTotalItems(n)
-      setItemsCount(n)
-    }).catch(() => {
-      setTotalItems(0)
-      setItemsCount(null)
-    })
-  }, [open, invId])
+  const [itemsCount, setItemsCount] = useState<number>(totalItems)
 
   const fetchPdfBlob = async (count?: number | null) => {
     const token = await getAuthToken()
@@ -92,7 +80,7 @@ export function InvoicePdfActions({ invId, nomor }: Props) {
     }
   }
 
-  const distribution = itemsCount != null ? getDistribution(itemsCount) : []
+  const distribution = itemsCount > 0 ? getDistribution(itemsCount) : []
 
   return (
     <div className="flex gap-2">
@@ -117,8 +105,8 @@ export function InvoicePdfActions({ invId, nomor }: Props) {
                 type="number"
                 min={1}
                 max={totalItems}
-                value={itemsCount ?? ''}
-                onChange={e => setItemsCount(e.target.value ? parseInt(e.target.value, 10) : null)}
+                value={itemsCount}
+                onChange={e => setItemsCount(e.target.value ? parseInt(e.target.value, 10) : totalItems)}
               />
               <p className="text-xs text-muted-foreground mt-1">Maksimal {totalItems} items</p>
             </div>

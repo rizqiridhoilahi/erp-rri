@@ -21,6 +21,9 @@ import { toast } from 'sonner'
 interface InvoiceItem {
   id: string
   barang: { nama: string; kode: string; satuan: string } | null
+  nama_barang: string | null
+  kode_barang: string | null
+  satuan: string | null
   harga: number
   jumlah: number
   diskon: number | null
@@ -91,7 +94,7 @@ export default function EditInvoicePage() {
         toast.error('Gagal memuat data invoice')
         router.push('/dashboard/invoice')
       })
-  }, [params.id, form, router])
+  }, [params.id])
 
   const onSubmit = async (data: FV) => {
     setSubmitting(true)

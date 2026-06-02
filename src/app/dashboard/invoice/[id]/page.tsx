@@ -218,7 +218,7 @@ export default function InvoiceDetailPage() {
           <div><h1 className="text-3xl font-heading font-bold">Detail Invoice</h1><p className="text-muted-foreground mt-1">{inv.nomor}</p></div>
         </div>
         <div className="flex gap-2 items-center">
-          <InvoicePdfActions invId={id!} nomor={inv.nomor} />
+                  <InvoicePdfActions invId={id!} nomor={inv.nomor} totalItems={items.length} />
           <TandaTerimaPdfActions invId={id!} nomor={inv.nomor} />
           <Button className="bg-primary text-primary-foreground hover:opacity-95" asChild>
             <a href={`/dashboard/invoice/${id}/edit`}>

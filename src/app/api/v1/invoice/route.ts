@@ -15,6 +15,9 @@ const itemSchema = z.object({
   ppn: z.coerce.number().optional(),
   pph: z.coerce.number().optional(),
   keterangan: z.string().optional(),
+  nama_barang: z.string().optional(),
+  kode_barang: z.string().optional(),
+  satuan: z.string().optional(),
 })
 
 const schema = z.object({
@@ -78,6 +81,9 @@ export async function POST(request: NextRequest) {
     return {
       invoice_id: inv.id, barang_id: item.barang_id, harga: item.harga,
       jumlah: item.jumlah, diskon: item.diskon ?? 0,
+      nama_barang: item.nama_barang ?? null,
+      kode_barang: item.kode_barang ?? null,
+      satuan: item.satuan ?? null,
       ppn: item.ppn ?? subtotal * ppnRate,
       pph: item.pph ?? (parsed.data.pph_rate ? subtotal * parsed.data.pph_rate : null),
       keterangan: item.keterangan ?? null,

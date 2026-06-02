@@ -133,7 +133,7 @@ const ppnRate = await getConfigNumber('ppn_rate', 0.11)
         }).select().single()
 
         if (!invErr && inv) {
-          const invItems = soItems.map((item: { barang_id: string; jumlah: number; harga_satuan: number; nama_barang?: string; kode_barang?: string; satuan?: string }) => {
+          const invItems = soItems.map((item: { barang_id: string; jumlah: number; harga_satuan: number; nama_barang?: string; kode_barang?: string; satuan?: string }, idx: number) => {
             const subtotal = item.harga_satuan * item.jumlah
             return {
               invoice_id: inv.id,
@@ -146,6 +146,7 @@ const ppnRate = await getConfigNumber('ppn_rate', 0.11)
               diskon: 0,
               ppn: subtotal * ppnRate,
               keterangan: null,
+              urutan: idx + 1,
               created_at: now,
               updated_at: now,
             }
