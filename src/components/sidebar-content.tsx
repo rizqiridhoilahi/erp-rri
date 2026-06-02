@@ -83,7 +83,6 @@ const menuItems: MenuItem[] = [
   { label: 'Finance', icon: Landmark, children: [
     { href: '/dashboard/invoice', label: 'Invoice', icon: ReceiptText },
     { href: '/dashboard/kwitansi', label: 'Kwitansi', icon: Receipt },
-    { href: '/dashboard/faktur-pajak', label: 'Faktur Pajak', icon: FileText },
     { href: '/dashboard/jurnal', label: 'Jurnal Umum', icon: BookOpenCheck },
   ]},
   { label: 'Laporan', icon: PieChart, children: [

@@ -5,15 +5,12 @@ import { verifyAuth } from '@/lib/api/auth'
 import { badRequest, internalError } from '@/lib/api/errors'
 import { generateDocumentNumber } from '@/lib/utils/document-number'
 import { generateInvoiceJournal } from '@/lib/auto-jurnal'
-import { getConfigNumber } from '@/lib/utils/config'
 
 const itemSchema = z.object({
   barang_id: z.string().min(1),
   harga: z.coerce.number().positive(),
   jumlah: z.coerce.number().int().positive(),
   diskon: z.coerce.number().optional(),
-  ppn: z.coerce.number().optional(),
-  pph: z.coerce.number().optional(),
   keterangan: z.string().optional(),
   nama_barang: z.string().optional(),
   kode_barang: z.string().optional(),
@@ -25,8 +22,6 @@ const schema = z.object({
   customer_id: z.string().min(1, 'Customer harus dipilih'),
   tanggal: z.string().min(1, 'Tanggal harus diisi'),
   top: z.string().min(1, 'TOP harus diisi'),
-  ppn_rate: z.coerce.number().optional(),
-  pph_rate: z.coerce.number().optional(),
   grn_customer_nomor: z.string().optional(),
   nomor_tanda_terima: z.string().optional(),
   items: z.array(itemSchema).min(1),
@@ -62,14 +57,13 @@ export async function POST(request: NextRequest) {
   const parsed = schema.safeParse(body)
   if (!parsed.success) return badRequest(parsed.error.issues.map(e => e.message).join(', '))
 
-  const ppnRate = parsed.data.ppn_rate ?? await getConfigNumber('ppn_rate', 0.11)
   const nomor = await generateDocumentNumber('INV')
   const now = new Date().toISOString()
 
   const { data: inv, error: invError } = await supabaseAdmin.from('invoice').insert({
     nomor, sales_order_id: parsed.data.sales_order_id, customer_id: parsed.data.customer_id,
-    tanggal: parsed.data.tanggal, top: parsed.data.top, ppn_rate: ppnRate,
-    pph_rate: parsed.data.pph_rate ?? null, status: 'draft',
+    tanggal: parsed.data.tanggal, top: parsed.data.top,
+    status: 'draft',
     grn_customer_nomor: parsed.data.grn_customer_nomor ?? null,
     nomor_tanda_terima: parsed.data.nomor_tanda_terima ?? null,
     created_at: now, updated_at: now,
@@ -77,15 +71,12 @@ export async function POST(request: NextRequest) {
   if (invError) return internalError(invError)
 
   const items = parsed.data.items.map((item, idx) => {
-    const subtotal = item.harga * item.jumlah - (item.diskon ?? 0)
     return {
       invoice_id: inv.id, barang_id: item.barang_id, harga: item.harga,
       jumlah: item.jumlah, diskon: item.diskon ?? 0,
       nama_barang: item.nama_barang ?? null,
       kode_barang: item.kode_barang ?? null,
       satuan: item.satuan ?? null,
-      ppn: item.ppn ?? subtotal * ppnRate,
-      pph: item.pph ?? (parsed.data.pph_rate ? subtotal * parsed.data.pph_rate : null),
       keterangan: item.keterangan ?? null,
       urutan: idx + 1,
       created_at: now, updated_at: now,

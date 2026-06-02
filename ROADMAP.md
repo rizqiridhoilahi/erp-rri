@@ -241,12 +241,30 @@ DI diterbitkan (draft)
 | KW-6 | **Confirmation dialog** — konfirmasi sebelum ubah status ke completed | ✅ Done | `kwitansi/[id]/page.tsx` |
 | KW-7 | **PDF — redesign sesuai format contoh** — desain klasik dengan border biru ganda, bilingual labels, terbilang, signature block, ref DI/PO, tinggi setengah A4 | ✅ Done | `lib/pdf/kwitansi.tsx`, `lib/utils/terbilang.ts`, `api/v1/kwitansi/[id]/pdf/route.ts` |
 
-### ✅ Done
+### 🔴 High Priority — Kwitansi Page Polish (from audit vs Invoice)
 
-| # | Task | Status |
-|---|------|--------|
-| K-1 | Kwitansi detail page | ✅ Done |
-| K-2 | Invoice → link ke Kwitansi | ✅ Done |
+| # | Task | Status | File |
+|---|------|--------|------|
+| K-8 | **Tampilkan customer info di list & detail** — join `invoice → customer`, tampilkan `customer.nama` di tabel list dan full customer card di detail (nama, kode, PIC) | 🔴 Pending | `page.tsx`, `[id]/page.tsx` |
+| K-9 | **Perbaiki edit page** — tambah edit tanggal, tampilkan items current, shadcn `<Select>` not raw `<select>`, navigasi balik ke detail page | 🔴 Pending | `[id]/edit/page.tsx` |
+
+### 🟡 Medium Priority
+
+| # | Task | Status | File |
+|---|------|--------|------|
+| K-10 | **Running total saat create** — tampilkan total pembayaran agregat dari item yang dipilih | 🟡 Pending | `tambah/page.tsx` |
+| K-11 | **Kolom total amount di list** — tampilkan nominal kwitansi di tabel list | 🟡 Pending | `page.tsx` |
+| K-12 | **Error state di detail page** — set error state variable, tampilkan error UI (bukan silent "not found") | 🟡 Pending | `[id]/page.tsx` |
+
+### 🟢 Low Priority
+
+| # | Task | Status | File |
+|---|------|--------|------|
+| K-13 | **shadcn Select di edit page** — ganti raw `<select>` dengan shadcn `<Select>` | 🟢 Pending | `[id]/edit/page.tsx` |
+| K-14 | **Loading skeleton di create** — skeleton loading saat inisialisasi form | 🟢 Pending | `tambah/page.tsx` |
+| K-15 | **Navigasi edit → detail** — cancel/success redirect ke detail page, bukan list | 🟢 Pending | `[id]/edit/page.tsx` |
+
+### ✅ Done
 
 ### ✅ Done — Invoice PDF Finalization
 

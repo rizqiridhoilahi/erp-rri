@@ -41,7 +41,7 @@ const qtnSchema = z.object({
   status: z.string().optional(),
   masa_berlaku: z.string().optional(),
   ppn_rate: z.coerce.number().nonnegative().default(0.11),
-  ppn_enabled: z.boolean().default(true),
+  ppn_enabled: z.boolean().default(false),
   keterangan: z.string().optional(),
   items: z.array(itemSchema).min(1),
 })

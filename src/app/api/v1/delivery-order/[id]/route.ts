@@ -4,7 +4,6 @@ import { verifyAuth } from '@/lib/api/auth'
 import { badRequest, notFound, internalError } from '@/lib/api/errors'
 import { sendWhatsapp } from '@/lib/utils/whatsapp'
 import { generateDocumentNumber } from '@/lib/utils/document-number'
-import { getConfigNumber } from '@/lib/utils/config'
 import { generateInvoiceJournal } from '@/lib/auto-jurnal'
 
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -108,7 +107,6 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       }
 
       // Auto-generate draft invoice
-const ppnRate = await getConfigNumber('ppn_rate', 0.11)
         const nomorInv = await generateDocumentNumber('INV')
         const nomorTT = await generateDocumentNumber('TT')
         const now = new Date().toISOString()
@@ -125,7 +123,6 @@ const ppnRate = await getConfigNumber('ppn_rate', 0.11)
           customer_id: customerId,
           tanggal: now,
           top,
-          ppn_rate: ppnRate,
           status: 'draft',
           nomor_tanda_terima: nomorTT,
           created_at: now,
@@ -134,7 +131,6 @@ const ppnRate = await getConfigNumber('ppn_rate', 0.11)
 
         if (!invErr && inv) {
           const invItems = soItems.map((item: { barang_id: string; jumlah: number; harga_satuan: number; nama_barang?: string; kode_barang?: string; satuan?: string }, idx: number) => {
-            const subtotal = item.harga_satuan * item.jumlah
             return {
               invoice_id: inv.id,
               barang_id: item.barang_id,
@@ -144,7 +140,6 @@ const ppnRate = await getConfigNumber('ppn_rate', 0.11)
               kode_barang: item.kode_barang ?? null,
               satuan: item.satuan ?? null,
               diskon: 0,
-              ppn: subtotal * ppnRate,
               keterangan: null,
               urutan: idx + 1,
               created_at: now,

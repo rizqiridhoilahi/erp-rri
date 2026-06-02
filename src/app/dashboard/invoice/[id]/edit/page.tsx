@@ -13,7 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select'
-import { Label } from '@/components/ui/label'
+
 import { ArrowLeft, Loader2 } from 'lucide-react'
 import { DatePicker } from '@/components/ui/date-picker'
 import { toast } from 'sonner'
@@ -27,8 +27,6 @@ interface InvoiceItem {
   harga: number
   jumlah: number
   diskon: number | null
-  ppn: number | null
-  pph: number | null
 }
 
 interface InvoiceData {
@@ -39,16 +37,12 @@ interface InvoiceData {
   tanggal: string
   top: string
   status: string
-  ppn_rate: number
-  pph_rate: number | null
   items: InvoiceItem[]
 }
 
 const schema = z.object({
   tanggal: z.string().optional(),
   status: z.string().optional(),
-  ppn_rate: z.coerce.number().optional(),
-  pph_rate: z.coerce.number().optional(),
   top: z.string().optional(),
 })
 type FV = z.input<typeof schema>
@@ -67,7 +61,7 @@ export default function EditInvoicePage() {
 
   const form = useForm<FV>({
     resolver: zodResolver(schema),
-    defaultValues: { status: 'draft', ppn_rate: 0.11, pph_rate: undefined, top: '' },
+    defaultValues: { status: 'draft', top: '' },
   })
 
   useEffect(() => {
@@ -84,8 +78,6 @@ export default function EditInvoicePage() {
         form.reset({
           tanggal: invTanggal,
           status: d.status,
-          ppn_rate: d.ppn_rate,
-          pph_rate: d.pph_rate ?? undefined,
           top: d.top,
         })
         setLoading(false)
@@ -117,10 +109,7 @@ export default function EditInvoicePage() {
 
   const isDraft = inv.status === 'draft'
 
-  const totalDpp = inv.items.reduce((s, i) => s + (i.harga * i.jumlah - (i.diskon ?? 0)), 0)
-  const totalPPN = inv.items.reduce((s, i) => s + (i.ppn ?? 0), 0)
-  const totalPPh = inv.items.reduce((s, i) => s + (i.pph ?? 0), 0)
-  const grandTotal = totalDpp + totalPPN - totalPPh
+  const total = inv.items.reduce((s, i) => s + (i.harga * i.jumlah - (i.diskon ?? 0)), 0)
 
   return (
     <div className="max-w-3xl space-y-6">
@@ -171,14 +160,6 @@ export default function EditInvoicePage() {
                 <FormField control={form.control} name="top" render={({ field }) => (
                   <FormItem><FormLabel>TOP</FormLabel><FormControl><Input {...field} placeholder="e.g. 30 Hari" /></FormControl><FormMessage /></FormItem>
                 )} />
-                <div className="space-y-2">
-                  <Label>PPN Rate</Label>
-                  <Input type="number" step="0.01" {...form.register('ppn_rate', { valueAsNumber: true })} />
-                </div>
-                <div className="space-y-2">
-                  <Label>PPh Rate</Label>
-                  <Input type="number" step="0.01" {...form.register('pph_rate', { valueAsNumber: true })} />
-                </div>
               </div>
             </CardContent>
           </Card>
@@ -220,19 +201,14 @@ export default function EditInvoicePage() {
                       <TableHead className="text-right">Jumlah</TableHead>
                       <TableHead className="text-right">Diskon</TableHead>
                       <TableHead className="text-right">DPP</TableHead>
-                      <TableHead className="text-right">PPN</TableHead>
-                      {totalPPh > 0 && <TableHead className="text-right">PPh</TableHead>}
-                      <TableHead className="text-right">Subtotal</TableHead>
+                      <TableHead className="text-right">Total</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {inv.items.map((item, i) => {
                       const brg = item.barang as { nama: string; kode: string; satuan: string } | null
                       const diskon = item.diskon ?? 0
-                      const ppn = item.ppn ?? 0
-                      const pph = item.pph ?? 0
                       const dpp = item.harga * item.jumlah - diskon
-                      const subtotal = dpp + ppn - pph
                       return (
                         <TableRow key={item.id}>
                           <TableCell className="text-muted-foreground">{i + 1}</TableCell>
@@ -244,34 +220,16 @@ export default function EditInvoicePage() {
                           <TableCell className="text-right">{item.jumlah}</TableCell>
                           <TableCell className="text-right">{diskon > 0 ? diskon.toLocaleString('id-ID') : '-'}</TableCell>
                           <TableCell className="text-right">{dpp.toLocaleString('id-ID')}</TableCell>
-                          <TableCell className="text-right">{ppn > 0 ? ppn.toLocaleString('id-ID') : '-'}</TableCell>
-                          {totalPPh > 0 && <TableCell className="text-right">{pph > 0 ? pph.toLocaleString('id-ID') : '-'}</TableCell>}
-                          <TableCell className="text-right font-medium">{subtotal.toLocaleString('id-ID')}</TableCell>
+                          <TableCell className="text-right font-medium">{dpp.toLocaleString('id-ID')}</TableCell>
                         </TableRow>
                       )
                     })}
                   </TableBody>
                 </Table>
                 <div className="border-t mt-4 pt-4 space-y-1.5 text-sm px-6 pb-6">
-                  <div className="flex justify-end items-center gap-8">
-                    <span className="text-muted-foreground">DPP</span>
-                    <span className="font-medium w-32 text-right">{totalDpp.toLocaleString('id-ID')}</span>
-                  </div>
-                  {totalPPN > 0 && (
-                    <div className="flex justify-end items-center gap-8">
-                      <span className="text-muted-foreground">PPN {(inv.ppn_rate * 100).toFixed(0)}%</span>
-                      <span className="font-medium w-32 text-right">{totalPPN.toLocaleString('id-ID')}</span>
-                    </div>
-                  )}
-                  {totalPPh > 0 && (
-                    <div className="flex justify-end items-center gap-8">
-                      <span className="text-muted-foreground">PPh {inv.pph_rate ? `(${(inv.pph_rate * 100).toFixed(0)}%)` : ''}</span>
-                      <span className="font-medium w-32 text-right">-{totalPPh.toLocaleString('id-ID')}</span>
-                    </div>
-                  )}
                   <div className="flex justify-end items-center gap-8 border-t pt-2 mt-2">
                     <span className="font-bold">Grand Total</span>
-                    <span className="font-bold text-lg w-32 text-right">{grandTotal.toLocaleString('id-ID')}</span>
+                    <span className="font-bold text-lg w-32 text-right">{total.toLocaleString('id-ID')}</span>
                   </div>
                 </div>
               </CardContent>

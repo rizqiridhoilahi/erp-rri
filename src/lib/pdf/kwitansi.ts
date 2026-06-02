@@ -142,15 +142,16 @@ const styles = StyleSheet.create({
   },
   amountBlueBox: {
     backgroundColor: BLUE,
+    minWidth: 180,
     paddingHorizontal: 14,
     paddingVertical: 8,
-    borderRadius: 2,
   },
   amountBlueText: {
-    fontSize: 14,
+    fontSize: 18,
     fontWeight: 'bold',
     color: 'white',
     letterSpacing: 1,
+    textAlign: 'center',
   },
   signatureBlock: {
     textAlign: 'center',

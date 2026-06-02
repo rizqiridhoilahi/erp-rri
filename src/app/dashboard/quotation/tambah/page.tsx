@@ -42,7 +42,7 @@ const qtnSchema = z.object({
   tanggal: z.string().min(1, 'Tanggal harus diisi'),
   masa_berlaku: z.string().optional(),
   ppn_rate: z.coerce.number().nonnegative().default(0.11),
-  ppn_enabled: z.boolean().default(true),
+  ppn_enabled: z.boolean().default(false),
   keterangan: z.string().optional(),
   items: z.array(itemSchema).min(1, 'Minimal 1 item'),
 })
@@ -87,7 +87,7 @@ export default function TambahQuotationPage() {
       perihal: 'Penawaran Harga',
       lampiran: '',
       ppn_rate: 0.11,
-      ppn_enabled: true,
+      ppn_enabled: false,
       items: [{ barang_id: '', jumlah: 1, harga_satuan: 0, specification: '', justification: '', image_url: '', satuan: '' }],
     },
   })

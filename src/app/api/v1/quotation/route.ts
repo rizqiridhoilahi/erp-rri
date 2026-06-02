@@ -31,7 +31,7 @@ const schema = z.object({
   tanggal: z.string().min(1, 'Tanggal harus diisi'),
   masa_berlaku: z.string().optional().nullable(),
   ppn_rate: z.coerce.number().nonnegative().optional(),
-  ppn_enabled: z.coerce.boolean().optional().default(true),
+  ppn_enabled: z.coerce.boolean().optional().default(false),
   keterangan: z.string().optional().nullable(),
   items: z.array(itemSchema).min(1, 'Minimal 1 item'),
 })

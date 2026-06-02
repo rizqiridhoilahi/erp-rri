@@ -7,7 +7,7 @@ import { StatCard } from '@/components/stat-card'
 import { ChartCard } from '@/components/chart-card'
 import { InvoiceVelocityChart } from '@/components/invoice-velocity-chart'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { TrendingUp, TrendingDown, ReceiptText, DollarSign, PieChart, Banknote, Receipt, Clock, TrendingUpIcon } from 'lucide-react'
+import { TrendingUp, TrendingDown, DollarSign, PieChart, Banknote, Receipt, Clock, TrendingUpIcon } from 'lucide-react'
 
 const AGING_BUCKETS = [
   { label: '0-30', min: 0, max: 30 },
@@ -58,10 +58,9 @@ export default async function FinanceDashboard() {
   }
   const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1).toISOString()
 
-  const [invoices, kwitansis, fakturPajaks, allPos, paidInvoices, confirmedPos, kwitansiAll] = await Promise.all([
+  const [invoices, kwitansis, allPos, paidInvoices, confirmedPos, kwitansiAll] = await Promise.all([
     supabase.from('invoice').select('*').in('status', ['sent', 'partial', 'overdue']),
     supabase.from('kwitansi').select('*').gte('created_at', firstDay),
-    supabase.from('faktur_pajak').select('*', { count: 'exact', head: true }).eq('status', 'draft'),
     supabase.from('purchase_order').select('*').in('status', ['sent', 'confirmed']).gte('tanggal', sixMonthsAgo),
     supabase.from('invoice').select('*').in('status', ['paid', 'sent', 'partial', 'overdue']).gte('tanggal', sixMonthsAgo),
     supabase.from('purchase_order').select('*').in('status', ['sent', 'confirmed']),
@@ -153,7 +152,6 @@ export default async function FinanceDashboard() {
         <StatCard label="Piutang (AR)" value={rupiah(totalPiutang)} icon={TrendingUp} iconVariant="success" subtitle={`${piutangCount} faktur outstanding`} />
         <StatCard label="Hutang (AP)" value={totalHutang} icon={TrendingDown} iconVariant="destructive" subtitle="PO belum lunas" />
         <StatCard label="Kwitansi Bulan Ini" value={kwitansis.data?.length ?? 0} icon={Receipt} iconVariant="info" subtitle="transaksi" />
-        <StatCard label="Faktur Pajak Pending" value={fakturPajaks.count ?? 0} icon={ReceiptText} iconVariant="warning" subtitle="Perlu diterbitkan" />
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
@@ -218,7 +216,6 @@ export default async function FinanceDashboard() {
             {[
               { href: '/dashboard/invoice/tambah', label: 'Buat Invoice', icon: Receipt },
               { href: '/dashboard/kwitansi/tambah', label: 'Buat Kwitansi', icon: Banknote },
-              { href: '/dashboard/faktur-pajak/tambah', label: 'Buat Faktur Pajak', icon: ReceiptText },
               { href: '/dashboard/jurnal/tambah', label: 'Input Jurnal', icon: TrendingUpIcon },
             ].map(item => (
               <Link key={item.href} href={item.href} className="flex items-center gap-3 rounded-xl bg-white dark:bg-primary/5 border border-primary/10 dark:border-primary/20 p-3 hover:scale-[1.02] hover:shadow-[0_4px_12px_rgba(0,0,255,0.06)] dark:hover:shadow-xl transition-all duration-200">

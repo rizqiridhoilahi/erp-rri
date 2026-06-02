@@ -62,7 +62,7 @@ export default async function DashboardPage() {
     invoice, cust, karyawan,
     quotations, custPos, sos,
     pr, po, receiving, grns,
-    kwitansis, poFinance, fakturPajaks,
+    kwitansis, poFinance,
     stoks, barangsStok, dos,
     recentQuotation, recentSO, recentInvoice, recentPO,
     lastMonthKwitansis,
@@ -83,7 +83,6 @@ export default async function DashboardPage() {
     supabase.from('grn').select('*', { count: 'exact', head: true }).eq('status', 'draft'),
     supabase.from('kwitansi').select('*').gte('created_at', firstDay),
     supabase.from('purchase_order').select('*').in('status', ['sent', 'confirmed']),
-    supabase.from('faktur_pajak').select('*', { count: 'exact', head: true }).eq('status', 'draft'),
     supabase.from('stok').select('*'),
     supabase.from('barang').select('*', { count: 'exact', head: true }).eq('is_active', true),
     supabase.from('delivery_order').select('*', { count: 'exact', head: true }).eq('status', 'draft'),
@@ -315,14 +314,13 @@ export default async function DashboardPage() {
         </div>
       </section>
 
-      {prCount > 0 || poCount > 0 || (fakturPajaks.count ?? 0) > 0 || lowStockItems.length > 0 ? (
+      {prCount > 0 || poCount > 0 || lowStockItems.length > 0 ? (
         <section>
           <h2 className="text-lg font-heading font-semibold tracking-tight mb-3 flex items-center gap-2 text-destructive"><AlertTriangle className="h-5 w-5 text-destructive" />Butuh Tindakan</h2>
           <Card>
             <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-3 p-4">
                {prCount > 0 && <Button variant="default" className="justify-start h-auto py-3 bg-gradient-to-b from-[#0000FF] to-[#0000D9] shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_1px_2px_rgba(0,0,0,0.1)] hover:opacity-95 transition-all duration-200" asChild><Link href="/dashboard/purchase-request"><ClipboardList className="h-4 w-4 mr-2" />{prCount} PR perlu diproses</Link></Button>}
                {poCount > 0 && <Button variant="default" className="justify-start h-auto py-3 bg-gradient-to-b from-[#0000FF] to-[#0000D9] shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_1px_2px_rgba(0,0,0,0.1)] hover:opacity-95 transition-all duration-200" asChild><Link href="/dashboard/purchase-order"><FileText className="h-4 w-4 mr-2" />{poCount} PO perlu tindakan</Link></Button>}
-               {(fakturPajaks.count ?? 0) > 0 && <Button variant="default" className="justify-start h-auto py-3 bg-gradient-to-b from-[#0000FF] to-[#0000D9] shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_1px_2px_rgba(0,0,0,0.1)] hover:opacity-95 transition-all duration-200" asChild><Link href="/dashboard/faktur-pajak"><Receipt className="h-4 w-4 mr-2" />{fakturPajaks.count} Faktur Pajak perlu diterbitkan</Link></Button>}
                {lowStockItems.length > 0 && <Button variant="destructive" className="justify-start h-auto py-3 transition-all duration-200" asChild><Link href="/dashboard/inventory/stok"><AlertTriangle className="h-4 w-4 mr-2" />{lowStockItems.length} barang stok kosong</Link></Button>}
                {(dos.count ?? 0) > 0 && <Button variant="outline" className="justify-start h-auto py-3 transition-all duration-200" asChild><Link href="/dashboard/delivery-order"><Package className="h-4 w-4 mr-2" />{dos.count} DO perlu dikirim</Link></Button>}
             </CardContent>

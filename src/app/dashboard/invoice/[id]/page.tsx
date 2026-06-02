@@ -10,7 +10,7 @@ import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@
 import { Input } from "@/components/ui/input"
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
 import { DatePicker } from "@/components/ui/date-picker"
-import { ArrowLeft, FileText, Pencil, FileSpreadsheet, Wallet, Receipt, Loader2, Send } from "lucide-react"
+import { ArrowLeft, FileText, Pencil, FileSpreadsheet, Wallet, Loader2, Send } from "lucide-react"
 import { InvoicePdfActions } from "@/components/invoice-pdf-actions"
 import { TandaTerimaPdfActions } from "@/components/tanda-terima-pdf-actions"
 import { CompactFileUpload, type DocumentFile } from "@/components/compact-file-upload"
@@ -56,7 +56,6 @@ interface InvoiceItem {
   harga: number
   jumlah: number
   diskon: number
-  pph: number | null
   nama_barang: string | null
   kode_barang: string | null
   satuan: string | null
@@ -81,9 +80,6 @@ export default function InvoiceDetailPage() {
   const [payAmount, setPayAmount] = useState("")
   const [payMetode, setPayMetode] = useState("transfer")
   const [payTanggal, setPayTanggal] = useState("")
-  const [showFpDialog, setShowFpDialog] = useState(false)
-  const [nomorFaktur, setNomorFaktur] = useState("")
-  const [fpCreating, setFpCreating] = useState(false)
   const [recording, setRecording] = useState(false)
   const [statusLoading, setStatusLoading] = useState(false)
 
@@ -200,34 +196,13 @@ export default function InvoiceDetailPage() {
     }
   }
 
-  const handleBuatFakturPajak = async () => {
-    if (!nomorFaktur.trim()) { toast.error('Nomor Faktur Pajak wajib diisi'); return }
-    setFpCreating(true)
-    try {
-      const res = await apiFetch<{ id: string }>(`/api/v1/invoice/${id}/auto-faktur-pajak`, {
-        method: 'POST',
-        body: JSON.stringify({ nomor_faktur: nomorFaktur.trim() }),
-      })
-      toast.success('Faktur Pajak berhasil dibuat')
-      setShowFpDialog(false)
-      setNomorFaktur('')
-      router.push(`/dashboard/faktur-pajak/${res.data.id}`)
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Gagal membuat Faktur Pajak')
-    } finally {
-      setFpCreating(false)
-    }
-  }
-
   if (loading) return <div className="text-center py-20 text-muted-foreground">Memuat...</div>
   if (error || !inv) return <div className="text-center py-20 text-muted-foreground">Invoice tidak ditemukan</div>
 
   const currentIdx = paySteps.indexOf(inv.status)
   const isOverdue = inv.status === "overdue"
 
-  const totalDpp = items.reduce((s, i) => s + (i.harga * i.jumlah - (i.diskon ?? 0)), 0)
-  const totalPPh = items.reduce((s, i) => s + (i.pph ?? 0), 0)
-  const grandTotal = totalDpp - totalPPh
+  const total = items.reduce((s, i) => s + (i.harga * i.jumlah - (i.diskon ?? 0)), 0)
 
   return (
     <div className="space-y-6 overflow-x-hidden">
@@ -416,12 +391,6 @@ export default function InvoiceDetailPage() {
         </CardContent>
       </Card>
 
-      <div className="flex justify-end gap-2 mb-4">
-        <Button className="bg-[#22C55E] text-white hover:bg-[#16A34A] dark:bg-[#15803D] dark:hover:bg-[#166534]" onClick={() => setShowFpDialog(true)}>
-          <Receipt className="h-4 w-4 mr-2" />Buat Faktur Pajak
-        </Button>
-      </div>
-
       <Card>
         <CardContent className="pt-6">
           <h3 className="text-lg font-semibold mb-4 flex items-center gap-2"><Wallet className="h-4 w-4" />Pembayaran</h3>
@@ -513,18 +482,15 @@ export default function InvoiceDetailPage() {
                   <TableHead className="text-right">Harga</TableHead>
                   <TableHead className="text-right">Jumlah</TableHead>
                   <TableHead className="text-right">Diskon</TableHead>
-                  <TableHead className="text-right">DPP</TableHead>
-                  {totalPPh > 0 && <TableHead className="text-right">PPh</TableHead>}
-                  <TableHead className="text-right">Subtotal</TableHead>
+                      <TableHead className="text-right">DPP</TableHead>
+                      <TableHead className="text-right">Total</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                   {items.map((item, i) => {
                   const brg = item.barang as { nama: string; kode: string; satuan: string } | null
                   const diskon = item.diskon ?? 0
-                  const pph = item.pph ?? 0
                   const dpp = item.harga * item.jumlah - diskon
-                  const subtotal = dpp - pph
                   return (
                     <TableRow key={item.id}>
                       <TableCell className="text-muted-foreground">{i + 1}</TableCell>
@@ -536,27 +502,16 @@ export default function InvoiceDetailPage() {
                       <TableCell className="text-right">{item.jumlah}</TableCell>
                       <TableCell className="text-right">{diskon > 0 ? diskon.toLocaleString("id-ID") : "-"}</TableCell>
                       <TableCell className="text-right">{dpp.toLocaleString("id-ID")}</TableCell>
-                      {totalPPh > 0 && <TableCell className="text-right">{pph > 0 ? pph.toLocaleString("id-ID") : "-"}</TableCell>}
-                      <TableCell className="text-right font-medium">{subtotal.toLocaleString("id-ID")}</TableCell>
+                      <TableCell className="text-right font-medium">{dpp.toLocaleString("id-ID")}</TableCell>
                     </TableRow>
                   )
                 })}
               </TableBody>
             </Table>
             <div className="border-t mt-4 pt-4 space-y-1.5 text-sm">
-              <div className="flex justify-end items-center gap-8">
-                <span className="text-muted-foreground">DPP</span>
-                <span className="font-medium w-32 text-right">{totalDpp.toLocaleString("id-ID")}</span>
-              </div>
-              {totalPPh > 0 && (
-                <div className="flex justify-end items-center gap-8">
-                  <span className="text-muted-foreground">PPh {inv.pph_rate ? `(${(inv.pph_rate * 100).toFixed(0)}%)` : ""}</span>
-                  <span className="font-medium w-32 text-right">-{totalPPh.toLocaleString("id-ID")}</span>
-                </div>
-              )}
               <div className="flex justify-end items-center gap-8 border-t pt-2 mt-2">
                 <span className="font-bold">Grand Total</span>
-                <span className="font-bold text-lg w-32 text-right">{grandTotal.toLocaleString("id-ID")}</span>
+                <span className="font-bold text-lg w-32 text-right">{total.toLocaleString("id-ID")}</span>
               </div>
             </div>
           </CardContent>
@@ -574,34 +529,6 @@ export default function InvoiceDetailPage() {
           />
         </CardContent>
       </Card>
-
-      {showFpDialog && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setShowFpDialog(false)}>
-          <div className="bg-background rounded-lg shadow-lg p-6 w-full max-w-md mx-4" onClick={e => e.stopPropagation()}>
-            <h3 className="text-lg font-semibold mb-4">Buat Faktur Pajak</h3>
-            <p className="text-sm text-muted-foreground mb-4">
-              Faktur Pajak akan dibuat dengan data dari Invoice ini. DPP, PPN, dan PPh akan diisi otomatis.
-            </p>
-            <div className="space-y-2 mb-4">
-              <label className="text-sm font-medium">Nomor Faktur Pajak</label>
-              <input
-                type="text"
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                placeholder="010.000-24.00000000"
-                value={nomorFaktur}
-                onChange={e => setNomorFaktur(e.target.value)}
-              />
-            </div>
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setShowFpDialog(false)}>Batal</Button>
-              <Button onClick={handleBuatFakturPajak} disabled={fpCreating}>
-                {fpCreating && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                Buat Faktur Pajak
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   )
 }
