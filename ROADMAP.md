@@ -17,6 +17,7 @@
 | DM-8 | **Fix: Missing modules in all_documents view** — tambah Retur Pembelian, RFQ Supplier, GRN ke view (supplier-side, NULL customer) | ✅ Done | `0030_add_missing_document_modules.sql` |
 | DM-9 | **Fix: Sales Order document upload 404** — buat `sales_order_document` table + API route + Drizzle schema + tambah ke view | ✅ Done | `0031_create_sales_order_document.sql`, `0032_add_sales_order_to_documents_view.sql`, `sales-order/[id]/documents/route.ts` |
 | DM-10 | **Update frontend dropdown** — tambah 5 modul baru (Resi Pengiriman, Retur Pembelian, RFQ Supplier, GRN, Sales Order) ke filter dan badge colors | ✅ Done | `src/app/dashboard/dokumen/page.tsx` |
+| DM-11 | **Smart Filter DI & PO** — autocomplete combobox untuk cari nomor DI / PO Customer. Resolve chain DI → SO → DO/Invoice/Kwitansi/Retur/GRN Customer/Kontrak. UI: Popover + Command, debounced search (300ms), auto-fill customer dropdown. API: `/api/v1/dokumen/autocomplete/di`, `/api/v1/dokumen/autocomplete/po` | ✅ Done | `route.ts`, `document-search-combobox.tsx`, `page.tsx` |
 
 ## 🔴 HIGH — Status Management & Quotation Fixes
 

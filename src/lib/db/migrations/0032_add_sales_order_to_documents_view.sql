@@ -218,7 +218,8 @@ SELECT
 FROM retur_pembelian_document d
 JOIN retur_pembelian p ON p.id = d.retur_pembelian_id
 LEFT JOIN purchase_order po ON po.id = p.purchase_order_id
-LEFT JOIN sales_order so ON so.id = po.sales_order_id
+LEFT JOIN purchase_request pr ON pr.id = po.purchase_request_id
+LEFT JOIN sales_order so ON so.id = pr.sales_order_id
 LEFT JOIN customer_po cpo ON cpo.id = so.customer_po_id
 LEFT JOIN customer c1 ON c1.id = cpo.customer_id
 LEFT JOIN di di_ ON di_.id = so.di_id
@@ -240,7 +241,7 @@ SELECT
   COALESCE(c1.nama, c2.nama),
   p.id
 FROM rfq_supplier_document d
-JOIN rfq_supplier p ON p.id = d.rfq_supplier_id
+JOIN rfq_supplier p ON p.id = d.rfq_id
 LEFT JOIN sales_order so ON so.id = p.sales_order_id
 LEFT JOIN customer_po cpo ON cpo.id = so.customer_po_id
 LEFT JOIN customer c1 ON c1.id = cpo.customer_id

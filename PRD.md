@@ -384,8 +384,52 @@ Untuk menambah virtual document baru: tambah `UNION ALL` ke view `all_documents`
 | `modul` | string | Filter by modul |
 | `search` | string | Cari filename |
 | `startDate` / `endDate` | string | Filter rentang tanggal |
+| `diNomor` | string | Smart filter by DI nomor — resolve seluruh chain terkait (DI, Kontrak, Sales Order, Surat Jalan, Resi, Delivery Slip, GRN Customer, Invoice, Tanda Terima, Kwitansi, Retur Penjualan) |
+| `poNomor` | string | Smart filter by Customer PO nomor — resolve seluruh chain terkait (RFQ Customer, Quotation, Customer PO, Sales Order, Surat Jalan, Resi, Delivery Slip, GRN Customer, Invoice, Tanda Terima, Kwitansi, Retur Penjualan, Kontrak) |
 
 Response: `{ data: Document[], count: number }`
+
+Kedua param (`diNomor` / `poNomor`) bersifat opsional dan bisa dikombinasikan (AND logic). Bekerja bersama filter lainnya (customerId, modul, dll).
+
+##### Chain Resolution — DI Filter
+
+```
+DI nomor → di.id
+  ├── di.kontrak_id → Kontrak
+  ├── sales_order.di_id → SO → so.id
+  │   ├── delivery_order.sales_order_id → DO → do.id (Surat Jalan, Resi, Delivery Slip)
+  │   ├── invoice.sales_order_id → Invoice → inv.id (Tanda Terima)
+  │   │   └── kwitansi.invoice_id → Kwitansi → kw.id
+  │   ├── retur_penjualan.delivery_order_id → Retur Penjualan → rp.id
+  │   │   └── grn_customer.retur_penjualan_id → GRN Customer
+  │   └── grn_customer.delivery_order_id → GRN Customer (direct)
+```
+
+##### Chain Resolution — PO Filter
+
+```
+PO nomor → customer_po.id
+  ├── customer_po.quotation_id → Quotation → quotation.id
+  │   └── quotation.rfq_id → RFQ Customer
+  ├── sales_order.customer_po_id → SO → so.id
+  │   ├── delivery_order.sales_order_id → DO → do.id (Surat Jalan, Resi, Delivery Slip)
+  │   ├── invoice.sales_order_id → Invoice → inv.id (Tanda Terima)
+  │   │   └── kwitansi.invoice_id → Kwitansi → kw.id
+  │   ├── retur_penjualan.delivery_order_id → Retur Penjualan → rp.id
+  │   │   └── grn_customer.retur_penjualan_id → GRN Customer
+  │   ├── grn_customer.delivery_order_id → GRN Customer (direct)
+  │   └── so.di_id → DI → di.id
+  │       └── di.kontrak_id → Kontrak
+```
+
+Semua record UUID dikumpulkan, deduplicate, dan digunakan sebagai filter `recordid IN (...)` di `all_documents` view.
+
+#### Autocomplete API
+
+| Endpoint | Deskripsi |
+|----------|-----------|
+| `GET /api/v1/dokumen/autocomplete/di?q=...` | Cari DI by nomor (ILIKE), return max 20 hasil: `{ id, nomor, customer_id, customer_nama }` |
+| `GET /api/v1/dokumen/autocomplete/po?q=...` | Cari Customer PO by nomor (ILIKE), return max 20 hasil: `{ id, nomor, customer_id, customer_nama }` |
 
 #### Document Upload API Pattern
 
@@ -400,7 +444,8 @@ Modul dengan document API: `quotation`, `customer-po`, `di`, `invoice`, `deliver
 
 `src/app/dashboard/dokumen/page.tsx` — client component "use client":
 
-- **Filter panel**: dropdown Customer, dropdown Modul, input Cari File, Date Range, tombol Cari & Reset
+- **Filter panel**: dropdown Customer, dropdown Modul, input Cari File, Date Range, **Smart Filter DI** (autocomplete combobox), **Smart Filter PO Customer** (autocomplete combobox), tombol Cari & Reset
+- **Smart filter DI/PO**: Menggunakan `DocumentSearchCombobox` (Popover + Command shadcn). Search query dikirim ke autocomplete API dengan debounce 300ms. Setelah user pilih nomor DI/PO, customer dropdown otomatis terisi dengan customer terkait.
 - **Tabel**: Nama File, Modul (badge warna), Nomor Dokumen, Customer, Tanggal, Aksi
 - **Aksi per baris**: Tombol "Buka" + tombol "Download" (icon)
 - **Office docs**: `.doc/.docx/.xls/.xlsx/.ppt/.pptx` dibuka via Google Docs Viewer

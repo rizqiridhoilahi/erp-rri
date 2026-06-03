@@ -43,6 +43,7 @@ const menuItems: MenuItem[] = [
   { label: 'Master Data', icon: FolderTree, children: [
     { href: '/dashboard/master/barang', label: 'Barang', icon: Package },
     { href: '/dashboard/master/kategori-barang', label: 'Kategori Barang', icon: FolderTree },
+    { href: '/dashboard/dokumen', label: 'Manajemen Dokumen', icon: Archive },
     { href: '/dashboard/master/supplier', label: 'Supplier', icon: Building2 },
     { href: '/dashboard/master/customer', label: 'Customer', icon: Users },
     { href: '/dashboard/master/pic-customer', label: 'PIC Customer', icon: UserCircle },
@@ -94,7 +95,6 @@ const menuItems: MenuItem[] = [
     { href: '/dashboard/laporan/neraca', label: 'Neraca', icon: PieChart },
     { href: '/dashboard/laporan/arus-kas', label: 'Arus Kas', icon: TrendingUp },
   ]},
-  { href: '/dashboard/dokumen', label: 'Manajemen Dokumen', icon: Archive },
   { label: 'AI Agent', icon: Bot, children: [
     { href: '/dashboard/ai/search-harga', label: 'Search Harga', icon: Search },
     { href: '/dashboard/ai/ocr-kontrak', label: 'OCR Kontrak', icon: ScanLine },
@@ -234,7 +234,9 @@ export function SidebarContent({ collapsed }: { collapsed?: boolean }) {
 }
 
 function SidebarGroup({ group, defaultOpen, collapsed }: { group: MenuGroup; defaultOpen: boolean; collapsed?: boolean }) {
+  const pathname = usePathname()
   const [open, setOpen] = useState(defaultOpen)
+  const groupActive = groupHasActive(group, pathname)
 
   if (collapsed) {
     return (
@@ -250,7 +252,7 @@ function SidebarGroup({ group, defaultOpen, collapsed }: { group: MenuGroup; def
     <div className="space-y-1">
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center w-full px-3 py-2 text-xs font-semibold uppercase tracking-wider text-primary/70 hover:text-primary transition-colors"
+        className={cn('flex items-center w-full px-3 py-2 text-xs font-semibold uppercase tracking-wider transition-colors', groupActive ? 'text-primary' : 'text-foreground/70 hover:text-foreground')}
       >
         <group.icon className="h-3.5 w-3.5 mr-2 shrink-0" />
         <span className="flex-1 text-left">{group.label}</span>

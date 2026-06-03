@@ -9,6 +9,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select'
+import { DocumentSearchCombobox } from '@/components/ui/document-search-combobox'
 import { Search, ExternalLink, FileText, Loader2, RotateCcw, Download } from 'lucide-react'
 
 interface Document {
@@ -86,6 +87,10 @@ export default function DokumenPage() {
   const [search, setSearch] = useState('')
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
+  const [diNomor, setDiNomor] = useState('')
+  const [poNomor, setPoNomor] = useState('')
+  const [diOptions, setDiOptions] = useState<Map<string, { customer_id: string; customer_nama: string }>>(new Map())
+  const [poOptions, setPoOptions] = useState<Map<string, { customer_id: string; customer_nama: string }>>(new Map())
 
   useEffect(() => {
     apiFetch<Customer[]>('/api/v1/master/customer')
@@ -109,6 +114,8 @@ export default function DokumenPage() {
     if (search) params.set('search', search)
     if (startDate) params.set('startDate', startDate)
     if (endDate) params.set('endDate', endDate)
+    if (diNomor) params.set('diNomor', diNomor)
+    if (poNomor) params.set('poNomor', poNomor)
 
     apiFetch<Document[]>(`/api/v1/dokumen?${params.toString()}`)
       .then((res) => {
@@ -127,6 +134,10 @@ export default function DokumenPage() {
     setSearch('')
     setStartDate('')
     setEndDate('')
+    setDiNomor('')
+    setPoNomor('')
+    setDiOptions(new Map())
+    setPoOptions(new Map())
     setLoading(true)
     apiFetch<Document[]>('/api/v1/dokumen')
       .then((res) => {
@@ -240,6 +251,79 @@ export default function DokumenPage() {
             <div className="space-y-1">
               <label className="text-xs font-medium text-muted-foreground">Sampai Tanggal</label>
               <DatePicker value={endDate} onChange={setEndDate} />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-muted-foreground">
+                Nomor DI
+                {diNomor && (
+                  <button
+                    className="ml-2 text-destructive hover:text-destructive/80"
+                    onClick={() => { setDiNomor(''); setDiOptions(new Map()) }}
+                    title="Hapus filter DI"
+                  >
+                    &times;
+                  </button>
+                )}
+              </label>
+              <DocumentSearchCombobox
+                placeholder="Cari nomor DI..."
+                value={diNomor}
+                onChange={setDiNomor}
+                onSearch={async (q) => {
+                  const res = await apiFetch<Array<{ nomor: string; customer_nama: string; customer_id: string; id: string }>>(`/api/v1/dokumen/autocomplete/di?q=${encodeURIComponent(q)}`)
+                  return (res.data ?? []).map((item) => ({
+                    value: item.nomor,
+                    label: item.nomor,
+                    sublabel: item.customer_nama || undefined,
+                    raw: { customer_id: item.customer_id, customer_nama: item.customer_nama },
+                  }))
+                }}
+                onSelectOption={(option) => {
+                  const raw = option.raw as { customer_id: string; customer_nama: string } | undefined
+                  if (raw?.customer_id) {
+                    setDiOptions(new Map([[option.value, { customer_id: raw.customer_id, customer_nama: raw.customer_nama }]]))
+                    setCustomerId(raw.customer_id)
+                  }
+                }}
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-muted-foreground">
+                Nomor PO Customer
+                {poNomor && (
+                  <button
+                    className="ml-2 text-destructive hover:text-destructive/80"
+                    onClick={() => { setPoNomor(''); setPoOptions(new Map()) }}
+                    title="Hapus filter PO"
+                  >
+                    &times;
+                  </button>
+                )}
+              </label>
+              <DocumentSearchCombobox
+                placeholder="Cari nomor PO Customer..."
+                value={poNomor}
+                onChange={setPoNomor}
+                onSearch={async (q) => {
+                  const res = await apiFetch<Array<{ nomor: string; customer_nama: string; customer_id: string; id: string }>>(`/api/v1/dokumen/autocomplete/po?q=${encodeURIComponent(q)}`)
+                  return (res.data ?? []).map((item) => ({
+                    value: item.nomor,
+                    label: item.nomor,
+                    sublabel: item.customer_nama || undefined,
+                    raw: { customer_id: item.customer_id, customer_nama: item.customer_nama },
+                  }))
+                }}
+                onSelectOption={(option) => {
+                  const raw = option.raw as { customer_id: string; customer_nama: string } | undefined
+                  if (raw?.customer_id) {
+                    setPoOptions(new Map([[option.value, { customer_id: raw.customer_id, customer_nama: raw.customer_nama }]]))
+                    setCustomerId(raw.customer_id)
+                  }
+                }}
+              />
             </div>
           </div>
 
