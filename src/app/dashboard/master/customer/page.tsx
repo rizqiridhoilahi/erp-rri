@@ -149,7 +149,7 @@ export default function CustomerPage() {
         title="Data Customer"
         description={`${data.length} customer terdaftar`}
         actions={
-          <Link href="/dashboard/customer/tambah">
+          <Link href="/dashboard/master/customer/tambah">
             <Button>Tambah Customer</Button>
           </Link>
         }

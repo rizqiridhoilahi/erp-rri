@@ -12,7 +12,8 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
 import { PageHeader } from '@/components/page-header'
-import { Search, CreditCard } from 'lucide-react'
+import Link from 'next/link'
+import { Search, CreditCard, Eye, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 interface SupplierPayment {
@@ -26,6 +27,7 @@ interface SupplierPayment {
   keterangan: string | null
   created_at: string
   supplier: { nama: string } | null
+  purchase_order: { nomor: string } | null
 }
 
 interface PO { id: string; nomor: string; supplier_id: string }
@@ -43,7 +45,7 @@ export default function SupplierPaymentPage() {
   useEffect(() => {
     Promise.all([
       apiFetch<SupplierPayment[]>('/api/v1/procurement/supplier-payment').then(r => setData(r.data ?? [])).catch(() => {}),
-      apiFetch<PO[]>('/api/v1/procurement/purchase-order').then(r => setPoList(r.data ?? [])).catch(() => {}),
+      apiFetch<PO[]>('/api/v1/purchase-order').then(r => setPoList(r.data ?? [])).catch(() => {}),
       apiFetch<Supplier[]>('/api/v1/master/supplier').then(r => setSupplierList(r.data ?? [])).catch(() => {}),
     ]).finally(() => setLoading(false))
   }, [])
@@ -159,24 +161,46 @@ export default function SupplierPaymentPage() {
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
-                  <TableRow>
-                    <TableHead>Supplier</TableHead>
-                    <TableHead>Nominal</TableHead>
-                    <TableHead>Tanggal Bayar</TableHead>
-                    <TableHead>Metode</TableHead>
-                  </TableRow>
+                    <TableRow>
+                      <TableHead>Supplier</TableHead>
+                      <TableHead>PO</TableHead>
+                      <TableHead>Nominal</TableHead>
+                      <TableHead>Tanggal Bayar</TableHead>
+                      <TableHead>Metode</TableHead>
+                      <TableHead className="text-right">Aksi</TableHead>
+                    </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filtered.map(p => (
                     <TableRow key={p.id}>
                       <TableCell className="font-medium">{p.supplier?.nama ?? '-'}</TableCell>
+                      <TableCell>{p.purchase_order?.nomor ?? '-'}</TableCell>
                       <TableCell className="font-bold">{rupiah(p.nominal)}</TableCell>
                       <TableCell>{formatDate(p.tanggal_bayar)}</TableCell>
                       <TableCell><Badge variant="outline">{p.metode}</Badge></TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-1">
+                          <Button variant="ghost" size="icon" asChild>
+                            <Link href={`/dashboard/procurement/supplier-payment/${p.id}`}><Eye className="h-4 w-4" /></Link>
+                          </Button>
+                          <Button variant="ghost" size="icon" onClick={async () => {
+                            if (!confirm('Hapus pembayaran ini?')) return
+                            try {
+                              await apiFetch(`/api/v1/procurement/supplier-payment/${p.id}`, { method: 'DELETE' })
+                              setData(prev => prev.filter(d => d.id !== p.id))
+                              toast.success('Pembayaran berhasil dihapus')
+                            } catch (err) {
+                              toast.error(err instanceof Error ? err.message : 'Gagal menghapus')
+                            }
+                          }}>
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </div>
+                      </TableCell>
                     </TableRow>
                   ))}
                   {filtered.length === 0 && (
-                    <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground py-8">Belum ada pembayaran</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">Belum ada pembayaran</TableCell></TableRow>
                   )}
                 </TableBody>
               </Table>

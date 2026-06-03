@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { supabase } from '@/lib/db/client'
 import { Button } from '@/components/ui/button'
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
-import { Plus, Pencil } from 'lucide-react'
+import { Plus, Pencil, Eye } from 'lucide-react'
 
 export default async function GudangPage() {
   const { data, error } = await supabase.from('gudang').select('*').order('nama')
@@ -26,7 +26,7 @@ export default async function GudangPage() {
             <TableCell className="font-medium">{item.nama}</TableCell>
             <TableCell className="text-muted-foreground">{item.lokasi ?? '-'}</TableCell>
             <TableCell className="text-muted-foreground">{item.keterangan ?? '-'}</TableCell>
-            <TableCell className="text-right"><Button variant="ghost" size="sm" asChild><Link href={`/dashboard/inventory/gudang/${item.id}/edit`}><Pencil className="h-4 w-4" /></Link></Button></TableCell>
+            <TableCell className="text-right"><div className="flex justify-end gap-1"><Button variant="ghost" size="sm" asChild><Link href={`/dashboard/inventory/gudang/${item.id}`}><Eye className="h-4 w-4" /></Link></Button><Button variant="ghost" size="sm" asChild><Link href={`/dashboard/inventory/gudang/${item.id}/edit`}><Pencil className="h-4 w-4" /></Link></Button></div></TableCell>
           </TableRow>
         ))}
       </TableBody></Table></div>}

@@ -340,6 +340,29 @@ DI diterbitkan (draft)
 
 **Keputusan:** PPN=0 (non-PKP), PPh dibayar langsung perusahaan ke kantor pajak, tidak dipotong dari invoice customer. DB columns (`ppn_rate`, `pph_rate`, `ppn`, `pph`) tetap ada untuk skenario PKP masa depan — API dan UI hanya mengabaikannya.
 
+## 🔴 Phase 4 — Flow Procurement & Inventory — Gap Fixes
+
+### 🔴 Critical — Blocking End-to-End Flow
+
+| # | Task | Status | File |
+|---|------|--------|------|
+| SP-1 | **Supplier Payment — Schema & API** — buat API route GET/POST/PUT untuk `supplier_payment` + Zod validation | ✅ Done | `api/v1/procurement/supplier-payment/` |
+| SP-2 | **Supplier Payment — Create page** — form tambah pembayaran (inline dialog di list page) + PO URL bug fixed | ✅ Done | `procurement/supplier-payment/page.tsx` |
+| SP-3 | **Supplier Payment — Detail page** — info supplier, PO ref, nominal, metode, bukti transfer, link ke PO, edit button | ✅ Done | `procurement/supplier-payment/[id]/page.tsx` |
+| SP-4 | **Supplier Payment — Edit page** — update metode, bukti transfer, keterangan (read-only: supplier, PO, nominal, tanggal) | ✅ Done | `procurement/supplier-payment/[id]/edit/page.tsx` |
+| SP-5 | **Supplier Payment — Auto-jurnal** — debit Hutang (COA 2-1000), credit Kas/Bank (COA 1-1101) + PO status → completed on payment | ✅ Done | `lib/auto-jurnal.ts`, `api/v1/procurement/supplier-payment/route.ts` |
+| SO-1 | **Stock Opname — Schema & API** — buat API route GET/POST/PUT + migration tabel `stock_opname` + `stock_opname_item` | ✅ Done | `api/v1/inventory/stock-opname/` |
+| SO-2 | **Stock Opname — Create page** — form opname via inline dialog di list page (pilih petugas, gudang) | ✅ Done | `inventory/stock-opname/page.tsx` |
+| SO-3 | **Stock Opname — Detail page** — lihat item, input stok fisik per barang, selisih auto-hitung, tambah/hapus barang, ubah status (selesai/dibatalkan) | ✅ Done | `inventory/stock-opname/[id]/page.tsx` |
+| SO-4 | **Stock Opname — Edit page** — edit stok fisik, keterangan per item, tambah/hapus barang, edit keterangan sesi | ✅ Done | `inventory/stock-opname/[id]/edit/page.tsx` |
+
+### 🟡 Medium — Enhancement
+
+| # | Task | Status | File |
+|---|------|--------|------|
+| GD-1 | **Gudang — Detail page** — tambah halaman `[id]/page.tsx` untuk lihat detail warehouse | ✅ Done | `inventory/gudang/[id]/page.tsx` |
+| MC-1 | **Master Customer — Create page** — tambah halaman `tambah/page.tsx` di master customer | ✅ Done | `master/customer/tambah/page.tsx` |
+
 ## Catatan
 
 ### Flow Quotation Status

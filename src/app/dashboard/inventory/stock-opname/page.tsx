@@ -12,7 +12,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Skeleton } from '@/components/ui/skeleton'
 import { PageHeader } from '@/components/page-header'
 import { formatDateTime } from '@/lib/utils/date'
-import { Search, ClipboardCheck } from 'lucide-react'
+import Link from 'next/link'
+import { Search, ClipboardCheck, Eye } from 'lucide-react'
 import { toast } from 'sonner'
 
 interface StockOpname {
@@ -123,12 +124,13 @@ export default function StockOpnamePage() {
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
-                  <TableRow>
-                    <TableHead>Nomor</TableHead>
-                    <TableHead>Petugas</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Tanggal</TableHead>
-                  </TableRow>
+                    <TableRow>
+                      <TableHead>Nomor</TableHead>
+                      <TableHead>Petugas</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Tanggal</TableHead>
+                      <TableHead className="text-right">Aksi</TableHead>
+                    </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filtered.map(s => (
@@ -137,10 +139,15 @@ export default function StockOpnamePage() {
                       <TableCell>{s.petugas}</TableCell>
                       <TableCell><Badge variant={statusColor[s.status] ?? 'secondary'}>{statusLabel[s.status] ?? s.status}</Badge></TableCell>
                       <TableCell className="text-sm text-muted-foreground">{formatDate(s.created_at)}</TableCell>
+                      <TableCell className="text-right">
+                        <Button variant="ghost" size="icon" asChild>
+                          <Link href={`/dashboard/inventory/stock-opname/${s.id}`}><Eye className="h-4 w-4" /></Link>
+                        </Button>
+                      </TableCell>
                     </TableRow>
                   ))}
                   {filtered.length === 0 && (
-                    <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground py-8">Belum ada sesi opname</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground py-8">Belum ada sesi opname</TableCell></TableRow>
                   )}
                 </TableBody>
               </Table>

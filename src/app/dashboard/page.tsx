@@ -101,6 +101,11 @@ export default async function DashboardPage() {
     supabase.from('invoice').select('id, tanggal, status, customer_id').in('status', ['sent', 'paid', 'partial', 'overdue']),
   ])
 
+  const invData = (Array.isArray(invoiceItems.data) ? invoiceItems.data : []) as { invoice_id: string; barang_id: string; harga_satuan: number; jumlah: number; diskon?: number }[]
+  const invTotalsByInvoice: Record<string, number> = {}
+  for (const it of invData) {
+    invTotalsByInvoice[it.invoice_id] = (invTotalsByInvoice[it.invoice_id] ?? 0) + (it.harga_satuan * it.jumlah - (it.diskon ?? 0))
+  }
   const totalPiutang = (invoice.data ?? []).reduce((s: number, i) => s + (invTotalsByInvoice[i.id] ?? 0), 0)
   const totalStok = (stoks.data ?? []).reduce((s: number, i) => s + ((i as { jumlah: number }).jumlah ?? 0), 0)
   const lowStockItems = (stoks.data ?? []).filter((s: { jumlah: number }) => s.jumlah <= 0)
@@ -138,12 +143,6 @@ export default async function DashboardPage() {
   ]
 
   // Top customers by revenue
-  const invData = (Array.isArray(invoiceItems.data) ? invoiceItems.data : []) as { invoice_id: string; barang_id: string; harga_satuan: number; jumlah: number; diskon?: number }[]
-  const invTotalsByInvoice: Record<string, number> = {}
-  for (const it of invData) {
-    invTotalsByInvoice[it.invoice_id] = (invTotalsByInvoice[it.invoice_id] ?? 0) + (it.harga_satuan * it.jumlah - (it.diskon ?? 0))
-  }
-
   const allInvData = (Array.isArray(allInvoices.data) ? allInvoices.data : []) as { id: string; customer_id: string; tanggal: string; status: string }[]
   const custMap = new Map((customersData.data ?? []).map((c: { id: string; nama: string }) => [c.id, c.nama]))
   const custRevenue: Record<string, number> = {}

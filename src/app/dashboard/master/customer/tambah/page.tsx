@@ -1,14 +1,13 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { apiFetch } from '@/lib/api/client';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
 import { Loader2 } from 'lucide-react';
 import { useUnsavedChanges } from '@/hooks/use-unsaved-changes';
 import { ConfirmLeaveDialog } from '@/components/confirm-leave-dialog';
@@ -26,12 +25,10 @@ const customerSchema = z.object({
 
 type CustomerFormValues = z.input<typeof customerSchema>;
 
-export default function EditCustomerPage() {
+export default function TambahCustomerPage() {
   const router = useRouter();
-  const pathname = usePathname();
-  const id = pathname.split('/').at(-2);
 
-  const { register, handleSubmit, formState: { errors, isDirty }, reset, setValue, watch } = useForm<CustomerFormValues>({
+  const { register, handleSubmit, formState: { errors, isDirty }, setValue, watch } = useForm<CustomerFormValues>({
     resolver: zodResolver(customerSchema),
     defaultValues: { selectedTops: [], isActive: true },
   });
@@ -39,53 +36,8 @@ export default function EditCustomerPage() {
 
   const selectedTops = watch('selectedTops', []);
 
-  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    (async () => {
-      if (!id) return;
-      try {
-        const [customerRes, topsRes] = await Promise.all([
-          apiFetch<{
-            nama: string; kode: string; alamat: string | null;
-            kontak: string | null; terms_of_payment: string; is_active: boolean;
-          }>(`/api/v1/master/customer/${id}`),
-          apiFetch<Array<{ top: string }>>(`/api/v1/master/customer-top?customer_id=${id}`),
-        ])
-
-        if (cancelled) return;
-
-        if (customerRes.data) {
-          const existingTops = (topsRes.data ?? []).map(t => t.top)
-          reset({
-            nama: customerRes.data.nama,
-            kode: customerRes.data.kode,
-            alamat: customerRes.data.alamat || '',
-            kontak: customerRes.data.kontak || '',
-            selectedTops: existingTops,
-            isActive: customerRes.data.is_active,
-          });
-        }
-      } catch (err) {
-        if (!cancelled) {
-          setError(err instanceof Error ? err.message : 'Gagal memuat data customer');
-        }
-      } finally {
-        if (!cancelled) {
-          setIsLoading(false);
-        }
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [id, reset]);
 
   const toggleTop = (opt: string) => {
     const current = selectedTops ?? []
@@ -96,15 +48,12 @@ export default function EditCustomerPage() {
   }
 
   const onSubmit = async (data: CustomerFormValues) => {
-    if (!id) return;
-
-    setLoading(true);
+    setSubmitting(true);
     setError(null);
-    setSuccess(null);
 
     try {
-      await apiFetch(`/api/v1/master/customer/${id}`, {
-        method: 'PUT',
+      await apiFetch('/api/v1/master/customer', {
+        method: 'POST',
         body: JSON.stringify({
           nama: data.nama,
           kode: data.kode,
@@ -116,39 +65,20 @@ export default function EditCustomerPage() {
         }),
       });
 
-      setSuccess('Customer berhasil diperbarui!');
-
-      setTimeout(() => {
-        router.push('/dashboard/master/customer');
-      }, 2000);
+      router.push('/dashboard/master/customer');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Terjadi kesalahan');
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
-
-  if (isLoading) {
-    return (
-      <div className="min-h-[200px] flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-        <p className="ml-3 text-muted-foreground">Memuat data...</p>
-      </div>
-    );
-  }
 
   return (
     <div className="max-w-xl">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold">Edit Customer</h1>
-        <p className="text-sm text-muted-foreground">Formulir untuk mengedit data customer</p>
+        <h1 className="text-2xl font-bold">Tambah Customer</h1>
+        <p className="text-sm text-muted-foreground">Formulir untuk menambahkan customer baru</p>
       </div>
-
-      {success && (
-        <div className="mb-4 p-4 bg-success/10 border-l-4 border-success">
-          <p className="text-success">{success}</p>
-        </div>
-      )}
 
       {error && (
         <div className="mb-4 p-4 bg-destructive/10 border-l-4 border-destructive">
@@ -248,9 +178,9 @@ export default function EditCustomerPage() {
         </div>
 
         <div className="pt-4">
-          <Button type="submit" disabled={loading} className="w-full">
-            {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {loading ? 'Memperbarui...' : 'Simpan Perubahan'}
+          <Button type="submit" disabled={submitting} className="w-full">
+            {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {submitting ? 'Menyimpan...' : 'Simpan'}
           </Button>
         </div>
       </form>

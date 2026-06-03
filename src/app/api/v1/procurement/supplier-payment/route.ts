@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { verifyAuth } from '@/lib/api/auth'
 import { supabaseAdmin } from '@/lib/api/supabase-server'
 import { badRequest, internalError } from '@/lib/api/errors'
+import { generateSupplierPaymentJournal } from '@/lib/auto-jurnal'
 
 export async function GET(request: NextRequest) {
   const auth = await verifyAuth(request)
@@ -10,7 +11,7 @@ export async function GET(request: NextRequest) {
 
   const { searchParams } = new URL(request.url)
   const supplierId = searchParams.get('supplier_id')
-  let query = supabaseAdmin.from('supplier_payment').select('*, supplier!supplier_id(nama)').order('created_at', { ascending: false })
+  let query = supabaseAdmin.from('supplier_payment').select('*, supplier!supplier_id(nama), purchase_order!purchase_order_id(nomor)').order('created_at', { ascending: false })
   if (supplierId) query = query.eq('supplier_id', supplierId)
   const { data, error } = await query
   if (error) return internalError(error.message)
@@ -44,5 +45,13 @@ export async function POST(request: NextRequest) {
     keterangan: parsed.data.keterangan ?? null,
   }).select().single()
   if (error) return internalError(error.message)
+
+  await supabaseAdmin.from('purchase_order').update({ status: 'completed', updated_at: new Date().toISOString() }).eq('id', parsed.data.purchaseOrderId)
+
+  const jurnal = await generateSupplierPaymentJournal(data.id)
+  if (!jurnal.success) {
+    console.error('Auto-jurnal supplier payment failed:', jurnal.error)
+  }
+
   return NextResponse.json({ data })
 }

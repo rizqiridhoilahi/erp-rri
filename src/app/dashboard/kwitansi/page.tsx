@@ -11,13 +11,13 @@ const s: Record<string, { label: string; v: 'secondary' | 'success' | 'outline' 
 }
 
 export default async function KwitansiPage() {
-  const { data, error } = await supabase.from('kwitansi').select('*, invoice!invoice_id(nomor, customer!customer_id(nama, kode))').order('created_at', { ascending: false })
+  const { data, error } = await supabase.from('kwitansi').select('*, invoice!invoice_id(nomor, customer!customer_id(nama, kode), sales_order!sales_order_id(nomor, di!fk_sales_order_di(nomor)))').order('created_at', { ascending: false })
 
-  const ids = (data ?? []).map(k => k.id)
-  const { data: itemData } = ids.length > 0 ? await supabase.from('kwitansi_item').select('kwitansi_id, jumlah').in('kwitansi_id', ids) : { data: [] }
-  const totals: Record<string, number> = {}
-  for (const item of itemData ?? []) {
-    totals[item.kwitansi_id] = (totals[item.kwitansi_id] || 0) + Number(item.jumlah)
+  const invoiceIds = [...new Set((data ?? []).map(k => k.invoice_id))]
+  const { data: invItemsData } = invoiceIds.length > 0 ? await supabase.from('invoice_item').select('invoice_id, harga, jumlah, diskon').in('invoice_id', invoiceIds) : { data: [] }
+  const invoiceTotals: Record<string, number> = {}
+  for (const item of invItemsData ?? []) {
+    invoiceTotals[item.invoice_id] = (invoiceTotals[item.invoice_id] || 0) + (item.harga * item.jumlah - (item.diskon ?? 0))
   }
 
   return (
@@ -33,6 +33,7 @@ export default async function KwitansiPage() {
       <div className="rounded-lg border bg-card"><Table><TableHeader><TableRow>
         <TableHead>Nomor</TableHead>
         <TableHead>Invoice Ref</TableHead>
+        <TableHead>DI Ref</TableHead>
         <TableHead>Customer</TableHead>
         <TableHead className="text-right">Total</TableHead>
         <TableHead>Tanggal</TableHead>
@@ -42,10 +43,11 @@ export default async function KwitansiPage() {
         {data.map((item) => (
           <TableRow key={item.id}>
             <TableCell className="font-medium">{item.nomor}</TableCell>
-            <TableCell className="text-muted-foreground">{item.invoice?.nomor ?? '-'}</TableCell>
-            <TableCell className="text-muted-foreground">{item.invoice?.customer?.nama ?? '-'}</TableCell>
-            <TableCell className="text-right font-medium">Rp {(totals[item.id] ?? 0).toLocaleString('id-ID')}</TableCell>
-            <TableCell className="text-muted-foreground">{new Date(item.tanggal).toLocaleDateString('id-ID')}</TableCell>
+            <TableCell className="font-medium">{item.invoice?.nomor ?? '-'}</TableCell>
+            <TableCell className="font-medium">{item.invoice?.sales_order?.di?.nomor ?? '-'}</TableCell>
+            <TableCell className="font-medium">{item.invoice?.customer?.nama ?? '-'}</TableCell>
+            <TableCell className="font-medium">Rp {(invoiceTotals[item.invoice_id] ?? 0).toLocaleString('id-ID')}</TableCell>
+            <TableCell className="font-medium">{new Date(item.tanggal).toLocaleDateString('id-ID')}</TableCell>
             <TableCell><Badge variant={s[item.status]?.v ?? 'outline'}>{s[item.status]?.label ?? item.status}</Badge></TableCell>
             <TableCell className="text-right space-x-1">
               <Button variant="ghost" size="sm" asChild><Link href={`/dashboard/kwitansi/${item.id}`}><Eye className="h-4 w-4" /></Link></Button>

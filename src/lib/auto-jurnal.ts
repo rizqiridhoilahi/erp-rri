@@ -96,3 +96,44 @@ export async function generatePaymentJournal(invoiceId: string, _paymentId: stri
 
   return { success: true, jurnal }
 }
+
+export async function generateSupplierPaymentJournal(paymentId: string) {
+  const { data: payment } = await supabaseAdmin
+    .from('supplier_payment')
+    .select('*, supplier!supplier_id(nama), purchase_order!purchase_order_id(nomor)')
+    .eq('id', paymentId)
+    .single()
+  if (!payment) return { success: false, error: 'Payment not found' }
+
+  const { data: apAkun } = await supabaseAdmin.from('coa').select('id').eq('kode', '2-1000').maybeSingle()
+  const { data: kasAkun } = await supabaseAdmin.from('coa').select('id').eq('kode', '1-1101').maybeSingle()
+
+  if (!apAkun) return { success: false, error: 'COA AP/Hutang (2-1000) not configured. Buat akun dengan kode 2-1000' }
+  if (!kasAkun) return { success: false, error: 'COA Kas/Bank (1-1101) not configured. Buat akun dengan kode 1-1101' }
+
+  const now = new Date().toISOString()
+  const nomor = await generateDocumentNumber('JRN')
+
+  const { data: jurnal, error: jErr } = await supabaseAdmin.from('jurnal').insert({
+    nomor, tanggal: payment.tanggal_bayar, status: 'draft',
+    keterangan: `Pembayaran ke ${payment.supplier?.nama ?? '-'} - ${payment.purchase_order?.nomor ?? '-'}`,
+    created_at: now, updated_at: now,
+  }).select().single()
+  if (jErr) return { success: false, error: jErr.message }
+
+  const jumlah = parseFloat(String(payment.nominal))
+  const jurnalItems = [
+    { akun_id: apAkun.id, debit: jumlah, credit: 0, keterangan: `Lunaskan Hutang - ${payment.purchase_order?.nomor ?? '-'}` },
+    { akun_id: kasAkun.id, debit: 0, credit: jumlah, keterangan: `Pembayaran ke ${payment.supplier?.nama ?? '-'}` },
+  ]
+
+  const { error: jiErr } = await supabaseAdmin.from('jurnal_item').insert(
+    jurnalItems.map(ji => ({ ...ji, jurnal_id: jurnal.id, created_at: now, updated_at: now }))
+  )
+  if (jiErr) {
+    await supabaseAdmin.from('jurnal').delete().eq('id', jurnal.id)
+    return { success: false, error: jiErr.message }
+  }
+
+  return { success: true, jurnal }
+}
