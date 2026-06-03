@@ -7,7 +7,7 @@ async function resolveDiNomor(diNomor: string): Promise<string[]> {
   const { data: di } = await supabaseAdmin
     .from('di')
     .select('id, kontrak_id')
-    .eq('nomor', diNomor)
+    .eq('nomor_di_customer', diNomor)
     .maybeSingle()
 
   if (!di) return []
@@ -70,7 +70,7 @@ async function resolvePoNomor(poNomor: string): Promise<string[]> {
   const { data: cpo } = await supabaseAdmin
     .from('customer_po')
     .select('id, quotation_id')
-    .eq('nomor', poNomor)
+    .eq('nomor_po_customer', poNomor)
     .maybeSingle()
 
   if (!cpo) return []

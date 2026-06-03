@@ -273,11 +273,12 @@ export default function DokumenPage() {
                 value={diNomor}
                 onChange={setDiNomor}
                 onSearch={async (q) => {
-                  const res = await apiFetch<Array<{ nomor: string; customer_nama: string; customer_id: string; id: string }>>(`/api/v1/dokumen/autocomplete/di?q=${encodeURIComponent(q)}`)
+                  const res = await apiFetch<Array<{ nomor: string; nomor_di_customer: string; customer_nama: string; customer_id: string; id: string }>>(`/api/v1/dokumen/autocomplete/di?q=${encodeURIComponent(q)}`)
                   return (res.data ?? []).map((item) => ({
-                    value: item.nomor,
-                    label: item.nomor,
-                    sublabel: item.customer_nama || undefined,
+                    id: item.id,
+                    value: item.nomor_di_customer,
+                    label: item.nomor_di_customer,
+                    sublabel: `${item.nomor} | ${item.customer_nama}`,
                     raw: { customer_id: item.customer_id, customer_nama: item.customer_nama },
                   }))
                 }}
@@ -308,11 +309,12 @@ export default function DokumenPage() {
                 value={poNomor}
                 onChange={setPoNomor}
                 onSearch={async (q) => {
-                  const res = await apiFetch<Array<{ nomor: string; customer_nama: string; customer_id: string; id: string }>>(`/api/v1/dokumen/autocomplete/po?q=${encodeURIComponent(q)}`)
+                  const res = await apiFetch<Array<{ nomor: string; nomor_po_customer: string; customer_nama: string; customer_id: string; id: string }>>(`/api/v1/dokumen/autocomplete/po?q=${encodeURIComponent(q)}`)
                   return (res.data ?? []).map((item) => ({
-                    value: item.nomor,
-                    label: item.nomor,
-                    sublabel: item.customer_nama || undefined,
+                    id: item.id,
+                    value: item.nomor_po_customer,
+                    label: item.nomor_po_customer,
+                    sublabel: `${item.nomor} | ${item.customer_nama}`,
                     raw: { customer_id: item.customer_id, customer_nama: item.customer_nama },
                   }))
                 }}

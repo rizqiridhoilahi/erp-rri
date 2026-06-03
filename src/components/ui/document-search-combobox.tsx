@@ -22,6 +22,7 @@ export interface SearchOption {
   value: string
   label: string
   sublabel?: string
+  id?: string
   raw?: Record<string, unknown>
 }
 
@@ -115,11 +116,11 @@ export function DocumentSearchCombobox({
             <CommandGroup>
               {options.map((option) => (
                 <CommandItem
-                  key={option.value}
+                  key={option.id ?? option.value}
                   value={option.value}
                   onSelect={(currentValue) => {
                     onChange(currentValue)
-                    onSelectOption?.(option)
+                    onSelectOption?.({ ...option, value: currentValue })
                     setOpen(false)
                     setSearchQuery("")
                   }}

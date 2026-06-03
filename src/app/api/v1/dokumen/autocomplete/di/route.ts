@@ -6,7 +6,7 @@ import { internalError } from '@/lib/api/errors'
 interface DiRow {
   id: string
   nomor: string
-  customer_id: string
+  nomor_di_customer: string | null
   customer: { nama: string } | null
 }
 
@@ -19,9 +19,10 @@ export async function GET(request: NextRequest) {
 
   const { data, error } = await supabaseAdmin
     .from('di')
-    .select('id, nomor, customer_id, customer:customer_id(nama)')
-    .ilike('nomor', `%${q}%`)
-    .order('nomor')
+    .select('id, nomor, nomor_di_customer, customer:customer_id(nama)')
+    .not('nomor_di_customer', 'is', null)
+    .ilike('nomor_di_customer', `%${q}%`)
+    .order('nomor_di_customer')
     .limit(20)
 
   if (error) return internalError(error)
@@ -29,9 +30,8 @@ export async function GET(request: NextRequest) {
   const result = (data as unknown as DiRow[] ?? []).map((r) => ({
     id: r.id,
     nomor: r.nomor,
-    customer_id: r.customer_id,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    customer_nama: (r.customer as any)?.nama ?? '',
+    nomor_di_customer: r.nomor_di_customer,
+    customer_nama: r.customer?.nama ?? '',
   }))
 
   return NextResponse.json({ data: result })
