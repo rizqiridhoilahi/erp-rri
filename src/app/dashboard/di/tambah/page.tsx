@@ -72,6 +72,9 @@ export default function TambahDiPage() {
   const [kontrakId, setKontrakId] = useState('')
   const [picCustomerId, setPicCustomerId] = useState('')
   const [nomorDiAuto, setNomorDiAuto] = useState('')
+  const [reserveId, setReserveId] = useState<string>('')
+  const [expiresAt, setExpiresAt] = useState<string>('')
+  const [expiringSoon, setExpiringSoon] = useState(false)
   const [nomorDiCustomer, setNomorDiCustomer] = useState('')
   const [top, setTop] = useState('')
   const [topCustom, setTopCustom] = useState('')
@@ -105,11 +108,44 @@ export default function TambahDiPage() {
     return d.toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })
   }, [tanggal, waktuPengiriman])
 
+  // Fetch nomor reserve saat mount
   useEffect(() => {
-    apiFetch<{ nomor: string }>('/api/v1/di/next-number')
-      .then(res => setNomorDiAuto(res.data.nomor))
-      .catch(() => {})
+    apiFetch<{ nomor: string; reserveId: string; expiresAt: string }>('/api/v1/di/next-number')
+      .then(res => {
+        setNomorDiAuto(res.data.nomor)
+        setReserveId(res.data.reserveId)
+        setExpiresAt(res.data.expiresAt)
+      })
+      .catch(err => {
+        console.error('Failed to reserve number:', err)
+        toast.error('Gagal reserve nomor. Silakan refresh halaman.')
+      })
   }, [])
+
+  // Countdown timer untuk expiry
+  useEffect(() => {
+    if (!expiresAt) return
+    
+    const checkExpiry = setInterval(() => {
+      const now = new Date()
+      const expiry = new Date(expiresAt)
+      const diff = expiry.getTime() - now.getTime()
+      
+      // Warning 5 menit sebelum expired
+      if (diff < 5 * 60 * 1000 && diff > 0) {
+        setExpiringSoon(true)
+        toast.warning('Nomor akan kadaluarsa segera. Silakan submit form.')
+      }
+      
+      // Handle expired
+      if (diff <= 0) {
+        setExpiringSoon(false)
+        toast.error('Nomor reservasi kadaluarsa. Silakan refresh halaman.')
+      }
+    }, 10000) // Check setiap 10 detik
+    
+    return () => clearInterval(checkExpiry)
+  }, [expiresAt])
 
   useEffect(() => {
     apiFetch<Array<{ id: string; nama: string; kode: string }>>('/api/v1/master/customer')
@@ -310,6 +346,7 @@ export default function TambahDiPage() {
     setSubmitting(true)
     try {
       const payload = {
+        reserveId, // Include reserveId untuk validasi
         customer_id: customerId,
         kontrak_id: kontrakId || undefined,
         pic_customer_id: picCustomerId || undefined,
@@ -385,7 +422,21 @@ export default function TambahDiPage() {
         <CardContent className="space-y-4">
           <div>
             <Label>Nomor DI (Otomatis)</Label>
-            <Input value={nomorDiAuto} disabled />
+            <div className="relative">
+              <Input
+                value={nomorDiAuto}
+                disabled
+                className={expiringSoon ? 'border-warning bg-warning/10 font-medium' : ''}
+              />
+              {expiringSoon && (
+                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                  <span className="text-xs text-warning font-medium">⏳ Segera</span>
+                </div>
+              )}
+            </div>
+            {expiringSoon && (
+              <p className="text-xs text-warning mt-1">Nomor akan kadaluarsa. Silakan submit form.</p>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-4">

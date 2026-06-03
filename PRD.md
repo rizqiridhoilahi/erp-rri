@@ -1521,6 +1521,8 @@ email_log                → log pengiriman email notifikasi (status: terkirim/g
 
 ### 12.4 Nomor Dokumen Otomatis
 
+#### 12.4.1 Sistem Counter Existing
+
 Implementasi counter di PostgreSQL:
 
 ```sql
@@ -1562,6 +1564,321 @@ import { generateDocumentNumber } from '@/lib/utils/document-number'
 // Output: "RRI-SPH-26-05-0001"
 const nomor = await generateDocumentNumber('SPH')
 ```
+
+#### 12.4.2 Document Number Reservation System
+
+**Problem Statement:**
+- **Race condition:** 2 user buka form bersamaan → dapat nomor yang sama
+- **Nomor hangus:** User submit gagal/error → nomor sudah terpakai
+- **Tidak ada validasi:** Tidak ada pengecekan "nomor terakhir" sebelum generate
+- **Tidak ada sinkronisasi:** Counter terpisah untuk setiap modul (RFQC, SPH, NEG, CPO, DI, dll)
+
+**Solution: Reserve on Form Open + Validate on Submit**
+
+**Database Schema:**
+
+```sql
+CREATE TABLE document_number_reservation (
+  reserve_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  kode_dokumen TEXT NOT NULL,
+  nomor TEXT NOT NULL,
+  tahun INTEGER NOT NULL,
+  bulan INTEGER NOT NULL,
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  modul TEXT NOT NULL, -- 'rfq-customer', 'quotation', 'di', dll
+  expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  used BOOLEAN NOT NULL DEFAULT FALSE
+);
+
+-- Index untuk cleanup & lookup
+CREATE INDEX idx_reservation_expires ON document_number_reservation(expires_at);
+CREATE INDEX idx_reservation_user ON document_number_reservation(user_id);
+CREATE INDEX idx_reservation_kode ON document_number_reservation(kode_dokumen, tahun, bulan, used);
+```
+
+**PostgreSQL Functions:**
+
+```sql
+-- Reserve nomor dengan TTL
+CREATE OR REPLACE FUNCTION reserve_document_number(
+  p_kode_dokumen TEXT,
+  p_tahun INTEGER,
+  p_bulan INTEGER,
+  p_user_id UUID,
+  p_modul TEXT,
+  p_ttl_minutes INTEGER DEFAULT 15
+) RETURNS TABLE (
+  reserve_id UUID,
+  nomor TEXT,
+  expires_at TIMESTAMPTZ
+) AS $$
+DECLARE
+  v_counter INTEGER;
+  v_nomor TEXT;
+  v_reserve_id UUID;
+  v_expires_at TIMESTAMPTZ;
+BEGIN
+  -- Get & increment counter (atomic upsert)
+  INSERT INTO document_counter (kode_dokumen, tahun, bulan, counter)
+  VALUES (p_kode_dokumen, p_tahun, p_bulan, 1)
+  ON CONFLICT (kode_dokumen, tahun, bulan)
+  DO UPDATE SET counter = document_counter.counter + 1
+  RETURNING counter INTO v_counter;
+  
+  -- Format nomor
+  v_nomor := format('RRI-%s-%s-%s-%s',
+    p_kode_dokumen,
+    lpad(p_tahun::text, 2, '0'),
+    lpad(p_bulan::text, 2, '0'),
+    lpad(v_counter::text, 4, '0')
+  );
+  
+  -- Set expiry
+  v_expires_at := NOW() + (p_ttl_minutes || ' minutes')::INTERVAL;
+  
+  -- Create reservation
+  INSERT INTO document_number_reservation
+    (kode_dokumen, nomor, tahun, bulan, user_id, modul, expires_at)
+  VALUES
+    (p_kode_dokumen, v_nomor, p_tahun, p_bulan, p_user_id, p_modul, v_expires_at)
+  RETURNING reserve_id INTO v_reserve_id;
+  
+  RETURN QUERY SELECT v_reserve_id, v_nomor, v_expires_at;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Validasi & gunakan reservation
+CREATE OR REPLACE FUNCTION use_reserved_number(
+  p_reserve_id UUID,
+  p_user_id UUID
+) RETURNS TABLE (
+  success BOOLEAN,
+  nomor TEXT,
+  message TEXT
+) AS $$
+DECLARE
+  v_reservation RECORD;
+  v_is_expired BOOLEAN;
+BEGIN
+  -- Fetch reservation
+  SELECT * INTO v_reservation
+  FROM document_number_reservation
+  WHERE reserve_id = p_reserve_id
+    AND user_id = p_user_id;
+  
+  -- Check if exists
+  IF v_reservation IS NULL THEN
+    RETURN QUERY SELECT false, NULL::TEXT, 'Reservation not found';
+    RETURN;
+  END IF;
+  
+  -- Check if already used
+  IF v_reservation.used THEN
+    RETURN QUERY SELECT false, NULL::TEXT, 'Reservation already used';
+    RETURN;
+  END IF;
+  
+  -- Check expiry
+  v_is_expired := v_reservation.expires_at < NOW();
+  
+  IF v_is_expired THEN
+    -- Release reservation (mark as used so it's not reused)
+    UPDATE document_number_reservation
+    SET used = TRUE
+    WHERE reserve_id = p_reserve_id;
+    
+    RETURN QUERY SELECT false, NULL::TEXT, 'Reservation expired';
+    RETURN;
+  END IF;
+  
+  -- Mark as used
+  UPDATE document_number_reservation
+  SET used = TRUE
+  WHERE reserve_id = p_reserve_id;
+  
+  RETURN QUERY SELECT true, v_reservation.nomor, 'Success'::TEXT;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Cleanup expired reservations (dipanggil via cron)
+CREATE OR REPLACE FUNCTION cleanup_expired_reservations()
+RETURNS INTEGER AS $$
+DECLARE
+  v_count INTEGER;
+BEGIN
+  -- Mark expired as used (release nomor)
+  UPDATE document_number_reservation
+  SET used = TRUE
+  WHERE used = FALSE AND expires_at < NOW();
+  
+  GET DIAGNOSTICS v_count = ROW_COUNT;
+  RETURN v_count;
+END;
+$$ LANGUAGE plpgsql;
+```
+
+**API Endpoints:**
+
+```typescript
+// GET /api/v1/{modul}/next-number
+// Reserve nomor untuk form
+export async function GET(request: NextRequest) {
+  const auth = await verifyAuth(request)
+  const result = await reserveDocumentNumber(kodeDokumen, modul, auth.user!.id, 15)
+  return NextResponse.json({
+    data: {
+      nomor: result.nomor,
+      reserveId: result.reserveId,
+      expiresAt: result.expiresAt,
+    },
+  })
+}
+
+// POST /api/v1/{modul}
+// Validasi reserveId saat submit
+export async function POST(request: NextRequest) {
+  // ... parse body
+  let nomor: string
+  
+  if (parsed.data.reserveId) {
+    const result = await useReservedNumber(parsed.data.reserveId, auth.user!.id)
+    if (result.success && result.nomor) {
+      nomor = result.nomor
+    } else {
+      // Fallback: generate new number jika reservation expired/invalid
+      nomor = await generateDocumentNumber(kodeDokumen)
+    }
+  } else {
+    // Backward compatibility: fallback ke sistem lama
+    nomor = await generateDocumentNumber(kodeDokumen)
+  }
+  
+  // ... insert ke database
+}
+```
+
+**Frontend Implementation:**
+
+```typescript
+// Form component (use client)
+export default function TambahPage() {
+  const [nomorAuto, setNomorAuto] = useState('')
+  const [reserveId, setReserveId] = useState('')
+  const [expiresAt, setExpiresAt] = useState('')
+  const [expiringSoon, setExpiringSoon] = useState(false)
+
+  // Fetch nomor saat mount
+  useEffect(() => {
+    apiFetch<{ nomor: string; reserveId: string; expiresAt: string }>('/api/v1/rfq-customer/next-number')
+      .then(res => {
+        setNomorAuto(res.data.nomor)
+        setReserveId(res.data.reserveId)
+        setExpiresAt(res.data.expiresAt)
+      })
+  }, [])
+
+  // Countdown timer untuk expiry
+  useEffect(() => {
+    if (!expiresAt) return
+    
+    const checkExpiry = setInterval(() => {
+      const now = new Date()
+      const expiry = new Date(expiresAt)
+      const diff = expiry.getTime() - now.getTime()
+      
+      // Warning 5 menit sebelum expired
+      if (diff < 5 * 60 * 1000 && diff > 0) {
+        setExpiringSoon(true)
+        toast.warning('Nomor akan kadaluarsa segera. Silakan submit form.')
+      }
+      
+      // Handle expired
+      if (diff <= 0) {
+        setExpiringSoon(false)
+        toast.error('Nomor reservasi kadaluarsa. Silakan refresh halaman.')
+      }
+    }, 10000)
+    
+    return () => clearInterval(checkExpiry)
+  }, [expiresAt])
+
+  const onSubmit = async (data: FormValues) => {
+    const payload = {
+      ...data,
+      reserveId, // Include reserveId
+    }
+    await apiFetch('/api/v1/rfq-customer', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    })
+  }
+}
+```
+
+**Cron Job Setup:**
+
+```json
+// vercel.json
+{
+  "crons": [{
+    "path": "/api/v1/cron/cleanup-reservations",
+    "schedule": "0 */6 * * *" // Run setiap 6 jam
+  }]
+}
+```
+
+**Configuration:**
+
+| Parameter | Value | Deskripsi |
+|-----------|-------|-----------|
+| TTL | 15 menit | Waktu reserve sebelum expired |
+| Cleanup Frequency | Setiap 6 jam | Cron job cleanup expired reservations |
+| Warning Threshold | 5 menit | Warning countdown sebelum expired |
+| Backward Compatibility | ✅ Yes | Fallback ke `generateDocumentNumber()` jika `reserveId` tidak ada/invalid |
+
+**Monitoring Dashboard:**
+
+Endpoint: `/dashboard/admin/reservations`
+
+Fitur:
+- Active reservations (belum expired, belum used)
+- Expired reservations (hari ini)
+- Usage statistics (berapa nomor yang hangus vs terpakai)
+- Filter by modul, user, tanggal
+
+**Rollback Plan:**
+
+1. **Disable Reservation di Frontend:** Revert frontend changes (hapus `reserveId` dari payload)
+2. **Bypass Reservation di Backend:** Add feature flag `ENABLE_NUMBER_RESERVATION`
+3. **Emergency Cleanup:**
+   ```sql
+   UPDATE document_number_reservation
+   SET used = FALSE
+   WHERE used = TRUE AND created_at > NOW() - INTERVAL '1 hour';
+   ```
+
+**Trade-offs:**
+
+| Keuntungan | Kekurangan |
+|------------|------------|
+| ✅ Tidak ada race condition | ❌ Kompleksitas bertambah |
+| ✅ User tahu nomor di awal (UX lebih baik) | ❌ Overhead database (insert per form open) |
+| ✅ Audit trail lengkap | ❌ Potensi nomor hangus jika user tidak submit |
+| ✅ Nomor tidak hangus jika user batal submit (TTL expired → release) | |
+
+**Mitigasi:**
+- TTL 15 menit — cukup untuk user isi form, tidak terlalu lama untuk hangus
+- Cleanup job setiap 6 jam — release nomor expired
+- Monitoring dashboard — track berapa nomor yang hangus per hari
+
+**Modul yang Diimplementasi (Phase 1):**
+1. RFQ Customer (`RFQC`)
+2. Quotation (`SPH`)
+3. DI (`DI`)
+
+**Modul yang Akan Diimplementasi (Phase 2+):**
+- Customer PO (`CPO`), Negosiasi (`NEG`), Sales Order (`SO`), Delivery Order (`SJ`), Invoice (`INV`), Kwitansi (`KWT`), GRN Customer (`GRNC`), Retur Penjualan (`RTJ`), Retur Pembelian (`RP`), dll.
 
 ## 13. Prioritas Pengembangan (MVP)
 

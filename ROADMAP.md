@@ -382,6 +382,129 @@ DI diterbitkan (draft)
 | GD-1 | **Gudang — Detail page** — tambah halaman `[id]/page.tsx` untuk lihat detail warehouse | ✅ Done | `inventory/gudang/[id]/page.tsx` |
 | MC-1 | **Master Customer — Create page** — tambah halaman `tambah/page.tsx` di master customer | ✅ Done | `master/customer/tambah/page.tsx` |
 
+## 🟡 Document Number Reservation System
+
+### Problem Statement
+
+**Kondisi Existing:**
+- Setiap modul punya counter terpisah (`document_counter` table)
+- Race condition: 2 user buka form bersamaan → dapat nomor yang sama
+- Nomor hangus: user submit gagal/error → nomor sudah terpakai
+- Tidak ada validasi "nomor terakhir" sebelum generate
+- Tidak ada sinkronisasi jalur PO vs DI
+
+**Jalur Dokumen:**
+```
+Jalur PO (Pre-sales → Sales):
+RFQ Customer (RFQC) → Quotation (SPH) → Negosiasi (NEG) → Customer PO (CPO) → SO → DO → Invoice → Kwitansi
+
+Jalur DI (Sales):
+Kontrak (manual) → DI → SO → DO → Invoice → Kwitansi
+```
+
+### Solution Architecture
+
+**Mekanisme:** Reserve on Form Open + Validate on Submit
+
+**Komponen Utama:**
+1. **Tabel `document_number_reservation`** — simpan nomor yang di-reserve per user
+2. **PostgreSQL Functions:**
+   - `reserve_document_number()` — reserve nomor dengan TTL 15 menit
+   - `use_reserved_number()` — validasi & gunakan reservation
+   - `cleanup_expired_reservations()` — cleanup expired reservations
+3. **API Routes:**
+   - `GET /api/v1/{modul}/next-number` — reserve nomor untuk form
+   - `POST /api/v1/{modul}` — validasi `reserveId` saat submit
+4. **Frontend:**
+   - Fetch nomor saat mount form
+   - Countdown timer expiry (warning 5 menit sebelum expired)
+   - Include `reserveId` di payload submit
+5. **Cron Job:** Cleanup expired reservations setiap 6 jam
+
+### Implementation Plan
+
+| # | Task | Status | File | Priority |
+|---|------|--------|------|----------|
+| DN-1 | **Migration — tabel `document_number_reservation`** — schema + index | ✅ Done | `migrations/0033_document_number_reservation.sql` | 🔴 High |
+| DN-2 | **PostgreSQL function — `reserve_document_number()`** — atomic upsert counter + create reservation | ✅ Done | `migrations/0033_document_number_reservation.sql` | 🔴 High |
+| DN-3 | **PostgreSQL function — `use_reserved_number()`** — validasi expiry + mark as used | ✅ Done | `migrations/0033_document_number_reservation.sql` | 🔴 High |
+| DN-4 | **PostgreSQL function — `cleanup_expired_reservations()`** — cleanup job | ✅ Done | `migrations/0033_document_number_reservation.sql` | 🟡 Medium |
+| DN-5 | **Utility — `src/lib/utils/document-number-reservation.ts`** — `reserveDocumentNumber()`, `useReservedNumber()` | ✅ Done | new file | 🔴 High |
+| DN-6 | **API — `/api/v1/rfq-customer/next-number/route.ts`** — GET reserve nomor | ✅ Done | new file | 🔴 High |
+| DN-7 | **API — `/api/v1/rfq-customer/route.ts`** — update POST handler untuk validasi `reserveId` | ✅ Done | update existing | 🔴 High |
+| DN-8 | **Frontend — `rfq-customer/tambah/page.tsx`** — fetch nomor saat mount, countdown timer, include `reserveId` | ✅ Done | update existing | 🔴 High |
+| DN-9 | **API — `/api/v1/quotation/next-number/route.ts`** — GET reserve nomor | ✅ Done | new file | 🔴 High |
+| DN-10 | **API — `/api/v1/quotation/route.ts`** — update POST handler untuk validasi `reserveId` | ✅ Done | update existing | 🔴 High |
+| DN-11 | **Frontend — `quotation/tambah/page.tsx`** — fetch nomor saat mount, countdown timer, include `reserveId` | ✅ Done | update existing | 🔴 High |
+| DN-12 | **API — `/api/v1/di/next-number/route.ts`** — GET reserve nomor | ✅ Done | new file | 🔴 High |
+| DN-13 | **API — `/api/v1/di/route.ts`** — update POST handler untuk validasi `reserveId` | ✅ Done | update existing | 🔴 High |
+| DN-14 | **Frontend — `di/tambah/page.tsx`** — fetch nomor saat mount, countdown timer, include `reserveId` | ✅ Done | update existing | 🔴 High |
+| DN-15 | **Cron — `/api/v1/cron/cleanup-reservations/route.ts`** — cleanup endpoint | ✅ Done | new file | 🟡 Medium |
+| DN-16 | **Vercel Cron — `vercel.json`** — setup cron setiap 6 jam | ✅ Done | update existing | 🟡 Medium |
+| DN-17 | **Monitoring Dashboard — `/dashboard/admin/reservations/page.tsx`** — lihat active/expired reservations | ✅ Done | new file | 🟡 Medium |
+| DN-18 | **Unit Tests — `src/test/utils/document-number-reservation.test.ts`** — test concurrent reservations | ✅ Done | new file | 🟢 Low |
+
+### Configuration
+
+| Parameter | Value | Deskripsi |
+|-----------|-------|-----------|
+| TTL | 15 menit | Waktu reserve sebelum expired |
+| Cleanup Frequency | Setiap 6 jam | Cron job cleanup expired reservations |
+| Warning Threshold | 5 menit | Warning countdown sebelum expired |
+| Backward Compatibility | ✅ Yes | Fallback ke `generateDocumentNumber()` jika `reserveId` tidak ada/invalid |
+
+### Rollout Strategy
+
+**Phase 1 — Core Infrastructure (Week 1):**
+- DN-1 s/d DN-5: Migration, PostgreSQL functions, utility functions
+
+**Phase 2 — API Routes (Week 2):**
+- DN-6 s/d DN-14: API routes + frontend updates untuk 3 modul (RFQ Customer, Quotation, DI)
+
+**Phase 3 — Cron & Monitoring (Week 3):**
+- DN-15 s/d DN-17: Cron job + monitoring dashboard
+
+**Phase 4 — Testing (Week 4):**
+- DN-18: Unit tests + load testing
+
+### Rollback Plan
+
+**Option 1: Disable Reservation di Frontend**
+- Revert frontend changes (hapus `reserveId` dari payload)
+- Backend tetap support both systems
+
+**Option 2: Bypass Reservation di Backend**
+- Add feature flag `ENABLE_NUMBER_RESERVATION`
+- Jika `false`, skip validasi `reserveId`
+
+**Option 3: Emergency Cleanup**
+```sql
+-- Release all active reservations
+UPDATE document_number_reservation
+SET used = FALSE
+WHERE used = TRUE AND created_at > NOW() - INTERVAL '1 hour';
+```
+
+### Trade-offs
+
+**Keuntungan:**
+- ✅ Tidak ada race condition
+- ✅ User tahu nomor di awal (UX lebih baik)
+- ✅ Audit trail lengkap
+- ✅ Nomor tidak hangus jika user batal submit (TTL expired → release)
+
+**Kekurangan:**
+- ❌ Kompleksitas bertambah (tabel baru, functions baru, cleanup job)
+- ❌ Overhead database (insert reservation per form open)
+- ❌ Potensi nomor hangus jika user buka form tapi tidak submit
+
+**Mitigasi:**
+- TTL 15 menit — cukup untuk user isi form
+- Cleanup job setiap 6 jam — release nomor expired
+- Monitoring dashboard — track berapa nomor yang hangus per hari
+
+---
+
 ## Catatan
 
 ### Flow Quotation Status

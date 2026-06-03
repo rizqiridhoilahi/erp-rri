@@ -16,7 +16,8 @@ const itemSchema = z.object({
 })
 
 const schema = z.object({
-  customer_id: z.string().min(1),
+  reserveId: z.string().uuid().optional(), // reservation ID dari next-number endpoint
+  customer_id: z.string().min(1, 'Customer harus dipilih'),
   kontrak_id: z.string().optional(),
   pic_customer_id: z.string().optional(),
   nomor_di_customer: z.string().optional(),
@@ -48,7 +49,24 @@ export async function POST(request: NextRequest) {
   const parsed = schema.safeParse(body)
   if (!parsed.success) return badRequest(parsed.error.issues.map(e => e.message).join(', '))
 
-  const nomor = await generateDocumentNumber('DI')
+  // Validasi reservation atau fallback ke sistem lama
+  let nomor: string
+  if (parsed.data.reserveId) {
+    const { useReservedNumber } = await import('@/lib/utils/document-number-reservation')
+    const result = await useReservedNumber(parsed.data.reserveId, auth.user!.id)
+    
+    if (result.success && result.nomor) {
+      nomor = result.nomor
+    } else {
+      // Reservation expired/invalid — fallback generate new number
+      console.warn('Reservation failed, falling back to generateDocumentNumber:', result.message)
+      nomor = await generateDocumentNumber('DI')
+    }
+  } else {
+    // Backward compatibility: fallback ke sistem lama jika tidak ada reserveId
+    nomor = await generateDocumentNumber('DI')
+  }
+
   const now = new Date().toISOString()
 
   const { data: di, error: diError } = await supabaseAdmin.from('di').insert({

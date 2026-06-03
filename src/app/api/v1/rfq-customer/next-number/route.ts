@@ -1,30 +1,27 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { supabaseAdmin } from '@/lib/api/supabase-server'
-import { verifyAuth } from '@/lib/api/auth'
-import { internalError } from '@/lib/api/errors'
+import { NextRequest, NextResponse } from 'next/server';
+import { verifyAuth } from '@/lib/api/auth';
+import { reserveDocumentNumber } from '@/lib/utils/document-number-reservation';
 
 export async function GET(request: NextRequest) {
-  const auth = await verifyAuth(request)
-  if (auth.error) return auth.error
+  const auth = await verifyAuth(request);
+  if (auth.error) {
+    return auth.error;
+  }
 
-  const now = new Date()
-  const tahun = now.getFullYear()
-  const bulan = now.getMonth() + 1
-  const yy = tahun.toString().slice(-2)
-  const mm = bulan.toString().padStart(2, '0')
-
-  const { data, error } = await supabaseAdmin
-    .from('document_counter')
-    .select('counter')
-    .eq('kode_dokumen', 'RFQC')
-    .eq('tahun', tahun)
-    .eq('bulan', bulan)
-    .maybeSingle()
-
-  if (error) return internalError(error)
-
-  const counter = ((data?.counter ?? 0) + 1).toString().padStart(4, '0')
-  const nomor = `RRI-RFQC-${yy}-${mm}-${counter}`
-
-  return NextResponse.json({ data: { nomor } })
+  try {
+    const result = await reserveDocumentNumber('RFQC', 'rfq-customer', auth.user!.id, 15);
+    return NextResponse.json({
+      data: {
+        nomor: result.nomor,
+        reserveId: result.reserveId,
+        expiresAt: result.expiresAt,
+      },
+    });
+  } catch (err) {
+    console.error('Failed to reserve RFQ Customer number:', err);
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : 'Failed to reserve number' },
+      { status: 500 }
+    );
+  }
 }
