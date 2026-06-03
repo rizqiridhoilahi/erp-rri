@@ -29,7 +29,11 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
   try {
     const blob = await pdf(SlipGajiPDF({ data: pdfData })).toBlob()
     return new NextResponse(blob, {
-      headers: { 'Content-Type': 'application/pdf', 'Content-Disposition': `inline; filename="SLIP-GAJI-${pg.nomor}.pdf"` },
+      headers: {
+        'Content-Type': 'application/pdf',
+        'Content-Length': String(blob.size),
+        'Content-Disposition': `inline; filename="SLIP-GAJI-${pg.nomor}.pdf"`,
+      },
     })
   } catch { return internalError('Gagal generate PDF') }
 }

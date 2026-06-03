@@ -104,7 +104,11 @@ export async function GET(request: NextRequest) {
       : `inline; filename="PPN-MASA-${y}${m}.pdf"`
 
     return new NextResponse(blob, {
-      headers: { 'Content-Type': 'application/pdf', 'Content-Disposition': disposition },
+      headers: {
+        'Content-Type': 'application/pdf',
+        'Content-Length': String(blob.size),
+        'Content-Disposition': disposition,
+      },
     })
   } catch {
     return internalError('Gagal generate PDF')

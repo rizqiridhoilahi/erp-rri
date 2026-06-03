@@ -98,6 +98,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     return new NextResponse(blob, {
       headers: {
         'Content-Type': 'application/pdf',
+        'Content-Length': String(blob.size),
         'Content-Disposition': `inline; filename="${kwt.nomor}.pdf"`,
       },
     })

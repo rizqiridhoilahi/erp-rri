@@ -57,6 +57,20 @@
 - API routes should follow `/api/v1/` versioning pattern
 - No special testing framework configured yet (manual/testing approach varies)
 
+### PDF Route Handlers — Critical Rules
+- **Content-Length WAJIB**: Setiap PDF route handler yang mengembalikan PDF blob via `NextResponse(blob)` HARUS menyertakan `'Content-Length': String(blob.size)` di headers. Tanpa ini, Chrome PDF viewer akan loading terus (Firefox tidak masalah).
+- **Lokasi**: Semua PDF route ada di `src/app/api/v1/{modul}/[id]/pdf/route.ts` — total 13 routes sudah diberi Content-Length.
+- Format response:
+  ```typescript
+  return new NextResponse(blob, {
+    headers: {
+      'Content-Type': 'application/pdf',
+      'Content-Length': String(blob.size),
+      'Content-Disposition': `inline; filename="..."`,
+    },
+  })
+  ```
+
 ## Important Conventions from PRD
 ### Document Numbering
 - Format: `RRI-{KODE}-{YY}-{MM}-{0000}`
@@ -75,9 +89,9 @@
 - To add a new virtual document type: add a `UNION ALL` to the `all_documents` view migration.
 
 ### PDF Download from Document Management Page
-- **Blob fetch pattern**: PDF endpoints require `verifyAuth()` (Bearer token). On the Document Management page (`dokumen/page.tsx`), calls `downloadPdf(url)` which uses `fetch(url, { headers: { Authorization: Bearer ... } })` → blob → `URL.createObjectURL(blob)` → `window.open(blobUrl)`.
-- This bypasses the limitation of `window.open(url, '_blank')` which cannot send custom auth headers.
-- Storage file downloads (Supabase public URLs) use direct `<a download>` or `window.open` — no auth needed.
+- **Simple `window.open` pattern**: The Document Management page (`dokumen/page.tsx`) uses `openFile(url, filename)` which calls `window.open(url, '_blank', 'noopener,noreferrer')` directly.
+- Office documents (.doc, .docx, .xls, .xlsx, .ppt, .pptx) are opened via Google Docs Viewer: `window.open('https://docs.google.com/viewer?url=...&embedded=true', ...)`
+- **Known issue**: Virtual PDF entries (from `all_documents` view) with `fileurl` pointing to API routes like `/api/v1/quotation/{id}/pdf` **cannot** be opened this way because those routes require `verifyAuth()` (Bearer token). `window.open()` cannot send auth headers, so these entries will fail to load.
 
 ### Storage Structure
 - Bucket: `dokumen` (Supabase Storage)

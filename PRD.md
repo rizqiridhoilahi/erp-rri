@@ -599,6 +599,7 @@ Format dokumen akan mengikuti template yang akan disediakan customer di direktor
 4. Gunakan fungsi `createEl()` (lihat template di bawah) untuk membuat elemen — menghasilkan `$$typeof: Symbol.for('react.element')` (React 18)
 5. Di route handler, cast hasil sebagai `as any` saat passing ke `pdf()` untuk menghindari TypeScript error
 6. Font registration: gunakan URL-encoded space (`Arial%20Bold.ttf`) untuk nama file yang mengandung spasi
+7. **Content-Length header WAJIB** di setiap PDF route handler: `'Content-Length': String(blob.size)` — Chrome's built-in PDF viewer membutuhkan `Content-Length` untuk menampilkan progress dan tahu kapan response selesai. Firefox / pdf.js tidak memerlukannya. Semua 13 PDF routes sudah menerapkan ini.
 
 **Template PDF Component (`*.ts`):**
 ```typescript

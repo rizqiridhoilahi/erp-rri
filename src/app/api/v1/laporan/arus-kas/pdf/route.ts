@@ -101,6 +101,7 @@ export async function GET(request: NextRequest) {
     return new NextResponse(blob, {
       headers: {
         'Content-Type': 'application/pdf',
+        'Content-Length': String(blob.size),
         'Content-Disposition': disposition,
       },
     })
