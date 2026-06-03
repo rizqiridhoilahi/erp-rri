@@ -72,7 +72,6 @@ export default async function GudangDashboard() {
               { href: '/dashboard/inventory/stok', label: 'Kartu Stok', icon: ClipboardList },
               { href: '/dashboard/inventory/gudang', label: 'Master Gudang', icon: Building2 },
               { href: '/dashboard/delivery-order', label: 'List DO', icon: ClipboardList },
-              { href: '/dashboard/delivery-order/tambah', label: 'Buat DO', icon: Package },
             ].map(item => (
               <Link key={item.href} href={item.href} className="flex items-center gap-3 rounded-xl bg-white dark:bg-primary/5 border border-primary/10 dark:border-primary/20 p-3 hover:scale-[1.02] hover:shadow-[0_4px_12px_rgba(0,0,255,0.06)] dark:hover:shadow-xl transition-all duration-200">
                 <div className="bg-primary/10 p-2 rounded-lg">

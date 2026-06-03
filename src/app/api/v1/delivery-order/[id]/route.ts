@@ -9,11 +9,36 @@ import { generateInvoiceJournal } from '@/lib/auto-jurnal'
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const auth = await verifyAuth(_request); if (auth.error) return auth.error
   const { id } = await params
-  const { data: sj, error } = await supabaseAdmin.from('delivery_order').select('*, sales_order!sales_order_id(nomor), kendaraan!kendaraan_id(nama, no_polisi)').eq('id', id).single()
+  const { data: sj, error } = await supabaseAdmin.from('delivery_order').select('*, sales_order!sales_order_id(nomor), kendaraan!kendaraan_id(nama, no_polisi), gudang!gudang_id(nama)').eq('id', id).single()
   if (error) return internalError(error)
   if (!sj) return notFound('Delivery Order tidak ditemukan')
   const { data: items } = await supabaseAdmin.from('delivery_order_item').select('*, barang!barang_id(nama, kode, satuan, barcode)').eq('delivery_order_id', id).order('urutan')
-  return NextResponse.json({ data: { ...sj, items: items ?? [] } })
+
+  let customerId: string | null = null
+  if (sj.sales_order_id) {
+    const { data: so } = await supabaseAdmin
+      .from('sales_order')
+      .select('customer_po_id, di_id')
+      .eq('id', sj.sales_order_id)
+      .single()
+    if (so?.customer_po_id) {
+      const { data: po } = await supabaseAdmin
+        .from('customer_po')
+        .select('customer_id')
+        .eq('id', so.customer_po_id)
+        .single()
+      customerId = po?.customer_id ?? null
+    } else if (so?.di_id) {
+      const { data: di } = await supabaseAdmin
+        .from('di')
+        .select('customer_id')
+        .eq('id', so.di_id)
+        .single()
+      customerId = di?.customer_id ?? null
+    }
+  }
+
+  return NextResponse.json({ data: { ...sj, customer_id: customerId, items: items ?? [] } })
 }
 
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -45,6 +70,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
   if (body.keterangan !== undefined) upd.keterangan = body.keterangan
   if (body.alasan_penolakan !== undefined) upd.alasan_penolakan = body.alasan_penolakan
   if (body.kendaraan_id !== undefined) upd.kendaraan_id = body.kendaraan_id || null
+  if (body.gudang_id !== undefined) upd.gudang_id = body.gudang_id || null
   if (body.delivery_slip_nomor !== undefined) upd.delivery_slip_nomor = body.delivery_slip_nomor
   if (body.delivery_slip_file_url !== undefined) upd.delivery_slip_file_url = body.delivery_slip_file_url
   upd.updated_at = new Date().toISOString()
@@ -56,10 +82,17 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
   if (body.items) {
     await supabaseAdmin.from('delivery_order_item').delete().eq('delivery_order_id', id)
     const now = new Date().toISOString()
-    const items = body.items.map((item: { barang_id: string; jumlah: number; keterangan?: string }, idx: number) => ({
-      delivery_order_id: id, barang_id: item.barang_id, jumlah: item.jumlah,
-      keterangan: item.keterangan ?? null, urutan: idx + 1, created_at: now, updated_at: now,
-    }))
+    const barangIds = body.items.map((i: { barang_id: string }) => i.barang_id)
+    const { data: barangs } = await supabaseAdmin.from('barang').select('id, nama, kode, satuan').in('id', barangIds)
+    const barangMap = new Map(barangs?.map(b => [b.id, b]) ?? [])
+    const items = body.items.map((item: { barang_id: string; jumlah: number; keterangan?: string }, idx: number) => {
+      const b = barangMap.get(item.barang_id)
+      return {
+        delivery_order_id: id, barang_id: item.barang_id, jumlah: item.jumlah,
+        nama_barang: b?.nama ?? null, kode_barang: b?.kode ?? null, satuan: b?.satuan ?? null,
+        keterangan: item.keterangan ?? null, urutan: idx + 1, created_at: now, updated_at: now,
+      }
+    })
     const { error: itemsError } = await supabaseAdmin.from('delivery_order_item').insert(items)
     if (itemsError) return internalError(itemsError)
   }
@@ -183,6 +216,51 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
               }))
               await supabaseAdmin.from('kwitansi_item').insert(kwtItems)
             }
+          }
+        }
+      }
+
+      // Auto-generate draft GRN Customer
+      const { data: existingGrnc } = await supabaseAdmin
+        .from('grn_customer')
+        .select('id')
+        .eq('delivery_order_id', id)
+        .maybeSingle()
+
+      if (!existingGrnc) {
+        const { data: doItems } = await supabaseAdmin
+          .from('delivery_order_item')
+          .select('barang_id, jumlah, keterangan, nama_barang, kode_barang, satuan, urutan')
+          .eq('delivery_order_id', id)
+
+        if (doItems && doItems.length > 0 && data.gudang_id) {
+          const nomorGrnc = await generateDocumentNumber('GRNC')
+          const { data: grnc, error: grncErr } = await supabaseAdmin.from('grn_customer').insert({
+            nomor: nomorGrnc,
+            delivery_order_id: id,
+            customer_id: customerId,
+            gudang_id: data.gudang_id,
+            tanggal: now,
+            status: 'draft',
+            keterangan: `Auto-generated from Delivery Order ${data.nomor}`,
+            created_at: now,
+            updated_at: now,
+          }).select().single()
+
+          if (!grncErr && grnc) {
+            const grncItems = doItems.map((item: { barang_id: string; jumlah: number; keterangan?: string; nama_barang?: string | null; kode_barang?: string | null; satuan?: string | null; urutan?: number | null }) => ({
+              grn_customer_id: grnc.id,
+              barang_id: item.barang_id,
+              jumlah: item.jumlah,
+              nama_barang: item.nama_barang ?? null,
+              kode_barang: item.kode_barang ?? null,
+              satuan: item.satuan ?? null,
+              urutan: item.urutan ?? null,
+              keterangan: item.keterangan ?? null,
+              created_at: now,
+              updated_at: now,
+            }))
+            await supabaseAdmin.from('grn_customer_item').insert(grncItems)
           }
         }
       }

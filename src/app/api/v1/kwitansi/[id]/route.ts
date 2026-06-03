@@ -6,11 +6,42 @@ import { badRequest, notFound, internalError } from '@/lib/api/errors'
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const auth = await verifyAuth(_request); if (auth.error) return auth.error
   const { id } = await params
-  const { data: kwt, error } = await supabaseAdmin.from('kwitansi').select('*, invoice!invoice_id(nomor)').eq('id', id).single()
+  const { data: kwt, error } = await supabaseAdmin.from('kwitansi').select('*, invoice!invoice_id(nomor, tanggal, top, status, customer!customer_id(nama, kode), sales_order!sales_order_id(nomor, di!fk_sales_order_di(nomor, nomor_di_customer, kontrak_id, customer_pic(nama, jabatan))))').eq('id', id).single()
   if (error) return internalError(error)
   if (!kwt) return notFound('Kwitansi tidak ditemukan')
+
+  if (kwt.status === 'draft' && (kwt as Record<string, unknown>).invoice && ((kwt as Record<string, unknown>).invoice as Record<string, unknown>).status === 'paid') {
+    const now = new Date().toISOString()
+    const { error: autoErr } = await supabaseAdmin.from('kwitansi').update({ status: 'completed', updated_at: now }).eq('id', id)
+    if (!autoErr) kwt.status = 'completed'
+  }
+
   const { data: items } = await supabaseAdmin.from('kwitansi_item').select('*, invoice_item!invoice_item_id(barang_id, harga_satuan, harga, barang!barang_id(nama, kode, satuan))').eq('kwitansi_id', id)
-  return NextResponse.json({ data: { ...kwt, items: items ?? [] } })
+
+  type SalesOrderWithPIC = {
+    nomor: string
+    di?: {
+      nomor?: string
+      nomor_di_customer?: string
+      kontrak_id?: string
+      customer_pic?: { nama: string; jabatan: string }
+    } | null
+  }
+
+  type KwitansiWithInvoice = {
+    invoice?: { sales_order?: SalesOrderWithPIC | null } | null
+  }
+
+  const salesOrder = (kwt as KwitansiWithInvoice).invoice?.sales_order
+  let kontrak_nomor: string | null = null
+  if (salesOrder?.di?.kontrak_id) {
+    const { data: kontrak } = await supabaseAdmin.from('kontrak').select('nomor_kontrak').eq('id', salesOrder.di.kontrak_id).single()
+    if (kontrak) kontrak_nomor = kontrak.nomor_kontrak
+  }
+  const pic_nama = salesOrder?.di?.customer_pic?.nama ?? null
+  const pic_jabatan = salesOrder?.di?.customer_pic?.jabatan ?? null
+
+  return NextResponse.json({ data: { ...kwt, items: items ?? [], kontrak_nomor, pic_nama, pic_jabatan } })
 }
 
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {

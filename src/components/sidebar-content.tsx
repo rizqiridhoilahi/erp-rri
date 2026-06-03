@@ -59,9 +59,10 @@ const menuItems: MenuItem[] = [
   ]},
   { label: 'Sales', icon: ShoppingCart, children: [
     { href: '/dashboard/customer-po', label: 'Customer PO', icon: FileText },
+    { href: '/dashboard/di', label: 'Delivery Instruction', icon: FileText },
     { href: '/dashboard/sales-order', label: 'Sales Order', icon: FileText },
-    { href: '/dashboard/di', label: 'Delivery Instr.', icon: FileText },
     { href: '/dashboard/delivery-order', label: 'Delivery Order', icon: FileText },
+    { href: '/dashboard/grn-customer', label: 'GRN Customer', icon: FileText },
     { href: '/dashboard/retur-penjualan', label: 'Retur Penjualan', icon: FileText },
   ]},
   { label: 'Procurement', icon: Package, children: [
@@ -249,7 +250,7 @@ function SidebarGroup({ group, defaultOpen, collapsed }: { group: MenuGroup; def
     <div className="space-y-1">
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center w-full px-3 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors"
+        className="flex items-center w-full px-3 py-2 text-xs font-semibold uppercase tracking-wider text-primary/70 hover:text-primary transition-colors"
       >
         <group.icon className="h-3.5 w-3.5 mr-2 shrink-0" />
         <span className="flex-1 text-left">{group.label}</span>

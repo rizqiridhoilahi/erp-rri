@@ -76,6 +76,9 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
   if (newStatus !== inv.status) {
     await supabaseAdmin.from('invoice').update({ status: newStatus, updated_at: now }).eq('id', id)
+    if (newStatus === 'paid') {
+      await supabaseAdmin.from('kwitansi').update({ status: 'completed', updated_at: now }).eq('invoice_id', id).eq('status', 'draft')
+    }
   }
 
   await generatePaymentJournal(id, payment.id, body.amount, tanggal)

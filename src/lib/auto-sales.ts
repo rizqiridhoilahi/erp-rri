@@ -161,18 +161,25 @@ export async function generateDOFromSO(salesOrderId: string) {
   }).select().single()
   if (sjError) return { success: false, error: sjError.message }
 
-  const doItems = items.map((i, idx) => ({
-    delivery_order_id: sj.id,
-    barang_id: i.barang_id,
-    jumlah: i.jumlah,
-    nama_barang: i.nama_barang ?? null,
-    kode_barang: i.kode_barang ?? null,
-    satuan: i.satuan ?? null,
-    keterangan: i.keterangan ?? null,
-    urutan: idx + 1,
-    created_at: now,
-    updated_at: now,
-  }))
+  const barangIds = items.map(i => i.barang_id)
+  const { data: barangs } = await supabaseAdmin.from('barang').select('id, nama, kode, satuan').in('id', barangIds)
+  const barangMap = new Map(barangs?.map(b => [b.id, b]) ?? [])
+
+  const doItems = items.map((i, idx) => {
+    const b = barangMap.get(i.barang_id)
+    return {
+      delivery_order_id: sj.id,
+      barang_id: i.barang_id,
+      jumlah: i.jumlah,
+      nama_barang: i.nama_barang ?? b?.nama ?? null,
+      kode_barang: i.kode_barang ?? b?.kode ?? null,
+      satuan: i.satuan ?? b?.satuan ?? null,
+      keterangan: i.keterangan ?? null,
+      urutan: idx + 1,
+      created_at: now,
+      updated_at: now,
+    }
+  })
 
   const { error: itemsError } = await supabaseAdmin.from('delivery_order_item').insert(doItems)
   if (itemsError) {

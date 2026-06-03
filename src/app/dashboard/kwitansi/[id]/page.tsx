@@ -7,9 +7,8 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
-import { ArrowLeft, Pencil, FileText, Loader2, CheckCircle2, AlertTriangle } from 'lucide-react'
+import { ArrowLeft, Pencil, FileText, Loader2 } from 'lucide-react'
 import { KwitansiPdfActions } from "@/components/kwitansi-pdf-actions"
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 import { CompactFileUpload, type DocumentFile } from "@/components/compact-file-upload"
 import { toast } from "sonner"
 
@@ -33,11 +32,26 @@ interface KwitansiItem {
 interface KwitansiData {
   id: string
   nomor: string
-  invoice: { nomor: string; customer: { nama: string; kode: string } | null } | null
+  invoice: {
+    nomor: string
+    tanggal: string
+    top: string
+    customer: { nama: string; kode: string } | null
+    sales_order?: {
+      nomor: string
+      di?: {
+        nomor: string
+        nomor_di_customer: string | null
+      } | null
+    } | null
+  } | null
   tanggal: string
   status: string
   keterangan: string | null
   items: KwitansiItem[]
+  kontrak_nomor: string | null
+  pic_nama: string | null
+  pic_jabatan: string | null
 }
 
 export default function KwitansiDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -47,7 +61,6 @@ export default function KwitansiDetailPage({ params }: { params: Promise<{ id: s
   const [error, setError] = useState<string | null>(null)
   const [documents, setDocuments] = useState<DocumentFile[]>([])
   const [uploading, setUploading] = useState(false)
-  const [statusLoading, setStatusLoading] = useState(false)
 
   useEffect(() => {
     params.then(p => setId(p.id))
@@ -89,24 +102,6 @@ export default function KwitansiDetailPage({ params }: { params: Promise<{ id: s
       toast.success("File berhasil dihapus")
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Gagal hapus file")
-    }
-  }
-
-  const handleComplete = async () => {
-    if (!id) return
-    setStatusLoading(true)
-    try {
-      await apiFetch(`/api/v1/kwitansi/${id}`, {
-        method: 'PUT',
-        body: JSON.stringify({ status: 'completed' }),
-      })
-      toast.success('Kwitansi diselesaikan!')
-      const r = await apiFetch<KwitansiData>(`/api/v1/kwitansi/${id}`)
-      if (r.data) setData(r.data)
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Gagal mengubah status')
-    } finally {
-      setStatusLoading(false)
     }
   }
 
@@ -152,55 +147,14 @@ export default function KwitansiDetailPage({ params }: { params: Promise<{ id: s
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" asChild><Link href="/dashboard/kwitansi"><ArrowLeft className="h-5 w-5" /></Link></Button>
           <div>
-            <div className="flex items-center gap-3">
-              <h1 className="text-3xl font-heading font-bold">{data.nomor}</h1>
-              <Badge variant={statusMap[data.status]?.variant ?? 'outline'}>
-                {statusMap[data.status]?.label ?? data.status}
-              </Badge>
-            </div>
-            <p className="text-muted-foreground mt-1">Tanda terima pembayaran</p>
+            <h1 className="text-3xl font-heading font-bold">Detail Kwitansi</h1>
+            <p className="text-muted-foreground mt-1">{data.nomor}</p>
           </div>
         </div>
-        <div className="flex gap-2">
-          {data.status === 'draft' && (
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button disabled={statusLoading} className="bg-[#22C55E] text-white hover:bg-[#16A34A] dark:bg-[#15803D] dark:hover:bg-[#166534]">
-                  {statusLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <CheckCircle2 className="h-4 w-4 mr-2" />}
-                  Selesaikan
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle className="flex items-center gap-2">
-                    <AlertTriangle className="h-5 w-5 text-amber-500" />
-                    Konfirmasi Selesaikan Kwitansi
-                  </AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Apakah Anda yakin ingin menyelesaikan kwitansi <span className="font-medium text-foreground">{data.nomor}</span>?
-                    Setelah diselesaikan, status tidak dapat dikembalikan ke draft.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel disabled={statusLoading}>Batal</AlertDialogCancel>
-                  <AlertDialogAction
-                    onClick={(e) => {
-                      e.preventDefault()
-                      handleComplete()
-                    }}
-                    className="bg-[#22C55E] text-white hover:bg-[#16A34A]"
-                    disabled={statusLoading}
-                  >
-                    {statusLoading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                    Ya, Selesaikan
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          )}
+        <div className="flex gap-2 items-center">
           <KwitansiPdfActions kwtId={id} nomor={data.nomor} />
           {data.status === 'draft' && (
-            <Button variant="outline" size="sm" asChild>
+            <Button className="bg-primary text-primary-foreground hover:opacity-95" asChild>
               <Link href={`/dashboard/kwitansi/${id}/edit`}><Pencil className="h-4 w-4 mr-2" />Edit</Link>
             </Button>
           )}
@@ -209,35 +163,83 @@ export default function KwitansiDetailPage({ params }: { params: Promise<{ id: s
 
       <Card>
         <CardContent className="pt-6">
-          <div className="grid grid-cols-2 gap-6">
-            <div>
-              <p className="text-sm text-muted-foreground">Invoice Ref</p>
-              <p className="font-medium">{data.invoice?.nomor ?? '-'}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Customer</p>
-              <p className="font-medium">{data.invoice?.customer?.nama ?? '-'}</p>
-              {data.invoice?.customer?.kode && (
-                <p className="text-xs text-muted-foreground">{data.invoice.customer.kode}</p>
-              )}
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Tanggal</p>
-              <p className="font-medium">{new Date(data.tanggal).toLocaleDateString('id-ID')}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Status</p>
-              <Badge variant={statusMap[data.status]?.variant ?? 'outline'}>
-                {statusMap[data.status]?.label ?? data.status}
-              </Badge>
-            </div>
-            {data.keterangan && (
-              <div className="col-span-2">
-                <p className="text-sm text-muted-foreground">Keterangan</p>
-                <p className="font-medium">{data.keterangan}</p>
-              </div>
-            )}
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-lg font-semibold">Status Kwitansi</h3>
+            <Badge variant={statusMap[data.status]?.variant ?? 'outline'} className="text-sm px-4 py-1">
+              {statusMap[data.status]?.label ?? data.status}
+            </Badge>
           </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardContent className="pt-6">
+          {(() => {
+            const invDate = (() => { try { return new Date(data.invoice?.tanggal ?? '') } catch { return null } })()
+            const topDays = (() => { const m = String(data.invoice?.top ?? '').match(/\d+/); return m ? Number(m[0]) : NaN })()
+            const jatuhTempoDate = (() => {
+              if (!invDate || isNaN(invDate.getTime()) || isNaN(topDays)) return null
+              const d = new Date(invDate)
+              d.setDate(d.getDate() + topDays)
+              return isNaN(d.getTime()) ? null : d
+            })()
+            const isValidDate = jatuhTempoDate !== null && !isNaN(jatuhTempoDate.getTime())
+            const isOverdue = isValidDate ? new Date() > jatuhTempoDate : false
+            return (
+              <div className="grid grid-cols-2 gap-6">
+                <div>
+                  <p className="text-sm text-muted-foreground">Invoice Ref</p>
+                  <p className="font-medium">{data.invoice?.nomor ?? '-'}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Customer</p>
+                  <p className="font-medium">{data.invoice?.customer?.nama ?? '-'}</p>
+                  {data.invoice?.customer?.kode && (
+                    <p className="text-xs text-muted-foreground">{data.invoice.customer.kode}</p>
+                  )}
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Kontrak Ref</p>
+                  <p className="font-medium">{data.kontrak_nomor ?? '-'}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">DI Cust. Ref</p>
+                  <p className="font-medium">{data.invoice?.sales_order?.di?.nomor_di_customer ?? '-'}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">PIC Customer</p>
+                  {data.pic_nama ? (
+                    <>
+                      <p className="font-medium">{data.pic_nama}</p>
+                      {data.pic_jabatan && <p className="text-xs text-muted-foreground">{data.pic_jabatan}</p>}
+                    </>
+                  ) : (
+                    <p className="font-medium">-</p>
+                  )}
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Tanggal</p>
+                  <p className="font-medium">{new Date(data.tanggal).toLocaleDateString('id-ID')}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Jatuh Tempo Pembayaran Invoice</p>
+                  {isValidDate ? (
+                    <span className={`inline-block mt-1 px-2 py-0.5 rounded text-xs font-medium ${isOverdue ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200" : "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"}`}>
+                      {jatuhTempoDate.toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}
+                    </span>
+                  ) : (
+                    <span className="mt-1 text-xs text-muted-foreground">-</span>
+                  )}
+                </div>
+                {data.keterangan && (
+                  <div className="col-span-2">
+                    <p className="text-sm text-muted-foreground">Keterangan</p>
+                    <p className="font-medium">{data.keterangan}</p>
+                  </div>
+                )}
+              </div>
+            )
+          })()}
         </CardContent>
       </Card>
 

@@ -5,6 +5,7 @@ export const deliveryOrder = pgTable("delivery_order", {
  id: text("id").primaryKey().default(sql`gen_random_uuid()::text`),
  nomor: text("nomor").notNull().unique(),
  salesOrderId: text("sales_order_id").notNull(),
+ gudangId: text("gudang_id"),
  tanggal: timestamp("tanggal").notNull(),
  status: text("status").notNull().default("draft"),
  keterangan: text("keterangan"),

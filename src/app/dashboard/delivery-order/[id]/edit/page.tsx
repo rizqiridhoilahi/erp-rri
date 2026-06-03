@@ -19,10 +19,10 @@ import { toast } from 'sonner'
 
 interface Kendaraan { id: string; nama: string; no_polisi: string; is_active: boolean }
 
-interface DoItem { id: string; barang_id: string; jumlah: number; keterangan: string | null; barang: { nama: string; kode: string; satuan: string } | null }
+interface DoItem { id: string; barang_id: string; jumlah: number; keterangan: string | null; nama_barang?: string | null; kode_barang?: string | null; satuan?: string | null; barang: { nama: string; kode: string; satuan: string } | null }
 
 interface DoData {
-  id: string; nomor: string; sales_order_id: string; sales_order: { nomor: string } | null
+  id: string; nomor: string; sales_order_id: string; sales_order: { nomor: string } | null; gudang_id: string | null; gudang: { nama: string } | null
   tanggal: string; status: string; kendaraan_id: string | null; keterangan: string | null
   items: DoItem[]
 }
@@ -31,6 +31,7 @@ const schema = z.object({
   tanggal: z.string().min(1, 'Tanggal harus diisi'),
   status: z.string().optional(),
   kendaraan_id: z.string().optional(),
+  gudang_id: z.string().optional(),
   keterangan: z.string().optional(),
 })
 type FV = z.input<typeof schema>
@@ -50,12 +51,13 @@ export default function EditDoPage() {
   const params = useParams()
   const [doData, setDoData] = useState<DoData | null>(null)
   const [kendaraanList, setKendaraanList] = useState<Kendaraan[]>([])
+  const [gudangList, setGudangList] = useState<Array<{ id: string; nama: string }>>([])
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
 
   const form = useForm<FV>({
     resolver: zodResolver(schema),
-    defaultValues: { tanggal: '', status: 'draft', kendaraan_id: CLEAR_VALUE, keterangan: '' },
+    defaultValues: { tanggal: '', status: 'draft', kendaraan_id: CLEAR_VALUE, gudang_id: CLEAR_VALUE, keterangan: '' },
   })
 
   useEffect(() => {
@@ -63,15 +65,18 @@ export default function EditDoPage() {
     Promise.all([
       apiFetch<DoData>(`/api/v1/delivery-order/${params.id}`),
       apiFetch<Kendaraan[]>('/api/v1/system/kendaraan'),
-    ]).then(([doRes, kendRes]) => {
+      apiFetch<Array<{ id: string; nama: string }>>('/api/v1/master/gudang'),
+    ]).then(([doRes, kendRes, gudangRes]) => {
       const d = doRes.data
       const kl = kendRes.data ?? []
       setDoData(d)
       setKendaraanList(kl)
+      setGudangList(gudangRes.data ?? [])
       form.reset({
         tanggal: d.tanggal ? d.tanggal.split('T')[0] : '',
         status: d.status,
         kendaraan_id: d.kendaraan_id ?? CLEAR_VALUE,
+        gudang_id: d.gudang_id ?? CLEAR_VALUE,
         keterangan: d.keterangan ?? '',
       })
       setLoading(false)
@@ -89,6 +94,7 @@ export default function EditDoPage() {
         body: JSON.stringify({
           ...data,
           kendaraan_id: data.kendaraan_id === CLEAR_VALUE ? null : data.kendaraan_id,
+          gudang_id: data.gudang_id === CLEAR_VALUE ? null : data.gudang_id,
         }),
       })
       toast.success('DO berhasil diupdate!')
@@ -138,8 +144,8 @@ export default function EditDoPage() {
           </Card>
 
           <Card>
-            <CardHeader><CardTitle className="text-base flex items-center gap-2"><Truck className="h-4 w-4" />Kendaraan</CardTitle></CardHeader>
-            <CardContent>
+            <CardHeader><CardTitle className="text-base flex items-center gap-2"><Truck className="h-4 w-4" />Kendaraan & Gudang</CardTitle></CardHeader>
+            <CardContent className="space-y-4">
               <FormField control={form.control} name="kendaraan_id" render={({ field }) => (
                 <FormItem><FormLabel>Pilih Kendaraan</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
@@ -148,6 +154,20 @@ export default function EditDoPage() {
                       <SelectItem value={CLEAR_VALUE}>-- Kosongkan Data Kendaraan --</SelectItem>
                       {kendaraanList.filter(k => k.is_active).map(k => (
                         <SelectItem key={k.id} value={k.id}>{k.nama} ({k.no_polisi})</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )} />
+              <FormField control={form.control} name="gudang_id" render={({ field }) => (
+                <FormItem><FormLabel>Gudang</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl><SelectTrigger><SelectValue placeholder="Pilih gudang..." /></SelectTrigger></FormControl>
+                    <SelectContent>
+                      <SelectItem value={CLEAR_VALUE}>-- Kosongkan Data Gudang --</SelectItem>
+                      {gudangList.map(k => (
+                        <SelectItem key={k.id} value={k.id}>{k.nama}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -174,10 +194,10 @@ export default function EditDoPage() {
                   <TableBody>
                     {doData.items.map(item => (
                       <TableRow key={item.id}>
-                        <TableCell className="font-medium">{item.barang?.nama ?? '-'}</TableCell>
-                        <TableCell className="text-muted-foreground">{item.barang?.kode ?? '-'}</TableCell>
+                        <TableCell className="font-medium">{item.nama_barang ?? item.barang?.nama ?? '-'}</TableCell>
+                        <TableCell className="text-muted-foreground">{item.kode_barang ?? item.barang?.kode ?? '-'}</TableCell>
                         <TableCell className="text-right">{item.jumlah}</TableCell>
-                        <TableCell>{item.barang?.satuan ?? '-'}</TableCell>
+                        <TableCell>{item.satuan ?? item.barang?.satuan ?? '-'}</TableCell>
                         <TableCell className="text-muted-foreground">{item.keterangan ?? '-'}</TableCell>
                       </TableRow>
                     ))}

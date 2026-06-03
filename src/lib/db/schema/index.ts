@@ -85,6 +85,9 @@ import { kendaraan } from "./kendaraan";
 import { diDocument } from "./di-document";
 import { grnDocument } from "./grn-document";
 import { deliveryOrderDocument } from "./delivery-order-document";
+import { grnCustomer } from "./grn-customer";
+import { grnCustomerItem } from "./grn-customer-item";
+import { grnCustomerDocument } from "./grn-customer-document";
 
 export {
   users,
@@ -172,5 +175,8 @@ export {
   diDocument,
   grnDocument,
   deliveryOrderDocument,
-  kendaraan
+  kendaraan,
+  grnCustomer,
+  grnCustomerItem,
+  grnCustomerDocument
 };

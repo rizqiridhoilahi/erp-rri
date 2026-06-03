@@ -58,9 +58,18 @@ export async function POST(request: NextRequest) {
   }).select().single()
   if (returError) return internalError(returError)
 
-  const items = parsed.data.items.map(i => ({
-    retur_penjualan_id: retur.id, barang_id: i.barang_id, jumlah: i.jumlah, keterangan: i.keterangan ?? null, created_at: now, updated_at: now,
-  }))
+  const barangIds = [...new Set(parsed.data.items.map(i => i.barang_id))]
+  const { data: barangList } = await supabaseAdmin.from('barang').select('id, nama, kode, satuan').in('id', barangIds)
+  const barangMap = new Map((barangList ?? []).map(b => [b.id, b]))
+
+  const items = parsed.data.items.map(i => {
+    const b = barangMap.get(i.barang_id)
+    return {
+      retur_penjualan_id: retur.id, barang_id: i.barang_id, jumlah: i.jumlah,
+      nama_barang: b?.nama ?? null, kode_barang: b?.kode ?? null, satuan: b?.satuan ?? null,
+      keterangan: i.keterangan ?? null, created_at: now, updated_at: now,
+    }
+  })
   const { error: ie } = await supabaseAdmin.from('retur_penjualan_item').insert(items)
   if (ie) { await supabaseAdmin.from('retur_penjualan').delete().eq('id', retur.id); return internalError(ie) }
 
