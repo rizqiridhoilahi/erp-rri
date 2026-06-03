@@ -4,61 +4,68 @@ import { verifyAuth } from '@/lib/api/auth'
 import { internalError } from '@/lib/api/errors'
 
 async function resolveDiNomor(diNomor: string): Promise<string[]> {
-  const { data: di } = await supabaseAdmin
+  const { data: diList } = await supabaseAdmin
     .from('di')
     .select('id, kontrak_id')
     .eq('nomor_di_customer', diNomor)
-    .maybeSingle()
 
-  if (!di) return []
+  if (!diList || diList.length === 0) return []
 
-  const uuids: string[] = [di.id]
-  if (di.kontrak_id) uuids.push(di.kontrak_id)
+  const uuids: string[] = []
+  const diIds: string[] = []
 
-  const { data: soList } = await supabaseAdmin
-    .from('sales_order')
-    .select('id')
-    .eq('di_id', di.id)
+  for (const di of diList) {
+    uuids.push(di.id)
+    diIds.push(di.id)
+    if (di.kontrak_id) uuids.push(di.kontrak_id)
+  }
 
-  const soIds = (soList ?? []).map(s => s.id)
-  uuids.push(...soIds)
+  if (diIds.length > 0) {
+    const { data: soList } = await supabaseAdmin
+      .from('sales_order')
+      .select('id')
+      .in('di_id', diIds)
 
-  if (soIds.length > 0) {
-    const [doResult, invResult] = await Promise.all([
-      supabaseAdmin.from('delivery_order').select('id').in('sales_order_id', soIds),
-      supabaseAdmin.from('invoice').select('id').in('sales_order_id', soIds),
-    ])
+    const soIds = (soList ?? []).map(s => s.id)
+    uuids.push(...soIds)
 
-    const doIds = (doResult.data ?? []).map(d => d.id)
-    const invIds = (invResult.data ?? []).map(i => i.id)
-    uuids.push(...doIds, ...invIds)
-
-    if (invIds.length > 0) {
-      const { data: kwList } = await supabaseAdmin
-        .from('kwitansi')
-        .select('id')
-        .in('invoice_id', invIds)
-      uuids.push(...(kwList ?? []).map(k => k.id))
-    }
-
-    if (doIds.length > 0) {
-      const [rpResult, gcByDoResult] = await Promise.all([
-        supabaseAdmin.from('retur_penjualan').select('id').in('delivery_order_id', doIds),
-        supabaseAdmin.from('grn_customer').select('id').in('delivery_order_id', doIds),
+    if (soIds.length > 0) {
+      const [doResult, invResult] = await Promise.all([
+        supabaseAdmin.from('delivery_order').select('id').in('sales_order_id', soIds),
+        supabaseAdmin.from('invoice').select('id').in('sales_order_id', soIds),
       ])
 
-      const rpIds = (rpResult.data ?? []).map(r => r.id)
-      uuids.push(...rpIds)
+      const doIds = (doResult.data ?? []).map(d => d.id)
+      const invIds = (invResult.data ?? []).map(i => i.id)
+      uuids.push(...doIds, ...invIds)
 
-      const gcIds = (gcByDoResult.data ?? []).map(g => g.id)
-      uuids.push(...gcIds)
-
-      if (rpIds.length > 0) {
-        const { data: gcByRpList } = await supabaseAdmin
-          .from('grn_customer')
+      if (invIds.length > 0) {
+        const { data: kwList } = await supabaseAdmin
+          .from('kwitansi')
           .select('id')
-          .in('retur_penjualan_id', rpIds)
-        uuids.push(...(gcByRpList ?? []).map(g => g.id))
+          .in('invoice_id', invIds)
+        uuids.push(...(kwList ?? []).map(k => k.id))
+      }
+
+      if (doIds.length > 0) {
+        const [rpResult, gcByDoResult] = await Promise.all([
+          supabaseAdmin.from('retur_penjualan').select('id').in('delivery_order_id', doIds),
+          supabaseAdmin.from('grn_customer').select('id').in('delivery_order_id', doIds),
+        ])
+
+        const rpIds = (rpResult.data ?? []).map(r => r.id)
+        uuids.push(...rpIds)
+
+        const gcIds = (gcByDoResult.data ?? []).map(g => g.id)
+        uuids.push(...gcIds)
+
+        if (rpIds.length > 0) {
+          const { data: gcByRpList } = await supabaseAdmin
+            .from('grn_customer')
+            .select('id')
+            .in('retur_penjualan_id', rpIds)
+          uuids.push(...(gcByRpList ?? []).map(g => g.id))
+        }
       }
     }
   }
@@ -67,81 +74,88 @@ async function resolveDiNomor(diNomor: string): Promise<string[]> {
 }
 
 async function resolvePoNomor(poNomor: string): Promise<string[]> {
-  const { data: cpo } = await supabaseAdmin
+  const { data: cpoList } = await supabaseAdmin
     .from('customer_po')
     .select('id, quotation_id')
     .eq('nomor_po_customer', poNomor)
-    .maybeSingle()
 
-  if (!cpo) return []
+  if (!cpoList || cpoList.length === 0) return []
 
-  const uuids: string[] = [cpo.id]
-  if (cpo.quotation_id) {
-    uuids.push(cpo.quotation_id)
-    const { data: q } = await supabaseAdmin
-      .from('quotation')
-      .select('rfq_id')
-      .eq('id', cpo.quotation_id)
-      .maybeSingle()
-    if (q?.rfq_id) uuids.push(q.rfq_id)
-  }
+  const uuids: string[] = []
+  const cpoIds: string[] = []
 
-  const { data: soList } = await supabaseAdmin
-    .from('sales_order')
-    .select('id, di_id')
-    .eq('customer_po_id', cpo.id)
-
-  const soIds = (soList ?? []).map(s => s.id)
-  uuids.push(...soIds)
-
-  for (const so of soList ?? []) {
-    if (so.di_id) {
-      uuids.push(so.di_id)
-      const { data: di } = await supabaseAdmin
-        .from('di')
-        .select('kontrak_id')
-        .eq('id', so.di_id)
+  for (const cpo of cpoList) {
+    uuids.push(cpo.id)
+    cpoIds.push(cpo.id)
+    if (cpo.quotation_id) {
+      uuids.push(cpo.quotation_id)
+      const { data: q } = await supabaseAdmin
+        .from('quotation')
+        .select('rfq_id')
+        .eq('id', cpo.quotation_id)
         .maybeSingle()
-      if (di?.kontrak_id) uuids.push(di.kontrak_id)
+      if (q?.rfq_id) uuids.push(q.rfq_id)
     }
   }
 
-  if (soIds.length > 0) {
-    const [doResult, invResult] = await Promise.all([
-      supabaseAdmin.from('delivery_order').select('id').in('sales_order_id', soIds),
-      supabaseAdmin.from('invoice').select('id').in('sales_order_id', soIds),
-    ])
+  if (cpoIds.length > 0) {
+    const { data: soList } = await supabaseAdmin
+      .from('sales_order')
+      .select('id, di_id')
+      .in('customer_po_id', cpoIds)
 
-    const doIds = (doResult.data ?? []).map(d => d.id)
-    const invIds = (invResult.data ?? []).map(i => i.id)
-    uuids.push(...doIds, ...invIds)
+    const soIds = (soList ?? []).map(s => s.id)
+    uuids.push(...soIds)
 
-    if (invIds.length > 0) {
-      const { data: kwList } = await supabaseAdmin
-        .from('kwitansi')
-        .select('id')
-        .in('invoice_id', invIds)
-      uuids.push(...(kwList ?? []).map(k => k.id))
+    for (const so of soList ?? []) {
+      if (so.di_id) {
+        uuids.push(so.di_id)
+        const { data: di } = await supabaseAdmin
+          .from('di')
+          .select('kontrak_id')
+          .eq('id', so.di_id)
+          .maybeSingle()
+        if (di?.kontrak_id) uuids.push(di.kontrak_id)
+      }
     }
 
-    if (doIds.length > 0) {
-      const [rpResult, gcByDoResult] = await Promise.all([
-        supabaseAdmin.from('retur_penjualan').select('id').in('delivery_order_id', doIds),
-        supabaseAdmin.from('grn_customer').select('id').in('delivery_order_id', doIds),
+    if (soIds.length > 0) {
+      const [doResult, invResult] = await Promise.all([
+        supabaseAdmin.from('delivery_order').select('id').in('sales_order_id', soIds),
+        supabaseAdmin.from('invoice').select('id').in('sales_order_id', soIds),
       ])
 
-      const rpIds = (rpResult.data ?? []).map(r => r.id)
-      uuids.push(...rpIds)
+      const doIds = (doResult.data ?? []).map(d => d.id)
+      const invIds = (invResult.data ?? []).map(i => i.id)
+      uuids.push(...doIds, ...invIds)
 
-      const gcIds = (gcByDoResult.data ?? []).map(g => g.id)
-      uuids.push(...gcIds)
-
-      if (rpIds.length > 0) {
-        const { data: gcByRpList } = await supabaseAdmin
-          .from('grn_customer')
+      if (invIds.length > 0) {
+        const { data: kwList } = await supabaseAdmin
+          .from('kwitansi')
           .select('id')
-          .in('retur_penjualan_id', rpIds)
-        uuids.push(...(gcByRpList ?? []).map(g => g.id))
+          .in('invoice_id', invIds)
+        uuids.push(...(kwList ?? []).map(k => k.id))
+      }
+
+      if (doIds.length > 0) {
+        const [rpResult, gcByDoResult] = await Promise.all([
+          supabaseAdmin.from('retur_penjualan').select('id').in('delivery_order_id', doIds),
+          supabaseAdmin.from('grn_customer').select('id').in('delivery_order_id', doIds),
+        ])
+
+        const rpIds = (rpResult.data ?? []).map(r => r.id)
+        uuids.push(...rpIds)
+
+        const gcIds = (gcByDoResult.data ?? []).map(g => g.id)
+        uuids.push(...gcIds)
+
+        if (rpIds.length > 0) {
+          const { data: gcByRpList } = await supabaseAdmin
+            .from('grn_customer')
+            .select('id')
+            .in('retur_penjualan_id', rpIds)
+          uuids.push(...(gcByRpList ?? []).map(g => g.id))
+        }
       }
     }
   }

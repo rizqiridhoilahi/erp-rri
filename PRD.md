@@ -447,8 +447,89 @@ Modul dengan document API: `quotation`, `customer-po`, `di`, `invoice`, `deliver
 - **Filter panel**: dropdown Customer, dropdown Modul, input Cari File, Date Range, **Smart Filter DI** (autocomplete combobox), **Smart Filter PO Customer** (autocomplete combobox), tombol Cari & Reset
 - **Smart filter DI/PO**: Menggunakan `DocumentSearchCombobox` (Popover + Command shadcn). Search query dikirim ke autocomplete API dengan debounce 300ms. Setelah user pilih nomor DI/PO, customer dropdown otomatis terisi dengan customer terkait.
 - **Tabel**: Nama File, Modul (badge warna), Nomor Dokumen, Customer, Tanggal, Aksi
-- **Aksi per baris**: Tombol "Buka" + tombol "Download" (icon)
+- **Aksi per baris**: Tombol "Buka" (icon ExternalLink biru), tombol "Download" (icon Download hijau), tombol "Delete" (icon Trash2 merah dengan konfirmasi AlertDialog)
 - **Office docs**: `.doc/.docx/.xls/.xlsx/.ppt/.pptx` dibuka via Google Docs Viewer
+
+#### Badge Warna per Modul
+
+Setiap modul memiliki warna badge yang berbeda untuk memudahkan identifikasi visual. Warna menggunakan CSS variables yang support light dan dark mode.
+
+**Early Stage - Biru:**
+| Modul | Class | Light Mode | Dark Mode |
+|-------|-------|------------|-----------|
+| RFQ Customer | `bg-primary/10 text-primary font-medium` | `#0000FF` at 10% | `#3B82F6` at 10% |
+| RFQ Supplier | `bg-blue-500/10 text-blue-500 font-medium` | `#3B82F6` at 10% | `#3B82F6` at 10% |
+
+**Mid Stage - Kuning/Orange:**
+| Modul | Class | Light Mode | Dark Mode |
+|-------|-------|------------|-----------|
+| Quotation | `bg-warning/10 text-warning font-medium` | `#F59E0B` at 10% | `#F59E0B` at 10% |
+| Customer PO | `bg-orange-500/10 text-orange-500 font-medium` | `#F97316` at 10% | `#FB923C` at 10% |
+| Sales Order | `bg-amber-500/10 text-amber-500 font-medium` | `#F59E0B` at 10% | `#FBBF24` at 10% |
+
+**Active/Shipping - Hijau:**
+| Modul | Class | Light Mode | Dark Mode |
+|-------|-------|------------|-----------|
+| DI | `bg-emerald-500/10 text-emerald-500 font-medium` | `#10B981` at 10% | `#34D399` at 10% |
+| Delivery Order | `bg-green-500/10 text-green-500 font-medium` | `#22C55E` at 10% | `#4ADE80` at 10% |
+| Delivery Slip | `bg-teal-500/10 text-teal-500 font-medium` | `#14B8A6` at 10% | `#2DD4BF` at 10% |
+| Resi Pengiriman | `bg-cyan-500/10 text-cyan-500 font-medium` | `#06B6D4` at 10% | `#22D3EE` at 10% |
+
+**Financial - Merah/Merah Muda:**
+| Modul | Class | Light Mode | Dark Mode |
+|-------|-------|------------|-----------|
+| Invoice | `bg-destructive/10 text-destructive font-medium` | `#EF4444` at 10% | `#F87171` at 10% |
+| Kwitansi | `bg-rose-500/10 text-rose-500 font-medium` | `#F43F5E` at 10% | `#FB7185` at 10% |
+| Tanda Terima | `bg-pink-500/10 text-pink-500 font-medium` | `#EC4899` at 10% | `#F472B6` at 10% |
+
+**Return - Kuning/Lime:**
+| Modul | Class | Light Mode | Dark Mode |
+|-------|-------|------------|-----------|
+| Retur Penjualan | `bg-yellow-500/10 text-yellow-500 font-medium` | `#EAB308` at 10% | `#FACC15` at 10% |
+| Retur Pembelian | `bg-lime-500/10 text-lime-500 font-medium` | `#84CC16` at 10% | `#A3E635` at 10% |
+
+**Inventory - Abu:**
+| Modul | Class | Light Mode | Dark Mode |
+|-------|-------|------------|-----------|
+| GRN | `bg-slate-500/10 text-slate-500 font-medium` | `#64748B` at 10% | `#94A3B8` at 10% |
+| GRN Customer | `bg-zinc-500/10 text-zinc-500 font-medium` | `#71717A` at 10% | `#A1A1AA` at 10% |
+
+**Legal - Ungu:**
+| Modul | Class | Light Mode | Dark Mode |
+|-------|-------|------------|-----------|
+| Kontrak | `bg-violet-500/10 text-violet-500 font-medium` | `#8B5CF6` at 10% | `#A78BFA` at 10% |
+
+**Fallback untuk modul yang tidak terdaftar:** `bg-muted text-muted-foreground font-medium`
+
+**Implementasi di kode:**
+```typescript
+const modulBadgeClasses: Record<string, string> = {
+  // Early Stage - Biru
+  'RFQ Customer': 'bg-primary/10 text-primary font-medium',
+  'RFQ Supplier': 'bg-blue-500/10 text-blue-500 font-medium',
+  // ... (seluruh modul)
+}
+
+const getBadgeClass = (modul: string) => modulBadgeClasses[modul] || 'bg-muted text-muted-foreground font-medium'
+
+// Penggunaan di TableCell:
+<Badge className={getBadgeClass(doc.modul)}>
+  {doc.modul}
+</Badge>
+```
+
+**Panduan Penambahan Modul Baru:**
+1. Tambahkan entry baru di `modulBadgeClasses` dengan class yang sesuai
+2. Pilih warna berdasarkan kategori flow dokumen:
+   - Early stage (RFQ, PO awal): Biru/Netral
+   - Mid stage (Quotation, PO confirmed): Kuning/Orange
+   - Active/Shipping (DO, Resi): Hijau
+   - Financial (Invoice, Kwitansi): Merah/Merah Muda
+   - Return: Kuning/Lime
+   - Inventory: Abu-abu
+   - Legal: Ungu
+3. Pastikan warna terlihat di light dan dark mode (gunakan opacity 10% untuk background)
+4. Selalu sertakan `font-medium` untuk ketebalan teks yang konsisten
 
 #### Blob Fetch Pattern (untuk Virtual PDF)
 

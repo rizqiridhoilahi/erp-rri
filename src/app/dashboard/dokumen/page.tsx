@@ -10,7 +10,9 @@ import { Badge } from '@/components/ui/badge'
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select'
 import { DocumentSearchCombobox } from '@/components/ui/document-search-combobox'
-import { Search, ExternalLink, FileText, Loader2, RotateCcw, Download } from 'lucide-react'
+import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog'
+import { Search, ExternalLink, FileText, Loader2, RotateCcw, Download, Trash2 } from 'lucide-react'
+import { toast } from 'sonner'
 
 interface Document {
   id: string
@@ -49,25 +51,40 @@ const modulOptions = [
   'Kontrak',
 ]
 
-const modulColors: Record<string, 'secondary' | 'warning' | 'success' | 'outline' | 'destructive'> = {
-  'RFQ Customer': 'secondary',
-  'RFQ Supplier': 'secondary',
-  Quotation: 'warning',
-  'Sales Order': 'success',
-  'Customer PO': 'success',
-  DI: 'outline',
-  'Delivery Order': 'outline',
-  'Delivery Slip': 'outline',
-  'Resi Pengiriman': 'outline',
-  GRN: 'outline',
-  'GRN Customer': 'outline',
-  Invoice: 'destructive',
-  Kwitansi: 'warning',
-  'Tanda Terima': 'outline',
-  'Retur Penjualan': 'warning',
-  'Retur Pembelian': 'warning',
-  Kontrak: 'outline',
+const modulBadgeClasses: Record<string, string> = {
+  // Early Stage - Biru
+  'RFQ Customer': 'bg-primary/10 text-primary font-medium',
+  'RFQ Supplier': 'bg-blue-500/10 text-blue-500 font-medium',
+  
+  // Mid Stage - Kuning/Orange
+  'Quotation': 'bg-warning/10 text-warning font-medium',
+  'Customer PO': 'bg-orange-500/10 text-orange-500 font-medium',
+  'Sales Order': 'bg-amber-500/10 text-amber-500 font-medium',
+  
+  // Active/Shipping - Hijau
+  'DI': 'bg-emerald-500/10 text-emerald-500 font-medium',
+  'Delivery Order': 'bg-green-500/10 text-green-500 font-medium',
+  'Delivery Slip': 'bg-teal-500/10 text-teal-500 font-medium',
+  'Resi Pengiriman': 'bg-cyan-500/10 text-cyan-500 font-medium',
+  
+  // Financial - Merah/Merah Muda
+  'Invoice': 'bg-destructive/10 text-destructive font-medium',
+  'Kwitansi': 'bg-rose-500/10 text-rose-500 font-medium',
+  'Tanda Terima': 'bg-pink-500/10 text-pink-500 font-medium',
+  
+  // Return - Kuning/Lime
+  'Retur Penjualan': 'bg-yellow-500/10 text-yellow-500 font-medium',
+  'Retur Pembelian': 'bg-lime-500/10 text-lime-500 font-medium',
+  
+  // Inventory - Abu
+  'GRN': 'bg-slate-500/10 text-slate-500 font-medium',
+  'GRN Customer': 'bg-zinc-500/10 text-zinc-500 font-medium',
+  
+  // Legal - Ungu
+  'Kontrak': 'bg-violet-500/10 text-violet-500 font-medium',
 }
+
+const getBadgeClass = (modul: string) => modulBadgeClasses[modul] || 'bg-muted text-muted-foreground font-medium'
 
 function formatDate(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString('id-ID', {
@@ -91,6 +108,7 @@ export default function DokumenPage() {
   const [poNomor, setPoNomor] = useState('')
   const [diOptions, setDiOptions] = useState<Map<string, { customer_id: string; customer_nama: string }>>(new Map())
   const [poOptions, setPoOptions] = useState<Map<string, { customer_id: string; customer_nama: string }>>(new Map())
+  const [deleteLoading, setDeleteLoading] = useState(false)
 
   useEffect(() => {
     apiFetch<Customer[]>('/api/v1/master/customer')
@@ -146,6 +164,19 @@ export default function DokumenPage() {
       })
       .catch(() => {})
       .finally(() => setLoading(false))
+  }
+
+  const handleDelete = async (docId: string) => {
+    setDeleteLoading(true)
+    try {
+      await apiFetch(`/api/v1/dokumen/${docId}`, { method: 'DELETE' })
+      toast.success('Dokumen berhasil dihapus')
+      loadData()
+    } catch {
+      toast.error('Gagal menghapus dokumen')
+    } finally {
+      setDeleteLoading(false)
+    }
   }
 
   const officeExts = ['.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx']
@@ -378,7 +409,7 @@ export default function DokumenPage() {
                           <span className="truncate block text-sm font-medium">{doc.filename}</span>
                         </TableCell>
                         <TableCell>
-                          <Badge variant={modulColors[doc.modul] ?? 'outline'}>
+                          <Badge className={getBadgeClass(doc.modul)}>
                             {doc.modul}
                           </Badge>
                         </TableCell>
@@ -391,19 +422,39 @@ export default function DokumenPage() {
                           <div className="flex items-center justify-end gap-1">
                             <Button
                               variant="ghost"
-                              size="sm"
+                              size="icon"
+                              className="text-primary hover:bg-primary/10"
                               onClick={() => openFile(doc.fileurl, doc.filename)}
+                              title="Buka dokumen"
                             >
-                              <ExternalLink className="h-4 w-4 mr-1" />
-                              Buka
+                              <ExternalLink className="h-4 w-4" />
                             </Button>
                             <Button
                               variant="ghost"
-                              size="sm"
+                              size="icon"
+                              className="text-success hover:bg-success/10"
                               onClick={() => downloadFile(doc.fileurl, doc.filename)}
+                              title="Download dokumen"
                             >
                               <Download className="h-4 w-4" />
                             </Button>
+                            <DeleteConfirmationDialog
+                              title="Konfirmasi Hapus Dokumen"
+                              description="Apakah Anda yakin ingin menghapus file dokumen ini? Tindakan ini tidak dapat dibatalkan."
+                              itemName={doc.filename}
+                              isLoading={deleteLoading}
+                              onConfirm={() => handleDelete(doc.id)}
+                              trigger={
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="text-destructive hover:bg-destructive/10"
+                                  title="Hapus dokumen"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              }
+                            />
                           </div>
                         </TableCell>
                       </TableRow>
