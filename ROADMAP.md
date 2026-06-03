@@ -1,5 +1,20 @@
 # ROADMAP — Pengembangan ERP RRI
 
+## ✅ DONE — Sidebar Navigation & Document Management Page
+
+| # | Task | Status | File |
+|---|------|--------|------|
+| SN-1 | **Sidebar: "Delivery Instr." → "Delivery Instruction"** — rename + pindah posisi di bawah "Customer PO" | ✅ Done | `src/components/sidebar-content.tsx` |
+| SN-2 | **Sidebar: category heading color** — default `text-muted-foreground`, jadi `text-primary` saat ada child link active | ✅ Done | `src/components/sidebar-content.tsx` |
+| SN-3 | **Sidebar: "Manajemen Dokumen" pindah** — dari top-level ke dalam grup Master Data, di bawah "Kategori Barang" | ✅ Done | `src/components/sidebar-content.tsx` |
+| DM-1 | **Migration all_documents view** — tambah `recordid` column + 4 UNION baru (DO, Delivery Slip, GRN Customer, Kwitansi) | ✅ Done | `0027_update_all_documents_view.sql` |
+| DM-2 | **Migration virtual PDF entries** — 5 UNION virtual PDF (Quotation, DO/Surat Jalan, Invoice, Tanda Terima, Kwitansi) dengan prefix `pdf-{modul}-{id}` | ✅ Done | `0028_add_virtual_pdf_entries.sql` |
+| DM-3 | **Migration Resi Pengiriman** — add virtual PDF entries untuk Resi Pengiriman | ✅ Done | `0029_add_resi_pengiriman_view.sql` |
+| DM-4 | **API dokumen — filter nomorPo & nomorDi** — tambah filter via `.or('and(...)')` | ✅ Done | `src/app/api/v1/dokumen/route.ts` |
+| DM-5 | **Frontend dokumen page** — semua modul dropdown, smart filters, PDF buttons per modul | ✅ Done | `src/app/dashboard/dokumen/page.tsx` |
+| DM-6 | **PDF blob fetch** — ganti `window.open` dengan blob fetch via auth token untuk akses PDF dari halaman dokumen | ✅ Done | `src/app/dashboard/dokumen/page.tsx` |
+| DM-7 | **Download button storage files** — tombol download terpisah untuk file di Supabase Storage (non-PDF) | ✅ Done | `src/app/dashboard/dokumen/page.tsx` |
+
 ## 🔴 HIGH — Status Management & Quotation Fixes
 
 | # | Task | Status | File |

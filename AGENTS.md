@@ -67,6 +67,18 @@
 - Calls `supabase.rpc('increment_document_counter', { p_kode_dokumen, p_tahun, p_bulan })`
 - Atomically upserts & increments counter; returns formatted number string
 
+### `all_documents` View
+- **Virtual document entries** (`all_documents` view in PostgreSQL): PDFs generated on-the-fly via API routes, not stored in bucket.
+- Entries use ID prefix `pdf-{modul}-{id}` (e.g., `pdf-quotation-uuid`, `pdf-do-uuid`) to avoid ID collision with real uploaded documents.
+- All virtual entries have `fileurl` pointing to the relative API endpoint (e.g., `/api/v1/quotation/{id}/pdf`).
+- Customer resolution for virtual entries follows the same joins as real uploaded documents.
+- To add a new virtual document type: add a `UNION ALL` to the `all_documents` view migration.
+
+### PDF Download from Document Management Page
+- **Blob fetch pattern**: PDF endpoints require `verifyAuth()` (Bearer token). On the Document Management page (`dokumen/page.tsx`), calls `downloadPdf(url)` which uses `fetch(url, { headers: { Authorization: Bearer ... } })` → blob → `URL.createObjectURL(blob)` → `window.open(blobUrl)`.
+- This bypasses the limitation of `window.open(url, '_blank')` which cannot send custom auth headers.
+- Storage file downloads (Supabase public URLs) use direct `<a download>` or `window.open` — no auth needed.
+
 ### Storage Structure
 - Bucket: `dokumen` (Supabase Storage)
 - Standard path pattern: `dokumen/{modul}/{recordId}/{file.name}` (no timestamp prefix, no sub-folders)
