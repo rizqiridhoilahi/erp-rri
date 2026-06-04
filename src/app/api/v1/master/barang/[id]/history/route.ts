@@ -12,12 +12,13 @@ export async function GET(
 
   const { id } = await params
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: invoiceItems, error: iiErr } = await (supabaseAdmin
+  const invoiceQuery = supabaseAdmin
     .from('invoice_item')
     .select('invoice_id, harga, jumlah, diskon')
     .eq('barang_id', id)
-    .order('created_at', { ascending: false }) as any)
+    .order('created_at', { ascending: false })
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: invoiceItems, error: iiErr } = await (invoiceQuery as any)
 
   if (iiErr) return internalError(iiErr)
 
@@ -27,12 +28,13 @@ export async function GET(
 
   const invoiceIds = [...new Set(rawItems.map((i) => i.invoice_id))]
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: invRows, error: invErr } = await (supabaseAdmin
+  const invQuery = supabaseAdmin
     .from('invoice')
     .select('id, nomor, tanggal, status, customer!customer_id(nama, kode), sales_order!sales_order_id(nomor, di!fk_sales_order_di(nomor, nomor_di_customer, kontrak_id), customer_po!customer_po_id(nomor, nomor_po_customer))')
     .in('id', invoiceIds)
-    .neq('status', 'draft') as any)
+    .neq('status', 'draft')
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: invRows, error: invErr } = await (invQuery as any)
 
   if (invErr) return internalError(invErr)
 
