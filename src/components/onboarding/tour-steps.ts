@@ -32,33 +32,9 @@ export const tourSteps: Step[] = [
     placement: 'right',
   },
   {
-    target: '[data-tour="procurement"]',
-    content: 'Proses pengadaan barang: Purchase Request, Purchase Order (ke supplier), Penerimaan, GRN, dan Retur Pembelian.',
-    title: 'Procurement',
-    placement: 'right',
-  },
-  {
     target: '[data-tour="finance"]',
     content: 'Modul keuangan: Invoice, Kwitansi, Faktur Pajak, dan Jurnal Umum. Auto-kalkulasi PPN 11% dan PPh.',
     title: 'Finance',
-    placement: 'right',
-  },
-  {
-    target: '[data-tour="laporan"]',
-    content: 'Pantau kesehatan bisnis: AR/AP Aging, Laba Rugi, Neraca, dan Arus Kas. Semua laporan bisa di-export ke Excel.',
-    title: 'Laporan',
-    placement: 'right',
-  },
-  {
-    target: '[data-tour="ai-agent"]',
-    content: 'Gunakan kecerdasan AI: cari harga pasar otomatis, OCR kontrak, rekomendasi harga jual, dan bantuan negosiasi.',
-    title: 'AI Agent',
-    placement: 'right',
-  },
-  {
-    target: '[data-tour="hr"]',
-    content: 'Kelola SDM: catat absensi karyawan dan proses penggajian bulanan dengan slip gaji PDF.',
-    title: 'HR',
     placement: 'right',
   },
   {

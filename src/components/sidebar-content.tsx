@@ -251,6 +251,14 @@ export function SidebarContent({ collapsed }: { collapsed?: boolean }) {
   )
 }
 
+const groupDataTour: Record<string, string> = {
+  'Master Data': 'master-data',
+  'Pre-Sales': 'pre-sales',
+  Sales: 'sales',
+  Finance: 'finance',
+  System: 'system',
+}
+
 function SidebarGroup({ group, defaultOpen, collapsed }: { group: MenuGroup; defaultOpen: boolean; collapsed?: boolean }) {
   const pathname = usePathname()
   const [open, setOpen] = useState(defaultOpen)
@@ -269,6 +277,7 @@ function SidebarGroup({ group, defaultOpen, collapsed }: { group: MenuGroup; def
   return (
     <div className="space-y-1">
       <button
+        data-tour={groupDataTour[group.label]}
         onClick={() => setOpen(!open)}
         className={cn('flex items-center w-full px-3 py-2 text-xs font-semibold uppercase tracking-wider transition-colors', groupActive ? 'text-primary' : 'text-foreground/70 hover:text-foreground')}
       >

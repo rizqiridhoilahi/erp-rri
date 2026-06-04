@@ -1,7 +1,5 @@
 "use client"
 
-'use client'
-
 import { HelpCircle } from 'lucide-react'
 import { useOnboarding } from './onboarding-provider'
 
