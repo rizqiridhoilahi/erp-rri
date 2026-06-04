@@ -52,6 +52,8 @@ interface KwitansiData {
   kontrak_nomor: string | null
   pic_nama: string | null
   pic_jabatan: string | null
+  cpo_ref: string | null
+  cpo_cust_ref: string | null
 }
 
 export default function KwitansiDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -207,6 +209,18 @@ export default function KwitansiDetailPage({ params }: { params: Promise<{ id: s
                   <p className="font-medium">{data.invoice?.sales_order?.di?.nomor_di_customer ?? '-'}</p>
                 </div>
                 <div>
+                  <p className="text-sm text-muted-foreground">DI Ref</p>
+                  <p className="font-medium">{data.invoice?.sales_order?.di?.nomor ?? '-'}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">CPO Ref</p>
+                  <p className="font-medium">{data.cpo_ref ?? '-'}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">CPO Cust. Ref</p>
+                  <p className="font-medium">{data.cpo_cust_ref ?? '-'}</p>
+                </div>
+                <div>
                   <p className="text-sm text-muted-foreground">PIC Customer</p>
                   {data.pic_nama ? (
                     <>
@@ -219,7 +233,7 @@ export default function KwitansiDetailPage({ params }: { params: Promise<{ id: s
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Tanggal</p>
-                  <p className="font-medium">{new Date(data.tanggal).toLocaleDateString('id-ID')}</p>
+                  <p className="font-medium">{new Date(data.invoice?.tanggal ?? data.tanggal).toLocaleDateString('id-ID')}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Jatuh Tempo Pembayaran Invoice</p>

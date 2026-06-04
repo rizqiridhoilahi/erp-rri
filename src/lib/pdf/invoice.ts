@@ -85,7 +85,8 @@ interface InvoiceData {
   picNama: string | null
   picJenisKelamin: string | null
   tanggal: string
-  diCustomerRef: string | null
+  customerRef: string | null
+  refLabel: string
   grandTotal: number
   items: InvoiceItem[]
   company: CompanyData
@@ -181,11 +182,11 @@ export function InvoicePDF({ data }: { data: InvoiceData }) {
         H(Text, { style: styles.colonText }, ':'),
         H(Text, { style: styles.valueText }, data.nomor)
       ),
-      ...(data.diCustomerRef
+      ...(data.customerRef
         ? [H(View, { style: styles.labelValueRow },
-            H(Text, { style: styles.labelText }, 'No. Ref. DI'),
+            H(Text, { style: styles.labelText }, data.refLabel),
             H(Text, { style: styles.colonText }, ':'),
-            H(Text, { style: styles.valueText }, data.diCustomerRef)
+            H(Text, { style: styles.valueText }, data.customerRef)
           )]
         : []
       ),

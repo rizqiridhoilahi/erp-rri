@@ -30,6 +30,9 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
   if (!data) return notFound('Jurnal tidak ditemukan')
 
   if (body.items) {
+    const totalDebit = body.items.reduce((s: number, i: { debit: number }) => s + (Number(i.debit) || 0), 0)
+    const totalCredit = body.items.reduce((s: number, i: { credit: number }) => s + (Number(i.credit) || 0), 0)
+    if (totalDebit !== totalCredit) return badRequest(`Jurnal tidak balance: Debit ${totalDebit.toFixed(2)} ≠ Kredit ${totalCredit.toFixed(2)}`)
     await supabaseAdmin.from('jurnal_item').delete().eq('jurnal_id', id)
     const now = new Date().toISOString()
     const items = body.items.map((item: { akun_id: string; debit: number; credit: number; keterangan?: string }) => ({

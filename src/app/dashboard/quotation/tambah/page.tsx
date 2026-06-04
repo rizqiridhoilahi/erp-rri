@@ -15,7 +15,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
-import { Plus, Trash2, ArrowLeft, Loader2 } from 'lucide-react'
+import { Plus, Trash2, ArrowLeft, Loader2, FileText } from 'lucide-react'
 import { toast } from 'sonner'
 import { FormSkeleton } from '@/components/ui/skeleton'
 
@@ -76,6 +76,7 @@ export default function TambahQuotationPage() {
   const [rfqPicLabel, setRfqPicLabel] = useState('')
   const [rfqItemLabels, setRfqItemLabels] = useState<string[]>([])
   const [isRfqLoaded, setIsRfqLoaded] = useState(false)
+  const [nomorDokumen, setNomorDokumen] = useState('')
 
   const today = new Date().toISOString().split('T')[0]
 
@@ -118,6 +119,9 @@ export default function TambahQuotationPage() {
       if (rfqIdFromUrl) {
         setValue('rfq_id', rfqIdFromUrl)
       }
+      apiFetch<{ nomor: string }>('/api/v1/system/nomor-baru?kode=SPH')
+        .then(res => setNomorDokumen(res.data.nomor))
+        .catch(() => {})
     }).catch(() => toast.error('Gagal memuat data referensi')).finally(() => setLoading(false))
   }, [])
 
@@ -258,6 +262,13 @@ export default function TambahQuotationPage() {
           <Card>
             <CardHeader><CardTitle className="text-base">Header Surat</CardTitle></CardHeader>
             <CardContent className="space-y-4">
+              <div className="flex items-center gap-3 rounded-lg border border-blue-200 bg-blue-50 dark:bg-blue-950/20 dark:border-blue-800 px-4 py-3">
+                <FileText className="h-5 w-5 shrink-0 text-blue-600 dark:text-blue-400" />
+                <div className="text-sm">
+                  <span className="text-muted-foreground">Nomor Dokumen Internal: </span>
+                  <span className="font-mono font-semibold">{nomorDokumen || 'Memuat...'}</span>
+                </div>
+              </div>
               <div className="grid grid-cols-2 gap-4">
                 <FormField control={control} name="rfq_id" render={({ field }) => (
                   <FormItem><FormLabel>No. Referensi (RFQ)</FormLabel>

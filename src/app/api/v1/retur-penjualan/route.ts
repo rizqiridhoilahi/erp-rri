@@ -28,6 +28,7 @@ import { supabaseAdmin } from '@/lib/api/supabase-server'
 import { verifyAuth } from '@/lib/api/auth'
 import { badRequest, internalError } from '@/lib/api/errors'
 import { generateGlobalDocumentNumber, formatChildNumber } from '@/lib/utils/document-number'
+import { generateReturPenjualanJournal } from '@/lib/auto-jurnal'
 
 const itemSchema = z.object({ barang_id: z.string().min(1), jumlah: z.coerce.number().int().positive(), keterangan: z.string().optional() })
 const schema = z.object({ customer_id: z.string().min(1), delivery_order_id: z.string().optional(), tanggal: z.string().min(1), keterangan: z.string().optional(), items: z.array(itemSchema).min(1) })
@@ -86,6 +87,8 @@ export async function POST(request: NextRequest) {
   })
   const { error: ie } = await supabaseAdmin.from('retur_penjualan_item').insert(items)
   if (ie) { await supabaseAdmin.from('retur_penjualan').delete().eq('id', retur.id); return internalError(ie) }
+
+  await generateReturPenjualanJournal(retur.id)
 
   return NextResponse.json({ data: { ...retur, items } }, { status: 201 })
 }

@@ -25,7 +25,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
 
   const { data: inv, error } = await supabaseAdmin
     .from('invoice')
-    .select('nomor, sales_order_id, customer!customer_id(nama), nomor_tanda_terima, grn_customer_nomor')
+    .select('nomor, tanggal, sales_order_id, customer!customer_id(nama), nomor_tanda_terima, grn_customer_nomor')
     .eq('id', id)
     .single()
   if (error) return internalError(error)
@@ -144,9 +144,9 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
     await supabaseAdmin.from('invoice').update({ nomor_tanda_terima: nomor }).eq('id', id)
   }
 
-  const now = new Date()
   const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember']
-  const tanggalStr = `Jepara, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`
+  const invDate = new Date(inv.tanggal)
+  const tanggalStr = `Jepara, ${invDate.getDate()} ${months[invDate.getMonth()]} ${invDate.getFullYear()}`
 
   const dash = '-'
 

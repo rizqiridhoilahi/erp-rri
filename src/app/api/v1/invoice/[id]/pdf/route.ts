@@ -20,7 +20,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
   const { data: inv, error } = await supabaseAdmin
     .from('invoice')
-    .select('*, sales_order!sales_order_id(nomor, di!fk_sales_order_di(nomor, nomor_di_customer, customer_pic(nama, jabatan, jenis_kelamin))), customer!customer_id(nama, alamat)')
+    .select('*, sales_order!sales_order_id(nomor, customer_po_id, di_id, di!fk_sales_order_di(nomor, nomor_di_customer, customer_pic(nama, jabatan, jenis_kelamin)), customer_po!customer_po_id(nomor, nomor_po_customer, customer_pic!pic_customer_id(nama, jabatan, jenis_kelamin))), customer!customer_id(nama, alamat)')
     .eq('id', id)
     .single()
   if (error) return internalError(error)
@@ -53,11 +53,23 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
   const grandTotal = displayItems.reduce((s, i) => s + (i.harga * i.jumlah - (i.diskon ?? 0)), 0)
 
-  const so = inv.sales_order as { nomor: string; di: { nomor: string; nomor_di_customer: string | null; customer_pic: { nama: string; jabatan: string; jenis_kelamin: string | null } | null } | null } | null
+  const so = inv.sales_order as {
+    nomor: string
+    customer_po_id?: string
+    di_id?: string
+    di: { nomor: string; nomor_di_customer: string | null; customer_pic: { nama: string; jabatan: string; jenis_kelamin: string | null } | null } | null
+    customer_po: { nomor: string; nomor_po_customer: string | null; customer_pic: { nama: string; jabatan: string; jenis_kelamin: string | null } | null } | null
+  } | null
   const customer = inv.customer as { nama: string; alamat: string } | null
 
-  const picNama = so?.di?.customer_pic?.nama ?? null
-  const picJenisKelamin = so?.di?.customer_pic?.jenis_kelamin ?? null
+  const picNama = so?.di?.customer_pic?.nama ?? so?.customer_po?.customer_pic?.nama ?? null
+  const picJenisKelamin = so?.di?.customer_pic?.jenis_kelamin ?? so?.customer_po?.customer_pic?.jenis_kelamin ?? null
+
+  const sourceIsCPO = !!so?.customer_po_id
+  const customerRef = sourceIsCPO
+    ? so?.customer_po?.nomor_po_customer ?? null
+    : so?.di?.nomor_di_customer ?? null
+  const refLabel = sourceIsCPO ? 'No. Ref. PO' : 'No. Ref. DI'
 
   const pdfData = {
     nomor: inv.nomor,
@@ -66,7 +78,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     picNama,
     picJenisKelamin,
     tanggal: 'Jepara, ' + new Date(inv.tanggal).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }),
-    diCustomerRef: so?.di?.nomor_di_customer ?? null,
+    customerRef,
+    refLabel,
     grandTotal,
     items: displayItems.map(i => ({
       nama: (i as { nama_barang: string }).nama_barang ?? (i.barang as { nama: string })?.nama ?? '-',

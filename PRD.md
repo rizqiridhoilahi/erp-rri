@@ -359,6 +359,7 @@ PostgreSQL view (`all_documents`) menggabungkan real uploaded documents dari tab
 | Tanda Terima | `/api/v1/invoice/{id}/tanda-terima/pdf` | `pdf-tandaterima-` |
 | Kwitansi | `/api/v1/kwitansi/{id}/pdf` | `pdf-kwitansi-` |
 | Resi Pengiriman | `/api/v1/delivery-order/{id}/resi-pdf` | `pdf-resi-` |
+| **Jurnal Umum** | `/api/v1/jurnal/{id}/pdf` | `pdf-jurnal-` |
 
 #### Full List of Moduls in `all_documents` View
 
@@ -366,10 +367,10 @@ PostgreSQL view (`all_documents`) menggabungkan real uploaded documents dari tab
 RFQ Customer, Quotation, Customer PO, DI, Invoice, Retur Penjualan, Kontrak, Delivery Order, GRN Customer, Kwitansi, Retur Pembelian, RFQ Supplier, GRN, Sales Order
 
 **2 virtual-only modules (generated PDFs, no upload table):**
-Delivery Slip (from `delivery_order.delivery_slip_file_url`), Tanda Terima
+Delivery Slip (from `delivery_order.delivery_slip_file_url`), Tanda Terima, **Jurnal Umum**
 
 **1 hybrid module (both real upload + virtual PDF):**
-Quotation, Delivery Order, Invoice, Kwitansi
+Quotation, Delivery Order, Invoice, Kwitansi, **Jurnal Umum**
 
 **3 supplier-side modules (customer resolved via SO → PO/DI chain):**
 RFQ Supplier (via SO), Retur Pembelian (via PO → SO), GRN (via DI)
@@ -768,7 +769,7 @@ Modul ini menangani pembelian dari supplier — termasuk supplier marketplace Sh
 | **Financial Precision** | Semua kolom keuangan menggunakan `numeric(18,2)` untuk akurasi akuntansi. Berlaku di: Invoice, Kwitansi, Quotation, PO, Jurnal, dan semua tabel transaksi keuangan. |
 | **Faktur Pajak** | Generate nomor faktur pajak sesuai ketentuan Dirjen Pajak. Full CRUD API + halaman list/detail/create/edit. Auto-generate dari Invoice dengan auto-fill DPP/PPN/PPh. PDF generation dengan layout PKP Penjual/Pembeli, NPWP dari site_settings. Detail page menampilkan company profile dari database. |
 | **Tanda Terima Dokumen Penagihan** | Tanda terima dokumen penagihan (kwitansi/invoice) yang ditandatangani customer. PDF component di `src/lib/pdf/tanda-terima.ts`. API route di `/api/v1/invoice/[id]/tanda-terima/pdf`. Preview + Download buttons di halaman detail invoice. Format nomor: `RRI-TT-YY-MM-0001`. Table columns: No, Nama Dokumen, Nomor Dokumen, Asli, Copy, Keterangan. Data nomor dokumen diambil dari seluruh chain dokumen (RFQ→SPH→PO→Kontrak→DI→Delivery Slip→Surat Jalan→GRN→Invoice→Kwitansi) via sales_order + invoice_id joins. Delivery Slip nomor dari `delivery_order.delivery_slip_nomor`. |
-| **Jurnal Umum** | Jurnal transaksi keuangan. Auto-generate jurnal saat Invoice terbit (debit AR, credit Revenue, debit/kredit PPN) |
+| **Jurnal Umum** | Jurnal transaksi keuangan. Auto-generate jurnal saat Invoice terbit (debit AR, credit Revenue, debit/kredit PPN). **Balance validation:** API POST/PUT mewajibkan total debit = total kredit, return error jika tidak balance. **Invoice DELETE cleanup:** jurnal auto-generated ikut dihapus saat invoice dihapus. **Retur auto-jurnal:** retur penjualan (debit Revenue, credit AR) dan retur pembelian (debit AP, credit Persediaan) otomatis generate jurnal. **Virtual PDF:** jurnal tersedia sebagai virtual PDF di halaman dokumen. **Edit items:** halaman edit jurnal mendukung pengeditan item (akun, debit, kredit). |
 | **Laba / Rugi** | Laporan pendapatan dan biaya |
 | **Neraca** | Laporan posisi keuangan |
 | **Arus Kas** | Laporan cashflow |

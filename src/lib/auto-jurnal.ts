@@ -25,7 +25,9 @@ export async function generateInvoiceJournal(invoiceId: string) {
   const { data: ppnAkun } = await supabaseAdmin.from('coa').select('id').eq('kode', '2-2000').maybeSingle()
   const { data: pphAkun } = await supabaseAdmin.from('coa').select('id').eq('kode', '2-2100').maybeSingle()
 
-  if (!arAkun || !revAkun || !ppnAkun) return { success: false, error: 'COA accounts not configured. Create: 1-1100 (AR), 4-1000 (Revenue), 2-2000 (PPN)' }
+  if (!arAkun) return { success: false, error: 'COA 1-1100 (Piutang Dagang) belum dibuat. Buat akun dengan kode 1-1100' }
+  if (!revAkun) return { success: false, error: 'COA 4-1000 (Pendapatan) belum dibuat. Buat akun dengan kode 4-1000' }
+  if (!ppnAkun) return { success: false, error: 'COA 2-2000 (PPN Keluaran) belum dibuat. Buat akun dengan kode 2-2000' }
 
   const now = new Date().toISOString()
   const nomor = await generateDocumentNumber('JRN')
@@ -68,8 +70,8 @@ export async function generatePaymentJournal(invoiceId: string, _paymentId: stri
   const { data: arAkun } = await supabaseAdmin.from('coa').select('id').eq('kode', '1-1100').maybeSingle()
   const { data: kasAkun } = await supabaseAdmin.from('coa').select('id').eq('kode', '1-1101').maybeSingle()
 
-  if (!arAkun) return { success: false, error: 'COA AR (1-1100) not configured' }
-  if (!kasAkun) return { success: false, error: 'COA Kas/Bank (1-1101) not configured. Buat akun dengan kode 1-1101' }
+  if (!arAkun) return { success: false, error: 'COA 1-1100 (Piutang Dagang) belum dibuat. Buat akun dengan kode 1-1100' }
+  if (!kasAkun) return { success: false, error: 'COA 1-1101 (Kas/Bank) belum dibuat. Buat akun dengan kode 1-1101' }
 
   const now = new Date().toISOString()
   const nomor = await generateDocumentNumber('JRN')
@@ -108,8 +110,8 @@ export async function generateSupplierPaymentJournal(paymentId: string) {
   const { data: apAkun } = await supabaseAdmin.from('coa').select('id').eq('kode', '2-1000').maybeSingle()
   const { data: kasAkun } = await supabaseAdmin.from('coa').select('id').eq('kode', '1-1101').maybeSingle()
 
-  if (!apAkun) return { success: false, error: 'COA AP/Hutang (2-1000) not configured. Buat akun dengan kode 2-1000' }
-  if (!kasAkun) return { success: false, error: 'COA Kas/Bank (1-1101) not configured. Buat akun dengan kode 1-1101' }
+  if (!apAkun) return { success: false, error: 'COA 2-1000 (Hutang Dagang) belum dibuat. Buat akun dengan kode 2-1000' }
+  if (!kasAkun) return { success: false, error: 'COA 1-1101 (Kas/Bank) belum dibuat. Buat akun dengan kode 1-1101' }
 
   const now = new Date().toISOString()
   const nomor = await generateDocumentNumber('JRN')
@@ -126,6 +128,153 @@ export async function generateSupplierPaymentJournal(paymentId: string) {
     { akun_id: apAkun.id, debit: jumlah, credit: 0, keterangan: `Lunaskan Hutang - ${payment.purchase_order?.nomor ?? '-'}` },
     { akun_id: kasAkun.id, debit: 0, credit: jumlah, keterangan: `Pembayaran ke ${payment.supplier?.nama ?? '-'}` },
   ]
+
+  const { error: jiErr } = await supabaseAdmin.from('jurnal_item').insert(
+    jurnalItems.map(ji => ({ ...ji, jurnal_id: jurnal.id, created_at: now, updated_at: now }))
+  )
+  if (jiErr) {
+    await supabaseAdmin.from('jurnal').delete().eq('id', jurnal.id)
+    return { success: false, error: jiErr.message }
+  }
+
+  return { success: true, jurnal }
+}
+
+export async function generateReturPenjualanJournal(returId: string) {
+  const { data: retur } = await supabaseAdmin
+    .from('retur_penjualan')
+    .select('*, customer!customer_id(nama)')
+    .eq('id', returId)
+    .single()
+  if (!retur) return { success: false, error: 'Retur penjualan not found' }
+
+  const { data: arAkun } = await supabaseAdmin.from('coa').select('id').eq('kode', '1-1100').maybeSingle()
+  const { data: revAkun } = await supabaseAdmin.from('coa').select('id').eq('kode', '4-1000').maybeSingle()
+  if (!arAkun) return { success: false, error: 'COA 1-1100 (Piutang Dagang) belum dibuat. Buat akun dengan kode 1-1100' }
+  if (!revAkun) return { success: false, error: 'COA 4-1000 (Pendapatan) belum dibuat. Buat akun dengan kode 4-1000' }
+
+  let totalEstimasi = 0
+  if (retur.delivery_order_id) {
+    const { data: doDoc } = await supabaseAdmin
+      .from('delivery_order')
+      .select('sales_order_id')
+      .eq('id', retur.delivery_order_id)
+      .single()
+    if (doDoc?.sales_order_id) {
+      const { data: invoice } = await supabaseAdmin
+        .from('invoice')
+        .select('id')
+        .eq('sales_order_id', doDoc.sales_order_id)
+        .maybeSingle()
+      if (invoice) {
+        const { data: invItems } = await supabaseAdmin
+          .from('invoice_item')
+          .select('barang_id, harga')
+          .eq('invoice_id', invoice.id)
+        const hargaMap = new Map((invItems ?? []).map(i => [i.barang_id, Number(i.harga)]))
+        const { data: returItems } = await supabaseAdmin
+          .from('retur_penjualan_item')
+          .select('barang_id, jumlah')
+          .eq('retur_penjualan_id', returId)
+        totalEstimasi = (returItems ?? []).reduce((sum, item) => {
+          return sum + (hargaMap.get(item.barang_id) ?? 0) * item.jumlah
+        }, 0)
+      }
+    }
+  }
+
+  if (totalEstimasi <= 0) {
+    return { success: false, error: 'Tidak dapat menghitung estimasi nilai retur. Buat jurnal manual.' }
+  }
+
+  const now = new Date().toISOString()
+  const nomor = await generateDocumentNumber('JRN')
+
+  const jurnalItems = [
+    { akun_id: revAkun.id, debit: totalEstimasi, credit: 0, keterangan: `Retur Penjualan - ${retur.nomor}` },
+    { akun_id: arAkun.id, debit: 0, credit: totalEstimasi, keterangan: `Pengurangan Piutang - ${retur.customer?.nama ?? '-'}` },
+  ]
+
+  const { data: jurnal, error: jErr } = await supabaseAdmin.from('jurnal').insert({
+    nomor, tanggal: retur.tanggal, status: 'draft',
+    keterangan: `Auto-jurnal dari Retur Penjualan ${retur.nomor}`,
+    created_at: now, updated_at: now,
+  }).select().single()
+  if (jErr) return { success: false, error: jErr.message }
+
+  const { error: jiErr } = await supabaseAdmin.from('jurnal_item').insert(
+    jurnalItems.map(ji => ({ ...ji, jurnal_id: jurnal.id, created_at: now, updated_at: now }))
+  )
+  if (jiErr) {
+    await supabaseAdmin.from('jurnal').delete().eq('id', jurnal.id)
+    return { success: false, error: jiErr.message }
+  }
+
+  return { success: true, jurnal }
+}
+
+export async function generateReturPembelianJournal(returId: string) {
+  const { data: retur } = await supabaseAdmin
+    .from('retur_pembelian')
+    .select('*, supplier!supplier_id(nama)')
+    .eq('id', returId)
+    .single()
+  if (!retur) return { success: false, error: 'Retur pembelian not found' }
+
+  const { data: apAkun } = await supabaseAdmin.from('coa').select('id').eq('kode', '2-1000').maybeSingle()
+  if (!apAkun) return { success: false, error: 'COA 2-1000 (Hutang Dagang) belum dibuat. Buat akun dengan kode 2-1000' }
+
+  const { data: persediaanAkun } = await supabaseAdmin
+    .from('coa')
+    .select('id, kode, nama')
+    .or('kode.ilike.1-14%,nama.ilike.%persediaan%')
+    .maybeSingle()
+
+  if (!persediaanAkun) {
+    return { success: false, error: 'COA Persediaan Barang (misal 1-1400) belum dibuat. Buat akun dengan kode 1-1400 atau nama mengandung "Persediaan"' }
+  }
+
+  let totalEstimasi = 0
+  if (retur.purchase_order_id) {
+    const { data: po } = await supabaseAdmin
+      .from('purchase_order')
+      .select('nomor')
+      .eq('id', retur.purchase_order_id)
+      .single()
+    if (po) {
+      const { data: poItems } = await supabaseAdmin
+        .from('purchase_order_item')
+        .select('barang_id, harga')
+        .eq('purchase_order_id', retur.purchase_order_id)
+      const hargaMap = new Map((poItems ?? []).map(i => [i.barang_id, Number(i.harga)]))
+      const { data: returItems } = await supabaseAdmin
+        .from('retur_pembelian_item')
+        .select('barang_id, jumlah')
+        .eq('retur_pembelian_id', returId)
+      totalEstimasi = (returItems ?? []).reduce((sum, item) => {
+        return sum + (hargaMap.get(item.barang_id) ?? 0) * item.jumlah
+      }, 0)
+    }
+  }
+
+  if (totalEstimasi <= 0) {
+    return { success: false, error: 'Tidak dapat menghitung estimasi nilai retur. Buat jurnal manual.' }
+  }
+
+  const now = new Date().toISOString()
+  const nomor = await generateDocumentNumber('JRN')
+
+  const jurnalItems = [
+    { akun_id: apAkun.id, debit: totalEstimasi, credit: 0, keterangan: `Pengurangan Hutang - Retur ${retur.nomor}` },
+    { akun_id: persediaanAkun.id, debit: 0, credit: totalEstimasi, keterangan: `Pengurangan Persediaan - ${retur.supplier?.nama ?? '-'}` },
+  ]
+
+  const { data: jurnal, error: jErr } = await supabaseAdmin.from('jurnal').insert({
+    nomor, tanggal: retur.tanggal, status: 'draft',
+    keterangan: `Auto-jurnal dari Retur Pembelian ${retur.nomor}`,
+    created_at: now, updated_at: now,
+  }).select().single()
+  if (jErr) return { success: false, error: jErr.message }
 
   const { error: jiErr } = await supabaseAdmin.from('jurnal_item').insert(
     jurnalItems.map(ji => ({ ...ji, jurnal_id: jurnal.id, created_at: now, updated_at: now }))

@@ -21,11 +21,12 @@ type SalesOrderWithPIC = {
   di?: {
     customer_pic?: { nama: string; jabatan: string }
   } | null
+  customer_po?: { nomor: string; customer_pic?: { nama: string; jabatan: string } } | null
 }
 
 export default async function DeliveryOrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const { data: doDoc, error } = await supabase.from('delivery_order').select('*, sales_order!sales_order_id(nomor, di(customer_pic(nama, jabatan))), kendaraan!kendaraan_id(nama, no_polisi), gudang!gudang_id(nama)').eq('id', id).single()
+  const { data: doDoc, error } = await supabase.from('delivery_order').select('*, sales_order!sales_order_id(nomor, customer_po!customer_po_id(nomor, customer_pic!pic_customer_id(nama, jabatan)), di(customer_pic(nama, jabatan))), kendaraan!kendaraan_id(nama, no_polisi), gudang!gudang_id(nama)').eq('id', id).single()
   if (error || !doDoc) return <div className="text-center py-20 text-muted-foreground">DO tidak ditemukan</div>
   const { data: items } = await supabase.from('delivery_order_item').select('*, barang!barang_id(nama, kode, satuan, barcode, image_url)').eq('delivery_order_id', id)
 
@@ -65,6 +66,10 @@ export default async function DeliveryOrderDetailPage({ params }: { params: Prom
               <p className="font-medium">{new Date(doDoc.tanggal).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })}</p>
             </div>
             <div>
+              <p className="text-sm text-muted-foreground">CPO Reference</p>
+              <p className="font-medium">{(doDoc.sales_order as SalesOrderWithPIC | null | undefined)?.customer_po?.nomor ?? '-'}</p>
+            </div>
+            <div>
               <p className="text-sm text-muted-foreground">SO Reference</p>
               <p className="font-medium">{doDoc.sales_order?.nomor ?? '-'}</p>
             </div>
@@ -100,7 +105,7 @@ export default async function DeliveryOrderDetailPage({ params }: { params: Prom
 
             <div>
               <p className="text-sm text-muted-foreground">PIC Customer</p>
-              <p className="font-medium">{((doDoc.sales_order as SalesOrderWithPIC | null | undefined)?.di?.customer_pic?.nama) ?? '-'}{((doDoc.sales_order as SalesOrderWithPIC | null | undefined)?.di?.customer_pic?.jabatan) ? ` - ${(doDoc.sales_order as SalesOrderWithPIC | null | undefined)?.di?.customer_pic?.jabatan}` : ''}</p>
+              <p className="font-medium">{((doDoc.sales_order as SalesOrderWithPIC | null | undefined)?.di?.customer_pic?.nama ?? (doDoc.sales_order as SalesOrderWithPIC | null | undefined)?.customer_po?.customer_pic?.nama) ?? '-'}{((doDoc.sales_order as SalesOrderWithPIC | null | undefined)?.di?.customer_pic?.jabatan ?? (doDoc.sales_order as SalesOrderWithPIC | null | undefined)?.customer_po?.customer_pic?.jabatan) ? ` - ${(doDoc.sales_order as SalesOrderWithPIC | null | undefined)?.di?.customer_pic?.jabatan ?? (doDoc.sales_order as SalesOrderWithPIC | null | undefined)?.customer_po?.customer_pic?.jabatan}` : ''}</p>
             </div>
             <div className="col-span-2">
               <p className="text-sm text-muted-foreground">Keterangan</p>

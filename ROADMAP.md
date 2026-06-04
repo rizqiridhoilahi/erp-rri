@@ -402,6 +402,83 @@ DI diterbitkan (draft)
 
 ---
 
+## 🔴 Jurnal Umum — Balance Validation, Retur Auto-Jurnal, & Edit Items Enhancement
+
+| # | Task | Status | File |
+|---|------|--------|------|
+| JU-1 | **P0: Balance validation Jurnal POST/PUT** — API menolak jurnal dengan total debit ≠ total kredit | ✅ Done | `api/v1/jurnal/route.ts`, `api/v1/jurnal/[id]/route.ts` |
+| JU-2 | **P0: Invoice DELETE cleanup jurnal** — saat invoice dihapus, jurnal auto-generated + kwitansi ikut dihapus | ✅ Done | `api/v1/invoice/[id]/route.ts` |
+| JU-3 | **P1: Migration all_documents view — Jurnal virtual PDF** — tambah `pdf-jurnal-{id}` entry | ✅ Done | `0036_add_jurnal_to_documents_view.sql` |
+| JU-4 | **P1: Edit page jurnal — items editing** — tambah form items (akun, debit, credit, keterangan) reusable dari tambah page | ✅ Done | `jurnal/[id]/edit/page.tsx` |
+| JU-5 | **P2: Auto-jurnal Retur Penjualan** — generate jurnal saat retur penjualan dibuat (debit Revenue, credit AR), estimasi dari invoice_item | ✅ Done | `lib/auto-jurnal.ts`, `api/v1/retur-penjualan/route.ts` |
+| JU-6 | **P2: Auto-jurnal Retur Pembelian** — generate jurnal saat retur pembelian dibuat (debit AP, credit Persediaan), estimasi dari PO_item | ✅ Done | `lib/auto-jurnal.ts`, `api/v1/retur-pembelian/route.ts` |
+| JU-7 | **P2: Better COA error messages** — split gabungan jadi per-akun: "COA 1-1100 (Piutang Dagang) belum dibuat" | ✅ Done | `lib/auto-jurnal.ts` |
+| JU-8 | **Update PRD.md & ROADMAP.md** — dokumentasi perubahan | ✅ Done | `PRD.md`, `ROADMAP.md` |
+
+## 🔒 Disabled Sidebar Menus — Fitur dalam Pengembangan
+
+Menu berikut di-sidebar di-*disable* (opacity 50%, tidak bisa diklik, muncul toast "Fitur dalam proses pengembangan").
+
+### Master Data
+| Menu | Keterangan |
+|------|------------|
+| Chart of Accounts | Belum diimplementasikan |
+| Jabatan | Belum diimplementasikan |
+| Karyawan | Belum diimplementasikan |
+| Import Excel | Belum diimplementasikan |
+
+### Procurement (Semua)
+| Menu | Keterangan |
+|------|------------|
+| RFQ Supplier | Belum diimplementasikan |
+| Purchase Request | Belum diimplementasikan |
+| Purchase Order | Belum diimplementasikan |
+| Penerimaan | Belum diimplementasikan |
+| GRN | Belum diimplementasikan |
+| Retur Pembelian | Belum diimplementasikan |
+| Pembayaran Supplier | Belum diimplementasikan |
+
+### Inventory (Semua)
+| Menu | Keterangan |
+|------|------------|
+| Gudang | Belum diimplementasikan |
+| Stok | Belum diimplementasikan |
+| Stok Masuk | Belum diimplementasikan |
+| Stok Keluar | Belum diimplementasikan |
+| Stock Opname | Belum diimplementasikan |
+
+### Laporan (Semua)
+| Menu | Keterangan |
+|------|------------|
+| AR Aging | Belum diimplementasikan |
+| AP Aging | Belum diimplementasikan |
+| Laba / Rugi | Belum diimplementasikan |
+| PPN Masa | Belum diimplementasikan |
+| Neraca | Belum diimplementasikan |
+| Arus Kas | Belum diimplementasikan |
+
+### AI Agent (Semua)
+| Menu | Keterangan |
+|------|------------|
+| Search Harga | Belum diimplementasikan |
+| OCR Kontrak | Belum diimplementasikan |
+| Rekomendasi Harga | Belum diimplementasikan |
+| Rekomendasi Supplier | Belum diimplementasikan |
+| Negosiasi | Belum diimplementasikan |
+| Auto-Suggest Barang | Belum diimplementasikan |
+| Price Trend | Belum diimplementasikan |
+| Anomaly Detection | Belum diimplementasikan |
+
+### HR (Semua)
+| Menu | Keterangan |
+|------|------------|
+| Absensi | Belum diimplementasikan |
+| Penggajian | Belum diimplementasikan |
+
+**Cara meng-enable:** Hapus `disabled: true` dari item yang sesuai di `src/components/sidebar-content.tsx`.
+
+---
+
 ## Catatan
 
 ### Flow Quotation Status

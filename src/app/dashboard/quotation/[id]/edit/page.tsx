@@ -14,7 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { DatePicker } from '@/components/ui/date-picker'
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
-import { Plus, Trash2, ArrowLeft, Loader2 } from 'lucide-react'
+import { Plus, Trash2, ArrowLeft, Loader2, FileText } from 'lucide-react'
 import { toast } from 'sonner'
 
 const itemSchema = z.object({
@@ -91,6 +91,7 @@ export default function EditQuotationPage() {
   const selectedCustomerId = watch('customer_id')
   const [isRfqLoaded, setIsRfqLoaded] = useState(false)
   const [rfqItemLabels, setRfqItemLabels] = useState<string[]>([])
+  const [nomorDokumen, setNomorDokumen] = useState('')
 
   useEffect(() => {
     const id = params.id as string
@@ -114,6 +115,7 @@ export default function EditQuotationPage() {
 
     apiFetch<{
       id: string
+      nomor: string
       customer_id: string
       rfq_id: string | null
       referensi: string | null
@@ -142,6 +144,7 @@ export default function EditQuotationPage() {
     }>(`/api/v1/quotation/${id}`)
       .then((res) => {
         const qtn = res.data
+        setNomorDokumen(qtn.nomor)
         setIsRfqLoaded(!!qtn.rfq_id)
         setRfqItemLabels(
           qtn.items.map(i =>
@@ -239,6 +242,13 @@ export default function EditQuotationPage() {
         <Card>
           <CardHeader><CardTitle className="text-base">Header Surat</CardTitle></CardHeader>
           <CardContent className="space-y-4">
+            <div className="flex items-center gap-3 rounded-lg border border-blue-200 bg-blue-50 dark:bg-blue-950/20 dark:border-blue-800 px-4 py-3">
+              <FileText className="h-5 w-5 shrink-0 text-blue-600 dark:text-blue-400" />
+              <div className="text-sm">
+                <span className="text-muted-foreground">Nomor Dokumen Internal: </span>
+                <span className="font-mono font-semibold">{nomorDokumen}</span>
+              </div>
+            </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium">No. Referensi (RFQ)</label>

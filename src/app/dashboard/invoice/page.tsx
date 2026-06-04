@@ -14,7 +14,7 @@ const s: Record<string, { label: string; v: 'secondary' | 'warning' | 'success' 
 
 export default async function InvoicePage() {
   const { data, error } = await supabase.from('invoice')
-    .select('*, sales_order!sales_order_id(nomor, di!fk_sales_order_di(nomor, nomor_di_customer), delivery_order!fk_delivery_order_sales_order(nomor)), customer!customer_id(nama)')
+    .select('*, sales_order!sales_order_id(nomor, di!fk_sales_order_di(nomor, nomor_di_customer), customer_po!customer_po_id(nomor, nomor_po_customer), delivery_order!fk_delivery_order_sales_order(nomor)), customer!customer_id(nama)')
     .order('created_at', { ascending: false })
   return (
     <div className="space-y-6">
@@ -30,6 +30,8 @@ export default async function InvoicePage() {
         <TableHead>Nomor</TableHead>
         <TableHead>Customer</TableHead>
         <TableHead>SO Ref</TableHead>
+        <TableHead>CPO Ref</TableHead>
+        <TableHead>CPO Cust. Ref</TableHead>
         <TableHead>DI Cust. Ref</TableHead>
         <TableHead>DI Ref</TableHead>
         <TableHead>DO Ref</TableHead>
@@ -43,6 +45,8 @@ export default async function InvoicePage() {
             <TableCell className="font-medium">{item.nomor}</TableCell>
             <TableCell className="font-medium">{item.customer?.nama}</TableCell>
             <TableCell className="font-medium">{item.sales_order?.nomor ?? '-'}</TableCell>
+            <TableCell className="font-medium">{item.sales_order?.customer_po?.nomor ?? '-'}</TableCell>
+            <TableCell className="font-medium">{item.sales_order?.customer_po?.nomor_po_customer ?? '-'}</TableCell>
             <TableCell className="font-medium">{item.sales_order?.di?.nomor_di_customer ?? '-'}</TableCell>
             <TableCell className="font-medium">{item.sales_order?.di?.nomor ?? '-'}</TableCell>
             <TableCell className="font-medium">{item.sales_order?.delivery_order?.[0]?.nomor ?? '-'}</TableCell>

@@ -5,7 +5,11 @@ import { useRouter, usePathname } from "next/navigation"
 import { supabase } from "@/lib/db/client"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { Loader2 } from "lucide-react"
+import {
+  Table, TableHeader, TableBody, TableRow, TableHead, TableCell,
+} from "@/components/ui/table"
+import { Loader2, ShoppingBag } from "lucide-react"
+import { apiFetch } from "@/lib/api/client"
 import { BreadcrumbNav, BreadcrumbItem } from "@/components/breadcrumb-nav"
 import { PageHeader } from "@/components/page-header"
 import { EmptyState } from "@/components/empty-state"
@@ -15,6 +19,26 @@ const breadcrumbItems: BreadcrumbItem[] = [
   { label: "Barang", href: "/dashboard/master/barang" },
   { label: "Detail Barang" },
 ]
+
+interface HistoryItem {
+  invoice_id: string
+  invoice_nomor: string
+  invoice_tanggal: string
+  invoice_status: string
+  customer_nama: string | null
+  customer_kode: string | null
+  so_nomor: string
+  di_nomor: string | null
+  di_nomor_customer: string | null
+  kontrak_nomor: string | null
+  cpo_nomor: string | null
+  cpo_nomor_customer: string | null
+  harga_satuan: number
+  jumlah: number
+  diskon: number
+  total: number
+  path: string | null
+}
 
 interface Barang {
   id: string
@@ -40,6 +64,8 @@ export default function DetailBarangPage() {
   const [data, setData] = useState<Barang | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
+  const [history, setHistory] = useState<HistoryItem[]>([])
+  const [historyLoading, setHistoryLoading] = useState(true)
 
   useEffect(() => {
     if (!id) return
@@ -68,6 +94,13 @@ export default function DetailBarangPage() {
         else setData(result as Barang)
         setLoading(false)
       })
+  }, [id])
+
+  useEffect(() => {
+    if (!id) return
+    apiFetch<HistoryItem[]>(`/api/v1/master/barang/${id}/history`)
+      .then((r) => { setHistory(r.data ?? []); setHistoryLoading(false) })
+      .catch(() => setHistoryLoading(false))
   }, [id])
 
   const formatCurrency = (value: number | null) => {
@@ -181,6 +214,81 @@ export default function DetailBarangPage() {
               </p>
             </div>
           </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardContent className="pt-6">
+          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2"><ShoppingBag className="h-4 w-4" />Riwayat Pembelian</h3>
+          {historyLoading ? (
+            <div className="flex items-center justify-center py-8 text-muted-foreground">
+              <Loader2 className="h-5 w-5 animate-spin mr-2" />Memuat riwayat...
+            </div>
+          ) : history.length === 0 ? (
+            <p className="text-center py-8 text-muted-foreground">Belum ada riwayat pembelian.</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Tanggal</TableHead>
+                    <TableHead>Customer</TableHead>
+                    <TableHead>Jalur</TableHead>
+                    <TableHead>Invoice</TableHead>
+                    <TableHead>DI / CPO</TableHead>
+                    <TableHead>Kontrak</TableHead>
+                    <TableHead className="text-right">Harga Satuan</TableHead>
+                    <TableHead className="text-right">Qty</TableHead>
+                    <TableHead className="text-right">Total</TableHead>
+                    <TableHead className="text-right">Margin</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {history.map((h, i) => {
+                    const margin = data.harga_beli_default != null ? h.harga_satuan - data.harga_beli_default : null
+                    const ref = h.di_nomor ?? h.cpo_nomor ?? '-'
+                    const kontrak = h.kontrak_nomor ?? '-'
+                    return (
+                      <TableRow key={`${h.invoice_id}-${i}`}>
+                        <TableCell className="whitespace-nowrap">
+                          {new Date(h.invoice_tanggal).toLocaleDateString('id-ID')}
+                        </TableCell>
+                        <TableCell className="font-medium">{h.customer_nama ?? '-'}</TableCell>
+                        <TableCell>
+                          {h.path ? (
+                            <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
+                              h.path === 'Kontrak → DI'
+                                ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+                                : 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'
+                            }`}>
+                              {h.path}
+                            </span>
+                          ) : '-'}
+                        </TableCell>
+                        <TableCell>{h.invoice_nomor}</TableCell>
+                        <TableCell className="font-mono text-xs">{ref}</TableCell>
+                        <TableCell className="font-mono text-xs">{kontrak}</TableCell>
+                        <TableCell className="text-right">{h.harga_satuan.toLocaleString('id-ID')}</TableCell>
+                        <TableCell className="text-right">{h.jumlah}</TableCell>
+                        <TableCell className="text-right font-medium">{h.total.toLocaleString('id-ID')}</TableCell>
+                        <TableCell className="text-right">
+                          {margin != null ? (
+                            <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
+                              margin >= 0
+                                ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                            }`}>
+                              {margin >= 0 ? '+' : ''}{margin.toLocaleString('id-ID')}
+                            </span>
+                          ) : '-'}
+                        </TableCell>
+                      </TableRow>
+                    )
+                  })}
+                </TableBody>
+              </Table>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

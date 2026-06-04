@@ -40,10 +40,13 @@ interface Invoice {
   sales_order: {
     nomor: string
     di: { nomor: string; nomor_di_customer: string | null; kontrak_id: string | null } | null
+    customer_po?: { nomor: string; nomor_po_customer: string | null } | null
   } | null
   customer: { nama: string; kode: string } | null
   kontrak_nomor: string | null
   do_nomor: string | null
+  cpo_ref: string | null
+  cpo_cust_ref: string | null
   pic_nama: string | null
   pic_jabatan: string | null
   grn_customer_nomor: string | null
@@ -306,6 +309,14 @@ export default function InvoiceDetailPage() {
               <div>
                 <p className="text-sm text-muted-foreground">DI Ref</p>
                 <p className="font-medium">{inv.sales_order?.di?.nomor ?? "-"}</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">CPO Ref</p>
+                <p className="font-medium">{inv.cpo_ref ?? "-"}</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">CPO Cust. Ref</p>
+                <p className="font-medium">{inv.cpo_cust_ref ?? "-"}</p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Sales Order</p>

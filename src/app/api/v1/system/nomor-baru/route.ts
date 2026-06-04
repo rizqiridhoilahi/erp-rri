@@ -34,5 +34,5 @@ export async function GET(request: NextRequest) {
   const nextCounter = data ? data.counter + 1 : 1
   const nomor = formatNumber(kode, tahun, bulan, nextCounter)
 
-  return NextResponse.json({ nomor })
+  return NextResponse.json({ data: { nomor } })
 }

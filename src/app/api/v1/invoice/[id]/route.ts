@@ -7,7 +7,7 @@ import { generateInvoiceJournal } from '@/lib/auto-jurnal'
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const auth = await verifyAuth(_request); if (auth.error) return auth.error
   const { id } = await params
-  const { data: inv, error } = await supabaseAdmin.from('invoice').select('*, sales_order!sales_order_id(nomor, di!fk_sales_order_di(nomor, nomor_di_customer, kontrak_id, customer_pic(nama, jabatan))), customer!customer_id(nama, kode)').eq('id', id).single()
+  const { data: inv, error } = await supabaseAdmin.from('invoice').select('*, sales_order!sales_order_id(nomor, di!fk_sales_order_di(nomor, nomor_di_customer, kontrak_id, customer_pic(nama, jabatan)), customer_po!customer_po_id(nomor, nomor_po_customer, customer_pic!pic_customer_id(nama, jabatan))), customer!customer_id(nama, kode)').eq('id', id).single()
   if (error) return internalError(error)
   if (!inv) return notFound('Invoice tidak ditemukan')
   const { data: items } = await supabaseAdmin.from('invoice_item').select('*, barang!barang_id(nama, kode, satuan)').eq('invoice_id', id).order('urutan')
@@ -24,18 +24,28 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
 
   type SalesOrderWithPIC = {
   nomor: string
+  customer_po_id?: string
+  di_id?: string
   di?: {
     nomor?: string
     nomor_di_customer?: string
     kontrak_id?: string
     customer_pic?: { nama: string; jabatan: string }
   } | null
+  customer_po?: {
+    nomor?: string
+    nomor_po_customer?: string
+    customer_pic?: { nama: string; jabatan: string }
+  } | null
 }
 
-const pic_nama = (inv.sales_order as SalesOrderWithPIC | null | undefined)?.di?.customer_pic?.nama ?? null
-const pic_jabatan = (inv.sales_order as SalesOrderWithPIC | null | undefined)?.di?.customer_pic?.jabatan ?? null
+const soPIC = inv.sales_order as SalesOrderWithPIC | null | undefined
+const pic_nama = soPIC?.di?.customer_pic?.nama ?? soPIC?.customer_po?.customer_pic?.nama ?? null
+const pic_jabatan = soPIC?.di?.customer_pic?.jabatan ?? soPIC?.customer_po?.customer_pic?.jabatan ?? null
+const cpo_ref = soPIC?.customer_po?.nomor ?? null
+const cpo_cust_ref = soPIC?.customer_po?.nomor_po_customer ?? null
 
-  return NextResponse.json({ data: { ...inv, items: items ?? [], kontrak_nomor, do_nomor, pic_nama, pic_jabatan } })
+  return NextResponse.json({ data: { ...inv, items: items ?? [], kontrak_nomor, do_nomor, cpo_ref, cpo_cust_ref, pic_nama, pic_jabatan } })
 }
 
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -85,7 +95,21 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
   const auth = await verifyAuth(request)
   if (auth.error) return auth.error
   const { id } = await params
+
+  const { data: inv } = await supabaseAdmin.from('invoice').select('nomor').eq('id', id).single()
+
   await supabaseAdmin.from('invoice_item').delete().eq('invoice_id', id)
+  await supabaseAdmin.from('kwitansi').delete().eq('invoice_id', id)
+
+  if (inv?.nomor) {
+    const { data: jurnalList } = await supabaseAdmin.from('jurnal').select('id').ilike('keterangan', `%Auto-jurnal dari Invoice ${inv.nomor}%`)
+    if (jurnalList?.length) {
+      const jurnalIds = jurnalList.map(j => j.id)
+      await supabaseAdmin.from('jurnal_item').delete().in('jurnal_id', jurnalIds)
+      await supabaseAdmin.from('jurnal').delete().in('id', jurnalIds)
+    }
+  }
+
   const { error } = await supabaseAdmin.from('invoice').delete().eq('id', id)
   if (error) return internalError(error)
   return new NextResponse(null, { status: 204 })

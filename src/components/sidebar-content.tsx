@@ -16,6 +16,7 @@ import { useAuth } from '@/lib/hooks/use-auth'
 import { cn } from '@/lib/utils'
 import { MODULE_PERMISSIONS, type Role } from '@/types/role'
 import { LogOut, User } from 'lucide-react'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { supabase } from '@/lib/db/client'
 import { useRouter } from 'next/navigation'
@@ -24,6 +25,7 @@ interface MenuLink {
   href: string
   label: string
   icon: LucideIcon
+  disabled?: boolean
 }
 
 interface MenuGroup {
@@ -47,10 +49,10 @@ const menuItems: MenuItem[] = [
     { href: '/dashboard/master/supplier', label: 'Supplier', icon: Building2 },
     { href: '/dashboard/master/customer', label: 'Customer', icon: Users },
     { href: '/dashboard/master/pic-customer', label: 'PIC Customer', icon: UserCircle },
-    { href: '/dashboard/master/coa', label: 'Chart of Accounts', icon: BookOpen },
-    { href: '/dashboard/master/jabatan', label: 'Jabatan', icon: Briefcase },
-    { href: '/dashboard/master/karyawan', label: 'Karyawan', icon: Users2 },
-    { href: '/dashboard/tools/bulk-import', label: 'Import Excel', icon: FileSpreadsheet },
+    { href: '/dashboard/master/coa', label: 'Chart of Accounts', icon: BookOpen, disabled: true },
+    { href: '/dashboard/master/jabatan', label: 'Jabatan', icon: Briefcase, disabled: true },
+    { href: '/dashboard/master/karyawan', label: 'Karyawan', icon: Users2, disabled: true },
+    { href: '/dashboard/tools/bulk-import', label: 'Import Excel', icon: FileSpreadsheet, disabled: true },
   ]},
   { label: 'Pre-Sales', icon: Search, children: [
     { href: '/dashboard/master/kontrak', label: 'Kontrak', icon: FileText },
@@ -67,20 +69,20 @@ const menuItems: MenuItem[] = [
     { href: '/dashboard/retur-penjualan', label: 'Retur Penjualan', icon: FileText },
   ]},
   { label: 'Procurement', icon: Package, children: [
-    { href: '/dashboard/rfq', label: 'RFQ Supplier', icon: FileText },
-    { href: '/dashboard/purchase-request', label: 'Purchase Request', icon: FileText },
-    { href: '/dashboard/purchase-order', label: 'Purchase Order', icon: FileText },
-    { href: '/dashboard/purchase-receiving', label: 'Penerimaan', icon: FileText },
-    { href: '/dashboard/grn', label: 'GRN', icon: FileText },
-    { href: '/dashboard/retur-pembelian', label: 'Retur Pembelian', icon: FileText },
-    { href: '/dashboard/procurement/supplier-payment', label: 'Pembayaran Supplier', icon: CreditCard },
+    { href: '/dashboard/rfq', label: 'RFQ Supplier', icon: FileText, disabled: true },
+    { href: '/dashboard/purchase-request', label: 'Purchase Request', icon: FileText, disabled: true },
+    { href: '/dashboard/purchase-order', label: 'Purchase Order', icon: FileText, disabled: true },
+    { href: '/dashboard/purchase-receiving', label: 'Penerimaan', icon: FileText, disabled: true },
+    { href: '/dashboard/grn', label: 'GRN', icon: FileText, disabled: true },
+    { href: '/dashboard/retur-pembelian', label: 'Retur Pembelian', icon: FileText, disabled: true },
+    { href: '/dashboard/procurement/supplier-payment', label: 'Pembayaran Supplier', icon: CreditCard, disabled: true },
   ]},
   { label: 'Inventory', icon: Package, children: [
-    { href: '/dashboard/inventory/gudang', label: 'Gudang', icon: Building2 },
-    { href: '/dashboard/inventory/stok', label: 'Stok', icon: Package },
-    { href: '/dashboard/inventory/stok/masuk', label: 'Stok Masuk', icon: TrendingUp },
-    { href: '/dashboard/inventory/stok/keluar', label: 'Stok Keluar', icon: TrendingDown },
-    { href: '/dashboard/inventory/stock-opname', label: 'Stock Opname', icon: ClipboardCheck },
+    { href: '/dashboard/inventory/gudang', label: 'Gudang', icon: Building2, disabled: true },
+    { href: '/dashboard/inventory/stok', label: 'Stok', icon: Package, disabled: true },
+    { href: '/dashboard/inventory/stok/masuk', label: 'Stok Masuk', icon: TrendingUp, disabled: true },
+    { href: '/dashboard/inventory/stok/keluar', label: 'Stok Keluar', icon: TrendingDown, disabled: true },
+    { href: '/dashboard/inventory/stock-opname', label: 'Stock Opname', icon: ClipboardCheck, disabled: true },
   ]},
   { label: 'Finance', icon: Landmark, children: [
     { href: '/dashboard/invoice', label: 'Invoice', icon: ReceiptText },
@@ -88,26 +90,26 @@ const menuItems: MenuItem[] = [
     { href: '/dashboard/jurnal', label: 'Jurnal Umum', icon: BookOpenCheck },
   ]},
   { label: 'Laporan', icon: PieChart, children: [
-    { href: '/dashboard/laporan/ar-aging', label: 'AR Aging', icon: TrendingUp },
-    { href: '/dashboard/laporan/ap-aging', label: 'AP Aging', icon: TrendingDown },
-    { href: '/dashboard/laporan/laba-rugi', label: 'Laba / Rugi', icon: Banknote },
-    { href: '/dashboard/laporan/ppn-masa', label: 'PPN Masa', icon: Receipt },
-    { href: '/dashboard/laporan/neraca', label: 'Neraca', icon: PieChart },
-    { href: '/dashboard/laporan/arus-kas', label: 'Arus Kas', icon: TrendingUp },
+    { href: '/dashboard/laporan/ar-aging', label: 'AR Aging', icon: TrendingUp, disabled: true },
+    { href: '/dashboard/laporan/ap-aging', label: 'AP Aging', icon: TrendingDown, disabled: true },
+    { href: '/dashboard/laporan/laba-rugi', label: 'Laba / Rugi', icon: Banknote, disabled: true },
+    { href: '/dashboard/laporan/ppn-masa', label: 'PPN Masa', icon: Receipt, disabled: true },
+    { href: '/dashboard/laporan/neraca', label: 'Neraca', icon: PieChart, disabled: true },
+    { href: '/dashboard/laporan/arus-kas', label: 'Arus Kas', icon: TrendingUp, disabled: true },
   ]},
   { label: 'AI Agent', icon: Bot, children: [
-    { href: '/dashboard/ai/search-harga', label: 'Search Harga', icon: Search },
-    { href: '/dashboard/ai/ocr-kontrak', label: 'OCR Kontrak', icon: ScanLine },
-    { href: '/dashboard/ai/rekomendasi-harga', label: 'Rekomendasi Harga', icon: Lightbulb },
-    { href: '/dashboard/ai/rekomendasi-supplier', label: 'Rekomendasi Supplier', icon: Store },
-    { href: '/dashboard/ai/negosiasi-assistant', label: 'Negosiasi', icon: MessageSquare },
-    { href: '/dashboard/ai/auto-suggest-barang', label: 'Auto-Suggest Barang', icon: ListOrdered },
-    { href: '/dashboard/ai/price-trend', label: 'Price Trend', icon: TrendingUp },
-    { href: '/dashboard/ai/anomaly-detection', label: 'Anomaly Detection', icon: AlertTriangle },
+    { href: '/dashboard/ai/search-harga', label: 'Search Harga', icon: Search, disabled: true },
+    { href: '/dashboard/ai/ocr-kontrak', label: 'OCR Kontrak', icon: ScanLine, disabled: true },
+    { href: '/dashboard/ai/rekomendasi-harga', label: 'Rekomendasi Harga', icon: Lightbulb, disabled: true },
+    { href: '/dashboard/ai/rekomendasi-supplier', label: 'Rekomendasi Supplier', icon: Store, disabled: true },
+    { href: '/dashboard/ai/negosiasi-assistant', label: 'Negosiasi', icon: MessageSquare, disabled: true },
+    { href: '/dashboard/ai/auto-suggest-barang', label: 'Auto-Suggest Barang', icon: ListOrdered, disabled: true },
+    { href: '/dashboard/ai/price-trend', label: 'Price Trend', icon: TrendingUp, disabled: true },
+    { href: '/dashboard/ai/anomaly-detection', label: 'Anomaly Detection', icon: AlertTriangle, disabled: true },
   ]},
   { label: 'HR', icon: Users2, children: [
-    { href: '/dashboard/absensi', label: 'Absensi', icon: Clock },
-    { href: '/dashboard/penggajian', label: 'Penggajian', icon: DollarSign },
+    { href: '/dashboard/absensi', label: 'Absensi', icon: Clock, disabled: true },
+    { href: '/dashboard/penggajian', label: 'Penggajian', icon: DollarSign, disabled: true },
   ]},
   { label: 'System', icon: ShieldCheck, children: [
     { href: '/dashboard/system/users', label: 'User Management', icon: Users },
@@ -144,9 +146,25 @@ function groupHasActive(group: MenuGroup, pathname: string): boolean {
   return group.children.some(child => isActive(child.href, pathname))
 }
 
-function SidebarNavLink({ href, icon: Icon, label, collapsed }: { href: string; icon: LucideIcon; label: string; collapsed?: boolean }) {
+function SidebarNavLink({ href, icon: Icon, label, collapsed, disabled }: { href: string; icon: LucideIcon; label: string; collapsed?: boolean; disabled?: boolean }) {
   const pathname = usePathname()
   const active = isActive(href, pathname)
+
+  if (disabled) {
+    return (
+      <button
+        onClick={() => toast.info(`${label} — Fitur dalam proses pengembangan`)}
+        className={cn(
+          'flex items-center w-full px-3 py-2 rounded-md text-sm transition-colors duration-200',
+          'opacity-50 cursor-not-allowed text-foreground/80 hover:bg-accent hover:text-accent-foreground',
+        )}
+      >
+        <Icon className={cn('h-4 w-4 shrink-0', collapsed ? '' : 'mr-3')} />
+        {!collapsed && label}
+      </button>
+    )
+  }
+
   return (
     <Link
       href={href}
@@ -201,7 +219,7 @@ export function SidebarContent({ collapsed }: { collapsed?: boolean }) {
             const expanded = groupHasActive(item, pathname)
             return <SidebarGroup key={item.label} group={item} defaultOpen={expanded} collapsed={collapsed} />
           }
-          return <SidebarNavLink key={item.href} href={item.href} icon={item.icon} label={item.label} collapsed={collapsed} />
+          return <SidebarNavLink key={item.href} href={item.href} icon={item.icon} label={item.label} collapsed={collapsed} disabled={item.disabled} />
         })}
       </nav>
       <div className="p-3 border-t space-y-1">
@@ -242,7 +260,7 @@ function SidebarGroup({ group, defaultOpen, collapsed }: { group: MenuGroup; def
     return (
       <div className="space-y-1">
         {group.children.map(child => (
-          <SidebarNavLink key={child.href} href={child.href} icon={child.icon} label={child.label} collapsed />
+          <SidebarNavLink key={child.href} href={child.href} icon={child.icon} label={child.label} collapsed disabled={child.disabled} />
         ))}
       </div>
     )
@@ -261,7 +279,7 @@ function SidebarGroup({ group, defaultOpen, collapsed }: { group: MenuGroup; def
       {open && (
         <div className="ml-2 space-y-1 overflow-hidden">
           {group.children.map((child) => (
-            <SidebarNavLink key={child.href} href={child.href} icon={child.icon} label={child.label} />
+            <SidebarNavLink key={child.href} href={child.href} icon={child.icon} label={child.label} disabled={child.disabled} />
           ))}
         </div>
       )}

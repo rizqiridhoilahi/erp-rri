@@ -6,7 +6,8 @@ import { badRequest, notFound, internalError } from '@/lib/api/errors'
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const auth = await verifyAuth(_request); if (auth.error) return auth.error
   const { id } = await params
-  const { data: kwt, error } = await supabaseAdmin.from('kwitansi').select('*, invoice!invoice_id(nomor, tanggal, top, status, customer!customer_id(nama, kode), sales_order!sales_order_id(nomor, di!fk_sales_order_di(nomor, nomor_di_customer, kontrak_id, customer_pic(nama, jabatan))))').eq('id', id).single()
+  const { data: kwtRow, error } = await (supabaseAdmin.from('kwitansi').select('*, invoice!invoice_id(nomor, tanggal, top, status, customer!customer_id(nama, kode), sales_order!sales_order_id(nomor, di!fk_sales_order_di(nomor, nomor_di_customer, kontrak_id, customer_pic(nama, jabatan)), customer_po!customer_po_id(nomor, nomor_po_customer, customer_pic!pic_customer_id(nama, jabatan))))') as any).eq('id', id).single()
+  const kwt = kwtRow as { id: string; status: string; invoice_id: string; invoice?: { status: string } } & Record<string, unknown>
   if (error) return internalError(error)
   if (!kwt) return notFound('Kwitansi tidak ditemukan')
 
@@ -26,6 +27,11 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
       kontrak_id?: string
       customer_pic?: { nama: string; jabatan: string }
     } | null
+    customer_po?: {
+      nomor?: string
+      nomor_po_customer?: string
+      customer_pic?: { nama: string; jabatan: string }
+    } | null
   }
 
   type KwitansiWithInvoice = {
@@ -38,10 +44,12 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
     const { data: kontrak } = await supabaseAdmin.from('kontrak').select('nomor_kontrak').eq('id', salesOrder.di.kontrak_id).single()
     if (kontrak) kontrak_nomor = kontrak.nomor_kontrak
   }
-  const pic_nama = salesOrder?.di?.customer_pic?.nama ?? null
-  const pic_jabatan = salesOrder?.di?.customer_pic?.jabatan ?? null
+  const pic_nama = salesOrder?.di?.customer_pic?.nama ?? salesOrder?.customer_po?.customer_pic?.nama ?? null
+  const pic_jabatan = salesOrder?.di?.customer_pic?.jabatan ?? salesOrder?.customer_po?.customer_pic?.jabatan ?? null
+  const cpo_ref = salesOrder?.customer_po?.nomor ?? null
+  const cpo_cust_ref = salesOrder?.customer_po?.nomor_po_customer ?? null
 
-  return NextResponse.json({ data: { ...kwt, items: items ?? [], kontrak_nomor, pic_nama, pic_jabatan } })
+  return NextResponse.json({ data: { ...kwt, items: items ?? [], kontrak_nomor, pic_nama, pic_jabatan, cpo_ref, cpo_cust_ref } })
 }
 
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {

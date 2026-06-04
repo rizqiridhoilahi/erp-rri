@@ -34,6 +34,10 @@ export async function POST(request: NextRequest) {
   const parsed = schema.safeParse(body)
   if (!parsed.success) return badRequest(parsed.error.issues.map(e => e.message).join(', '))
 
+  const totalDebit = parsed.data.items.reduce((s, i) => s + i.debit, 0)
+  const totalCredit = parsed.data.items.reduce((s, i) => s + i.credit, 0)
+  if (totalDebit !== totalCredit) return badRequest(`Jurnal tidak balance: Debit ${totalDebit.toFixed(2)} ≠ Kredit ${totalCredit.toFixed(2)}`)
+
   const nomor = await generateDocumentNumber('JRN')
   const now = new Date().toISOString()
 

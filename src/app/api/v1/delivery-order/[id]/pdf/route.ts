@@ -60,8 +60,16 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
     if (diData?.customer) customerNama = diData.customer.nama
   }
 
-  // Ref uses DI's nomor_di_customer (customer-facing reference)
-  if (so?.di_id) {
+  // Ref uses CPO nomor or DI's nomor_di_customer (customer-facing reference)
+  if (so?.customer_po_id) {
+    const { data: poRef } = await supabaseAdmin
+      .from('customer_po')
+      .select('nomor_po_customer')
+      .eq('id', so.customer_po_id)
+      .single()
+    const refData = poRef as { nomor_po_customer: string | null } | null
+    if (refData) ref = refData.nomor_po_customer
+  } else if (so?.di_id) {
     const { data: diRef } = await supabaseAdmin
       .from('di')
       .select('nomor_di_customer')

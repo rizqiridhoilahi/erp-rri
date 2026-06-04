@@ -11,7 +11,7 @@ const s: Record<string, { label: string; v: 'secondary' | 'success' | 'outline' 
 }
 
 export default async function KwitansiPage() {
-  const { data, error } = await supabase.from('kwitansi').select('*, invoice!invoice_id(nomor, customer!customer_id(nama, kode), sales_order!sales_order_id(nomor, di!fk_sales_order_di(nomor)))').order('created_at', { ascending: false })
+  const { data, error } = await supabase.from('kwitansi').select('*, invoice!invoice_id(nomor, customer!customer_id(nama, kode), sales_order!sales_order_id(nomor, di!fk_sales_order_di(nomor, nomor_di_customer), customer_po!customer_po_id(nomor, nomor_po_customer)))').order('created_at', { ascending: false })
 
   const invoiceIds = [...new Set((data ?? []).map(k => k.invoice_id))]
   const { data: invItemsData } = invoiceIds.length > 0 ? await supabase.from('invoice_item').select('invoice_id, harga, jumlah, diskon').in('invoice_id', invoiceIds) : { data: [] }
@@ -34,6 +34,9 @@ export default async function KwitansiPage() {
         <TableHead>Nomor</TableHead>
         <TableHead>Invoice Ref</TableHead>
         <TableHead>DI Ref</TableHead>
+        <TableHead>DI Cust. Ref</TableHead>
+        <TableHead>CPO Ref</TableHead>
+        <TableHead>CPO Cust. Ref</TableHead>
         <TableHead>Customer</TableHead>
         <TableHead className="text-right">Total</TableHead>
         <TableHead>Tanggal</TableHead>
@@ -45,6 +48,9 @@ export default async function KwitansiPage() {
             <TableCell className="font-medium">{item.nomor}</TableCell>
             <TableCell className="font-medium">{item.invoice?.nomor ?? '-'}</TableCell>
             <TableCell className="font-medium">{item.invoice?.sales_order?.di?.nomor ?? '-'}</TableCell>
+            <TableCell className="font-medium">{item.invoice?.sales_order?.di?.nomor_di_customer ?? '-'}</TableCell>
+            <TableCell className="font-medium">{item.invoice?.sales_order?.customer_po?.nomor ?? '-'}</TableCell>
+            <TableCell className="font-medium">{item.invoice?.sales_order?.customer_po?.nomor_po_customer ?? '-'}</TableCell>
             <TableCell className="font-medium">{item.invoice?.customer?.nama ?? '-'}</TableCell>
             <TableCell className="font-medium">Rp {(invoiceTotals[item.invoice_id] ?? 0).toLocaleString('id-ID')}</TableCell>
             <TableCell className="font-medium">{new Date(item.tanggal).toLocaleDateString('id-ID')}</TableCell>
