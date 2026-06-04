@@ -1,9 +1,3 @@
 {
-  "installCommand": "npm install --legacy-peer-deps",
-  "crons": [
-    {
-      "path": "/api/v1/cron/ar-reminder",
-      "schedule": "0 1 * * *"
-    }
-  ]
+  "installCommand": "npm install --legacy-peer-deps"
 }
