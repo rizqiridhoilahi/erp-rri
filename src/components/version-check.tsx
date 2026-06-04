@@ -2,11 +2,9 @@
 import { useEffect, useRef } from 'react'
 import { toast } from 'sonner'
 
-const APP_VERSION = process.env.NEXT_PUBLIC_APP_VERSION ?? '0.0.0'
-const LS_KEY = 'erp_rri_version_notified'
-
 export function VersionCheck() {
-  const notifiedRef = useRef(localStorage.getItem(LS_KEY) === APP_VERSION)
+  const baselineRef = useRef<string | null>(null)
+  const notifiedRef = useRef(false)
 
   useEffect(() => {
     let mounted = true
@@ -16,21 +14,25 @@ export function VersionCheck() {
         const res = await fetch('/api/v1/system/version')
         if (!res.ok) return
         const json = await res.json()
-        const serverVersion: string = json.data?.version
+        const version: string = json.data?.version
+        if (!version) return
 
-        if (!serverVersion || serverVersion === APP_VERSION) return
+        if (baselineRef.current === null) {
+          baselineRef.current = version
+          return
+        }
+
+        if (version === baselineRef.current) return
         if (notifiedRef.current) return
 
+        notifiedRef.current = true
         const isWin = navigator.platform.includes('Win')
         const shortcut = isWin ? 'Ctrl+Shift+R' : 'Cmd+Shift+R'
-
-        notifiedRef.current = true
-        localStorage.setItem(LS_KEY, APP_VERSION)
 
         if (!mounted) return
 
         toast.info('Versi Baru Tersedia!', {
-          description: `Aplikasi telah diperbarui ke v${serverVersion}. Tekan ${shortcut} atau klik tombol di bawah untuk refresh.`,
+          description: `Aplikasi telah diperbarui ke v${version}. Tekan ${shortcut} atau klik tombol di bawah untuk refresh.`,
           action: {
             label: '↻ Refresh Sekarang',
             onClick: () => window.location.reload(),
