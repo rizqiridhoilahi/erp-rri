@@ -9,7 +9,7 @@ export function PanduanButton() {
   return (
     <button
       onClick={startTour}
-      className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors duration-200"
+      className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm text-primary hover:bg-primary/10 transition-colors duration-200"
       title="Panduan ERP RRI"
     >
       <HelpCircle className="h-4 w-4" />

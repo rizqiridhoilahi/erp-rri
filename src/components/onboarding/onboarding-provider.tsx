@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic'
 import { supabase } from '@/lib/db/client'
 import { tourSteps } from './tour-steps'
 import type { EventData } from 'react-joyride'
+import { Compass } from 'lucide-react'
 
 const Joyride = dynamic(() => import('react-joyride').then(m => ({ default: m.Joyride })), { ssr: false })
 
@@ -60,13 +61,13 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   return (
     <Ctx.Provider value={{ startTour }}>
       {showWelcome && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="bg-card rounded-xl shadow-2xl max-w-md w-full mx-4 p-8 text-center space-y-6">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
+          <div className="bg-card border border-border rounded-xl shadow-2xl max-w-md w-full mx-4 p-8 text-center space-y-6 animate-fade-in-up">
             <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
-              <span className="text-3xl font-heading font-bold text-primary">ERP</span>
+              <Compass className="h-8 w-8 text-primary" />
             </div>
             <div>
-              <h2 className="text-2xl font-heading font-bold text-primary">Selamat Datang</h2>
+              <h2 className="text-2xl font-heading font-bold text-foreground">Selamat Datang</h2>
               <p className="text-muted-foreground mt-2">
                 ERP RRI — sistem terintegrasi untuk mengelola seluruh bisnis Anda. Ikuti tur singkat untuk mengenali fitur utama.
               </p>
@@ -74,13 +75,13 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
             <div className="space-y-3">
               <button
                 onClick={handleWelcomeStart}
-                className="w-full bg-primary text-primary-foreground rounded-lg py-2.5 font-medium hover:bg-primary/90 transition-colors"
+                className="w-full bg-primary text-primary-foreground rounded-lg py-2.5 font-medium hover:bg-primary/90 transition-colors cursor-pointer"
               >
                 Mulai Tur
               </button>
               <button
                 onClick={handleWelcomeSkip}
-                className="w-full text-muted-foreground text-sm py-2 hover:text-foreground transition-colors"
+                className="w-full text-muted-foreground text-sm py-2 hover:text-foreground transition-colors cursor-pointer"
               >
                 Lewati
               </button>
@@ -93,10 +94,10 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
         steps={tourSteps}
         run={runTour}
         continuous
-        onEvent={handleJoyrideEvent}
         options={{
           showProgress: true,
           buttons: ['back', 'primary', 'skip'],
+          spotlightPadding: 8,
         }}
         locale={{
           back: 'Kembali',
@@ -105,26 +106,41 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
           skip: 'Lewati',
         }}
         styles={{
-          arrow: { color: '#FFFFFF' },
-           buttonPrimary: {
-             backgroundColor: 'hsl(var(--primary))',
-             borderRadius: '8px',
-             fontSize: '14px',
-             padding: '8px 16px',
-           },
-           buttonBack: {
-             color: 'hsl(var(--muted-foreground))',
-             fontSize: '14px',
-           },
-           buttonSkip: {
-             color: 'hsl(var(--muted-foreground))',
-             fontSize: '14px',
-           },
-            overlay: { backgroundColor: 'rgba(0,0,0,0.4)' },
-           tooltipContainer: { textAlign: 'left' },
-           tooltip: { backgroundColor: 'hsl(var(--card))', borderRadius: '12px', padding: '20px' },
-           tooltipContent: { color: 'hsl(var(--foreground))', fontSize: '14px', lineHeight: '1.5' },
-           tooltipTitle: { color: 'hsl(var(--foreground))', fontSize: '18px', fontWeight: 600 },
+          arrow: { color: 'var(--card)' },
+          buttonPrimary: {
+            backgroundColor: 'var(--primary)',
+            color: 'var(--primary-foreground)',
+            borderRadius: '8px',
+            fontSize: '14px',
+            padding: '8px 16px',
+          },
+          buttonBack: {
+            color: 'var(--muted-foreground)',
+            fontSize: '14px',
+          },
+          buttonSkip: {
+            color: 'var(--muted-foreground)',
+            fontSize: '14px',
+          },
+          overlay: { backgroundColor: 'rgba(0,0,0,0.5)' },
+          tooltipContainer: { textAlign: 'left' },
+          tooltip: {
+            backgroundColor: 'var(--card)',
+            border: '1px solid var(--border)',
+            boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)',
+            borderRadius: '12px',
+            padding: '20px',
+          },
+          tooltipContent: {
+            color: 'var(--foreground)',
+            fontSize: '14px',
+            lineHeight: '1.6',
+          },
+          tooltipTitle: {
+            color: 'var(--foreground)',
+            fontSize: '18px',
+            fontWeight: 600,
+          },
         }}
       />
 
