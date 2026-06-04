@@ -6,6 +6,7 @@ import { badRequest, notFound, internalError } from '@/lib/api/errors'
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const auth = await verifyAuth(_request); if (auth.error) return auth.error
   const { id } = await params
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data: kwtRow, error } = await (supabaseAdmin.from('kwitansi').select('*, invoice!invoice_id(nomor, tanggal, top, status, customer!customer_id(nama, kode), sales_order!sales_order_id(nomor, di!fk_sales_order_di(nomor, nomor_di_customer, kontrak_id, customer_pic(nama, jabatan)), customer_po!customer_po_id(nomor, nomor_po_customer, customer_pic!pic_customer_id(nama, jabatan))))') as any).eq('id', id).single()
   const kwt = kwtRow as { id: string; status: string; invoice_id: string; invoice?: { status: string } } & Record<string, unknown>
   if (error) return internalError(error)

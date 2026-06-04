@@ -12,6 +12,7 @@ export async function GET(
 
   const { id } = await params
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data: invoiceItems, error: iiErr } = await (supabaseAdmin
     .from('invoice_item')
     .select('invoice_id, harga, jumlah, diskon')
@@ -26,6 +27,7 @@ export async function GET(
 
   const invoiceIds = [...new Set(rawItems.map((i) => i.invoice_id))]
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data: invRows, error: invErr } = await (supabaseAdmin
     .from('invoice')
     .select('id, nomor, tanggal, status, customer!customer_id(nama, kode), sales_order!sales_order_id(nomor, di!fk_sales_order_di(nomor, nomor_di_customer, kontrak_id), customer_po!customer_po_id(nomor, nomor_po_customer))')
@@ -64,7 +66,7 @@ export async function GET(
     ),
   ]
 
-  let kontrakMap: Record<string, string> = {}
+  const kontrakMap: Record<string, string> = {}
   if (kontrakIds.length > 0) {
     const { data: kontraks } = await supabaseAdmin
       .from('kontrak')
