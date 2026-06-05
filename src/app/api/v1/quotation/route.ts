@@ -160,24 +160,36 @@ export async function POST(request: NextRequest) {
   const { error: itemsError } = await supabaseAdmin.from('quotation_item').insert(dbItems)
 
   if (itemsError) {
-    await supabaseAdmin.from('quotation').delete().eq('id', qtn.id)
+    try {
+      await supabaseAdmin.from('quotation').delete().eq('id', qtn.id)
+    } catch (deleteError) {
+      console.error('Failed to cleanup orphan quotation', qtn.id, deleteError)
+    }
     return internalError(itemsError)
   }
 
-  const { data: pics } = await supabaseAdmin
-    .from('customer_pic')
-    .select('no_hp, nama')
-    .eq('customer_id', parsed.data.customer_id)
-    .eq('is_active', true)
-    .limit(1)
+  try {
+    const { data: pics } = await supabaseAdmin
+      .from('customer_pic')
+      .select('no_hp, nama')
+      .eq('customer_id', parsed.data.customer_id)
+      .eq('is_active', true)
+      .limit(1)
 
-  const pic = pics?.[0]
-  if (pic?.no_hp) {
-    const msg = `Halo *${pic.nama}*,\n\nQuotation *${nomor}* telah diterbitkan untuk Anda oleh RRI.\n\nSilakan cek detailnya di portal customer RRI.\n\nTerima kasih.`
-    await sendWhatsapp(pic.no_hp, msg, auth.user?.id)
+    const pic = pics?.[0]
+    if (pic?.no_hp) {
+      const msg = `Halo *${pic.nama}*,\n\nQuotation *${nomor}* telah diterbitkan untuk Anda oleh RRI.\n\nSilakan cek detailnya di portal customer RRI.\n\nTerima kasih.`
+      await sendWhatsapp(pic.no_hp, msg, auth.user?.id)
+    }
+  } catch (e) {
+    console.error('WhatsApp notification failed for quotation', qtn.id, e)
   }
 
-  await logAudit({ userId: auth.user?.id, action: 'CREATE', tableName: 'quotation', recordId: qtn.id, changes: { nomor, customer_id: parsed.data.customer_id, total_harga: totalHarga, items_count: items.length } })
+  try {
+    await logAudit({ userId: auth.user?.id, action: 'CREATE', tableName: 'quotation', recordId: qtn.id, changes: { nomor, customer_id: parsed.data.customer_id, total_harga: totalHarga, items_count: items.length } })
+  } catch (e) {
+    console.error('Audit log failed for quotation', qtn.id, e)
+  }
 
   return NextResponse.json({ data: { ...qtn, items: dbItems } }, { status: 201 })
 }

@@ -119,9 +119,11 @@ export default function TambahQuotationPage() {
       if (rfqIdFromUrl) {
         setValue('rfq_id', rfqIdFromUrl)
       }
-      apiFetch<{ nomor: string }>('/api/v1/system/nomor-baru?kode=SPH')
-        .then(res => setNomorDokumen(res.data.nomor))
-        .catch(() => {})
+      if (!rfqIdFromUrl) {
+        apiFetch<{ nomor: string }>('/api/v1/system/nomor-baru?kode=SPH')
+          .then(res => setNomorDokumen(res.data.nomor))
+          .catch(() => {})
+      }
     }).catch(() => toast.error('Gagal memuat data referensi')).finally(() => setLoading(false))
   }, [])
 
@@ -139,6 +141,9 @@ export default function TambahQuotationPage() {
       setRfqPicLabel('')
       setRfqItemLabels([])
       setIsRfqLoaded(false)
+      apiFetch<{ nomor: string }>('/api/v1/system/nomor-baru?kode=SPH')
+        .then(res => setNomorDokumen(res.data.nomor))
+        .catch(() => {})
       return
     }
 
@@ -198,6 +203,13 @@ export default function TambahQuotationPage() {
         setRfqItemLabels(rfq.items.map(item =>
           item.barang?.nama || item.nama_barang || ''
         ))
+
+        if (rfq.nomor) {
+          const parts = rfq.nomor.split('-')
+          if (parts.length >= 5) {
+            setNomorDokumen(`RRI-SPH-${parts[2]}-${parts[3]}-${parts[4]}`)
+          }
+        }
 
         setIsRfqLoaded(true)
 
