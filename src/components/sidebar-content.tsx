@@ -49,6 +49,7 @@ const menuItems: MenuItem[] = [
     { href: '/dashboard/master/supplier', label: 'Supplier', icon: Building2 },
     { href: '/dashboard/master/customer', label: 'Customer', icon: Users },
     { href: '/dashboard/master/pic-customer', label: 'PIC Customer', icon: UserCircle },
+    { href: '/dashboard/master/payment-term', label: 'Payment Term', icon: FileText },
     { href: '/dashboard/master/coa', label: 'Chart of Accounts', icon: BookOpen, disabled: true },
     { href: '/dashboard/master/jabatan', label: 'Jabatan', icon: Briefcase, disabled: true },
     { href: '/dashboard/master/karyawan', label: 'Karyawan', icon: Users2, disabled: true },

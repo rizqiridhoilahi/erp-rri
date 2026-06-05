@@ -15,7 +15,7 @@ import { ArrowLeft, Loader2, Trash2, FileText, Plus, Settings2 } from 'lucide-re
 import { toast } from 'sonner'
 import { KelolaKategoriDialog } from '@/components/kelola-kategori-dialog'
 
-const fallbackTopOptions = ['Net 14', 'Net 30', 'Net 60', 'Net 90', 'Cash', 'Custom']
+const fallbackTopOptions = ['Net 14', 'Net 20', 'Net 30', 'Net 60', 'Net 90', 'Cash', 'Custom']
 
 interface ItemRow {
   key: string

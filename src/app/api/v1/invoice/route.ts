@@ -5,6 +5,7 @@ import { verifyAuth } from '@/lib/api/auth'
 import { badRequest, internalError } from '@/lib/api/errors'
 import { generateGlobalDocumentNumber, formatChildNumber } from '@/lib/utils/document-number'
 import { generateInvoiceJournal } from '@/lib/auto-jurnal'
+import { addDays } from 'date-fns'
 
 const itemSchema = z.object({
   barang_id: z.string().min(1),
@@ -116,5 +117,36 @@ export async function POST(request: NextRequest) {
 
   const jurnalResult = await generateInvoiceJournal(inv.id)
 
-  return NextResponse.json({ data: { ...inv, items, jurnal: jurnalResult.success ? jurnalResult.jurnal : null } }, { status: 201 })
+  let schedule: Record<string, unknown>[] | null = null
+  const { data: cust } = await supabaseAdmin.from('customer').select('payment_term_id').eq('id', parsed.data.customer_id).single()
+  if (cust?.payment_term_id) {
+    const { data: termItems } = await supabaseAdmin
+      .from('payment_term_item')
+      .select('*')
+      .eq('payment_term_id', cust.payment_term_id)
+      .order('urutan')
+    if (termItems && termItems.length > 0) {
+      const totalAmount = items.reduce((sum, item) => {
+        const subtotal = item.harga * item.jumlah
+        const diskonAmount = (item.diskon ?? 0) > 0 ? subtotal * ((item.diskon ?? 0) / 100) : 0
+        return sum + subtotal - diskonAmount
+      }, 0)
+      const tanggal = new Date(parsed.data.tanggal + "T00:00:00")
+      schedule = termItems.map((ti) => ({
+        invoice_id: inv.id,
+        urutan: ti.urutan,
+        deskripsi: ti.deskripsi,
+        persentase: ti.persentase,
+        jumlah: Math.round(totalAmount * (Number(ti.persentase) / 100) * 100) / 100,
+        due_date: addDays(tanggal, ti.due_days).toISOString(),
+        status: 'pending',
+        paid_amount: 0,
+        created_at: now,
+      }))
+      const { error: schedError } = await supabaseAdmin.from('invoice_payment_schedule').insert(schedule)
+      if (schedError) console.error('Failed to generate payment schedule:', schedError)
+    }
+  }
+
+  return NextResponse.json({ data: { ...inv, items, schedule, jurnal: jurnalResult.success ? jurnalResult.jurnal : null } }, { status: 201 })
 }

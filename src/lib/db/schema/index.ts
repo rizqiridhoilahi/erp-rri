@@ -57,6 +57,9 @@ import { fakturPajakItem } from "./faktur-pajak-item";
 import { kwitansi } from "./kwitansi";
 import { kwitansiItem } from "./kwitansi-item";
 import { kwitansiDocument } from "./kwitansi-document";
+import { paymentTerm } from "./payment-term";
+import { paymentTermItem } from "./payment-term";
+import { invoicePaymentSchedule } from "./invoice-payment-schedule";
 import { invoicePayment } from "./invoice-payment";
 import { stok } from "./stok";
 import { stockOpname } from "./stock-opname";
@@ -149,6 +152,9 @@ export {
   kwitansi,
   kwitansiItem,
   kwitansiDocument,
+  paymentTerm,
+  paymentTermItem,
+  invoicePaymentSchedule,
   invoicePayment,
   stok,
   stockOpname,

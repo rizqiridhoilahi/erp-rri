@@ -45,7 +45,9 @@ const pic_jabatan = soPIC?.di?.customer_pic?.jabatan ?? soPIC?.customer_po?.cust
 const cpo_ref = soPIC?.customer_po?.nomor ?? null
 const cpo_cust_ref = soPIC?.customer_po?.nomor_po_customer ?? null
 
-  return NextResponse.json({ data: { ...inv, items: items ?? [], kontrak_nomor, do_nomor, cpo_ref, cpo_cust_ref, pic_nama, pic_jabatan } })
+  const { data: schedule } = await supabaseAdmin.from('invoice_payment_schedule').select('*').eq('invoice_id', id).order('urutan')
+
+  return NextResponse.json({ data: { ...inv, items: items ?? [], schedule: schedule ?? [], kontrak_nomor, do_nomor, cpo_ref, cpo_cust_ref, pic_nama, pic_jabatan } })
 }
 
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {

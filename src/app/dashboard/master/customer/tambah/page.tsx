@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { apiFetch } from '@/lib/api/client';
+import { supabase } from '@/lib/db/client';
 import { useRouter } from 'next/navigation';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
@@ -12,6 +13,12 @@ import { Loader2 } from 'lucide-react';
 import { useUnsavedChanges } from '@/hooks/use-unsaved-changes';
 import { ConfirmLeaveDialog } from '@/components/confirm-leave-dialog';
 
+interface PaymentTermItem {
+  id: string
+  nama: string
+  is_active: boolean
+}
+
 const allTopOptions = ['Net 14', 'Net 20', 'Net 30', 'Net 60', 'Net 90', 'Cash', 'Custom'] as const;
 
 const customerSchema = z.object({
@@ -20,6 +27,7 @@ const customerSchema = z.object({
   alamat: z.string().optional(),
   kontak: z.string().optional(),
   selectedTops: z.array(z.string()).min(1, { message: "Pilih minimal 1 Terms of Payment" }),
+  paymentTermId: z.string().optional(),
   isActive: z.boolean().default(true),
 });
 
@@ -27,14 +35,23 @@ type CustomerFormValues = z.input<typeof customerSchema>;
 
 export default function TambahCustomerPage() {
   const router = useRouter();
+  const [paymentTerms, setPaymentTerms] = useState<PaymentTermItem[]>([]);
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase.from('payment_term').select('id, nama, is_active').eq('is_active', true).order('nama')
+      setPaymentTerms(data ?? [])
+    })()
+  }, [])
 
   const { register, handleSubmit, formState: { errors, isDirty }, setValue, watch } = useForm<CustomerFormValues>({
     resolver: zodResolver(customerSchema),
-    defaultValues: { selectedTops: [], isActive: true },
+    defaultValues: { selectedTops: [], paymentTermId: undefined, isActive: true },
   });
   const { confirmLeave, showDialog, handleConfirm, handleCancel } = useUnsavedChanges(isDirty);
 
   const selectedTops = watch('selectedTops', []);
+  const paymentTermId = watch('paymentTermId');
 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -60,6 +77,7 @@ export default function TambahCustomerPage() {
           alamat: data.alamat,
           kontak: data.kontak,
           terms_of_payment: data.selectedTops[0] ?? '',
+          payment_term_id: data.paymentTermId || null,
           is_active: data.isActive,
           customer_tops: data.selectedTops,
         }),
@@ -163,6 +181,25 @@ export default function TambahCustomerPage() {
             ))}
           </div>
           {errors.selectedTops && <p className="text-destructive text-sm mt-1">{errors.selectedTops.message}</p>}
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-1">
+            Payment Term (Multi-Termin)
+          </label>
+          <select
+            value={paymentTermId ?? ''}
+            onChange={(e) => setValue('paymentTermId', e.target.value || undefined, { shouldDirty: true })}
+            className="w-full h-10 px-3 border rounded-md bg-background text-sm"
+          >
+            <option value="">- Tidak menggunakan multi-termin -</option>
+            {paymentTerms.map((pt) => (
+              <option key={pt.id} value={pt.id}>{pt.nama}</option>
+            ))}
+          </select>
+          <p className="text-xs text-muted-foreground mt-1">
+            Biarkan kosong jika hanya menggunakan TOP sederhana
+          </p>
         </div>
 
         <div className="flex items-center">

@@ -52,6 +52,19 @@ interface Invoice {
   pic_jabatan: string | null
   grn_customer_nomor: string | null
   keterangan_invoice: string | null
+  schedule: PaymentSchedule[]
+}
+
+interface PaymentSchedule {
+  id: string
+  invoice_id: string
+  urutan: number
+  deskripsi: string
+  persentase: number
+  jumlah: number
+  due_date: string
+  status: string
+  paid_amount: number
 }
 
 interface InvoiceItem {
@@ -80,6 +93,7 @@ export default function InvoiceDetailPage() {
   const [uploading, setUploading] = useState(false)
   const [kwitansiList, setKwitansiList] = useState<Array<{ id: string; nomor: string; invoice_id: string; status: string }>>([])
   const [payments, setPayments] = useState<Array<{ id: string; amount: number; metode: string; tanggal: string; keterangan: string | null }>>([])
+  const [schedule, setSchedule] = useState<PaymentSchedule[]>([])
   const [grnCustomerNomor, setGrnCustomerNomor] = useState("")
   const [savingGrn, setSavingGrn] = useState(false)
   const [keteranganInvoice, setKeteranganInvoice] = useState("")
@@ -104,6 +118,7 @@ export default function InvoiceDetailPage() {
       setDocuments(docRes.data ?? [])
       setKwitansiList(kwtRes.data ?? [])
       setPayments(payRes.data ?? [])
+      setSchedule(invData?.schedule ?? [])
       setGrnCustomerNomor(invData?.grn_customer_nomor ?? "")
       setKeteranganInvoice(invData?.keterangan_invoice ?? "")
       setLoading(false)
@@ -369,7 +384,54 @@ export default function InvoiceDetailPage() {
         </CardContent>
       </Card>
         )
-      })()}
+      }      )()}
+
+      {schedule.length > 0 && (
+        <Card>
+          <CardContent className="pt-6">
+            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+              <FileText className="h-4 w-4" />Jadwal Pembayaran
+            </h3>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>#</TableHead>
+                  <TableHead>Termin</TableHead>
+                  <TableHead className="text-right">Persentase</TableHead>
+                  <TableHead className="text-right">Jumlah</TableHead>
+                  <TableHead>Jatuh Tempo</TableHead>
+                  <TableHead>Status</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {schedule.map((s) => {
+                  const isDueOverdue = s.due_date ? new Date(s.due_date) < new Date() && s.status === 'pending' : false
+                  return (
+                    <TableRow key={s.id}>
+                      <TableCell>{s.urutan}</TableCell>
+                      <TableCell>{s.deskripsi}</TableCell>
+                      <TableCell className="text-right">{s.persentase}%</TableCell>
+                      <TableCell className="text-right font-medium">{s.jumlah.toLocaleString("id-ID")}</TableCell>
+                      <TableCell>
+                        {s.due_date ? (
+                          <span className={`${isDueOverdue ? 'text-destructive font-medium' : ''}`}>
+                            {new Date(s.due_date).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })}
+                          </span>
+                        ) : "-"}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={s.status === 'paid' ? 'success' : s.status === 'partial' ? 'warning' : isDueOverdue ? 'destructive' : 'secondary'}>
+                          {s.status === 'paid' ? 'Lunas' : s.status === 'partial' ? 'Sebagian' : isDueOverdue ? 'Overdue' : 'Pending'}
+                        </Badge>
+                      </TableCell>
+                    </TableRow>
+                  )
+                })}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      )}
 
       {kwitansiList.length > 0 && (
         <Card>

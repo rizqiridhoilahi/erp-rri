@@ -27,6 +27,8 @@ interface Customer {
   alamat: string | null
   kontak: string | null
   terms_of_payment: string | null
+  payment_term_id: string | null
+  payment_term: { id: string; nama: string }[] | null
   is_active: boolean
   created_at: string
 }
@@ -82,6 +84,8 @@ export default function DetailCustomerPage() {
           alamat,
           kontak,
           terms_of_payment,
+          payment_term_id,
+          payment_term!payment_term_id(id, nama),
           is_active,
           created_at
         `)
@@ -226,6 +230,10 @@ export default function DetailCustomerPage() {
             <div>
               <label className="block text-sm font-medium text-muted-foreground mb-1">Terms of Payment (Default)</label>
               <p className="text-sm font-medium">{data.terms_of_payment || "-"}</p>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-muted-foreground mb-1">Payment Term (Multi-Termin)</label>
+              <p className="text-sm font-medium">{data.payment_term?.[0]?.nama || "-"}</p>
             </div>
             <div>
               <label className="block text-sm font-medium text-muted-foreground mb-1">Status</label>

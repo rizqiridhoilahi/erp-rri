@@ -21,6 +21,11 @@ const breadcrumbItems: BreadcrumbItem[] = [
   { label: "Customer" },
 ]
 
+interface PaymentTerm {
+  id: string
+  nama: string
+}
+
 interface Customer {
   id: string
   nama: string
@@ -28,6 +33,8 @@ interface Customer {
   alamat: string | null
   kontak: string | null
   terms_of_payment: string | null
+  payment_term_id: string | null
+  payment_term: PaymentTerm[] | null
   is_active: boolean
   created_at: string
 }
@@ -48,6 +55,8 @@ export default function CustomerPage() {
         alamat,
         kontak,
         terms_of_payment,
+        payment_term_id,
+        payment_term!payment_term_id(id, nama),
         is_active,
         created_at
       `)
@@ -137,7 +146,7 @@ export default function CustomerPage() {
     { header: "Nama Customer", accessor: (item) => item.nama, sortKey: "nama" },
     { header: "Alamat", accessor: (item) => item.alamat || "-", sortKey: "alamat" },
     { header: "Kontak", accessor: (item) => item.kontak || "-", sortKey: "kontak" },
-    { header: "Terms of Payment", accessor: (item) => item.terms_of_payment || "-", sortKey: "terms_of_payment" },
+    { header: "Terms of Payment", accessor: (item) => item.payment_term?.[0]?.nama || item.terms_of_payment || "-", sortKey: "terms_of_payment" },
     { header: "Status", accessor: (item) => statusBadge(item.is_active), sortKey: "is_active" },
     { header: "Aksi", accessor: (item) => actionButtons(item.id, item.nama), className: "text-right" },
   ]
