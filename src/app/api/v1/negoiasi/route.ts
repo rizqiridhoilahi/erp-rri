@@ -4,7 +4,7 @@ import { supabaseAdmin } from '@/lib/api/supabase-server'
 import { verifyAuth } from '@/lib/api/auth'
 import { badRequest, internalError } from '@/lib/api/errors'
 import { logAudit } from '@/lib/audit'
-import { generateGlobalDocumentNumber } from '@/lib/utils/document-number'
+
 
 const itemSchema = z.object({
   quotation_item_id: z.string().min(1),
@@ -60,7 +60,13 @@ export async function POST(request: NextRequest) {
     .eq('quotation_id', parsed.data.quotation_id)
   const revision = (count ?? 0) + 1
 
-  const nomor = await generateGlobalDocumentNumber('NEG')
+  const { data: qtn } = await supabaseAdmin
+    .from('quotation')
+    .select('nomor')
+    .eq('id', parsed.data.quotation_id)
+    .single()
+  if (!qtn) return badRequest('Quotation tidak ditemukan')
+  const nomor = `${qtn.nomor}-R${revision}`
   const now = new Date().toISOString()
 
   const { data: neg, error: negError } = await supabaseAdmin
