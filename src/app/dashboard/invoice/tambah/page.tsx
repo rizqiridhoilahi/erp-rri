@@ -10,8 +10,13 @@ const itemSchema = z.object({ barang_id: z.string().min(1), harga: z.coerce.numb
 const schema = z.object({ sales_order_id: z.string().min(1), customer_id: z.string().min(1), tanggal: z.string().min(1), top: z.string().min(1), items: z.array(itemSchema).min(1) })
 type FV = z.input<typeof schema>
 
+interface PaymentTermPreview {
+  nama: string
+  items: Array<{ deskripsi: string; persentase: number; due_days: number }>
+}
+
 export default function TambahInvoicePage() {
-  const router = useRouter(); const [soOpts, setSoOpts] = useState<Array<{ value: string; label: string }>>([]); const [custOpts, setCustOpts] = useState<Array<{ value: string; label: string }>>([]); const [barangOpts, setBarangOpts] = useState<Array<{ value: string; label: string }>>([]); const [submitting, setSubmitting] = useState(false); const [loading, setLoading] = useState(true)
+  const router = useRouter(); const [soOpts, setSoOpts] = useState<Array<{ value: string; label: string }>>([]); const [custOpts, setCustOpts] = useState<Array<{ value: string; label: string }>>([]); const [barangOpts, setBarangOpts] = useState<Array<{ value: string; label: string }>>([]); const [submitting, setSubmitting] = useState(false); const [loading, setLoading] = useState(true); const [paymentTermPreview, setPaymentTermPreview] = useState<PaymentTermPreview | null>(null)
   const today = new Date().toISOString().split('T')[0]
   const form = useForm<FV>({ resolver: zodResolver(schema), defaultValues: { tanggal: today, items: [{ barang_id: '', harga: 0, jumlah: 1 }] } })
   const { register, handleSubmit, control, watch } = form
@@ -27,6 +32,24 @@ export default function TambahInvoicePage() {
       apiFetch<Array<{ id: string; nama: string; kode: string }>>('/api/v1/master/barang'),
     ]).then(([so, c, b]) => { setSoOpts((so.data ?? []).map(x => ({ value: x.id, label: x.nomor }))); setCustOpts((c.data ?? []).map(x => ({ value: x.id, label: `[${x.kode}] ${x.nama}` }))); setBarangOpts((b.data ?? []).map(x => ({ value: x.id, label: `[${x.kode}] ${x.nama}` }))) }).catch(() => toast.error('Gagal')).finally(() => setLoading(false))
   }, [])
+
+  const customerId = watch('customer_id')
+  useEffect(() => {
+    if (!customerId) { setPaymentTermPreview(null); return }
+    apiFetch<{ payment_term_id: string | null }>(`/api/v1/master/customer/${customerId}`)
+      .then(async (custRes) => {
+        const ptId = custRes.data?.payment_term_id
+        if (!ptId) { setPaymentTermPreview(null); return }
+        const ptRes = await apiFetch<{ nama: string; payment_term_item: Array<{ deskripsi: string; persentase: number; due_days: number }> }>(`/api/v1/master/payment-term/${ptId}`)
+        const items = ptRes.data?.payment_term_item ?? []
+        if (ptRes.data && items.length > 0) {
+          setPaymentTermPreview({ nama: ptRes.data.nama, items })
+        } else {
+          setPaymentTermPreview(null)
+        }
+      })
+      .catch(() => setPaymentTermPreview(null))
+  }, [customerId])
   const onSubmit = async (data: FV) => {
     setSubmitting(true); try { await apiFetch('/api/v1/invoice', { method: 'POST', body: JSON.stringify(data) }); toast.success('Invoice berhasil!'); router.push('/dashboard/invoice') }
     catch (err) { toast.error(err instanceof Error ? err.message : 'Terjadi kesalahan') } finally { setSubmitting(false) }
@@ -57,6 +80,16 @@ export default function TambahInvoicePage() {
                   <FormMessage />
                 </FormItem>
               )} />
+              {paymentTermPreview && (
+                <div className="col-span-2 bg-blue-50 border border-blue-200 rounded-md px-4 py-3">
+                  <p className="text-sm font-medium text-blue-800 mb-1">Pembayaran Multi-Termin: {paymentTermPreview.nama}</p>
+                  <div className="text-xs text-blue-700 space-y-0.5">
+                    {paymentTermPreview.items.map((item, i) => (
+                      <p key={i}>{i + 1}. {item.deskripsi} ({item.persentase}%) — jatuh tempo {item.due_days === 0 ? 'saat invoice diterbitkan' : `${item.due_days} hari setelah invoice`}</p>
+                    ))}
+                  </div>
+                </div>
+              )}
               <FormField control={control} name="tanggal" render={({ field }) => (
                 <FormItem><FormLabel>Tanggal *</FormLabel><FormControl><DatePicker value={field.value} onChange={field.onChange} /></FormControl><FormMessage /></FormItem>
               )} />

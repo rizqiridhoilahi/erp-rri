@@ -28,7 +28,6 @@ interface Customer {
   kontak: string | null
   terms_of_payment: string | null
   payment_term_id: string | null
-  payment_term: { id: string; nama: string }[] | null
   is_active: boolean
   created_at: string
 }
@@ -65,6 +64,7 @@ export default function DetailCustomerPage() {
   const [data, setData] = useState<Customer | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
+  const [paymentTermName, setPaymentTermName] = useState<string | null>(null)
   const [topRecords, setTopRecords] = useState<CustomerTop[]>([])
   const [newTop, setNewTop] = useState('')
   const [addingTop, setAddingTop] = useState(false)
@@ -85,14 +85,23 @@ export default function DetailCustomerPage() {
           kontak,
           terms_of_payment,
           payment_term_id,
-          payment_term!payment_term_id(id, nama),
           is_active,
           created_at
         `)
         .eq("id", id)
         .single()
       if (custErr) setError(custErr.message)
-      else setData(cust as Customer)
+      else {
+        setData(cust as Customer)
+        if (cust.payment_term_id) {
+          const { data: pt } = await supabase
+            .from("payment_term")
+            .select("id, nama")
+            .eq("id", cust.payment_term_id)
+            .single()
+          setPaymentTermName(pt?.nama ?? null)
+        }
+      }
       setLoading(false)
 
       try {
@@ -233,7 +242,7 @@ export default function DetailCustomerPage() {
             </div>
             <div>
               <label className="block text-sm font-medium text-muted-foreground mb-1">Payment Term (Multi-Termin)</label>
-              <p className="text-sm font-medium">{data.payment_term?.[0]?.nama || "-"}</p>
+              <p className="text-sm font-medium">{paymentTermName || "-"}</p>
             </div>
             <div>
               <label className="block text-sm font-medium text-muted-foreground mb-1">Status</label>
