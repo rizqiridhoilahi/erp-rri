@@ -26,7 +26,7 @@ const styles = StyleSheet.create({
   labelText: { fontSize: 11, width: 80 },
   colonText: { fontSize: 11, width: 10 },
   valueText: { fontSize: 11 },
-  alamatSection: { marginBottom: 2 },
+  alamatSection: { marginBottom: 15 },
   alamatTitle: { fontSize: 11, marginBottom: 2 },
   alamatName: { fontSize: 11, fontWeight: 'bold', marginBottom: 2 },
   alamatAddress: { fontSize: 11, maxWidth: 350, lineHeight: 1.3 },
@@ -160,7 +160,7 @@ export function InvoicePDF({ data }: { data: InvoiceData }) {
     H(Text, { style: [styles.tableHeaderCell, { width: 75, borderRightWidth: 0 }] }, 'Total'),
   ]
 
-  const headerSection = H(View, { style: { marginBottom: 15 } },
+  const headerSection = H(View, { style: { marginBottom: 10 } },
     H(View, { style: styles.header },
       c.company_logo_url
         ? H(Image, { src: c.company_logo_url, style: { width: 80, height: 80, marginTop: -5 } })
@@ -179,7 +179,7 @@ export function InvoicePDF({ data }: { data: InvoiceData }) {
     H(View, { style: { borderBottomWidth: 0.5, borderBottomColor: '#000' } }),
   )
 
-  const docInfoSection = H(View, { style: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 15 } },
+  const docInfoSection = H(View, { style: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 } },
     H(View, null,
       H(View, { style: styles.labelValueRow },
         H(Text, { style: styles.labelText }, 'No'),
@@ -252,7 +252,7 @@ export function InvoicePDF({ data }: { data: InvoiceData }) {
   const signatureSection = H(View, { style: styles.signatureSection },
     H(Text, { style: styles.signatureTitle }, 'Hormat kami'),
     H(Text, { style: styles.signatureCompany }, c.company_nama || 'PT. RIZQI RIDHO ILAHI'),
-    H(View, { style: { marginTop: 90 } },
+    H(View, { style: { marginTop: 80 } },
       H(Text, { style: styles.signatureName }, c.penandatangan_nama || 'Mohamad Marzuqi'),
       H(Text, { style: styles.signatureJabatan }, c.penandatangan_jabatan || 'Direktur'),
     ),

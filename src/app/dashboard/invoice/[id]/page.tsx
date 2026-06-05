@@ -94,6 +94,8 @@ export default function InvoiceDetailPage() {
   const [kwitansiList, setKwitansiList] = useState<Array<{ id: string; nomor: string; invoice_id: string; status: string }>>([])
   const [payments, setPayments] = useState<Array<{ id: string; amount: number; metode: string; tanggal: string; keterangan: string | null }>>([])
   const [schedule, setSchedule] = useState<PaymentSchedule[]>([])
+  const [generatingSchedule, setGeneratingSchedule] = useState(false)
+  const [customerHasPaymentTerm, setCustomerHasPaymentTerm] = useState<boolean | null>(null)
   const [grnCustomerNomor, setGrnCustomerNomor] = useState("")
   const [savingGrn, setSavingGrn] = useState(false)
   const [keteranganInvoice, setKeteranganInvoice] = useState("")
@@ -101,6 +103,7 @@ export default function InvoiceDetailPage() {
   const [payAmount, setPayAmount] = useState("")
   const [payMetode, setPayMetode] = useState("transfer")
   const [payTanggal, setPayTanggal] = useState("")
+  const [payScheduleId, setPayScheduleId] = useState("")
   const [recording, setRecording] = useState(false)
   const [statusLoading, setStatusLoading] = useState(false)
 
@@ -118,15 +121,44 @@ export default function InvoiceDetailPage() {
       setDocuments(docRes.data ?? [])
       setKwitansiList(kwtRes.data ?? [])
       setPayments(payRes.data ?? [])
-      setSchedule(invData?.schedule ?? [])
       setGrnCustomerNomor(invData?.grn_customer_nomor ?? "")
       setKeteranganInvoice(invData?.keterangan_invoice ?? "")
       setLoading(false)
+
+      const sched = invData?.schedule ?? []
+      setSchedule(sched)
+      const firstUnpaid = sched.find(s => s.status !== 'paid')
+      if (firstUnpaid) setPayScheduleId(firstUnpaid.id)
+
+      if (invData && (!invData.schedule || invData.schedule.length === 0) && invData.customer_id) {
+        apiFetch<{ payment_term_id: string | null }>(`/api/v1/master/customer/${invData.customer_id}`)
+          .then(r => setCustomerHasPaymentTerm(!!r.data?.payment_term_id))
+          .catch(() => setCustomerHasPaymentTerm(false))
+      }
     }).catch((err) => {
       setError(err.message)
       setLoading(false)
     })
   }, [id])
+
+  const handleGenerateSchedule = async () => {
+    if (!id) return
+    setGeneratingSchedule(true)
+    try {
+      await apiFetch(`/api/v1/invoice/${id}/payment-schedule`, { method: 'POST' })
+      toast.success('Jadwal pembayaran berhasil digenerate!')
+      const invRes = await apiFetch<Invoice & { items: InvoiceItem[] }>(`/api/v1/invoice/${id}`)
+      const sched = invRes.data?.schedule ?? []
+      setSchedule(sched)
+      const firstUnpaid = sched.find(s => s.status !== 'paid')
+      if (firstUnpaid) setPayScheduleId(firstUnpaid.id)
+      setCustomerHasPaymentTerm(true)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Gagal generate jadwal')
+    } finally {
+      setGeneratingSchedule(false)
+    }
+  }
 
   const handleSaveKeterangan = async () => {
     if (!id) return
@@ -177,6 +209,7 @@ export default function InvoiceDetailPage() {
     const amount = parseFloat(payAmount)
     if (!amount || amount <= 0) { toast.error("Jumlah pembayaran harus lebih dari 0"); return }
     if (!payMetode) { toast.error("Metode pembayaran harus diisi"); return }
+    if (schedule.length > 0 && !payScheduleId) { toast.error("Pilih termin pembayaran"); return }
     setRecording(true)
     try {
       const r = await apiFetch<{ id: string }>(`/api/v1/invoice/${id}/payment`, {
@@ -185,15 +218,23 @@ export default function InvoiceDetailPage() {
           amount,
           metode: payMetode,
           tanggal: payTanggal || undefined,
+          schedule_id: payScheduleId || undefined,
         }),
       })
       setPayments((prev) => [r.data as { id: string; amount: number; metode: string; tanggal: string; keterangan: string | null }, ...prev])
       setPayAmount("")
       setPayTanggal("")
+      setPayScheduleId("")
       toast.success("Pembayaran berhasil dicatat")
-      // Re-fetch invoice to update status
-      const invRes = await apiFetch<Invoice>(`/api/v1/invoice/${id}`)
-      if (invRes.data) setInv(invRes.data)
+      // Re-fetch invoice to update status and schedule
+      const invRes = await apiFetch<Invoice & { schedule: PaymentSchedule[] }>(`/api/v1/invoice/${id}`)
+      if (invRes.data) {
+        setInv(invRes.data)
+        const sched = invRes.data.schedule ?? []
+        setSchedule(sched)
+        const nextUnpaid = sched.find(s => s.status !== 'paid')
+        if (nextUnpaid) setPayScheduleId(nextUnpaid.id)
+      }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Gagal mencatat pembayaran")
     } finally {
@@ -386,12 +427,12 @@ export default function InvoiceDetailPage() {
         )
       }      )()}
 
-      {schedule.length > 0 && (
-        <Card>
-          <CardContent className="pt-6">
-            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-              <FileText className="h-4 w-4" />Jadwal Pembayaran
-            </h3>
+      <Card>
+        <CardContent className="pt-6">
+          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+            <FileText className="h-4 w-4" />Jadwal Pembayaran
+          </h3>
+          {schedule.length > 0 ? (
             <Table>
               <TableHeader>
                 <TableRow>
@@ -429,9 +470,120 @@ export default function InvoiceDetailPage() {
                 })}
               </TableBody>
             </Table>
-          </CardContent>
-        </Card>
-      )}
+          ) : customerHasPaymentTerm ? (
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-muted-foreground">Jadwal pembayaran multi-termin belum dibuat.</p>
+              <Button onClick={handleGenerateSchedule} disabled={generatingSchedule}>
+                {generatingSchedule && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                {generatingSchedule ? 'Mengenerate...' : 'Generate Jadwal Pembayaran'}
+              </Button>
+            </div>
+          ) : customerHasPaymentTerm === false ? (
+            <p className="text-sm text-muted-foreground">
+              Customer belum memiliki payment term. Atur payment term terlebih dahulu di halaman{' '}
+              {inv ? <a href={`/dashboard/master/customer/${inv.customer_id}/edit`} className="text-primary hover:underline">edit Customer</a> : 'edit Customer'}.
+            </p>
+          ) : (
+            <p className="text-sm text-muted-foreground">Memeriksa payment term customer...</p>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardContent className="pt-6">
+          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2"><Wallet className="h-4 w-4" />Pembayaran</h3>
+          {payments.length > 0 ? (
+            <div className="mb-4">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Tanggal</TableHead>
+                    <TableHead>Metode</TableHead>
+                    <TableHead className="text-right">Jumlah</TableHead>
+                    <TableHead>Keterangan</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {payments.map((p) => (
+                    <TableRow key={p.id}>
+                      <TableCell>{new Date(p.tanggal).toLocaleDateString("id-ID")}</TableCell>
+                      <TableCell className="capitalize">{p.metode}</TableCell>
+                      <TableCell className="text-right font-medium">{p.amount.toLocaleString("id-ID")}</TableCell>
+                      <TableCell className="text-muted-foreground">{p.keterangan ?? "-"}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+              <div className="flex justify-end items-center gap-8 border-t mt-2 pt-2">
+                <span className="text-muted-foreground">Total Dibayar</span>
+                <span className="font-bold text-lg w-32 text-right text-green-600">
+                  {payments.reduce((s, p) => s + p.amount, 0).toLocaleString("id-ID")}
+                </span>
+              </div>
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground mb-4">Belum ada pembayaran</p>
+          )}
+
+          {inv.status !== "paid" && (
+            <div className="border-t pt-4">
+              <h4 className="text-sm font-semibold mb-3">Catat Pembayaran Baru</h4>
+              <div className={`grid grid-cols-1 gap-4 ${schedule.length > 0 ? 'md:grid-cols-5' : 'md:grid-cols-4'}`}>
+                <div>
+                  <label className="text-sm text-muted-foreground block mb-1">Jumlah</label>
+                  <Input
+                    type="number"
+                    placeholder="0"
+                    value={payAmount}
+                    onChange={(e) => setPayAmount(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="text-sm text-muted-foreground block mb-1">Metode</label>
+                  <Select value={payMetode} onValueChange={setPayMetode}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Pilih metode" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="transfer">Transfer Bank</SelectItem>
+                      <SelectItem value="cash">Cash</SelectItem>
+                      <SelectItem value="giro">Giro</SelectItem>
+                      <SelectItem value="cek">Cek</SelectItem>
+                      <SelectItem value="lainnya">Lainnya</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <label className="text-sm text-muted-foreground block mb-1">Tanggal</label>
+                  <DatePicker value={payTanggal} onChange={setPayTanggal} />
+                </div>
+                {schedule.length > 0 && (
+                  <div>
+                    <label className="text-sm text-muted-foreground block mb-1">Bayar Untuk</label>
+                    <Select value={payScheduleId} onValueChange={setPayScheduleId}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Pilih termin" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {schedule.filter(s => s.status !== 'paid').map(s => (
+                          <SelectItem key={s.id} value={s.id}>
+                            Termin {s.urutan}: {s.deskripsi} ({s.persentase}%)
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+                <div className="flex items-end">
+                  <Button onClick={handleRecordPayment} disabled={recording} className="w-full bg-[#22C55E] text-white hover:bg-[#16A34A] dark:bg-[#15803D] dark:hover:bg-[#166534]">
+                    {recording ? "Menyimpan..." : "Catat Pembayaran"}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {kwitansiList.length > 0 && (
         <Card>
@@ -482,85 +634,6 @@ export default function InvoiceDetailPage() {
               />
             </div>
           </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardContent className="pt-6">
-          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2"><Wallet className="h-4 w-4" />Pembayaran</h3>
-          {payments.length > 0 ? (
-            <div className="mb-4">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Tanggal</TableHead>
-                    <TableHead>Metode</TableHead>
-                    <TableHead className="text-right">Jumlah</TableHead>
-                    <TableHead>Keterangan</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {payments.map((p) => (
-                    <TableRow key={p.id}>
-                      <TableCell>{new Date(p.tanggal).toLocaleDateString("id-ID")}</TableCell>
-                      <TableCell className="capitalize">{p.metode}</TableCell>
-                      <TableCell className="text-right font-medium">{p.amount.toLocaleString("id-ID")}</TableCell>
-                      <TableCell className="text-muted-foreground">{p.keterangan ?? "-"}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-              <div className="flex justify-end items-center gap-8 border-t mt-2 pt-2">
-                <span className="text-muted-foreground">Total Dibayar</span>
-                <span className="font-bold text-lg w-32 text-right text-green-600">
-                  {payments.reduce((s, p) => s + p.amount, 0).toLocaleString("id-ID")}
-                </span>
-              </div>
-            </div>
-          ) : (
-            <p className="text-sm text-muted-foreground mb-4">Belum ada pembayaran</p>
-          )}
-
-          {inv.status !== "paid" && (
-            <div className="border-t pt-4">
-              <h4 className="text-sm font-semibold mb-3">Catat Pembayaran Baru</h4>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div>
-                  <label className="text-sm text-muted-foreground block mb-1">Jumlah</label>
-                  <Input
-                    type="number"
-                    placeholder="0"
-                    value={payAmount}
-                    onChange={(e) => setPayAmount(e.target.value)}
-                  />
-                </div>
-                <div>
-                  <label className="text-sm text-muted-foreground block mb-1">Metode</label>
-                  <Select value={payMetode} onValueChange={setPayMetode}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Pilih metode" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="transfer">Transfer Bank</SelectItem>
-                      <SelectItem value="cash">Cash</SelectItem>
-                      <SelectItem value="giro">Giro</SelectItem>
-                      <SelectItem value="cek">Cek</SelectItem>
-                      <SelectItem value="lainnya">Lainnya</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <label className="text-sm text-muted-foreground block mb-1">Tanggal</label>
-                  <DatePicker value={payTanggal} onChange={setPayTanggal} />
-                </div>
-                <div className="flex items-end">
-                  <Button onClick={handleRecordPayment} disabled={recording} className="w-full bg-[#22C55E] text-white hover:bg-[#16A34A] dark:bg-[#15803D] dark:hover:bg-[#166534]">
-                    {recording ? "Menyimpan..." : "Catat Pembayaran"}
-                  </Button>
-                </div>
-              </div>
-            </div>
-          )}
         </CardContent>
       </Card>
 

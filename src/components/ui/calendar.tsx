@@ -39,7 +39,7 @@ export function Calendar({
           "first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md"
         ),
         day: cn(
-          "h-9 w-9 p-0 font-normal aria-selected:opacity-100 rounded-lg",
+          "h-9 w-9 p-0 font-normal aria-selected:opacity-100 rounded-lg text-foreground",
           "hover:bg-primary/10 hover:scale-105 hover:shadow-[0_2px_8px_rgba(0,0,255,0.08)]",
           "transition-all duration-150"
         ),

@@ -52,6 +52,23 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     .single()
   if (payErr) return internalError(payErr)
 
+  if (body.schedule_id) {
+    const { data: schedItem } = await supabaseAdmin
+      .from('invoice_payment_schedule')
+      .select('*')
+      .eq('id', body.schedule_id)
+      .single()
+    if (schedItem) {
+      const currentPaid = parseFloat(schedItem.paid_amount ?? '0')
+      const newPaid = currentPaid + body.amount
+      const newStatus = newPaid >= parseFloat(schedItem.jumlah) ? 'paid' : 'partial'
+      await supabaseAdmin
+        .from('invoice_payment_schedule')
+        .update({ paid_amount: newPaid, status: newStatus })
+        .eq('id', body.schedule_id)
+    }
+  }
+
   const { data: allPayments } = await supabaseAdmin
     .from('invoice_payment')
     .select('amount')
