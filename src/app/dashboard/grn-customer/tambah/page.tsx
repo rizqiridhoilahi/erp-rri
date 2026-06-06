@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect } from 'react'; import { useRouter } from 'next/navigation'; import { z } from 'zod'; import { useForm, useFieldArray } from 'react-hook-form'; import { zodResolver } from '@hookform/resolvers/zod'
+import { useState, useEffect, useRef } from 'react'; import { useRouter } from 'next/navigation'; import { z } from 'zod'; import { useForm, useFieldArray } from 'react-hook-form'; import { zodResolver } from '@hookform/resolvers/zod'
 import { apiFetch } from '@/lib/api/client'; import { Button } from '@/components/ui/button'; import { Input } from '@/components/ui/input'; import { Textarea } from '@/components/ui/textarea'; import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'; import { DatePicker } from '@/components/ui/date-picker'
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select'
@@ -37,6 +37,8 @@ export default function TambahGrnCustomerPage() {
   const [gudangOpts, setGudangOpts] = useState<Array<{ value: string; label: string }>>([])
   const [barangOpts, setBarangOpts] = useState<Array<{ value: string; label: string }>>([])
   const [barangMap, setBarangMap] = useState<Record<string, BarangData>>({})
+  const barangMapRef = useRef(barangMap)
+  barangMapRef.current = barangMap
   const [doOpts, setDoOpts] = useState<Array<{ value: string; label: string }>>([])
   const [doLoading, setDoLoading] = useState(false)
   const [returOpts, setReturOpts] = useState<Array<{ value: string; label: string }>>([])
@@ -67,7 +69,7 @@ export default function TambahGrnCustomerPage() {
       setBarangMap(bMap)
       setDoOpts((doRes.data ?? []).map(x => ({ value: x.id, label: `${x.nomor} (SO: ${x.sales_order?.nomor ?? '-'})` })))
       setReturOpts((returRes.data ?? [])
-        .filter((r: ReturOption) => r.status === 'closed')
+        .filter((r: ReturOption) => r.status !== 'draft')
         .map((r: ReturOption) => ({ value: r.id, label: `${r.nomor} - ${r.customer?.nama ?? '-'} (DO: ${r.delivery_order?.nomor ?? '-'})` })))
     }).catch(() => toast.error('Gagal'))
   }, [])
@@ -81,10 +83,11 @@ export default function TambahGrnCustomerPage() {
         if (d) {
           setValue('customer_id', d.customer_id ?? '')
           setValue('gudang_id', d.gudang_id ?? '')
+          if (selectedReturId) return
           if (d.items && d.items.length > 0) {
             remove()
             d.items.forEach(item => {
-              const b = barangMap[item.barang_id]
+              const b = barangMapRef.current[item.barang_id]
               append({
                 barang_id: item.barang_id,
                 jumlah: item.jumlah,
@@ -100,7 +103,7 @@ export default function TambahGrnCustomerPage() {
       })
       .catch(() => toast.error('Gagal memuat data DO'))
       .finally(() => setDoLoading(false))
-  }, [selectedDoId, setValue, append, remove])
+  }, [selectedDoId, selectedReturId, setValue, append, remove])
 
   useEffect(() => {
     if (!selectedReturId) return
@@ -115,7 +118,7 @@ export default function TambahGrnCustomerPage() {
           if (d.items && d.items.length > 0) {
             remove()
             d.items.forEach(item => {
-              const b = barangMap[item.barang_id]
+              const b = barangMapRef.current[item.barang_id]
               append({
                 barang_id: item.barang_id,
                 jumlah: item.jumlah,

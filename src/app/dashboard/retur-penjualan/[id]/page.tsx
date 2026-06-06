@@ -1,16 +1,17 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { useRouter, usePathname } from "next/navigation"
 import { apiFetch } from "@/lib/api/client"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
-import { ArrowLeft, Undo2, FileText } from "lucide-react"
+import { ArrowLeft, Undo2, Pencil, Loader2, Check } from "lucide-react"
 import { DetailSkeleton } from "@/components/ui/skeleton"
 import Link from "next/link"
 import { CompactFileUpload, type DocumentFile } from "@/components/compact-file-upload"
+import { ReturPenjualanPdfActions } from "@/components/retur-penjualan-pdf-actions"
 import { toast } from "sonner"
 
 const s: Record<string, { label: string; v: "secondary" | "warning" | "success" | "outline" }> = {
@@ -25,6 +26,7 @@ interface ReturPenjualan {
   status: string
   keterangan: string | null
   customer: { nama: string; kode: string } | null
+  pic_customer: { nama: string; jabatan: string | null } | null
   delivery_order?: { id: string; nomor: string } | null
   grn_customer?: { id: string; nomor: string; status: string } | null
   items?: ReturPenjualanItem[]
@@ -33,12 +35,15 @@ interface ReturPenjualan {
 interface ReturPenjualanItem {
   id: string
   jumlah: number
+  hargaSatuan: number
   keterangan?: string | null
   nama_barang?: string | null
   kode_barang?: string | null
   satuan?: string | null
-  barang?: { nama?: string; kode?: string; satuan?: string } | null
+  barang?: { nama?: string; kode?: string; satuan?: string; image_url?: string } | null
 }
+
+const fmt = (n: number) => new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(n)
 
 export default function ReturPenjualanDetailPage() {
   const router = useRouter()
@@ -50,6 +55,10 @@ export default function ReturPenjualanDetailPage() {
   const [error, setError] = useState<string | null>(null)
   const [documents, setDocuments] = useState<DocumentFile[]>([])
   const [uploading, setUploading] = useState(false)
+  const [statusLoading, setStatusLoading] = useState(false)
+
+  const grandTotal = useMemo(() => items.reduce((sum, i) => sum + (i.hargaSatuan ?? 0) * i.jumlah, 0), [items])
+  const isClosed = retur?.status === "closed"
 
   useEffect(() => {
     if (!id) return
@@ -95,14 +104,54 @@ export default function ReturPenjualanDetailPage() {
     }
   }
 
+  const handleStatusUpdate = async (newStatus: string) => {
+    if (!id) return
+    setStatusLoading(true)
+    try {
+      await apiFetch(`/api/v1/retur-penjualan/${id}`, { method: 'PUT', body: JSON.stringify({ status: newStatus }) })
+      toast.success('Status berhasil diubah!')
+      const returRes = await apiFetch<ReturPenjualan>(`/api/v1/retur-penjualan/${id}`)
+      if (returRes.data) {
+        setRetur(returRes.data)
+        setItems(returRes.data.items ?? [])
+      }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Gagal mengubah status')
+    } finally {
+      setStatusLoading(false)
+    }
+  }
+
   if (loading) return <DetailSkeleton />
   if (error || !retur) return <div className="text-center py-20 text-muted-foreground">Retur tidak ditemukan</div>
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => router.push("/dashboard/retur-penjualan")}><ArrowLeft className="h-5 w-5" /></Button>
-        <div><h1 className="text-3xl font-heading font-bold">Detail Retur Penjualan</h1><p className="text-muted-foreground mt-1">{retur.nomor}</p></div>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="icon" onClick={() => router.push("/dashboard/retur-penjualan")}><ArrowLeft className="h-5 w-5" /></Button>
+          <div><h1 className="text-3xl font-heading font-bold">Detail Retur Penjualan</h1><p className="text-muted-foreground mt-1">{retur.nomor}</p></div>
+        </div>
+        <div className="flex items-center gap-2">
+          <ReturPenjualanPdfActions rpId={retur.id} nomor={retur.nomor} />
+          {retur.status === 'draft' && (
+            <Button onClick={() => handleStatusUpdate('processed')} disabled={statusLoading}>
+              {statusLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Check className="h-4 w-4 mr-2" />}
+              Proses Retur
+            </Button>
+          )}
+          {retur.status === 'processed' && (
+            <Button onClick={() => handleStatusUpdate('closed')} disabled={statusLoading}>
+              {statusLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Check className="h-4 w-4 mr-2" />}
+              Selesaikan
+            </Button>
+          )}
+          {!isClosed && (
+            <Button variant="outline" size="sm" asChild>
+              <Link href={`/dashboard/retur-penjualan/${id}/edit`}><Pencil className="h-4 w-4 mr-2" />Edit</Link>
+            </Button>
+          )}
+        </div>
       </div>
 
       <Card>
@@ -124,6 +173,13 @@ export default function ReturPenjualanDetailPage() {
               <p className="text-sm text-muted-foreground">Customer</p>
               <p className="font-medium">{retur.customer?.nama} ({retur.customer?.kode})</p>
             </div>
+            {retur.pic_customer && (
+              <div>
+                <p className="text-sm text-muted-foreground">PIC Customer</p>
+                <p className="font-medium">{retur.pic_customer.nama}</p>
+                {retur.pic_customer.jabatan && <p className="text-xs text-muted-foreground">{retur.pic_customer.jabatan}</p>}
+              </div>
+            )}
             <div>
               <p className="text-sm text-muted-foreground">DO Reference</p>
               {retur.delivery_order ? (
@@ -159,24 +215,46 @@ export default function ReturPenjualanDetailPage() {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-14">Picture</TableHead>
                   <TableHead>Barang</TableHead>
                   <TableHead>Kode</TableHead>
                   <TableHead className="text-right">Jumlah</TableHead>
                   <TableHead>Satuan</TableHead>
+                  <TableHead className="text-right">Harga Satuan</TableHead>
+                  <TableHead className="text-right">Subtotal</TableHead>
                   <TableHead>Keterangan</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                  {items.map((item) => (
+                {items.map((item) => {
+                  const subtotal = (item.hargaSatuan ?? 0) * item.jumlah
+                  return (
                     <TableRow key={item.id}>
+                      <TableCell>
+                        {item.barang?.image_url ? (
+                          <img src={item.barang.image_url} alt="" className="w-10 h-10 rounded object-cover" />
+                        ) : (
+                          <div className="w-10 h-10 rounded bg-muted flex items-center justify-center text-xs text-muted-foreground">-</div>
+                        )}
+                      </TableCell>
                       <TableCell className="font-medium">{item.nama_barang ?? item.barang?.nama}</TableCell>
                       <TableCell className="text-muted-foreground">{item.kode_barang ?? item.barang?.kode}</TableCell>
                       <TableCell className="text-right">{item.jumlah}</TableCell>
                       <TableCell>{item.satuan ?? item.barang?.satuan}</TableCell>
+                      <TableCell className="text-right font-mono">{item.hargaSatuan ? fmt(item.hargaSatuan) : "-"}</TableCell>
+                      <TableCell className="text-right font-mono">{item.hargaSatuan ? fmt(subtotal) : "-"}</TableCell>
                       <TableCell className="text-muted-foreground">{item.keterangan ?? "-"}</TableCell>
                     </TableRow>
-                  ))}
+                  )
+                })}
               </TableBody>
+              <tfoot>
+                <TableRow>
+                  <TableCell colSpan={6} className="text-right font-semibold">Grand Total</TableCell>
+                  <TableCell className="text-right font-semibold font-mono">{fmt(grandTotal)}</TableCell>
+                  <TableCell />
+                </TableRow>
+              </tfoot>
             </Table>
           </CardContent>
         </Card>

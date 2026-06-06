@@ -47,11 +47,74 @@ import { formatChildNumber } from '@/lib/utils/document-number'
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const auth = await verifyAuth(_request); if (auth.error) return auth.error
   const { id } = await params
-  const { data: retur, error } = await supabaseAdmin.from('retur_penjualan').select('*, customer!customer_id(nama, kode), delivery_order!delivery_order_id(id, nomor), grn_customer!retur_penjualan_id(id, nomor, status)').eq('id', id).single()
+  const { data: retur, error } = await supabaseAdmin.from('retur_penjualan').select('*, customer!customer_id(nama, kode), delivery_order!delivery_order_id(id, nomor)').eq('id', id).single()
   if (error) return internalError(error)
   if (!retur) return notFound('Retur tidak ditemukan')
-  const { data: items } = await supabaseAdmin.from('retur_penjualan_item').select('*, barang!barang_id(nama, kode, satuan)').eq('retur_penjualan_id', id)
-  return NextResponse.json({ data: { ...retur, items: items ?? [] } })
+  const { data: items } = await supabaseAdmin.from('retur_penjualan_item').select('*, barang!barang_id(nama, kode, satuan, image_url)').eq('retur_penjualan_id', id)
+
+  // Look up prices from invoice via DO -> SO -> Invoice chain, fallback to SO items
+  let hargaMap = new Map<string, number>()
+  const doObj = retur.delivery_order as { id: string; nomor: string } | null
+  if (doObj?.id) {
+    const { data: doDoc } = await supabaseAdmin
+      .from('delivery_order').select('sales_order_id').eq('id', doObj.id).single()
+    if (doDoc?.sales_order_id) {
+      const { data: invoice } = await supabaseAdmin
+        .from('invoice').select('id').eq('sales_order_id', doDoc.sales_order_id).maybeSingle()
+      if (invoice) {
+        const { data: invItems } = await supabaseAdmin
+          .from('invoice_item').select('barang_id, harga').eq('invoice_id', invoice.id)
+        hargaMap = new Map((invItems ?? []).map(i => [i.barang_id, Number(i.harga)]))
+      }
+
+      // Fallback: SO items for any barang_id still missing (e.g. invoice not yet created)
+      if (hargaMap.size === 0 || (items ?? []).some(item => !hargaMap.has(item.barang_id))) {
+        const { data: soItems } = await supabaseAdmin
+          .from('sales_order_item').select('barang_id, harga_satuan')
+          .eq('sales_order_id', doDoc.sales_order_id)
+        for (const si of (soItems ?? [])) {
+          if (!hargaMap.has(si.barang_id)) {
+            hargaMap.set(si.barang_id, Number(si.harga_satuan))
+          }
+        }
+      }
+    }
+  }
+
+  const itemsWithPrice = (items ?? []).map((item) => ({
+    ...item,
+    hargaSatuan: hargaMap.get(item.barang_id) ?? 0,
+  }))
+
+  // Resolve PIC customer via DO → SO → DI/CPO chain
+  let picCustomer: { nama: string; jabatan: string | null } | null = null
+  if (doObj?.id) {
+    const { data: doDoc } = await supabaseAdmin
+      .from('delivery_order').select('sales_order_id').eq('id', doObj.id).single()
+    if (doDoc?.sales_order_id) {
+      const { data: soWithPic } = await supabaseAdmin
+        .from('sales_order')
+        .select('di!fk_sales_order_di(customer_pic!pic_customer_id(nama, jabatan)), customer_po!customer_po_id(customer_pic!pic_customer_id(nama, jabatan))')
+        .eq('id', doDoc.sales_order_id)
+        .maybeSingle()
+      if (soWithPic) {
+        const d = soWithPic as Record<string, unknown>
+        const diPic = (d.di as Record<string, unknown> | null)?.customer_pic as { nama: string; jabatan: string | null } | null ?? null
+        const cpoPic = (d.customer_po as Record<string, unknown> | null)?.customer_pic as { nama: string; jabatan: string | null } | null ?? null
+        picCustomer = diPic ?? cpoPic
+      }
+    }
+  }
+
+  // Resolve GRN — query directly (FK join may not resolve for auto-generated records)
+  let grnData: { id: string; nomor: string; status: string } | null = null
+  const { data: grnDoc } = await supabaseAdmin
+    .from('grn_customer').select('id, nomor, status')
+    .eq('retur_penjualan_id', id)
+    .maybeSingle()
+  if (grnDoc) grnData = grnDoc
+
+  return NextResponse.json({ data: { ...retur, items: itemsWithPrice, pic_customer: picCustomer, grn_customer: grnData } })
 }
 
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {

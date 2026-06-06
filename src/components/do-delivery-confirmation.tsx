@@ -40,8 +40,6 @@ export function DOPhotoConfirmation({ doId, status, existingFotoBarang, existing
 
   const bothUploaded = !!fotoBarang.url && !!fotoSurat.url
 
-  if (status !== 'awaiting_pickup') return null
-
   async function handleFileSelect(type: 'barang_diterima' | 'surat_jalan', file: File) {
     if (file.size > 5 * 1024 * 1024) {
       toast.error('Ukuran file maksimal 5MB')
@@ -160,37 +158,39 @@ export function DOPhotoConfirmation({ doId, status, existingFotoBarang, existing
           </div>
         )}
 
-        <div className="flex flex-wrap gap-3 pt-2">
-          <Button
-            size="lg"
-            disabled={!bothUploaded || submitting}
-            onClick={() => handleConfirm('dikirim')}
-          >
-            {submitting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <CheckCircle className="h-4 w-4 mr-2" />}
-            Dikirim & Diterima
-          </Button>
-          {!showAlasan ? (
+        {status === 'awaiting_pickup' && (
+          <div className="flex flex-wrap gap-3 pt-2">
             <Button
-              variant="destructive"
               size="lg"
-              disabled={!bothUploaded}
-              onClick={() => setShowAlasan(true)}
+              disabled={!bothUploaded || submitting}
+              onClick={() => handleConfirm('dikirim')}
             >
-              <XCircle className="h-4 w-4 mr-2" />
-              Dikirim & Ditolak
+              {submitting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <CheckCircle className="h-4 w-4 mr-2" />}
+              Dikirim & Diterima
             </Button>
-          ) : (
-            <Button
-              variant="destructive"
-              size="lg"
-              disabled={!bothUploaded || submitting || !alasan.trim()}
-              onClick={() => handleConfirm('ditolak')}
-            >
-              {submitting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <XCircle className="h-4 w-4 mr-2" />}
-              Konfirmasi Penolakan
-            </Button>
-          )}
-        </div>
+            {!showAlasan ? (
+              <Button
+                variant="destructive"
+                size="lg"
+                disabled={!bothUploaded}
+                onClick={() => setShowAlasan(true)}
+              >
+                <XCircle className="h-4 w-4 mr-2" />
+                Dikirim & Ditolak
+              </Button>
+            ) : (
+              <Button
+                variant="destructive"
+                size="lg"
+                disabled={!bothUploaded || submitting || !alasan.trim()}
+                onClick={() => handleConfirm('ditolak')}
+              >
+                {submitting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <XCircle className="h-4 w-4 mr-2" />}
+                Konfirmasi Penolakan
+              </Button>
+            )}
+          </div>
+        )}
       </CardContent>
     </Card>
   )

@@ -66,8 +66,8 @@ const menuItems: MenuItem[] = [
     { href: '/dashboard/di', label: 'Delivery Instruction', icon: FileText },
     { href: '/dashboard/sales-order', label: 'Sales Order', icon: FileText },
     { href: '/dashboard/delivery-order', label: 'Delivery Order', icon: FileText },
-    { href: '/dashboard/grn-customer', label: 'Retur Barang (GRN)', icon: FileText },
     { href: '/dashboard/retur-penjualan', label: 'Retur Penjualan', icon: FileText },
+    { href: '/dashboard/grn-customer', label: 'Retur Barang (GRN)', icon: FileText },
   ]},
   { label: 'Procurement', icon: Package, children: [
     { href: '/dashboard/rfq', label: 'RFQ Supplier', icon: FileText, disabled: true },

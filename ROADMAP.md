@@ -747,7 +747,7 @@ Customer retur barang
 | M-2 | **Retur Penjualan list API — tambah `delivery_order!delivery_order_id(nomor)` join** untuk tampilkan DO reference di tabel list | ✅ Done | `retur-penjualan/route.ts` |
 | M-3 | **GRN Customer tambah page — retur_penjualan_id selector** — saat buat GRN manual, user bisa pilih retur penjualan (combobox filter) untuk auto-link, bukan cuma DO | ✅ Done | `grn-customer/tambah/page.tsx` |
 | M-4 | **GRN Customer completed — validasi gudang_id** — API PUT `completed` harus cek `gudang_id` tidak null, jika null skip atau warning | ✅ Done | `grn-customer/[id]/route.ts` |
-| M-5 | **all_documents view — GRN Customer & Retur Penjualan entries** — tambah virtual PDF entries untuk GRN Customer dan Retur Penjualan (migration baru) | ❌ Skipped (PDF internal belum dibutuhkan) | `migration file` |
+| M-5 | **all_documents view — GRN Customer & Retur Penjualan entries** — tambah virtual PDF entries untuk GRN Customer dan Retur Penjualan (migration baru) | ✅ Done | `0039_add_retur_penjualan_grn_customer_virtual_pdf.sql` |
 
 ### 🟢 Low Priority / Enhancement (L-1 s/d L-5)
 
@@ -758,3 +758,41 @@ Customer retur barang
 | L-3 | **Invoice list — kolom nomor GRN Customer** — tampilkan `grn_customer_nomor` di tabel list invoice | ✅ Done | `invoice/page.tsx` |
 | L-4 | **Stok mutasi entry — tambah source reference** — saat GRN completed → stok mutasi, catat nomor GRN + retur penjualan di deskripsi | ✅ Done | `grn-customer/[id]/route.ts` |
 | L-5 | **Loading states** — tambah loading skeleton di semua detail page retur, GRN, invoice chain | ✅ Done | `retur-penjualan/[id]/page.tsx`, `grn-customer/[id]/page.tsx`, `invoice/[id]/page.tsx`, `skeleton.tsx` |
+
+## 🔵 NEW — Retur Penjualan & GRN Customer PDF Generation
+
+### 📄 Phase 1 — PDF Components & Route Handlers
+
+| # | Task | Status | File |
+|---|------|--------|------|
+| PDF-1 | **PDF component Retur Penjualan** — `createEl()` pattern, judul "Nota Retur", tampilkan harga satuan + subtotal (seperti invoice), header (company logo + info), double border, customer info, body teks, items table (No, Description, Unit, QTY, Harga, Subtotal, Keterangan), signature block (Yang Menyerahkan RRI + Yang Menerima Customer blank + stamp), footer (alamat, no hp, email, Page X of Y) | ✅ Done | `src/lib/pdf/retur-penjualan.ts` |
+| PDF-2 | **PDF route handler Retur Penjualan** — `verifyAuth()` → fetch retur_penjualan + customer + delivery_order + items with barang snapshot + company settings → trace pricing via DO→SO→Invoice chain → `createEl()` → `toBlob()` → `NextResponse` with `Content-Length` | ✅ Done | `src/app/api/v1/retur-penjualan/[id]/pdf/route.ts` |
+| PDF-3 | **PDF component GRN Customer** — `createEl()` pattern, judul "Goods Received Note", hanya qty (tanpa harga), header (company logo + info), double border, customer info + gudang tujuan, body teks, items table (No, Description, Unit, QTY, Keterangan), signature block (Yang Menyerahkan Gudang + Yang Mengetahui Customer blank + stamp), footer | ✅ Done | `src/lib/pdf/grn-customer.ts` |
+| PDF-4 | **PDF route handler GRN Customer** — `verifyAuth()` → fetch grn_customer + customer + gudang + retur_penjualan + items → `createEl()` → `toBlob()` → `NextResponse` with `Content-Length` | ✅ Done | `src/app/api/v1/grn-customer/[id]/pdf/route.ts` |
+| PDF-5 | **Migration — virtual PDF entries di all_documents view** — tambah `UNION ALL` untuk `pdf-retur-penjualan-{id}` dan `pdf-grn-customer-{id}`. Catatan: real uploaded documents (GRN Customer Eksternal dari customer) sudah ada di view via `grn_customer_document` join — virtual PDF ini untuk dokumen internal sistem (GRNC) | ✅ Done | `src/lib/db/migrations/0039_add_retur_penjualan_grn_customer_virtual_pdf.sql` |
+| PDF-6 | **Update M-5: from ❌ Skipped to ✅ Done** — all_documents entries now exist via PDF-5 | ✅ Done | `ROADMAP.md` |
+
+### 📐 Layout Specification
+
+**Retur Penjualan PDF (Nota Retur):**
+| Section | Konten |
+|---------|--------|
+| Document Info | No. Nota Retur, No. DO Ref. (atau "-"), Perihal: **Nota Retur**, Tanggal |
+| Customer Info | Nama customer (auto-resolve dari chain) |
+| Body | "Dengan ini kami memberitahukan bahwa barang-barang berikut telah diretur oleh customer:" |
+| Items Table | No, Description, Unit, QTY, Harga Satuan, Subtotal, Keterangan |
+| Signature | Yang Menyerahkan (RRI — tanda tangan + stempel) + Yang Menerima (Customer — blank) |
+
+**GRN Customer PDF (Goods Received Note):**
+| Section | Konten |
+|---------|--------|
+| Document Info | No. GRN, No. Retur Ref. (atau "-"), Perihal: **Goods Received Note**, Tanggal |
+| Customer + Gudang | Customer name, Gudang tujuan |
+| Body | "Dengan ini diterima barang-barang retur dari customer sebagai berikut:" |
+| Items Table | No, Description, Unit, QTY, Keterangan (tanpa harga) |
+| Signature | Yang Menyerahkan (Gudang — tanda tangan + stempel) + Yang Mengetahui (Customer — blank) |
+
+### 🔧 Settings
+- `15 items/page` — ROWS_PER_PAGE = 15 (adjustable after preview)
+- Multi-page support (auto new page when items exceed ROWS_PER_PAGE)
+- Font size 10pt/9pt, double border line (2px + 0.5px), company logo from `site_settings`

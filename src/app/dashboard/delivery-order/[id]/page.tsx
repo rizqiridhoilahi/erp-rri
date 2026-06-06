@@ -4,9 +4,8 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
-import { ArrowLeft, Truck, AlertTriangle, CheckCircle2, Camera, Undo2, ClipboardList } from 'lucide-react'
+import { ArrowLeft, Truck, AlertTriangle, CheckCircle2, Undo2, ClipboardList } from 'lucide-react'
 import { DOScanPanel } from '@/components/do-scan-panel'
-import { DoDocuments } from '@/components/do-documents'
 import { DOPhotoConfirmation } from '@/components/do-delivery-confirmation'
 import { DOKendaraanGudangSelect } from '@/components/do-kendaraan-gudang-select'
 import { DOHeaderActions } from '@/components/do-header-actions'
@@ -39,17 +38,31 @@ export default async function DeliveryOrderDetailPage({ params }: { params: Prom
   const { data: items } = await supabase.from('delivery_order_item').select('*, barang!barang_id(nama, kode, satuan, barcode, image_url)').eq('delivery_order_id', id)
 
   const { data: returList } = await supabase.from('retur_penjualan')
-    .select('id, nomor, status, total, tanggal')
+    .select('id, nomor, status, tanggal')
     .eq('delivery_order_id', id)
     .order('created_at', { ascending: false })
 
-  let grnList: Array<{ id: string; nomor: string; status: string; retur_penjualan_id: string }> = []
-  if (returList?.length) {
+  // Compute total quantity for each retur from its items
+  let returTotals: Record<string, number> = {}
+  const returIds = returList?.map(r => r.id) ?? []
+  if (returIds.length) {
+    const { data: returItems } = await supabase.from('retur_penjualan_item')
+      .select('retur_penjualan_id, jumlah')
+      .in('retur_penjualan_id', returIds)
+    returTotals = (returItems ?? []).reduce((acc, item) => {
+      acc[item.retur_penjualan_id] = (acc[item.retur_penjualan_id] || 0) + item.jumlah
+      return acc
+    }, {} as Record<string, number>)
+  }
+
+  interface GrnRow { id: string; nomor: string; status: string; tanggal: string; retur_penjualan_id: string | null; retur_penjualan: { nomor: string } | null }
+  let grnList: GrnRow[] = []
+  if (returIds.length) {
     const { data: grnResult } = await supabase.from('grn_customer')
-      .select('id, nomor, status, retur_penjualan_id')
-      .in('retur_penjualan_id', returList.map(r => r.id))
+      .select('id, nomor, status, tanggal, retur_penjualan_id, retur_penjualan!retur_penjualan_id(nomor)')
+      .in('retur_penjualan_id', returIds)
       .order('created_at', { ascending: false })
-    grnList = grnResult ?? []
+    grnList = (grnResult ?? []) as unknown as GrnRow[]
   }
 
   const dueDate = doDoc.waktu_pengiriman
@@ -198,32 +211,6 @@ export default async function DeliveryOrderDetailPage({ params }: { params: Prom
         existingFotoSuratJalan={doDoc.foto_surat_jalan_url}
       />
 
-      {(doDoc.foto_barang_diterima_url || doDoc.foto_surat_jalan_url) && (
-        <Card>
-          <CardContent className="pt-6">
-            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2"><Camera className="h-4 w-4" />Foto Verifikasi Pengiriman</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {doDoc.foto_barang_diterima_url && (
-                <div>
-                  <p className="text-sm font-medium mb-2">Foto Barang Diterima</p>
-                  <a href={doDoc.foto_barang_diterima_url} target="_blank" rel="noopener noreferrer">
-                    <img src={doDoc.foto_barang_diterima_url} alt="Foto Barang Diterima" className="w-full h-48 object-cover rounded-md border" />
-                  </a>
-                </div>
-              )}
-              {doDoc.foto_surat_jalan_url && (
-                <div>
-                  <p className="text-sm font-medium mb-2">Foto Surat Jalan</p>
-                  <a href={doDoc.foto_surat_jalan_url} target="_blank" rel="noopener noreferrer">
-                    <img src={doDoc.foto_surat_jalan_url} alt="Foto Surat Jalan" className="w-full h-48 object-cover rounded-md border" />
-                  </a>
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
       {!!returList?.length && (
         <Card>
           <CardContent className="pt-6">
@@ -246,7 +233,7 @@ export default async function DeliveryOrderDetailPage({ params }: { params: Prom
                       </Link>
                     </TableCell>
                     <TableCell>{new Date(r.tanggal).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })}</TableCell>
-                    <TableCell className="text-right font-medium">{Number(r.total).toLocaleString('id-ID')}</TableCell>
+                    <TableCell className="text-right font-medium">{returTotals[r.id] ?? '-'}</TableCell>
                     <TableCell>
                       <Badge variant={returStatusMap[r.status]?.v ?? 'outline'}>
                         {returStatusMap[r.status]?.label ?? r.status}
@@ -268,6 +255,8 @@ export default async function DeliveryOrderDetailPage({ params }: { params: Prom
               <TableHeader>
                 <TableRow>
                   <TableHead>Nomor GRN</TableHead>
+                  <TableHead>Ref. Retur</TableHead>
+                  <TableHead>Tanggal</TableHead>
                   <TableHead>Status</TableHead>
                 </TableRow>
               </TableHeader>
@@ -278,6 +267,16 @@ export default async function DeliveryOrderDetailPage({ params }: { params: Prom
                       <Link href={`/dashboard/grn-customer/${g.id}`} className="text-primary hover:underline font-medium">
                         {g.nomor}
                       </Link>
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {g.retur_penjualan ? (
+                        <Link href={`/dashboard/retur-penjualan/${g.retur_penjualan_id}`} className="hover:underline">
+                          {Array.isArray(g.retur_penjualan) ? g.retur_penjualan[0]?.nomor : g.retur_penjualan.nomor}
+                        </Link>
+                      ) : '-'}
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {g.tanggal ? new Date(g.tanggal).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }) : '-'}
                     </TableCell>
                     <TableCell>
                       <Badge variant={grnStatusMap[g.status]?.v ?? 'outline'}>
@@ -292,12 +291,6 @@ export default async function DeliveryOrderDetailPage({ params }: { params: Prom
         </Card>
       )}
 
-      <Card>
-        <CardContent className="pt-6">
-          <h3 className="text-lg font-semibold mb-4">Lampiran</h3>
-          <DoDocuments doId={doDoc.id} />
-        </CardContent>
-      </Card>
     </div>
   )
 }

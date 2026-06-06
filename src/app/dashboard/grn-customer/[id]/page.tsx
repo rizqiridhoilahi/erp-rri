@@ -7,10 +7,11 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
-import { ArrowLeft, ClipboardList, Undo2 } from "lucide-react"
+import { ArrowLeft, ClipboardList, Pencil, Check, Loader2 } from "lucide-react"
 import { DetailSkeleton } from "@/components/ui/skeleton"
 import Link from "next/link"
 import { CompactFileUpload, type DocumentFile } from "@/components/compact-file-upload"
+import { GrnCustomerPdfActions } from "@/components/grn-customer-pdf-actions"
 import { toast } from "sonner"
 
 const s: Record<string, { label: string; v: "secondary" | "success" | "outline" }> = {
@@ -28,6 +29,7 @@ interface GrnCustomer {
   status: string
   keterangan: string | null
   customer: { nama: string; kode: string } | null
+  pic_customer: { nama: string; jabatan: string | null } | null
   gudang: { nama: string } | null
   delivery_order: { nomor: string } | null
   retur_penjualan: { nomor: string } | null
@@ -41,7 +43,7 @@ interface GrnCustomerItem {
   nama_barang: string | null
   kode_barang: string | null
   satuan: string | null
-  barang: { nama: string; kode: string; satuan: string } | null
+  barang: { nama: string; kode: string; satuan: string; image_url?: string | null } | null
 }
 
 export default function GrnCustomerDetailPage() {
@@ -53,6 +55,8 @@ export default function GrnCustomerDetailPage() {
   const [error, setError] = useState<string | null>(null)
   const [documents, setDocuments] = useState<DocumentFile[]>([])
   const [uploading, setUploading] = useState(false)
+  const [statusLoading, setStatusLoading] = useState(false)
+  const isCompleted = grn?.status === "completed"
 
   useEffect(() => {
     if (!id) return
@@ -97,14 +101,45 @@ export default function GrnCustomerDetailPage() {
     }
   }
 
+  const handleStatusUpdate = async (newStatus: string) => {
+    if (!id) return
+    setStatusLoading(true)
+    try {
+      await apiFetch(`/api/v1/grn-customer/${id}`, { method: 'PUT', body: JSON.stringify({ status: newStatus }) })
+      toast.success('Status berhasil diubah!')
+      const grnRes = await apiFetch<GrnCustomer>(`/api/v1/grn-customer/${id}`)
+      if (grnRes.data) setGrn(grnRes.data)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Gagal mengubah status')
+    } finally {
+      setStatusLoading(false)
+    }
+  }
+
   if (loading) return <DetailSkeleton />
   if (error || !grn) return <div className="text-center py-20 text-muted-foreground">Retur Barang tidak ditemukan</div>
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => router.push("/dashboard/grn-customer")}><ArrowLeft className="h-5 w-5" /></Button>
-        <div><h1 className="text-3xl font-heading font-bold">Detail Retur Barang (GRN)</h1><p className="text-muted-foreground mt-1">{grn.nomor}</p></div>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="icon" onClick={() => router.push("/dashboard/grn-customer")}><ArrowLeft className="h-5 w-5" /></Button>
+          <div><h1 className="text-3xl font-heading font-bold">Detail Retur Barang (GRN)</h1><p className="text-muted-foreground mt-1">{grn.nomor}</p></div>
+        </div>
+        <div className="flex items-center gap-2">
+          <GrnCustomerPdfActions grnId={grn.id} nomor={grn.nomor} />
+          {!isCompleted && (
+            <Button onClick={() => handleStatusUpdate('completed')} disabled={statusLoading}>
+              {statusLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Check className="h-4 w-4 mr-2" />}
+              Selesaikan
+            </Button>
+          )}
+          {!isCompleted && (
+            <Button variant="outline" size="sm" asChild>
+              <Link href={`/dashboard/grn-customer/${id}/edit`}><Pencil className="h-4 w-4 mr-2" />Edit</Link>
+            </Button>
+          )}
+        </div>
       </div>
 
       <Card>
@@ -126,6 +161,13 @@ export default function GrnCustomerDetailPage() {
               <p className="text-sm text-muted-foreground">Customer</p>
               <p className="font-medium">{grn.customer?.nama ?? "-"}</p>
             </div>
+            {grn.pic_customer && (
+              <div>
+                <p className="text-sm text-muted-foreground">PIC Customer</p>
+                <p className="font-medium">{grn.pic_customer.nama}</p>
+                {grn.pic_customer.jabatan && <p className="text-xs text-muted-foreground">{grn.pic_customer.jabatan}</p>}
+              </div>
+            )}
             <div>
               <p className="text-sm text-muted-foreground">Gudang</p>
               <p className="font-medium">{grn.gudang?.nama ?? "-"}</p>
@@ -165,6 +207,7 @@ export default function GrnCustomerDetailPage() {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-14">Picture</TableHead>
                   <TableHead>Barang</TableHead>
                   <TableHead>Kode</TableHead>
                   <TableHead className="text-right">Jumlah</TableHead>
@@ -175,6 +218,13 @@ export default function GrnCustomerDetailPage() {
               <TableBody>
                 {grn.items.map((item) => (
                   <TableRow key={item.id}>
+                    <TableCell>
+                      {item.barang?.image_url ? (
+                        <img src={item.barang.image_url} alt="" className="w-10 h-10 rounded object-cover" />
+                      ) : (
+                        <div className="w-10 h-10 rounded bg-muted flex items-center justify-center text-xs text-muted-foreground">-</div>
+                      )}
+                    </TableCell>
                     <TableCell className="font-medium">{item.nama_barang ?? item.barang?.nama}</TableCell>
                     <TableCell className="text-muted-foreground">{item.kode_barang ?? item.barang?.kode}</TableCell>
                     <TableCell className="text-right">{item.jumlah}</TableCell>

@@ -1,7 +1,7 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
-import { Camera, CheckCircle, Loader2, Trash2 } from 'lucide-react'
+import { Camera, Loader2, Trash2 } from 'lucide-react'
 
 interface PhotoState {
   file: File | null
@@ -37,23 +37,19 @@ export function PhotoCard({
         )}
       </div>
 
-      {state.preview ? (
+      {state.preview && (
         <div className="relative">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={state.preview} alt={label} className="w-full h-40 object-cover rounded-md" />
-          <div className="absolute top-2 right-2">
-            <CheckCircle className="h-5 w-5 text-green-500 bg-white rounded-full" />
-          </div>
-        </div>
-      ) : (
-        <div
-          className="border-2 border-dashed rounded-md h-40 flex flex-col items-center justify-center cursor-pointer hover:bg-muted/50 transition-colors"
-          onClick={() => inputRef.current?.click()}
-        >
-          <Camera className="h-8 w-8 text-muted-foreground mb-2" />
-          <p className="text-sm text-muted-foreground">Ketuk untuk upload foto</p>
         </div>
       )}
+      <div
+        className="border-2 border-dashed rounded-md h-32 flex flex-col items-center justify-center cursor-pointer hover:bg-muted/50 transition-colors"
+        onClick={() => inputRef.current?.click()}
+      >
+        <Camera className="h-6 w-6 text-muted-foreground mb-1" />
+        <p className="text-sm text-muted-foreground">{state.preview ? 'Klik untuk ganti foto' : 'Ketuk untuk upload foto'}</p>
+      </div>
 
       <input
         ref={inputRef}

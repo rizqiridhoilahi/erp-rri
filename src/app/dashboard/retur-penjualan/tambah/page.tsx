@@ -1,6 +1,6 @@
 "use client"
 import Link from 'next/link'
-import { useState, useEffect } from 'react'; import { useRouter } from 'next/navigation'; import { z } from 'zod'; import { useForm, useFieldArray } from 'react-hook-form'; import { zodResolver } from '@hookform/resolvers/zod'
+import { useState, useEffect, useRef } from 'react'; import { useRouter } from 'next/navigation'; import { z } from 'zod'; import { useForm, useFieldArray } from 'react-hook-form'; import { zodResolver } from '@hookform/resolvers/zod'
 import { apiFetch } from '@/lib/api/client'; import { Button } from '@/components/ui/button'; import { Input } from '@/components/ui/input'; import { Textarea } from '@/components/ui/textarea'; import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'; import { DatePicker } from '@/components/ui/date-picker'
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select'
@@ -26,6 +26,8 @@ export default function TambahReturPenjualanPage() {
   const [custOpts, setCustOpts] = useState<Array<{ value: string; label: string }>>([])
   const [barangOpts, setBarangOpts] = useState<Array<{ value: string; label: string }>>([])
   const [barangMap, setBarangMap] = useState<Record<string, BarangData>>({})
+  const barangMapRef = useRef(barangMap)
+  barangMapRef.current = barangMap
   const [doLoading, setDoLoading] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const today = new Date().toISOString().split('T')[0]
@@ -62,7 +64,7 @@ export default function TambahReturPenjualanPage() {
           if (d.items && d.items.length > 0) {
             remove()
             d.items.forEach(item => {
-              const b = barangMap[item.barang_id]
+              const b = barangMapRef.current[item.barang_id]
               append({
                 barang_id: item.barang_id,
                 jumlah: item.jumlah,
@@ -77,7 +79,7 @@ export default function TambahReturPenjualanPage() {
       })
       .catch(() => toast.error('Gagal memuat data DO'))
       .finally(() => setDoLoading(false))
-  }, [selectedDoId, setValue, append, remove, barangMap])
+  }, [selectedDoId, setValue, append, remove])
 
   const handleBarangChange = (i: number, barangId: string) => {
     setValue(`items.${i}.barang_id`, barangId)
