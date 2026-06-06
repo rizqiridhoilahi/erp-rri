@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PO-BJS-26-1682-HSE</title>
+    <style>
+        body {
+            background-color: #e5e7eb;
+            margin: 0;
+            padding: 20px 0;
+            font-family: Arial, sans-serif;
+            font-size: 13px;
+            color: #000;
+            line-height: 1.4;
+        }
+
+        .page {
+            background-color: #fff;
+            width: 210mm;
+            min-height: 297mm;
+            margin: 0 auto 20px auto;
+            padding: 20mm;
+            box-sizing: border-box;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        .header-layout {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+        }
+
+        .header-left, .header-right {
+            width: 48%;
+        }
+
+        .header-right table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .header-right td {
+            padding: 2px 0;
+            vertical-align: top;
+        }
+
+        .title-section {
+            text-align: center;
+            margin: 30px 0;
+            font-weight: bold;
+        }
+
+        .title-section h2 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .address-section {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+        }
+
+        .address-box {
+            width: 48%;
+        }
+
+        .ref-section {
+            margin-bottom: 20px;
+        }
+
+        .ref-section table td {
+            padding: 2px 0;
+        }
+
+        .table-bordered {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        .table-bordered th, .table-bordered td {
+            border: 1px solid #000;
+            padding: 6px 8px;
+        }
+
+        .totals-section {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 30px;
+        }
+
+        .totals-table {
+            width: 350px;
+            border-collapse: collapse;
+        }
+
+        .totals-table td {
+            padding: 4px;
+        }
+
+        .terms-section {
+            margin-bottom: 30px;
+        }
+
+        .signature-section {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 50px;
+        }
+
+        .signature-box {
+            width: 45%;
+        }
+
+        .signature-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .signature-table td {
+            padding: 4px 0;
+            vertical-align: top;
+        }
+
+        .footer {
+            position: absolute;
+            bottom: 20mm;
+            left: 20mm;
+            right: 20mm;
+        }
+
+        .footer-flex {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        @media print {
+            body { 
+                background-color: #fff; 
+                padding: 0; 
+            }
+            .page { 
+                box-shadow: none; 
+                margin: 0; 
+                width: 100%; 
+                height: 100%; 
+                padding: 15mm; 
+                page-break-after: always;
+            }
+            .footer { 
+                bottom: 15mm; 
+                left: 15mm; 
+                right: 15mm; 
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- PAGE 1 -->
+    <div class="page">
+        
+        <!-- Header -->
+        <div class="header-layout">
+            <div class="header-left">
+                PT. Bhumi Jepara Service<br>
+                PLTU Tanjung Jati B Unit 5&6<br>
+                Desa Tubanan, Kecamatan Kembang<br>
+                Jepara 59458
+            </div>
+            <div class="header-right">
+                <table>
+                    <tr>
+                        <td style="width: 35%;">PO Number</td>
+                        <td style="width: 5%;">:</td>
+                        <td>PO-BJS-26-1682-HSE</td>
+                    </tr>
+                    <tr>
+                        <td>PO Date</td>
+                        <td>:</td>
+                        <td>3 June 2026</td>
+                    </tr>
+                    <tr>
+                        <td>PO Revision</td>
+                        <td>:</td>
+                        <td>0</td>
+                    </tr>
+                    <tr>
+                        <td>Department</td>
+                        <td>:</td>
+                        <td>Procurement & Coordination</td>
+                    </tr>
+                    <tr>
+                        <td>PIC</td>
+                        <td>:</td>
+                        <td>TRIASIH KUSMALINDA</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- Title -->
+        <div class="title-section">
+            <h2>Bhumi Jepara Service</h2>
+            <h2>Purchase Order</h2>
+        </div>
+
+        <!-- Vendor & Ship To -->
+        <div class="address-section">
+            <div class="address-box">
+                Vendor:<br><br>
+                Rizqi Ridho Ilahi, PT<br>
+                Gang Jonggring Saloka No 1 Jerukwangi Bangsri<br>
+                Jepara, Jawa Tengah 59458
+            </div>
+            <div class="address-box">
+                Ship To:<br><br>
+                PT. Bhumi Jepara Service<br>
+                PLTU Tanjung Jati B Unit 5&6<br>
+                Desa Tubanan, Kecamatan Kembang<br>
+                Jepara 59458
+            </div>
+        </div>
+
+        <!-- References -->
+        <div class="ref-section">
+            <table style="width: 60%; border: none; border-collapse: collapse;">
+                <tr>
+                    <td style="width: 50%;">Reference Quotation Number</td>
+                    <td>RRI-SPH-26-046</td>
+                </tr>
+                <tr>
+                    <td>Reference PR Number</td>
+                    <td>PR-BJS-26-1162-HSE</td>
+                </tr>
+                <tr>
+                    <td>Requestor</td>
+                    <td>HSE</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- Line Items -->
+        <table class="table-bordered">
+            <thead>
+                <tr>
+                    <th style="width: 5%;">No</th>
+                    <th style="width: 35%; text-align: left;">Description</th>
+                    <th style="width: 10%;">Unit</th>
+                    <th style="width: 10%;">QTY</th>
+                    <th colspan="2" style="width: 20%;">Unit Price</th>
+                    <th colspan="2" style="width: 20%;">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="text-align: center;">1</td>
+                    <td>Head Lamp Clip (Per Pack: 20<br>Pcs)</td>
+                    <td style="text-align: center;">PACK</td>
+                    <td style="text-align: center;">5</td>
+                    <td style="border-right: none; width: 5%;">IDR</td>
+                    <td style="border-left: none; text-align: right;">45,000</td>
+                    <td style="border-right: none; width: 5%;">IDR</td>
+                    <td style="border-left: none; text-align: right;">225,000</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Totals -->
+        <div class="totals-section">
+            <table class="totals-table">
+                <tr>
+                    <td style="text-align: right; padding-right: 20px;">Sub Total</td>
+                    <td style="width: 10%;">IDR</td>
+                    <td style="text-align: right; width: 30%;">225,000</td>
+                </tr>
+                <tr>
+                    <td style="text-align: right; padding-right: 20px;">Grand Total</td>
+                    <td>IDR</td>
+                    <td style="text-align: right;">225,000</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- Terms and Conditions -->
+        <div class="terms-section">
+            <div style="margin-bottom: 5px;">Terms and Conditions</div>
+            <table class="table-bordered">
+                <tr>
+                    <td style="width: 30%;">TIME FOR DELIVERY</td>
+                    <td>2 weeks after issuance of PO</td>
+                </tr>
+                <tr>
+                    <td>DELIVERY</td>
+                    <td>DDP PLTU Tanjung Jati B Unit 5&6</td>
+                </tr>
+                <tr>
+                    <td>PAYMENT</td>
+                    <td>TTR 14 calendar days after the goods and original invoice are received</td>
+                </tr>
+                <tr>
+                    <td>VAT</td>
+                    <td>Not Applicable</td>
+                </tr>
+                <tr>
+                    <td>OTHERS</td>
+                    <td>As per the General Terms and conditions executed on 24-5-2024</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- Footer Page 1 -->
+        <div class="footer">
+            <div class="footer-flex">
+                <div>
+                    Note:<br>
+                    PO Number: PO-BJS-26-1682-HSE
+                </div>
+                <div>1/2</div>
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- PAGE 2 -->
+    <div class="page">
+        
+        <!-- Header Page 2 -->
+        <div style="margin-bottom: 40px;">
+            PT. Bhumi Jepara Service<br>
+            PLTU Tanjung Jati B Unit 5&6<br>
+            Desa Tubanan, Kecamatan Kembang<br>
+            Jepara 59458<br>
+            <br>
+            Rizqi Ridho Ilahi, PT
+        </div>
+
+        <!-- Signatures -->
+        <div class="signature-section">
+            <!-- Vendor -->
+            <div class="signature-box">
+                <table class="signature-table">
+                    <tr>
+                        <td style="width: 30%;">Agreed by</td>
+                        <td style="width: 5%;">:</td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>Position</td>
+                        <td>:</td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>Date</td>
+                        <td>:</td>
+                        <td></td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- Buyer -->
+            <div class="signature-box">
+                <div style="margin-bottom: 10px;">
+                    211<br>
+                    Bhumi Jepara Service<br>
+                    Purchase Order<br>
+                    PT. Bhumi Jepara Service<br>
+                    臼井一郎
+                </div>
+                <table class="signature-table">
+                    <tr>
+                        <td style="width: 35%;">Authorized by</td>
+                        <td style="width: 5%;">:</td>
+                        <td>ICHIRO USUI</td>
+                    </tr>
+                    <tr>
+                        <td>Position</td>
+                        <td>:</td>
+                        <td>GM of Planning & Coord.</td>
+                    </tr>
+                    <tr>
+                        <td>Date</td>
+                        <td>:</td>
+                        <td>4 June 2026</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- Footer Page 2 -->
+        <div class="footer">
+            <div class="footer-flex">
+                <div>
+                    PO Number: PO-BJS-26-1682-HSE
+                </div>
+                <div>2/2</div>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>

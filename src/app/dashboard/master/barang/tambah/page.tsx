@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from 'react';
-import { apiFetch } from '@/lib/api/client';
+import { apiFetch, apiFetchFormData } from '@/lib/api/client';
 import { useRouter } from 'next/navigation';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
@@ -49,6 +49,28 @@ interface ImportItem {
   harga: number;
 }
 
+interface PoImportItem {
+  nama_barang: string;
+  satuan: string;
+  qty: number;
+  harga_satuan: number;
+}
+
+interface PoImportJson {
+  nama_customer: string;
+  nama_pic: string;
+  jabatan_pic: string;
+  nomor_po_customer: string;
+  nomor_pr_customer: string;
+  nomor_quotation_rri: string;
+  tanggal_po: string;
+  revisi_ke: number;
+  time_for_delivery_hari: number;
+  durasi_payment_hari: number;
+  catatan: string;
+  items: PoImportItem[];
+}
+
 const GEMINI_PROMPT = `Extract all item data from this contract PDF as a JSON array. Each item must have these exact fields:
 - "kode": string (item code, e.g. "CLT005")
 - "nama": string (item name, e.g. "Lion Star Floor Brush with handle")
@@ -79,6 +101,16 @@ export default function TambahBarangPage() {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageUploading, setImageUploading] = useState(false);
 
+  const [poCustomerOptions, setPoCustomerOptions] = useState<Array<{ value: string; label: string }>>([]);
+  const [selectedPoCustomerId, setSelectedPoCustomerId] = useState('');
+  const [poPrompt, setPoPrompt] = useState('');
+  const [poCopied, setPoCopied] = useState(false);
+  const [poJsonInput, setPoJsonInput] = useState('');
+  const [poParsedData, setPoParsedData] = useState<PoImportJson | null>(null);
+  const [poImportLoading, setPoImportLoading] = useState(false);
+  const [poPdfFile, setPoPdfFile] = useState<File | null>(null);
+  const [poLoadingPrompt, setPoLoadingPrompt] = useState(false);
+
   const fetchKategoriOptions = useCallback(async () => {
     try {
       const { data } = await apiFetch<Array<{ id: string; nama: string }>>('/api/v1/master/kategori-barang');
@@ -101,6 +133,51 @@ export default function TambahBarangPage() {
       } catch { /* ignore */ }
     })();
   }, [activeTab]);
+
+  useEffect(() => {
+    if (activeTab !== 'import-po') return;
+    setPoParsedData(null);
+    setPoJsonInput('');
+    setPoPrompt('');
+    setSelectedPoCustomerId('');
+    setPoPdfFile(null);
+    (async () => {
+      try {
+        const { data } = await apiFetch<Array<{ id: string; nama: string }>>('/api/v1/master/customer');
+        const validIds = new Set<string>()
+        const prompts = await Promise.allSettled(
+          (data ?? []).map(c =>
+            apiFetch<{ customer_id: string }>(`/api/v1/master/customer/${c.id}/prompt`)
+              .then(() => c.id)
+              .catch(() => null)
+          )
+        );
+        prompts.forEach(p => { if (p.status === 'fulfilled' && p.value) validIds.add(p.value) });
+        setPoCustomerOptions(
+          (data ?? [])
+            .filter(c => validIds.has(c.id))
+            .map(c => ({ value: c.id, label: c.nama }))
+        );
+      } catch { /* ignore */ }
+    })();
+  }, [activeTab]);
+
+  const handlePoCustomerChange = async (customerId: string) => {
+    setSelectedPoCustomerId(customerId);
+    setPoPrompt('');
+    setPoParsedData(null);
+    setPoJsonInput('');
+    if (!customerId) return;
+    setPoLoadingPrompt(true);
+    try {
+      const { data } = await apiFetch<{ prompt_template: string }>(`/api/v1/master/customer/${customerId}/prompt`);
+      setPoPrompt(data?.prompt_template ?? '');
+    } catch {
+      toast.error('Gagal memuat prompt customer');
+    } finally {
+      setPoLoadingPrompt(false);
+    }
+  };
 
   const uploadImageAndUpdate = async (barangId: string) => {
     if (!imageFile || !barangId) return
@@ -252,10 +329,115 @@ export default function TambahBarangPage() {
     }
   };
 
+  const handlePoCopyPrompt = async () => {
+    try {
+      await navigator.clipboard.writeText(poPrompt);
+      setPoCopied(true);
+      setTimeout(() => setPoCopied(false), 2000);
+    } catch {
+      toast.error('Gagal menyalin prompt');
+    }
+  };
+
+  const handlePoPreview = () => {
+    const trimmed = poJsonInput.trim();
+    if (!trimmed) {
+      toast.error('Tempel JSON dari Gemini AI terlebih dahulu');
+      return;
+    }
+    try {
+      const parsed = JSON.parse(trimmed);
+      if (!parsed.nama_customer) throw new Error('Field "nama_customer" wajib diisi');
+      if (!parsed.nomor_po_customer) throw new Error('Field "nomor_po_customer" wajib diisi');
+      if (!parsed.tanggal_po) throw new Error('Field "tanggal_po" wajib diisi');
+      if (!Array.isArray(parsed.items) || parsed.items.length === 0) {
+        throw new Error('Field "items" harus berupa array dengan minimal 1 item');
+      }
+      parsed.items.forEach((item: Record<string, unknown>, i: number) => {
+        if (!item.nama_barang || !item.satuan || typeof item.qty !== 'number' || typeof item.harga_satuan !== 'number') {
+          throw new Error(`Item ke-${i + 1}: field nama_barang, satuan (string), qty, harga_satuan (number) wajib diisi`);
+        }
+      });
+      const data: PoImportJson = {
+        nama_customer: String(parsed.nama_customer),
+        nama_pic: String(parsed.nama_pic ?? '-'),
+        jabatan_pic: String(parsed.jabatan_pic ?? '-'),
+        nomor_po_customer: String(parsed.nomor_po_customer),
+        nomor_pr_customer: String(parsed.nomor_pr_customer ?? '-'),
+        nomor_quotation_rri: String(parsed.nomor_quotation_rri ?? '-'),
+        tanggal_po: String(parsed.tanggal_po),
+        revisi_ke: Number(parsed.revisi_ke ?? 0),
+        time_for_delivery_hari: Number(parsed.time_for_delivery_hari ?? 0),
+        durasi_payment_hari: Number(parsed.durasi_payment_hari ?? 0),
+        catatan: String(parsed.catatan ?? ''),
+        items: parsed.items.map((item: Record<string, unknown>) => ({
+          nama_barang: String(item.nama_barang),
+          satuan: String(item.satuan),
+          qty: Number(item.qty),
+          harga_satuan: Number(item.harga_satuan),
+        })),
+      };
+      setPoParsedData(data);
+      toast.success(`${data.items.length} item berhasil diparse`);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Format JSON tidak valid');
+      setPoParsedData(null);
+    }
+  };
+
+  const handlePoImport = async () => {
+    if (!poParsedData) {
+      toast.error('Preview data terlebih dahulu');
+      return;
+    }
+
+    setPoImportLoading(true);
+    const toastId = toast.loading(`Mengimport ${poParsedData.items.length} barang dari PO...`);
+
+    try {
+      const formData = new FormData();
+      formData.append('jsonData', JSON.stringify(poParsedData));
+      if (poPdfFile) {
+        formData.append('pdfFile', poPdfFile);
+      }
+
+      const res = await apiFetchFormData<{
+        success: boolean;
+        imported_count: number;
+        skipped_count: number;
+        po_id: string;
+        nomor_po: string;
+        errors?: Array<{ nama_barang: string; error: string }>;
+      }>('/api/v1/master/barang/import-from-po', formData);
+
+      const result = res.data;
+
+      if (result.errors && result.errors.length > 0) {
+        const errorList = result.errors.map(e => `${e.nama_barang}: ${e.error}`).join('\n');
+        toast.error(`${result.errors.length} error:\n${errorList}`, { id: toastId, duration: 5000 });
+      }
+
+      if (result.imported_count > 0 || result.skipped_count > 0) {
+        const msg = `${result.imported_count} barang baru, ${result.skipped_count} sudah ada (skip)`;
+        toast.success(`Import berhasil! PO: ${result.nomor_po}. ${msg}`, {
+          id: result.imported_count > 0 ? toastId : undefined,
+        });
+        setTimeout(() => router.push('/dashboard/master/barang'), 1500);
+      } else {
+        toast.error('Tidak ada barang yang diimport', { id: toastId });
+      }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Gagal mengimport PO', { id: toastId });
+    } finally {
+      setPoImportLoading(false);
+    }
+  };
+
   const formatCurrency = (val: number) => 'Rp ' + val.toLocaleString('id-ID');
 
   return (
     <div className="mx-auto max-w-4xl" data-tour="barang-form-title">
+      <div data-tour="barang-form-header">
       <PageHeader
         title="Tambah Barang"
         description="Input barang baru atau import dari data kontrak"
@@ -268,11 +450,13 @@ export default function TambahBarangPage() {
           </>
         }
       />
+      </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-6">
         <TabsList data-tour="barang-form-tabs">
           <TabsTrigger value="manual">Input Manual</TabsTrigger>
           <TabsTrigger value="import">Import dari Kontrak</TabsTrigger>
+          <TabsTrigger value="import-po">Import dari PO</TabsTrigger>
         </TabsList>
 
         <TabsContent value="manual" className="mt-6">
@@ -661,6 +845,221 @@ export default function TambahBarangPage() {
                           <TableCell>{item.nama}</TableCell>
                           <TableCell>{item.satuan}</TableCell>
                           <TableCell className="text-right">{formatCurrency(item.harga)}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+
+        <TabsContent value="import-po" className="mt-6 space-y-6">
+          <Card>
+            <CardContent className="pt-6 space-y-6">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Pilih Customer</label>
+                {poCustomerOptions.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">
+                    Tidak ada customer dengan prompt tersedia. Hubungi admin untuk menambahkan prompt di Supabase.
+                  </p>
+                ) : (
+                  <Select value={selectedPoCustomerId} onValueChange={handlePoCustomerChange}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Pilih customer..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {poCustomerOptions.map(opt => (
+                        <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              </div>
+
+              {selectedPoCustomerId && (
+                <>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <label className="text-sm font-medium">Prompt untuk Gemini AI</label>
+                      <Button variant="outline" size="sm" onClick={handlePoCopyPrompt} disabled={!poPrompt || poLoadingPrompt}>
+                        {poCopied ? <Check className="h-3.5 w-3.5 mr-1" /> : <Copy className="h-3.5 w-3.5 mr-1" />}
+                        {poCopied ? 'Tersalin' : 'Salin Prompt'}
+                      </Button>
+                    </div>
+                    {poLoadingPrompt ? (
+                      <div className="flex items-center justify-center py-8">
+                        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                      </div>
+                    ) : (
+                      <div className="relative">
+                        <Textarea
+                          readOnly
+                          value={poPrompt}
+                          rows={8}
+                          className="text-xs font-mono bg-muted resize-none"
+                        />
+                        <FileDown className="absolute top-2 right-2 h-4 w-4 text-muted-foreground" />
+                      </div>
+                    )}
+                    <p className="text-xs text-muted-foreground">
+                      1. Upload PDF PO ke chat Gemini AI. 2. Kirim prompt di atas. 3. Copy JSON hasil ekstraksi.
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Upload File PDF PO</label>
+                    <div
+                      className="flex items-center gap-3 rounded-lg border-2 border-dashed p-4 transition-colors cursor-pointer bg-muted/30 hover:bg-muted/50"
+                      onClick={() => document.getElementById('po-pdf-input')?.click()}
+                    >
+                      <Upload className="h-6 w-6 text-muted-foreground shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        {poPdfFile ? (
+                          <p className="text-sm font-medium truncate">{poPdfFile.name}</p>
+                        ) : (
+                          <>
+                            <p className="text-sm font-medium">Klik untuk upload PDF PO</p>
+                            <p className="text-xs text-muted-foreground mt-0.5">PDF — maks. 10MB</p>
+                          </>
+                        )}
+                      </div>
+                      {poPdfFile && (
+                        <button
+                          type="button"
+                          onClick={(e) => { e.stopPropagation(); setPoPdfFile(null); }}
+                          className="text-muted-foreground hover:text-destructive transition-colors"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      )}
+                    </div>
+                    <input
+                      id="po-pdf-input"
+                      type="file"
+                      accept="application/pdf"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          if (file.size > 10 * 1024 * 1024) {
+                            toast.error('Ukuran file maksimal 10MB');
+                            return;
+                          }
+                          setPoPdfFile(file);
+                        }
+                        if (e.target) e.target.value = '';
+                      }}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Tempel JSON dari Gemini AI</label>
+                    <Textarea
+                      value={poJsonInput}
+                      onChange={(e) => setPoJsonInput(e.target.value)}
+                      placeholder={'{\n  "nama_customer": "...",\n  "nomor_po_customer": "...",\n  "tanggal_po": "YYYY-MM-DD",\n  "items": [...]\n}'}
+                      rows={5}
+                      className="text-xs font-mono"
+                    />
+                    <div className="flex justify-end">
+                      <Button
+                        variant="secondary"
+                        onClick={handlePoPreview}
+                        disabled={!poJsonInput.trim()}
+                      >
+                        Preview Data
+                      </Button>
+                    </div>
+                  </div>
+                </>
+              )}
+            </CardContent>
+          </Card>
+
+          {poParsedData && (
+            <Card>
+              <CardContent className="pt-6 space-y-4">
+                <div className="grid grid-cols-2 gap-4 text-sm border-b pb-4">
+                  <div>
+                    <span className="text-muted-foreground">Customer:</span>{' '}
+                    <span className="font-medium">{poParsedData.nama_customer}</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">No. PO:</span>{' '}
+                    <span className="font-medium">{poParsedData.nomor_po_customer}</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Tanggal PO:</span>{' '}
+                    <span className="font-medium">{poParsedData.tanggal_po}</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Revisi:</span>{' '}
+                    <span className="font-medium">{poParsedData.revisi_ke}</span>
+                  </div>
+                  {poParsedData.nomor_quotation_rri !== '-' && (
+                    <div>
+                      <span className="text-muted-foreground">No. Quotation:</span>{' '}
+                      <span className="font-medium">{poParsedData.nomor_quotation_rri}</span>
+                    </div>
+                  )}
+                  {poParsedData.nomor_pr_customer !== '-' && (
+                    <div>
+                      <span className="text-muted-foreground">No. PR:</span>{' '}
+                      <span className="font-medium">{poParsedData.nomor_pr_customer}</span>
+                    </div>
+                  )}
+                  {poParsedData.nama_pic !== '-' && (
+                    <div>
+                      <span className="text-muted-foreground">PIC:</span>{' '}
+                      <span className="font-medium">{poParsedData.nama_pic} ({poParsedData.jabatan_pic})</span>
+                    </div>
+                  )}
+                  {poParsedData.time_for_delivery_hari > 0 && (
+                    <div>
+                      <span className="text-muted-foreground">Delivery:</span>{' '}
+                      <span className="font-medium">{poParsedData.time_for_delivery_hari} hari</span>
+                    </div>
+                  )}
+                  {poParsedData.durasi_payment_hari > 0 && (
+                    <div>
+                      <span className="text-muted-foreground">Payment:</span>{' '}
+                      <span className="font-medium">{poParsedData.durasi_payment_hari} hari</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-semibold">
+                    Pratinjau Items ({poParsedData.items.length} item)
+                  </h3>
+                  <Button onClick={handlePoImport} disabled={poImportLoading}>
+                    {poImportLoading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                    Import {poParsedData.items.length} Barang
+                  </Button>
+                </div>
+                <div className="border rounded-lg overflow-hidden">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-8">#</TableHead>
+                        <TableHead>Nama Barang</TableHead>
+                        <TableHead>Satuan</TableHead>
+                        <TableHead className="text-right">Qty</TableHead>
+                        <TableHead className="text-right">Harga Satuan</TableHead>
+                        <TableHead className="text-right">Subtotal</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {poParsedData.items.map((item, i) => (
+                        <TableRow key={i}>
+                          <TableCell className="text-xs text-muted-foreground">{i + 1}</TableCell>
+                          <TableCell>{item.nama_barang}</TableCell>
+                          <TableCell>{item.satuan}</TableCell>
+                          <TableCell className="text-right">{item.qty}</TableCell>
+                          <TableCell className="text-right">{formatCurrency(item.harga_satuan)}</TableCell>
+                          <TableCell className="text-right">{formatCurrency(item.qty * item.harga_satuan)}</TableCell>
                         </TableRow>
                       ))}
                     </TableBody>

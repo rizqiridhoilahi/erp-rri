@@ -184,8 +184,9 @@ export default function BarangPage() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8" data-tour="barang-title">
-      <BreadcrumbNav items={breadcrumbItems} />
-      <PageHeader
+      <div data-tour="barang-header">
+        <BreadcrumbNav items={breadcrumbItems} />
+        <PageHeader
         title="Data Barang"
         description={`${data.length} barang terdaftar`}
         actions={
@@ -198,6 +199,7 @@ export default function BarangPage() {
           </>
         }
       />
+      </div>
       {!data.length ? (
         <EmptyState title="Belum ada data barang" description="Tambahkan barang pertama Anda untuk memulai." />
       ) : (

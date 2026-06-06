@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback, useEffect, type ReactNode } from 'react'
+import { useState, useCallback, useEffect, useMemo, type ReactNode } from 'react'
 import dynamic from 'next/dynamic'
 import type { Step, EventHandler } from 'react-joyride'
 import { HelpCircle } from 'lucide-react'
@@ -12,6 +12,11 @@ interface PageTourProps {
   steps: Step[]
   autoShow?: boolean
   children?: ReactNode
+}
+
+function getCSSVar(name: string, fallback: string): string {
+  if (typeof window === 'undefined') return fallback
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fallback
 }
 
 export function PageTour({ pageKey, steps, autoShow = true, children }: PageTourProps) {
@@ -26,6 +31,12 @@ export function PageTour({ pageKey, steps, autoShow = true, children }: PageTour
       }
     }
   }, [autoShow, pageKey])
+
+  const colors = useMemo(() => {
+    const primary = getCSSVar('--primary', '#0000FF')
+    const primaryForeground = getCSSVar('--primary-foreground', '#FFFFFF')
+    return { primary, primaryForeground }
+  }, [run])
 
   const handleEvent = useCallback<EventHandler>((data) => {
     if (data.status === 'finished' || data.status === 'skipped') {
@@ -47,6 +58,11 @@ export function PageTour({ pageKey, steps, autoShow = true, children }: PageTour
           showProgress: true,
           buttons: ['back', 'primary', 'skip'],
           spotlightPadding: 8,
+          backgroundColor: colors.primary,
+          textColor: colors.primaryForeground,
+          primaryColor: colors.primary,
+          arrowColor: colors.primary,
+          overlayColor: 'rgba(0,0,0,0.5)',
         }}
         locale={{
           back: 'Kembali',
@@ -55,38 +71,33 @@ export function PageTour({ pageKey, steps, autoShow = true, children }: PageTour
           skip: 'Lewati',
         }}
         styles={{
-          arrow: { color: 'var(--card)' },
           buttonPrimary: {
-            backgroundColor: 'var(--primary)',
-            color: 'var(--primary-foreground)',
+            backgroundColor: colors.primaryForeground,
+            color: colors.primary,
             borderRadius: '8px',
             fontSize: '14px',
             padding: '8px 16px',
           },
           buttonBack: {
-            color: 'var(--muted-foreground)',
+            color: colors.primaryForeground,
             fontSize: '14px',
+            opacity: 0.85,
           },
           buttonSkip: {
-            color: 'var(--muted-foreground)',
+            color: colors.primaryForeground,
             fontSize: '14px',
+            opacity: 0.85,
           },
-          overlay: { backgroundColor: 'rgba(0,0,0,0.5)' },
           tooltipContainer: { textAlign: 'left' },
           tooltip: {
-            backgroundColor: 'var(--card)',
-            border: '1px solid var(--border)',
-            boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)',
             borderRadius: '12px',
             padding: '20px',
           },
           tooltipContent: {
-            color: 'var(--foreground)',
             fontSize: '14px',
             lineHeight: '1.6',
           },
           tooltipTitle: {
-            color: 'var(--foreground)',
             fontSize: '18px',
             fontWeight: 600,
           },

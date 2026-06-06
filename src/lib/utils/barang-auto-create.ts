@@ -14,6 +14,20 @@ export async function generateAutoKode(): Promise<string> {
   return `BRG-RRI-${String(nextNum).padStart(5, '0')}`
 }
 
+export async function generateCustomerAutoKode(): Promise<string> {
+  const { data } = await supabaseAdmin
+    .from('customer')
+    .select('kode')
+    .like('kode', 'CUST-%')
+    .order('kode', { ascending: false })
+    .limit(1)
+
+  const last = (data?.[0]?.kode as string) ?? ''
+  const lastNum = parseInt(last.replace('CUST-', ''), 10) || 0
+  const nextNum = lastNum + 1
+  return `CUST-${String(nextNum).padStart(5, '0')}`
+}
+
 export async function createBarangFromRfqItem(
   nama_barang: string,
   satuan: string | null,

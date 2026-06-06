@@ -190,6 +190,24 @@ DI diterbitkan (draft)
 |---|------|--------|------|
 | 7 | Update PRD.md — flow Quotation status + integrasi Negosiasi | ✅ Done | `PRD.md` |
 
+## 🟡 Import dari PO — Master Barang Enhancement
+
+| # | Task | Status | File |
+|---|------|--------|------|
+| PO-1 | **Planning & Design** — Final plan documented | ✅ Done | `.opencode/plans/import-dari-po.md` |
+| PO-2 | **DB Migration — `customer_prompt` table** — CREATE TABLE untuk simpan prompt per customer | ✅ Done | `0041_create_customer_prompt.sql` |
+| PO-3 | **Drizzle Schema `customer-prompt.ts`** — schema TypeScript untuk `customer_prompt` | ✅ Done | `src/lib/db/schema/customer-prompt.ts` |
+| PO-4 | **`generateDocumentNumber` — tambah parameter tahun/bulan** — agar nomor dokumen bisa menggunakan tanggal PO dari PDF | ✅ Done | `src/lib/utils/document-number.ts` |
+| PO-5 | **`generateCustomerAutoKode`** — auto-generate kode customer `CUST-{NNNNN}` | ✅ Done | `src/lib/utils/barang-auto-create.ts` |
+| PO-6 | **API: GET customer/[id]/prompt** — fetch prompt template per customer | ✅ Done | `src/app/api/v1/master/customer/[id]/prompt/route.ts` |
+| PO-7 | **API: POST import-from-po** — validasi JSON, auto-match customer/PIC, auto-create barang, create PO+items | ✅ Done | `src/app/api/v1/master/barang/import-from-po/route.ts` |
+| PO-8 | **Frontend Tab "Import dari PO"** — dropdown customer, prompt, upload PDF, paste JSON, preview, import | ✅ Done | `src/app/dashboard/master/barang/tambah/page.tsx` |
+| PO-9 | **Seed data prompt BJS & MKP** — isi `customer_prompt` untuk 2 customer | ✅ Done | Supabase — BJS + MKP aktif |
+| PO-10 | **Migration `nomor_quotation_rri`** — tambah column ke `customer_po` | ✅ Done | `0042_add_nomor_quotation_rri_to_customer_po.sql` |
+| PO-11 | **Fix: `apiFetch` → `apiFetchFormData`** — FormData import kirim Content-Type application/json (salah), ganti dengan `apiFetchFormData` yang tidak set Content-Type agar browser set multipart boundary | ✅ Done | `src/app/dashboard/master/barang/tambah/page.tsx` |
+| PO-12 | **Fix: status 'linked' untuk barang existing dgn harga beda** — ganti 'skipped' misleading jadi 'linked' di response API | ✅ Done | `src/app/api/v1/master/barang/import-from-po/route.ts` |
+| PO-13 | **Fix: tampilkan `nomor_quotation_rri` di detail PO** — tambah field ke interface + grid display di halaman detail customer PO | ✅ Done | `src/app/dashboard/customer-po/[id]/page.tsx` |
+
 ---
 
 ## 🟡 Invoice & Kwitansi Module — Post DO "Dikirim"

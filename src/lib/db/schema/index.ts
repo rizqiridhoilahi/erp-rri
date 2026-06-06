@@ -92,6 +92,7 @@ import { deliveryOrderDocument } from "./delivery-order-document";
 import { grnCustomer } from "./grn-customer";
 import { grnCustomerItem } from "./grn-customer-item";
 import { grnCustomerDocument } from "./grn-customer-document";
+import { customerPrompt } from "./customer-prompt";
 
 export {
   users,
@@ -186,5 +187,6 @@ export {
   kendaraan,
   grnCustomer,
   grnCustomerItem,
-  grnCustomerDocument
+  grnCustomerDocument,
+  customerPrompt
 };

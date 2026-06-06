@@ -7,16 +7,19 @@ function formatNumber(kodeDokumen: string, tahun: number, bulan: number, counter
   return `RRI-${kodeDokumen}-${yy}-${mm}-${padded}`;
 }
 
-export async function generateDocumentNumber(kodeDokumen: string): Promise<string> {
+export async function generateDocumentNumber(kodeDokumen: string, tahun?: number, bulan?: number): Promise<string> {
   const now = new Date();
+  const year = tahun ?? now.getFullYear();
+  const month = bulan ?? now.getMonth() + 1;
+
   const { data, error } = await supabase.rpc('increment_document_counter', {
     p_kode_dokumen: kodeDokumen,
-    p_tahun: now.getFullYear(),
-    p_bulan: now.getMonth() + 1,
+    p_tahun: year,
+    p_bulan: month,
   });
 
   if (error) throw new Error(`Failed to generate document number: ${error.message}`);
-  return formatNumber(kodeDokumen, now.getFullYear(), now.getMonth() + 1, data ?? 1);
+  return formatNumber(kodeDokumen, year, month, data ?? 1);
 }
 
 export async function generateGlobalDocumentNumber(kodeDokumen: string): Promise<string> {
