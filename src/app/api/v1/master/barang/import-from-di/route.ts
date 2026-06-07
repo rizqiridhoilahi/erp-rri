@@ -8,21 +8,21 @@ import { generateDocumentNumber } from '@/lib/utils/document-number'
 import { storageService } from '@/lib/storage'
 
 const importItemSchema = z.object({
-  kode: z.string().min(1, 'Kode barang harus diisi'),
-  nama_barang: z.string().min(1, 'Nama barang harus diisi'),
-  satuan: z.string().min(1, 'Satuan harus diisi'),
-  qty: z.number().positive('Qty harus > 0'),
-  harga_satuan: z.number().nonnegative('Harga satuan harus >= 0'),
+  kode: z.string().default(''),
+  nama_barang: z.string().default(''),
+  satuan: z.string().default('-'),
+  qty: z.number().default(0),
+  harga_satuan: z.number().default(0),
 })
 
 const diJsonSchema = z.object({
-  nomor_di: z.string().min(1, 'Nomor DI harus diisi'),
-  tanggal_di: z.string().min(1, 'Tanggal DI harus diisi').refine(v => !isNaN(Date.parse(v)), 'Format tanggal tidak valid (YYYY-MM-DD)'),
+  nomor_di: z.string().default(''),
+  tanggal_di: z.string().default(''),
   revisi_ke: z.number().optional().default(0),
   department: z.string().optional().default('-'),
   nama_pic: z.string().optional().default('-'),
   jabatan_pic: z.string().optional().default('-'),
-  nomor_kontrak: z.string().min(1, 'Nomor kontrak harus diisi'),
+  nomor_kontrak: z.string().default(''),
   requestor: z.string().optional().default('-'),
   time_for_delivery_hari: z.number().optional().default(0),
   durasi_payment_hari: z.number().optional().default(0),
@@ -69,11 +69,34 @@ export async function POST(request: NextRequest) {
   // Step 1: Verify customer exists
   const { data: customer } = await supabaseAdmin
     .from('customer')
-    .select('id, nama')
+    .select('id, nama, kode')
     .eq('id', customerId)
     .single()
 
   if (!customer) return badRequest('Customer tidak ditemukan')
+
+  // Base required fields
+  const diMissing: string[] = []
+  if (!data.nomor_di) diMissing.push('nomor_di')
+  if (!data.tanggal_di || isNaN(Date.parse(data.tanggal_di))) diMissing.push('tanggal_di (YYYY-MM-DD)')
+  if (!data.nomor_kontrak) diMissing.push('nomor_kontrak')
+  if (diMissing.length > 0) {
+    return badRequest(`Field wajib: ${diMissing.join(', ')}`)
+  }
+
+  // Customer-specific validation
+  const custDiMissing: string[] = []
+  if (customer.kode === 'BJS') {
+    if (!data.nama_pic || data.nama_pic === '-') custDiMissing.push('nama_pic')
+    if (!data.jabatan_pic || data.jabatan_pic === '-') custDiMissing.push('jabatan_pic')
+    if (typeof data.time_for_delivery_hari !== 'number' || data.time_for_delivery_hari <= 0) custDiMissing.push('time_for_delivery_hari (>0)')
+    if (typeof data.durasi_payment_hari !== 'number' || data.durasi_payment_hari <= 0) custDiMissing.push('durasi_payment_hari (>0)')
+    if (!data.nama_penandatangan || data.nama_penandatangan === '-') custDiMissing.push('nama_penandatangan')
+    if (!data.jabatan_penandatangan || data.jabatan_penandatangan === '-') custDiMissing.push('jabatan_penandatangan')
+  }
+  if (custDiMissing.length > 0) {
+    return badRequest(`Field wajib untuk ${customer.nama}: ${custDiMissing.join(', ')}`)
+  }
 
   // Step 2: Auto-match kontrak by nomor + customer_id (without date range — for late DI import)
   const { data: matchedKontrak } = await supabaseAdmin
