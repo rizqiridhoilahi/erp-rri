@@ -105,6 +105,7 @@ export async function POST(request: NextRequest) {
     .eq('customer_id', customerId)
     .ilike('nomor_kontrak', data.nomor_kontrak)
     .order('tanggal_selesai', { ascending: false })
+    .limit(1)
     .maybeSingle()
 
   if (!matchedKontrak) {
