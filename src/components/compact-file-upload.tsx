@@ -42,7 +42,7 @@ export function CompactFileUpload({
   return (
     <div className="flex items-center rounded-lg border bg-card px-4 w-full py-2">
       {label && <span className="text-sm font-medium shrink-0 mr-2">{label}</span>}
-      <div className="flex flex-wrap items-center gap-1.5 min-w-0 w-[300pt]">
+      <div className="flex flex-wrap items-center gap-1.5 min-w-0 w-[100pt]">
         {documents.length === 0 && !uploading && (
           <span className="text-xs text-muted-foreground">Belum ada file</span>
         )}

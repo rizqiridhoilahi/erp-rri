@@ -18,7 +18,7 @@ const schema = z.object({
 export async function GET(request: NextRequest) {
   const auth = await verifyAuth(request)
   if (auth.error) return auth.error
-  const { data, error } = await supabaseAdmin.from('customer').select('*').order('nama')
+  const { data, error } = await supabaseAdmin.from('customer').select('*').eq('is_active', true).order('nama')
   if (error) return internalError(error)
   return NextResponse.json({ data: data ?? [] })
 }
