@@ -1,3 +1,15 @@
+# Fix: Import Kontrak — Duplicate Kode Barang + Kontrak GET is_active
+
+## Perubahan 1: `src/app/api/v1/master/barang/import-from-kontrak/route.ts`
+
+### Masalah
+Validasi `barang.kode` hanya cek dalam 1 kontrak (`.eq('kontrak_id', kontrakId)`). Ketika kontrak ke-3 sudah diimport, kontrak ke-2 gagal karena `barang.kode` global uniq constraint violation.
+
+### Solusi
+Cek `barang.kode` secara global — jika sudah ada, link existing + update `harga_jual_default`. Jika belum ada, create baru.
+
+### Code (full file)
+```typescript
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { supabaseAdmin } from '@/lib/api/supabase-server'
@@ -135,3 +147,93 @@ export async function POST(request: NextRequest) {
     },
   })
 }
+```
+
+### Perubahan dari versi lama
+| Baris | Sebelum | Sesudah |
+|-------|---------|---------|
+| 40 | `barangId: string; kontrakItemId: string` | + `status: string` |
+| 45-49 | `.eq('kode', item.kode).eq('kontrak_id', kontrakId)` | `.eq('kode', item.kode)` (global) |
+| 52-95 | If existing → push error + continue | If existing → update `harga_jual_default` + insert `kontrak_item` + push `linked` |
+| 96 | `imported.push({...})` | `imported.push({..., status: 'created'})` |
+
+---
+
+## Perubahan 2: `src/app/api/v1/master/kontrak/route.ts`
+
+### Masalah
+GET handler tidak support `?is_active=true/false` query param, dan override `is_active` dengan computed value dari `tanggal_selesai`.
+
+### Solusi
+Support `is_active` query param untuk filtering. Jika tidak dikirim, behavior tetap (return semua).
+
+### Edit spesifik
+**Line 26-32 (before):**
+```typescript
+const { searchParams } = new URL(request.url)
+const customerId = searchParams.get('customer_id')
+
+let query = supabaseAdmin.from('kontrak')
+  .select('*, customer!customer_id(nama)')
+  .order('created_at', { ascending: false })
+
+if (customerId) query = query.eq('customer_id', customerId)
+```
+
+**Line 26-37 (after):**
+```typescript
+const { searchParams } = new URL(request.url)
+const customerId = searchParams.get('customer_id')
+const isActive = searchParams.get('is_active')
+
+let query = supabaseAdmin.from('kontrak')
+  .select('*, customer!customer_id(nama)')
+  .order('created_at', { ascending: false })
+
+if (customerId) query = query.eq('customer_id', customerId)
+if (isActive === 'true') query = query.eq('is_active', true)
+else if (isActive === 'false') query = query.eq('is_active', false)
+```
+
+**Line 36-40 (remove the computed `is_active` override):**
+Hapus block:
+```typescript
+const today = new Date().toISOString().split('T')[0]
+const mapped = (data ?? []).map(k => ({
+  ...k,
+  is_active: !k.tanggal_selesai || k.tanggal_selesai >= today,
+}))
+return NextResponse.json({ data: mapped })
+```
+
+Ganti dengan:
+```typescript
+return NextResponse.json({ data: data ?? [] })
+```
+
+---
+
+## Perubahan 3: `src/app/dashboard/master/barang/tambah/page.tsx`
+
+### Masalah
+Success toast tidak membedakan `linked` vs `created`.
+
+### Edit spesifik
+**Line 399-400 (before):**
+```typescript
+toast.success(`${result.imported} barang berhasil diimport dari kontrak!`,
+  { id: result.imported > (result.errors?.length ?? 0) ? toastId : undefined });
+```
+
+**Line 399-400 (after):**
+```typescript
+const linkedCount = result.items.filter(i => i.status === 'linked').length
+const createdCount = result.items.filter(i => i.status === 'created').length
+const detailParts: string[] = []
+if (createdCount > 0) detailParts.push(`${createdCount} baru`)
+if (linkedCount > 0) detailParts.push(`${linkedCount} ditautkan`)
+toast.success(`${result.imported} barang berhasil diimport (${detailParts.join(', ')})`,
+  { id: result.imported > (result.errors?.length ?? 0) ? toastId : undefined });
+```
+
+---

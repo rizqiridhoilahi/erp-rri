@@ -378,7 +378,7 @@ export default function TambahBarangPage() {
       const res = await apiFetch<{
         success: boolean;
         imported: number;
-        items: Array<{ kode: string; barangId: string; kontrakItemId: string }>;
+        items: Array<{ kode: string; barangId: string; kontrakItemId: string; status: string }>;
         errors?: Array<{ kode: string; error: string }>;
       }>('/api/v1/master/barang/import-from-kontrak', {
         method: 'POST',
@@ -397,7 +397,12 @@ export default function TambahBarangPage() {
       }
 
       if (result.imported > 0) {
-        toast.success(`${result.imported} barang berhasil diimport dari kontrak!`, { id: result.imported > (result.errors?.length ?? 0) ? toastId : undefined });
+        const linkedCount = result.items.filter(i => i.status === 'linked').length
+        const createdCount = result.items.filter(i => i.status === 'created').length
+        const detailParts: string[] = []
+        if (createdCount > 0) detailParts.push(`${createdCount} baru`)
+        if (linkedCount > 0) detailParts.push(`${linkedCount} ditautkan`)
+        toast.success(`${result.imported} barang berhasil diimport (${detailParts.join(', ')})`, { id: result.imported > (result.errors?.length ?? 0) ? toastId : undefined });
         setTimeout(() => router.push('/dashboard/master/barang'), 1500);
       } else {
         if (!result.errors || result.errors.length === 0) {

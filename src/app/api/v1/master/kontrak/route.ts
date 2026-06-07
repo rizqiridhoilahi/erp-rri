@@ -24,21 +24,19 @@ export async function GET(request: NextRequest) {
   if (auth.error) return auth.error
   const { searchParams } = new URL(request.url)
   const customerId = searchParams.get('customer_id')
+  const isActive = searchParams.get('is_active')
 
   let query = supabaseAdmin.from('kontrak')
     .select('*, customer!customer_id(nama)')
     .order('created_at', { ascending: false })
 
   if (customerId) query = query.eq('customer_id', customerId)
+  if (isActive === 'true') query = query.eq('is_active', true)
+  else if (isActive === 'false') query = query.eq('is_active', false)
 
   const { data, error } = await query
   if (error) return internalError(error)
-  const today = new Date().toISOString().split('T')[0]
-  const mapped = (data ?? []).map(k => ({
-    ...k,
-    is_active: !k.tanggal_selesai || k.tanggal_selesai >= today,
-  }))
-  return NextResponse.json({ data: mapped })
+  return NextResponse.json({ data: data ?? [] })
 }
 
 export async function POST(request: NextRequest) {
