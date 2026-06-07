@@ -29,13 +29,13 @@ export async function POST(request: NextRequest) {
 
   const { kontrakId, kategoriId, items } = parsed.data
 
-  const { error: kontrakError } = await supabaseAdmin
+  const { data: kontrak, error: kontrakError } = await supabaseAdmin
     .from('kontrak')
-    .select('id, nama')
+    .select('id, nama, tanggal_mulai')
     .eq('id', kontrakId)
     .single()
 
-  if (kontrakError) return notFound('Kontrak tidak ditemukan')
+  if (kontrakError || !kontrak) return notFound('Kontrak tidak ditemukan')
 
   const imported: Array<{ kode: string; barangId: string; kontrakItemId: string; status: string }> = []
   const errors: Array<{ kode: string; error: string }> = []
@@ -49,14 +49,39 @@ export async function POST(request: NextRequest) {
         .maybeSingle()
 
       if (existingBarang) {
-        const { error: updateError } = await supabaseAdmin
-          .from('barang')
-          .update({ harga_jual_default: item.harga })
-          .eq('id', existingBarang.id)
+        let shouldUpdatePrice = true
+        if (kontrak.tanggal_mulai) {
+          const { data: existingKontrakItems } = await supabaseAdmin
+            .from('kontrak_item')
+            .select('kontrak_id')
+            .eq('barang_id', existingBarang.id)
 
-        if (updateError) {
-          errors.push({ kode: item.kode, error: 'Gagal update harga default: ' + updateError.message })
-          continue
+          if (existingKontrakItems && existingKontrakItems.length > 0) {
+            const existingKontrakIds = existingKontrakItems.map(k => k.kontrak_id)
+            const { data: latestLinkedKontrak } = await supabaseAdmin
+              .from('kontrak')
+              .select('tanggal_mulai')
+              .in('id', existingKontrakIds)
+              .order('tanggal_mulai', { ascending: false })
+              .limit(1)
+              .single()
+
+            if (latestLinkedKontrak?.tanggal_mulai) {
+              shouldUpdatePrice = new Date(kontrak.tanggal_mulai) >= new Date(latestLinkedKontrak.tanggal_mulai)
+            }
+          }
+        }
+
+        if (shouldUpdatePrice) {
+          const { error: updateError } = await supabaseAdmin
+            .from('barang')
+            .update({ harga_jual_default: item.harga })
+            .eq('id', existingBarang.id)
+
+          if (updateError) {
+            errors.push({ kode: item.kode, error: 'Gagal update harga default: ' + updateError.message })
+            continue
+          }
         }
 
         const { data: kontrakItem, error: itemError } = await supabaseAdmin
