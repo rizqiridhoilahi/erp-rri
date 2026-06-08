@@ -94,6 +94,7 @@ import { grnCustomerItem } from "./grn-customer-item";
 import { grnCustomerDocument } from "./grn-customer-document";
 import { customerPrompt } from "./customer-prompt";
 import { customerPromptDi } from "./customer-prompt-di";
+import { emailLog } from "./email-log";
 
 export {
   users,
@@ -190,5 +191,6 @@ export {
   grnCustomerItem,
   grnCustomerDocument,
   customerPrompt,
-  customerPromptDi
+  customerPromptDi,
+  emailLog
 };

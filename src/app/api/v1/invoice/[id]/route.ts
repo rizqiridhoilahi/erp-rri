@@ -3,6 +3,9 @@ import { supabaseAdmin } from '@/lib/api/supabase-server'
 import { verifyAuth } from '@/lib/api/auth'
 import { badRequest, notFound, internalError } from '@/lib/api/errors'
 import { generateInvoiceJournal } from '@/lib/auto-jurnal'
+import { sendEmail } from '@/lib/utils/email'
+import { fetchCompanySettings } from '@/lib/email/templates'
+import { invoiceEmailHtml } from '@/lib/email/templates/invoice'
 
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const auth = await verifyAuth(_request); if (auth.error) return auth.error
@@ -82,6 +85,67 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
   if (data.status === 'sent' && oldInv?.status !== 'sent') {
     await generateInvoiceJournal(id)
+
+    try {
+      const { data: customer } = await supabaseAdmin
+        .from('customer')
+        .select('nama')
+        .eq('id', data.customer_id)
+        .single()
+
+      const { data: items } = await supabaseAdmin
+        .from('invoice_item')
+        .select('harga, jumlah, diskon, ppn, pph')
+        .eq('invoice_id', id)
+
+      const total = (items ?? []).reduce((sum, item) => {
+        const subtotal = Number(item.harga) * item.jumlah - Number(item.diskon ?? 0)
+        const ppn = Number(item.ppn ?? 0)
+        const pph = Number(item.pph ?? 0)
+        return sum + subtotal + ppn - pph
+      }, 0)
+
+      const { data: so } = await supabaseAdmin
+        .from('sales_order')
+        .select('customer_po_id, di_id')
+        .eq('id', data.sales_order_id)
+        .single()
+
+      if (so) {
+        let customerId: string | null = null
+        if (so.customer_po_id) {
+          const { data: po } = await supabaseAdmin.from('customer_po').select('customer_id').eq('id', so.customer_po_id).single()
+          customerId = po?.customer_id ?? null
+        } else if (so.di_id) {
+          const { data: di } = await supabaseAdmin.from('di').select('customer_id').eq('id', so.di_id).single()
+          customerId = di?.customer_id ?? null
+        }
+        if (customerId) {
+          const { data: pics } = await supabaseAdmin.from('customer_pic').select('nama, email').eq('customer_id', customerId).eq('is_active', true).limit(1)
+          const pic = pics?.[0]
+          if (pic?.email) {
+            const company = await fetchCompanySettings()
+            const html = invoiceEmailHtml({
+              nomor: data.nomor,
+              tanggal: new Date(data.tanggal).toLocaleDateString('id-ID'),
+              customerNama: customer?.nama ?? '',
+              top: data.top,
+              total: new Intl.NumberFormat('id-ID').format(total),
+            }, company, pic.nama)
+            await sendEmail({
+              to: pic.email,
+              toNama: pic.nama,
+              subject: `Invoice: ${data.nomor}`,
+              html,
+              referenceType: 'invoice',
+              referenceId: id,
+            })
+          }
+        }
+      }
+    } catch {
+      // Email sending is best-effort
+    }
   }
 
   if (body.items) {

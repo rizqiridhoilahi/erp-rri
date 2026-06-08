@@ -1,23 +1,5 @@
-import nodemailer from 'nodemailer'
 import { supabaseAdmin } from '@/lib/api/supabase-server'
-
-function getTransporter() {
-  const host = process.env.SMTP_HOST
-  const port = parseInt(process.env.SMTP_PORT ?? '587')
-  const user = process.env.SMTP_USER
-  const pass = process.env.SMTP_PASS
-
-  if (!host || !user || !pass) {
-    throw new Error('SMTP not configured. Set SMTP_HOST, SMTP_USER, SMTP_PASS env vars')
-  }
-
-  return nodemailer.createTransport({
-    host,
-    port,
-    secure: port === 465,
-    auth: { user, pass },
-  })
-}
+import { sendEmailViaBrevo as brevoSend } from '@/lib/email/brevo'
 
 export async function getCompanyEmail(): Promise<string> {
   const { data } = await supabaseAdmin
@@ -25,7 +7,7 @@ export async function getCompanyEmail(): Promise<string> {
     .select('value')
     .eq('key', 'company_email')
     .maybeSingle()
-  return data?.value ?? process.env.SMTP_USER ?? 'noreply@erp-rri.com'
+  return data?.value ?? process.env.BREVO_SENDER_EMAIL ?? 'noreply@erp-rri.com'
 }
 
 interface SendEmailParams {
@@ -33,57 +15,31 @@ interface SendEmailParams {
   subject: string
   html?: string
   text?: string
+  templateId?: number
+  params?: Record<string, unknown>
   attachments?: Array<{ filename: string; content: Buffer; contentType?: string }>
   referenceType?: string
   referenceId?: string
   toNama?: string
+  cc?: Array<{ email: string; name?: string }>
+  tags?: string[]
 }
 
 export async function sendEmail(params: SendEmailParams) {
-  const { to, subject, html, text, attachments, referenceType, referenceId, toNama } = params
-
-  const from = await getCompanyEmail()
-
-  let status: string
-  let errorMessage: string | null = null
-
-  try {
-    const transporter = getTransporter()
-    await transporter.sendMail({
-      from: `"ERP RRI" <${from}>`,
-      to,
-      subject,
-      html,
-      text,
-      attachments: attachments?.map(a => ({
-        filename: a.filename,
-        content: a.content,
-        contentType: a.contentType,
-      })),
-    })
-    status = 'sent'
-  } catch (err) {
-    status = 'failed'
-    errorMessage = err instanceof Error ? err.message : String(err)
-  }
-
-  const now = new Date().toISOString()
-  await supabaseAdmin.from('email_log').insert({
-    to_email: to,
-    to_nama: toNama ?? null,
-    subject,
-    body: html ?? text ?? null,
-    status,
-    error_message: errorMessage,
-    reference_type: referenceType ?? null,
-    reference_id: referenceId ?? null,
-    created_at: now,
-    updated_at: now,
+  return brevoSend({
+    to: { email: params.to, name: params.toNama },
+    subject: params.subject,
+    htmlContent: params.html,
+    textContent: params.text,
+    templateId: params.templateId,
+    params: params.params,
+    attachment: params.attachments?.map(a => ({
+      name: a.filename,
+      content: a.content.toString('base64'),
+    })),
+    cc: params.cc,
+    tags: params.tags,
+    referenceType: params.referenceType,
+    referenceId: params.referenceId,
   })
-
-  if (status === 'failed') {
-    throw new Error(errorMessage ?? 'Failed to send email')
-  }
-
-  return { success: true }
 }

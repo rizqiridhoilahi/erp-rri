@@ -5,6 +5,9 @@ import { badRequest, notFound, internalError } from '@/lib/api/errors'
 import { sendWhatsapp } from '@/lib/utils/whatsapp'
 import { formatChildNumber } from '@/lib/utils/document-number'
 import { generateInvoiceJournal } from '@/lib/auto-jurnal'
+import { sendEmail } from '@/lib/utils/email'
+import { fetchCompanySettings } from '@/lib/email/templates'
+import { doEmailHtml } from '@/lib/email/templates/do'
 
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const auth = await verifyAuth(_request); if (auth.error) return auth.error
@@ -141,7 +144,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       if (customerId) {
         const { data: pics } = await supabaseAdmin
           .from('customer_pic')
-          .select('no_hp, nama')
+          .select('no_hp, nama, email')
           .eq('customer_id', customerId)
           .eq('is_active', true)
           .limit(1)
@@ -150,6 +153,28 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
         if (pic?.no_hp) {
           const msg = `Halo *${pic.nama}*,\n\nDelivery Order *${data.nomor}* telah dikirim.\n\nSilakan cek status pengiriman di portal customer RRI.\n\nTerima kasih.`
           await sendWhatsapp(pic.no_hp, msg, auth.user?.id)
+        }
+        if (pic?.email) {
+          try {
+            const company = await fetchCompanySettings()
+            const { data: customer } = await supabaseAdmin.from('customer').select('nama').eq('id', customerId).single()
+            const html = doEmailHtml({
+              nomor: data.nomor,
+              tanggal: new Date(data.tanggal).toLocaleDateString('id-ID'),
+              customerNama: customer?.nama ?? '',
+              keterangan: data.keterangan ?? undefined,
+            }, company, pic.nama)
+            await sendEmail({
+              to: pic.email,
+              toNama: pic.nama,
+              subject: `Pengiriman: ${data.nomor}`,
+              html,
+              referenceType: 'delivery_order',
+              referenceId: id,
+            })
+          } catch {
+            // Email sending is best-effort
+          }
         }
       }
 

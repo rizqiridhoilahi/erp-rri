@@ -1,0 +1,12 @@
+ALTER TABLE email_log ADD COLUMN IF NOT EXISTS message_id text;
+ALTER TABLE email_log ADD COLUMN IF NOT EXISTS from_email text;
+ALTER TABLE email_log ADD COLUMN IF NOT EXISTS from_nama text;
+ALTER TABLE email_log ADD COLUMN IF NOT EXISTS cc text;
+ALTER TABLE email_log ADD COLUMN IF NOT EXISTS has_attachments boolean DEFAULT false;
+ALTER TABLE email_log ADD COLUMN IF NOT EXISTS inbound boolean DEFAULT false;
+ALTER TABLE email_log ADD COLUMN IF NOT EXISTS parent_id text;
+ALTER TABLE email_log ADD COLUMN IF NOT EXISTS tags text;
+ALTER TABLE email_log ADD COLUMN IF NOT EXISTS bounce_type text;
+ALTER TABLE email_log ADD COLUMN IF NOT EXISTS delivered_at timestamp;
+ALTER TABLE email_log ADD COLUMN IF NOT EXISTS opened_at timestamp;
+ALTER TABLE email_log ADD COLUMN IF NOT EXISTS clicked_at timestamp;
