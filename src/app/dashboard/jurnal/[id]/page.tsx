@@ -6,6 +6,8 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
 import { ArrowLeft, BookOpenCheck, Pencil } from 'lucide-react'
 
+export const dynamic = 'force-dynamic'
+
 const statusMap: Record<string, { label: string; variant: 'secondary' | 'success' | 'outline' }> = {
   draft: { label: 'Draft', variant: 'secondary' },
   posted: { label: 'Posted', variant: 'success' },

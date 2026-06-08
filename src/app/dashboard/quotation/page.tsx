@@ -6,6 +6,8 @@ import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@
 import { Plus, Pencil, Download, Eye } from 'lucide-react'
 import { ExportButton } from "@/components/export-button"
 
+export const dynamic = 'force-dynamic'
+
 const statusLabel: Record<string, { label: string; variant: 'secondary' | 'warning' | 'success' | 'destructive' | 'outline' }> = {
   draft: { label: 'Draft', variant: 'secondary' },
   sent: { label: 'Terkirim', variant: 'warning' },
