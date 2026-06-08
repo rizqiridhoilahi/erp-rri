@@ -150,7 +150,7 @@ export default function EditQuotationPage() {
         setIsRfqLoaded(!!qtn.rfq_id)
         setRfqItemLabels(
           qtn.items.map(i =>
-            i.barang ? `[${i.barang.kode}] ${i.barang.nama}` : ''
+            i.barang ? `[${i.barang.kode}] ${i.barang.nama}` : (i.nama_barang || '')
           )
         )
         reset({

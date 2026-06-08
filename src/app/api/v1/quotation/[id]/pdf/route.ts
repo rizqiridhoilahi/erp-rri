@@ -4,6 +4,7 @@ import { supabaseAdmin } from '@/lib/api/supabase-server'
 import { verifyAuth } from '@/lib/api/auth'
 import { notFound, internalError } from '@/lib/api/errors'
 import { QuotationPDF } from '@/lib/pdf/quotation'
+import sharp from 'sharp'
 
 const COMPANY_KEYS = [
   'company_nama', 'company_bidang_usaha', 'company_alamat',
@@ -11,6 +12,23 @@ const COMPANY_KEYS = [
   'penandatangan_nama', 'penandatangan_jabatan', 'penandatangan_no_hp',
   'tanda_tangan_url', 'stempel_url', 'tanda_tangan_stempel_url',
 ] as const
+
+async function resolveImageUrl(url: string | null): Promise<string | null> {
+  if (!url) return null
+  try {
+    const response = await fetch(url)
+    if (!response.ok) return null
+    const contentType = response.headers.get('content-type') || ''
+    const buffer = Buffer.from(await response.arrayBuffer())
+    if (contentType === 'image/webp' || buffer.toString('hex', 0, 4) === '52494646') {
+      const jpeg = await sharp(buffer).jpeg({ quality: 85 }).toBuffer()
+      return `data:image/jpeg;base64,${jpeg.toString('base64')}`
+    }
+    return url
+  } catch {
+    return null
+  }
+}
 
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const auth = await verifyAuth(_request)
@@ -120,21 +138,22 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
     ppn_enabled: qtn.ppn_enabled,
     total_harga: qtn.total_harga,
     keterangan: qtn.keterangan ?? null,
-    items: items.map((i, idx) => {
+    items: await Promise.all(items.map(async (i, idx) => {
       const barang = i.barang_id ? barangMap.get(i.barang_id) : null
       const rfqName = idx < rfqItemNames.length ? rfqItemNames[idx] : null
+      const imageUrl = i.image_url ?? barang?.image_url ?? null
       return {
       nama: barang?.nama ?? i.nama_barang ?? rfqName ?? '-',
       kode: barang?.kode ?? '-',
       specification: i.specification ?? barang?.spesifikasi ?? null,
       justification: i.justification ?? null,
-      image_url: i.image_url ?? barang?.image_url ?? null,
+      image_url: await resolveImageUrl(imageUrl),
       satuan: i.satuan ?? barang?.satuan ?? null,
       jumlah: i.jumlah,
       hargaSatuan: i.harga_satuan,
       diskon: i.diskon ?? 0,
       }
-    }),
+    })),
     company,
   }
 
