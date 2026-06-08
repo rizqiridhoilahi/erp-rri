@@ -21,6 +21,10 @@ const s: Record<string, { label: string; v: "secondary" | "warning" | "success" 
 interface Di {
   id: string
   nomor: string
+  nomor_di_customer: string | null
+  nomor_kontrak_customer: string | null
+  nama_penandatangan: string | null
+  jabatan_penandatangan: string | null
   customer_id: string
   kontrak_id: string | null
   pic_customer_id: string | null
@@ -168,7 +172,7 @@ export default function DiDetailPage() {
         <CardContent className="pt-6">
           <div className="grid grid-cols-2 gap-6">
             <div>
-              <p className="text-sm text-muted-foreground">No. Dokumen Internal</p>
+              <p className="text-sm text-muted-foreground">No. DI Internal</p>
               <p className="font-medium font-mono">{di.nomor}</p>
             </div>
             <div>
@@ -191,6 +195,15 @@ export default function DiDetailPage() {
             <div>
               <p className="text-sm text-muted-foreground">Kontrak</p>
               <p className="font-medium">{di.kontrak?.nama ? `${di.kontrak.nama}${di.kontrak.nomor_kontrak ? ` (${di.kontrak.nomor_kontrak})` : ''}` : "-"}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">No. DI Customer</p>
+              <p className="font-medium font-mono">{di.nomor_di_customer ?? "-"}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Penandatangan</p>
+              <p className="font-medium">{di.nama_penandatangan ?? "-"}</p>
+              {di.jabatan_penandatangan && <p className="text-xs text-muted-foreground">{di.jabatan_penandatangan}</p>}
             </div>
             <div className="col-span-2">
               <p className="text-sm text-muted-foreground">Keterangan</p>

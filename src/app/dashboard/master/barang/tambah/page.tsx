@@ -402,7 +402,7 @@ export default function TambahBarangPage() {
         const detailParts: string[] = []
         if (createdCount > 0) detailParts.push(`${createdCount} baru`)
         if (linkedCount > 0) detailParts.push(`${linkedCount} ditautkan`)
-        toast.success(`${result.imported} barang berhasil diimport (${detailParts.join(', ')})`, { id: result.imported > (result.errors?.length ?? 0) ? toastId : undefined });
+        toast.success(`${result.imported} barang berhasil diimport (${detailParts.join(', ')})`, { id: toastId });
         setTimeout(() => router.push('/dashboard/master/barang'), 1500);
       } else {
         if (!result.errors || result.errors.length === 0) {
@@ -554,7 +554,7 @@ export default function TambahBarangPage() {
       if (result.imported_count > 0 || result.skipped_count > 0) {
         const msg = `${result.imported_count} barang baru, ${result.skipped_count} sudah ada (skip)`;
         toast.success(`Import berhasil! PO: ${result.nomor_po}. ${msg}`, {
-          id: result.imported_count > 0 ? toastId : undefined,
+          id: toastId,
         });
         setTimeout(() => router.push('/dashboard/master/barang'), 1500);
       } else if (result.errors && result.errors.length > 0) {
@@ -674,7 +674,7 @@ export default function TambahBarangPage() {
       if (result.imported_count > 0 || result.from_kontrak_count > 0 || result.from_master_count > 0) {
         const msg = `${result.imported_count} barang baru, ${result.from_kontrak_count} dari kontrak, ${result.from_master_count} dari master`;
         toast.success(`Import berhasil! DI: ${result.nomor_di}. ${msg}`, {
-          id: result.imported_count > 0 ? toastId : undefined,
+          id: toastId,
         });
         setTimeout(() => router.push('/dashboard/master/barang'), 1500);
       } else if (result.errors && result.errors.length > 0) {

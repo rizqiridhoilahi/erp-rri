@@ -24,16 +24,20 @@ export default async function DiPage() {
       !data?.length ? <div className="text-center py-12 border rounded-lg bg-card"><p className="text-muted-foreground">Belum ada DI.</p>
         <Button asChild className="mt-4"><Link href="/dashboard/di/tambah">Buat DI Pertama</Link></Button></div> :
       <div className="rounded-lg border bg-card"><Table><TableHeader><TableRow>
-        <TableHead>Nomor</TableHead>
+        <TableHead>No. DI Internal</TableHead>
+        <TableHead>No. DI Customer</TableHead>
+        <TableHead>No. Kontrak Customer</TableHead>
         <TableHead>Customer</TableHead>
         <TableHead>PIC</TableHead>
         <TableHead>Tanggal</TableHead>
         <TableHead>Status</TableHead>
         <TableHead className="text-right">Aksi</TableHead>
       </TableRow></TableHeader><TableBody>
-        {data.map((item: { id: string; nomor: string; customer: { nama: string } | null; customer_pic: { nama: string } | null; tanggal: string; status: string }) => (
+        {data.map((item: { id: string; nomor: string; nomor_di_customer: string | null; nomor_kontrak_customer: string | null; customer: { nama: string } | null; customer_pic: { nama: string } | null; tanggal: string; status: string }) => (
           <TableRow key={item.id}>
             <TableCell className="font-medium">{item.nomor}</TableCell>
+            <TableCell>{item.nomor_di_customer ?? '-'}</TableCell>
+            <TableCell>{item.nomor_kontrak_customer ?? '-'}</TableCell>
             <TableCell>{item.customer?.nama}</TableCell>
             <TableCell className="font-medium">{item.customer_pic?.nama ?? '-'}</TableCell>
             <TableCell className="font-medium">{new Date(item.tanggal).toLocaleDateString('id-ID')}</TableCell>
