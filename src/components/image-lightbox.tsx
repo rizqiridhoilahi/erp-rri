@@ -2,6 +2,7 @@
 
 import { useState, type ReactNode } from 'react'
 import * as DialogPrimitive from '@radix-ui/react-dialog'
+import { DialogTitle } from '@/components/ui/dialog'
 import { X } from 'lucide-react'
 
 interface ImageLightboxProps {
@@ -21,6 +22,7 @@ export function ImageLightbox({ src, alt, children }: ImageLightboxProps) {
       <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/95 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
         <DialogPrimitive.Content className="fixed left-[50%] top-[50%] z-50 translate-x-[-50%] translate-y-[-50%] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95">
+          <DialogTitle className="sr-only">{alt}</DialogTitle>
           <DialogPrimitive.Close className="absolute -top-10 right-0 z-10 rounded-full bg-black/50 p-2 text-white transition-opacity hover:bg-black/70 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
             <X className="h-5 w-5" />
             <span className="sr-only">Close</span>
