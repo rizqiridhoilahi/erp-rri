@@ -71,38 +71,48 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     changes: { status: { old: current.status, new: parsed.data.status } },
   })
 
+  let emailMessage: string | null = null
+
   if (parsed.data.status === 'sent') {
     try {
-      const { data: pics } = await supabaseAdmin
-        .from('customer_pic')
-        .select('nama, email')
-        .eq('customer_id', data.customer_id)
-        .eq('is_active', true)
-        .limit(1)
+      if (!data.pic_customer_id) {
+        emailMessage = 'PIC customer tidak ditemukan'
+      } else {
+        const { data: pic } = await supabaseAdmin
+          .from('customer_pic')
+          .select('nama, email')
+          .eq('id', data.pic_customer_id)
+          .maybeSingle()
 
-      const pic = pics?.[0]
-      if (pic?.email) {
-        const company = await fetchCompanySettings()
-        const html = quotationEmailHtml({
-          nomor: data.nomor,
-          perihal: data.perihal,
-          tanggal: new Date(data.tanggal).toLocaleDateString('id-ID'),
-          customerNama: data.customer?.nama ?? '',
-        }, company, pic.nama)
+        if (!pic?.email) {
+          emailMessage = 'PIC customer belum memiliki alamat email'
+        } else {
+          const company = await fetchCompanySettings()
+          const html = quotationEmailHtml({
+            nomor: data.nomor,
+            perihal: data.perihal,
+            tanggal: new Date(data.tanggal).toLocaleDateString('id-ID'),
+            customerNama: data.customer?.nama ?? '',
+          }, company, pic.nama)
 
-        await sendEmail({
-          to: pic.email,
-          toNama: pic.nama,
-          subject: `Quotation: ${data.nomor} - ${data.perihal}`,
-          html,
-          referenceType: 'quotation',
-          referenceId: id,
-        })
+          await sendEmail({
+            to: pic.email,
+            toNama: pic.nama,
+            subject: `Quotation: ${data.nomor} - ${data.perihal}`,
+            html,
+            referenceType: 'quotation',
+            referenceId: id,
+          })
+          emailMessage = `Email terkirim ke ${pic.nama} (${pic.email})`
+        }
       }
-    } catch {
-      // Email sending is best-effort — don't block status transition
+    } catch (err) {
+      emailMessage = `Email gagal: ${err instanceof Error ? err.message : 'Unknown error'}`
     }
   }
 
-  return NextResponse.json({ data })
+  return NextResponse.json({
+    data,
+    ...(emailMessage ? { message: emailMessage } : {}),
+  })
 }

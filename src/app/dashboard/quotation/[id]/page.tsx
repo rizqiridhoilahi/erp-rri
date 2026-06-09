@@ -128,13 +128,20 @@ export default function QuotationDetailPage() {
     if (!id) return
     setStatusLoading(true)
     try {
-      await apiFetch(`/api/v1/quotation/${id}/status`, {
+      const res = await apiFetch<Quotation>(`/api/v1/quotation/${id}/status`, {
         method: 'PATCH',
         body: JSON.stringify({ status: newStatus }),
       })
       toast.success('Status berhasil diubah!')
-      const res = await apiFetch<Quotation>(`/api/v1/quotation/${id}`)
-      setData(res.data)
+      if (res.message) {
+        if (res.message.startsWith('Email terkirim')) {
+          toast.success(res.message)
+        } else {
+          toast.warning(res.message)
+        }
+      }
+      const dataRes = await apiFetch<Quotation>(`/api/v1/quotation/${id}`)
+      setData(dataRes.data)
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Gagal mengubah status')
     } finally {
