@@ -44,7 +44,8 @@ export interface SendBrevoEmailParams {
 }
 
 export async function sendEmailViaBrevo(params: SendBrevoEmailParams) {
-  const fromEmail = process.env.BREVO_SENDER_EMAIL ?? (await getCompanyEmail())
+  const rawSender = process.env.BREVO_SENDER_EMAIL?.trim()
+  const fromEmail = rawSender || (await getCompanyEmail())
   const fromName = (await getCompanySenderName()) ?? process.env.BREVO_SENDER_NAME ?? 'ERP RRI'
 
   let status: string

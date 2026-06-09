@@ -41,7 +41,7 @@ export function quotationEmailHtml(data: QuotationData, company: CompanyData, pi
       ${tableRow('Customer', data.customerNama)}
     </table>
     <p style="margin:0 0 8px;color:#475569;font-size:15px;line-height:1.6">Silakan akses dokumen detail Quotation lengkap melalui tautan berikut:</p>
-    <p style="margin:0 0 16px"><a href="${data.pdfUrl}" style="color:#2563eb;font-size:15px;word-break:break-all">${data.pdfUrl}</a></p>
+    <p style="margin:0 0 16px"><a href="${data.pdfUrl}" style="color:#2563eb;font-size:15px;word-break:break-all">${data.nomor}.pdf</a></p>
     <p style="margin:0 0 16px;color:#64748b;font-size:13px;line-height:1.5">Tautan di atas dapat diakses dalam waktu 14 hari sejak email ini dikirimkan. Jika tautan telah kedaluwarsa, silakan hubungi kami untuk mendapatkan akses kembali.</p>
     <p style="margin:0 0 4px;color:#475569;font-size:15px;line-height:1.6">Terima kasih atas perhatian dan kerjasamanya.</p>
     <p style="margin:0;color:#475569;font-size:15px;line-height:1.6">Hormat kami,<br><strong>${penandatangan}</strong><br>${company.company_nama ?? 'PT. Rizqi Ridho Ilahi'}<br>${noHp}</p>

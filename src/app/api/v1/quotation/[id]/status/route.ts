@@ -109,7 +109,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
             nomor: data.nomor,
             referensi: data.referensi,
             perihal: data.perihal,
-            tanggal: new Date(data.tanggal).toLocaleDateString('id-ID'),
+            tanggal: new Date(data.tanggal).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }),
             customerNama: data.customer?.nama ?? '',
             pdfUrl,
           }, company, pic.nama)
