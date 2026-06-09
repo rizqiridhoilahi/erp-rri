@@ -37,6 +37,7 @@
 | Cloudflare DNS | ✅ Active | A `erp` → `76.76.21.21` + MX/TXT for Email Routing |
 | Cloudflare Email Routing | ✅ Active | Forward `marzuqi@pt-rri.com` → Gmail |
 | Subdomain `erp.pt-rri.com` | ✅ Added to Vercel | `npx vercel domains add erp.pt-rri.com` — awaiting DNS verify |
+| Email aktif | ✅ `marzuqi@pt-rri.com` | **`erp@pt-rri.com` tidak dipakai** — semua komunikasi via `marzuqi@pt-rri.com` |
 
 ---
 
@@ -56,7 +57,7 @@
 
 ### DNS Records (Cloudflare Dashboard → pt-rri.com → DNS)
 
-Semua records **Grey Cloud** (DNS only — proxy off):
+Semua records **Grey Cloud** (DNS only — proxy off). Konfigurasi lengkap:
 
 | Type | Name | Priority | Value | Fungsi |
 |------|------|----------|-------|--------|
@@ -64,8 +65,13 @@ Semua records **Grey Cloud** (DNS only — proxy off):
 | MX | `pt-rri.com` | 26 | `route1.mx.cloudflare.net.` | Email Routing inbound |
 | MX | `pt-rri.com` | 77 | `route3.mx.cloudflare.net.` | Email Routing inbound |
 | MX | `pt-rri.com` | 97 | `route2.mx.cloudflare.net.` | Email Routing inbound |
-| TXT | `cf2024-1._domainkey.pt-rri.com` | — | `"v=DKIM1; h=sha256; k=rsa; p=..."` | DKIM signing |
-| TXT | `pt-rri.com` | — | `"v=spf1 include:_spf.mx.cloudflare.net ~all"` | SPF authorization |
+| TXT | `pt-rri.com` | — | `v=spf1 include:_spf.mx.cloudflare.net include:_spf.brevo.com ~all` | SPF authorization (Cloudflare + Brevo) |
+| TXT | `pt-rri.com` | — | `brevo-code:70c2345bc4fcc1e006d9f6efea91a2a0` | Brevo domain verification |
+| CNAME | `brevo1._domainkey` | — | `b1.pt-rri-com.dkim.brevo.com` | DKIM Brevo key 1 |
+| CNAME | `brevo2._domainkey` | — | `b2.pt-rri-com.dkim.brevo.com` | DKIM Brevo key 2 (rotasi) |
+| TXT | `_dmarc` | — | `v=DMARC1; p=none; rua=mailto:rua@dmarc.brevo.com` | DMARC monitoring |
+
+**Brevo Sender terverifikasi:** `Muhammad Marzuqi<marzuqi@pt-rri.com>` — Verified
 
 ### Cloudflare Email Routing (Inbound)
 
@@ -81,7 +87,7 @@ Email Routing (gratis):
 # Brevo
 BREVO_API_KEY=xkeysib-xxxxxxxxxxxx
 BREVO_SENDER_NAME="ERP RRI"
-BREVO_SENDER_EMAIL=erp@pt-rri.com
+BREVO_SENDER_EMAIL=marzuqi@pt-rri.com  # <-- DIUBAH: erp@pt-rri.com tidak dipakai
 
 # Cloudflare
 CLOUDFLARE_API_TOKEN=xxxxxxxxxxxx
@@ -148,6 +154,18 @@ Halaman email client di dalam ERP layaknya Gmail/Outlook web.
 | MC-7 | **Email detail page** — `/dashboard/email/[id]` — From/To/CC/Date, HTML body render, tracking timeline (Sent→Delivered→Opened→Clicked), Reply/Reply All/Forward/Delete actions | ✅ Done | `src/app/dashboard/email/[id]/page.tsx` | Lexend heading; Status timeline; Badge status; Card shadow §3.7 |
 | MC-8 | **Draft page** — `/dashboard/email/draft` — list from `email_log` WHERE `status='draft'` | ✅ Done | `src/app/dashboard/email/draft/page.tsx` | Skeleton loading; Empty state §14.2 |
 | MC-9 | **Templates page** — `/dashboard/email/templates` — Card grid, Create Sheet with Tabs (Edit/Preview), Edit, Delete | ✅ Done | `src/app/dashboard/email/templates/page.tsx` | Card §3.7; Sheet §3.11; Tabs §3.12 |
+
+### 🔄 Phase 6 — Email Deliverability & DNS Authentication (High Priority) — IN PROGRESS
+
+Setup SPF, DKIM, dan DMARC agar email dari domain `pt-rri.com` tidak masuk Spam.
+
+| # | Task | Status | File / Lokasi |
+|---|------|--------|---------------|
+| ED-1 | **Update SPF record** — tambah `include:_spf.brevo.com` ke TXT `pt-rri.com` | ✅ Done | Cloudflare DNS |
+| ED-2 | **DKIM Brevo** — CNAME `brevo1._domainkey` + `brevo2._domainkey` via Brevo managed DKIM | ✅ Done | Cloudflare DNS + Brevo Dashboard |
+| ED-3 | **DMARC record** — `_dmarc` → `"v=DMARC1; p=none; rua=mailto:rua@dmarc.brevo.com"` | ✅ Done | Cloudflare DNS |
+| ED-4 | **Verify sender di Brevo** — `Muhammad Marzuqi<marzuqi@pt-rri.com>` verified | ✅ Done | Brevo Dashboard → Settings → Senders |
+| ED-5 | **Test kirim ulang** — dari Gmail `bee7rafiud@gmail.com` → `marzuqi@pt-rri.com` → cek Inbox | ⬜ Pending | Manual test |
 
 ### ✅ Phase 3 — Enhancement & Marketing (Low Priority) — SELESAI
 
@@ -433,7 +451,11 @@ Brevo sekarang menjadi satu-satunya provider email. Nodemailer + seluruh kode SM
 - [x] Cloudflare DNS — A `erp` → `76.76.21.21` (grey cloud) + MX/TXT untuk Email Routing
 - [ ] Vercel — SSL aktif untuk `erp.pt-rri.com` (auto-provision setelah DNS propagate)
 - [x] Cloudflare Email Routing — `marzuqi@pt-rri.com` → forward ke Gmail (verified)
-- [ ] SPF/DKIM records untuk Brevo terverifikasi
+- [x] Email aktif: `marzuqi@pt-rri.com` (erp@pt-rri.com tidak dipakai)
+- [x] SPF record — `include:_spf.brevo.com` sudah ditambahkan
+- [x] DKIM Brevo — CNAME `brevo1._domainkey` + `brevo2._domainkey` via Brevo managed DKIM
+- [x] DMARC record — `_dmarc` → `v=DMARC1; p=none; rua=mailto:rua@dmarc.brevo.com`
+- [x] Brevo sender — `Muhammad Marzuqi<marzuqi@pt-rri.com>` verified
 
 ### Brevo API
 - [ ] `POST /v3/smtp/email` — kirim email HTML sederhana
