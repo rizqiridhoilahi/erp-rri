@@ -76,9 +76,10 @@ Semua records **Grey Cloud** (DNS only — proxy off). Konfigurasi lengkap:
 ### Cloudflare Email Routing (Inbound)
 
 ```
-Email Routing (gratis):
-  marzuqi@pt-rri.com → forward ke Gmail pribadi (verified)
-  (tidak perlu mail server, tidak perlu storage)
+Email Routing (gratis) + Email Worker:
+  marzuqi@pt-rri.com → Email Worker → ERP API (email_log inbound) + Brevo relay → Gmail
+  Worker script: cloudflare-workers/email-worker.js
+  Deployment: Cloudflare Dashboard → Workers & Pages → Create Worker → Paste script
 ```
 
 ### Environment Variables
@@ -154,6 +155,20 @@ Halaman email client di dalam ERP layaknya Gmail/Outlook web.
 | MC-7 | **Email detail page** — `/dashboard/email/[id]` — From/To/CC/Date, HTML body render, tracking timeline (Sent→Delivered→Opened→Clicked), Reply/Reply All/Forward/Delete actions | ✅ Done | `src/app/dashboard/email/[id]/page.tsx` | Lexend heading; Status timeline; Badge status; Card shadow §3.7 |
 | MC-8 | **Draft page** — `/dashboard/email/draft` — list from `email_log` WHERE `status='draft'` | ✅ Done | `src/app/dashboard/email/draft/page.tsx` | Skeleton loading; Empty state §14.2 |
 | MC-9 | **Templates page** — `/dashboard/email/templates` — Card grid, Create Sheet with Tabs (Edit/Preview), Edit, Delete | ✅ Done | `src/app/dashboard/email/templates/page.tsx` | Card §3.7; Sheet §3.11; Tabs §3.12 |
+
+### ⬜ Phase 7 — Inbound Email Pipeline & Mail Center Inbox (High Priority) — PENDING
+
+Setup Cloudflare Email Worker untuk menerima inbound email, menyimpannya di `email_log` (Mail Center Inbox), dan relay ke Gmail via Brevo (fix Spam issue).
+
+| # | Task | Status | File / Lokasi |
+|---|------|--------|---------------|
+| IN-1 | **API route `POST /api/v1/email/inbound`** — endpoint untuk menerima inbound email dari Cloudflare Worker, insert ke `email_log` dengan `inbound=true` | ✅ Done | `src/app/api/v1/email/inbound/route.ts` |
+| IN-2 | **`EMAIL_INBOUND_SECRET`** — shared secret antara Worker dan ERP API | ✅ Done | `.env.example` + Vercel env |
+| IN-3 | **Test manual insert** — insert record `inbound=true` langsung ke DB → verifikasi Mail Center Inbox muncul | ✅ Done | Supabase SQL: `INSERT INTO email_log (inbound=true, ...)` |
+| IN-4 | **Cloudflare Email Worker script** — parse MIME, POST ke ERP API, relay via Brevo, fallback forward | ✅ Done | `cloudflare-workers/email-worker.js` |
+| IN-5 | **Deploy Worker** — paste script ke Cloudflare Dashboard, set env vars | ⬜ Pending | Cloudflare Dashboard |
+| IN-6 | **Hubungkan Email Routing → Worker** — ubah routing rule dari forward ke worker | ⬜ Pending | Cloudflare Dashboard → Email Routing |
+| IN-7 | **Test end-to-end** — kirim email dari Gmail → `marzuqi@pt-rri.com` → cek Inbox (Mail Center + Gmail) | ⬜ Pending | Manual test |
 
 ### 🔄 Phase 6 — Email Deliverability & DNS Authentication (High Priority) — IN PROGRESS
 
@@ -315,6 +330,10 @@ Setup SPF, DKIM, dan DMARC agar email dari domain `pt-rri.com` tidak masuk Spam.
 ## 🏗️ Architecture & File Structure
 
 ```
+cloudflare-workers/
+├── email-worker.js           # Cloudflare Email Worker (Phase 7)
+└── README.md                 # Deployment instructions (Phase 7)
+
 src/lib/email/
 ├── brevo.ts                  # Brevo client wrapper (Phase 1)
 ├── contacts.ts               # Contact sync to Brevo (Phase 3)
@@ -329,6 +348,8 @@ src/lib/email/
 └── webhook.ts                 # Webhook payload types & handler (Phase 2)
 
 src/app/api/v1/email/
+├── inbound/
+│   └── route.ts               # POST /api/v1/email/inbound (Phase 7)
 ├── send/
 │   └── route.ts               # POST /api/v1/email/send (Phase 5)
 ├── webhook/
@@ -450,12 +471,21 @@ Brevo sekarang menjadi satu-satunya provider email. Nodemailer + seluruh kode SM
 - [x] Cloudflare Registrar — domain `pt-rri.com` berhasil dibeli
 - [x] Cloudflare DNS — A `erp` → `76.76.21.21` (grey cloud) + MX/TXT untuk Email Routing
 - [ ] Vercel — SSL aktif untuk `erp.pt-rri.com` (auto-provision setelah DNS propagate)
-- [x] Cloudflare Email Routing — `marzuqi@pt-rri.com` → forward ke Gmail (verified)
+- [x] Cloudflare Email Routing — `marzuqi@pt-rri.com` → routing rule ke Email Worker
 - [x] Email aktif: `marzuqi@pt-rri.com` (erp@pt-rri.com tidak dipakai)
 - [x] SPF record — `include:_spf.brevo.com` sudah ditambahkan
 - [x] DKIM Brevo — CNAME `brevo1._domainkey` + `brevo2._domainkey` via Brevo managed DKIM
 - [x] DMARC record — `_dmarc` → `v=DMARC1; p=none; rua=mailto:rua@dmarc.brevo.com`
 - [x] Brevo sender — `Muhammad Marzuqi<marzuqi@pt-rri.com>` verified
+- [x] Cloudflare Email Worker script — `cloudflare-workers/email-worker.js` siap deploy
+
+### Inbound Email Pipeline (Phase 7)
+- [x] API route `POST /api/v1/email/inbound` — menerima inbound email dari Worker
+- [x] `EMAIL_INBOUND_SECRET` — shared secret di env vars
+- [x] Test manual insert — record `inbound=true` terverifikasi muncul di Mail Center Inbox
+- [ ] Worker deployed — script terpasang di Cloudflare Dashboard
+- [ ] Email Routing → Worker — routing rule diubah dari forward ke worker
+- [ ] Test end-to-end — kirim ke `marzuqi@pt-rri.com` → muncul di Inbox ERP + Gmail Inbox
 
 ### Brevo API
 - [ ] `POST /v3/smtp/email` — kirim email HTML sederhana
