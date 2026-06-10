@@ -96,6 +96,7 @@ import { customerPrompt } from "./customer-prompt";
 import { customerPromptDi } from "./customer-prompt-di";
 import { emailLog } from "./email-log";
 import { emailTemplates } from "./email-templates";
+import { emailAttachments } from "./email-attachments";
 
 export {
   users,
@@ -194,5 +195,6 @@ export {
   customerPrompt,
   customerPromptDi,
   emailLog,
-  emailTemplates
+  emailTemplates,
+  emailAttachments,
 };

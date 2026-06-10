@@ -14,7 +14,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Command, CommandInput, CommandList, CommandItem, CommandEmpty, CommandGroup } from "@/components/ui/command"
 import { toast } from "sonner"
 import { apiFetch } from "@/lib/api/client"
-import { X, Send, Reply, Forward, Paperclip, BookUser } from "lucide-react"
+import { X, Send, Reply, Forward, Paperclip, BookUser, Loader2 } from "lucide-react"
 
 const composeSchema = z.object({
   toEmail: z.string().email("Email tidak valid"),
@@ -35,9 +35,13 @@ interface EmailComposeSheetProps {
 }
 
 interface AttachmentFile {
+  id: string
+  key: string
   name: string
   size: number
-  file: File
+  mimeType: string
+  uploading?: boolean
+  error?: string
 }
 
 export function EmailComposeSheet({ open, onOpenChange, initialData, onSent }: EmailComposeSheetProps) {
@@ -120,12 +124,33 @@ export function EmailComposeSheet({ open, onOpenChange, initialData, onSent }: E
   )
 
   const handleSend = async (values: ComposeValues) => {
+    // Check for uploading attachments
+    const uploading = attachments.filter((a) => a.uploading)
+    if (uploading.length > 0) {
+      toast.error("Masih ada file yang sedang diupload. Tunggu sebentar.")
+      return
+    }
+
     setSending(true)
     const toastId = toast.loading("Mengirim email...")
+
+    const pendingAttachments = attachments
+      .filter((a) => !a.error)
+      .map((a) => ({
+        id: a.id,
+        key: a.key,
+        fileName: a.name,
+        fileSize: a.size,
+        mimeType: a.mimeType,
+      }))
+
     try {
       await apiFetch("/api/v1/email/send", {
         method: "POST",
-        body: JSON.stringify(values),
+        body: JSON.stringify({
+          ...values,
+          attachments: pendingAttachments.length > 0 ? pendingAttachments : undefined,
+        }),
       })
       toast.success("Email berhasil dikirim!", { id: toastId })
       form.reset()
@@ -141,14 +166,62 @@ export function EmailComposeSheet({ open, onOpenChange, initialData, onSent }: E
     }
   }
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || [])
-    const newFiles: AttachmentFile[] = files.map((f) => ({
+    if (files.length === 0) return
+
+    const tempAttachments: AttachmentFile[] = files.map((f) => ({
+      id: crypto.randomUUID(),
+      key: "",
       name: f.name,
       size: f.size,
-      file: f,
+      mimeType: f.type || "application/octet-stream",
+      uploading: true,
     }))
-    setAttachments((prev) => [...prev, ...newFiles])
+
+    setAttachments((prev) => [...prev, ...tempAttachments])
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i]
+      const tempId = tempAttachments[i].id
+
+      try {
+        // Get presigned URL from our API
+        const res = await apiFetch<{ presignedUrl: string; key: string; id: string; fileName: string }>(
+          `/api/v1/email/attachments/upload-url?fileName=${encodeURIComponent(file.name)}&contentType=${encodeURIComponent(file.type || "application/octet-stream")}`
+        )
+
+        const uploadData = res.data
+        const { presignedUrl, key, id } = uploadData
+
+        // Upload directly to R2 via presigned URL
+        await fetch(presignedUrl, {
+          method: "PUT",
+          body: file,
+          headers: {
+            "Content-Type": file.type || "application/octet-stream",
+          },
+        })
+
+        // Update the attachment with R2 metadata
+        setAttachments((prev) =>
+          prev.map((att) =>
+            att.id === tempId
+              ? { ...att, id, key, uploading: false }
+              : att
+          )
+        )
+      } catch (err) {
+        console.error("Failed to upload attachment:", err)
+        setAttachments((prev) =>
+          prev.map((att) =>
+            att.id === tempId ? { ...att, uploading: false, error: "Upload failed" } : att
+          )
+        )
+        toast.error(`Gagal upload ${file.name}`)
+      }
+    }
+
     if (fileInputRef.current) fileInputRef.current.value = ""
   }
 
@@ -376,10 +449,16 @@ export function EmailComposeSheet({ open, onOpenChange, initialData, onSent }: E
                         className="flex items-center justify-between px-3 py-1.5 bg-muted/30 border border-border rounded-md text-sm"
                       >
                         <div className="flex items-center gap-2 min-w-0">
-                          <Paperclip className="h-3 w-3 text-muted-foreground shrink-0" />
+                          {att.uploading ? (
+                            <Loader2 className="h-3 w-3 text-muted-foreground shrink-0 animate-spin" />
+                          ) : att.error ? (
+                            <X className="h-3 w-3 text-destructive shrink-0" />
+                          ) : (
+                            <Paperclip className="h-3 w-3 text-muted-foreground shrink-0" />
+                          )}
                           <span className="truncate text-foreground font-medium">{att.name}</span>
                           <span className="text-muted-foreground text-xs shrink-0">
-                            {formatFileSize(att.size)}
+                            {att.uploading ? "Uploading..." : att.error ? att.error : formatFileSize(att.size)}
                           </span>
                         </div>
                         <button

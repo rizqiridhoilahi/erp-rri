@@ -28,9 +28,12 @@ import {
   CheckCircle2,
   Clock,
   AlertCircle,
+  Paperclip,
+  Download,
 } from "lucide-react"
 import { useEmail } from "@/components/email/email-context"
 import { toast } from "sonner"
+import { getAuthToken } from "@/lib/api/client"
 
 interface EmailDetail {
   id: string
@@ -51,6 +54,14 @@ interface EmailDetail {
   inbound?: boolean | null
 }
 
+interface EmailAttachment {
+  id: string
+  fileName: string
+  fileUrl: string
+  fileSize: number | null
+  mimeType: string | null
+}
+
 const statusConfig: Record<string, { label: string; icon: React.ReactNode; color: string }> = {
   sent: { label: "Sent", icon: <Clock className="h-3 w-3" />, color: "text-muted-foreground" },
   delivered: { label: "Delivered", icon: <CheckCircle2 className="h-3 w-3" />, color: "text-success" },
@@ -59,6 +70,13 @@ const statusConfig: Record<string, { label: string; icon: React.ReactNode; color
   bounced: { label: "Bounced", icon: <AlertCircle className="h-3 w-3" />, color: "text-destructive" },
   failed: { label: "Failed", icon: <AlertCircle className="h-3 w-3" />, color: "text-destructive" },
   trashed: { label: "Trash", icon: <Trash2 className="h-3 w-3" />, color: "text-muted-foreground" },
+}
+
+function formatBytes(bytes: number | null | undefined): string {
+  if (!bytes) return ""
+  if (bytes < 1024) return `${bytes} B`
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
 }
 
 function mapEmailDetail(row: Record<string, unknown>): EmailDetail {
@@ -116,6 +134,8 @@ export default function EmailDetailPage() {
   const [purgeOpen, setPurgeOpen] = useState(false)
   const [purging, setPurging] = useState(false)
   const [trashing, setTrashing] = useState(false)
+  const [attachments, setAttachments] = useState<EmailAttachment[]>([])
+  const [downloadingId, setDownloadingId] = useState<string | null>(null)
 
   useEffect(() => {
     if (!params.id) return
@@ -124,9 +144,24 @@ export default function EmailDetailPage() {
       .select("*")
       .eq("id", params.id)
       .single()
-      .then(({ data, error }) => {
+      .then(async ({ data, error }) => {
         if (!error && data) {
           setEmail(mapEmailDetail(data))
+          const attRes = await supabase
+            .from("email_attachments")
+            .select("id, file_name, file_url, file_size, mime_type")
+            .eq("email_id", params.id)
+          if (!attRes.error && attRes.data) {
+            setAttachments(
+              attRes.data.map((row) => ({
+                id: row.id as string,
+                fileName: (row.file_name ?? "") as string,
+                fileUrl: (row.file_url ?? "") as string,
+                fileSize: (row.file_size ?? null) as number | null,
+                mimeType: (row.mime_type ?? null) as string | null,
+              }))
+            )
+          }
         }
         setLoading(false)
       })
@@ -220,6 +255,33 @@ export default function EmailDetailPage() {
       toast.error(err instanceof Error ? err.message : "Gagal menghapus email", { id: toastId })
     } finally {
       setPurging(false)
+    }
+  }
+
+  const handleDownloadAttachment = async (attachment: EmailAttachment) => {
+    setDownloadingId(attachment.id)
+    const toastId = toast.loading("Mengunduh lampiran...")
+    try {
+      const token = await getAuthToken()
+      if (!token) throw new Error("Not authenticated")
+      const res = await fetch(`/api/v1/email/attachments/${attachment.id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      if (!res.ok) throw new Error("Gagal mengunduh lampiran")
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const a = window.document.createElement("a")
+      a.href = url
+      a.download = attachment.fileName
+      window.document.body.appendChild(a)
+      a.click()
+      window.document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+      toast.success("Lampiran diunduh", { id: toastId })
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Gagal mengunduh lampiran", { id: toastId })
+    } finally {
+      setDownloadingId(null)
     }
   }
 
@@ -329,6 +391,47 @@ export default function EmailDetailPage() {
         {email.body && (
           <div className="border border-border rounded-lg p-4 bg-card">
             <div className="text-sm leading-relaxed text-foreground prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: email.body }} />
+          </div>
+        )}
+
+        {attachments.length > 0 && (
+          <div className="border border-border rounded-lg p-4 space-y-2">
+            <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <Paperclip className="h-3 w-3" />
+              Lampiran ({attachments.length})
+            </div>
+            <div className="space-y-1.5">
+              {attachments.map((att) => (
+                <div
+                  key={att.id}
+                  className="flex items-center justify-between px-3 py-2 bg-muted/30 border border-border rounded-md text-sm"
+                >
+                  <div className="flex items-center gap-2 min-w-0">
+                    <Paperclip className="h-3 w-3 text-muted-foreground shrink-0" />
+                    <div className="min-w-0">
+                      <p className="truncate text-foreground font-medium">{att.fileName}</p>
+                      {att.fileSize && (
+                        <p className="text-muted-foreground text-xs">{formatBytes(att.fileSize)}</p>
+                      )}
+                    </div>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="shrink-0 ml-2 h-8 w-8 p-0"
+                    onClick={() => handleDownloadAttachment(att)}
+                    disabled={downloadingId === att.id}
+                    title="Unduh lampiran"
+                  >
+                    {downloadingId === att.id ? (
+                      <span className="h-3 w-3 animate-spin rounded-full border border-muted-foreground border-t-foreground" />
+                    ) : (
+                      <Download className="h-3.5 w-3.5" />
+                    )}
+                  </Button>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 

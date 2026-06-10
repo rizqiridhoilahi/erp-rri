@@ -20,6 +20,8 @@
 | Contact sync | ✅ Active | `POST /api/v1/email/sync-contacts` |
 | Contact search | ✅ Active | `GET /api/v1/email/contacts/search?q=...` (Phase 10 MC-35) |
 | Mail Center UI | ✅ Active | `/dashboard/email/inbox`, `sent`, `trash`, `templates`, `[id]` |
+| Cloudflare R2 (Phase 11) | ✅ Active | `src/lib/email/r2-client.ts` — presigned URL, getFile, uploadFromWorker |
+| R2 env vars | ✅ Active | `R2_ENDPOINT`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET` in `.env` + Vercel |
 
 ### Points of Integration (Trigger email)
 
@@ -98,6 +100,12 @@ CLOUDFLARE_ZONE_ID=xxxxxxxxxxxx
 # Vercel
 VERCEL_TOKEN=xxxxxxxxxxxx
 VERCEL_PROJECT_ID=xxxxxxxxxxxx
+
+# Cloudflare R2 (Phase 11)
+R2_ENDPOINT=https://xxxxxx.r2.cloudflarestorage.com
+R2_ACCESS_KEY_ID=xxxxxxxxxxxx
+R2_SECRET_ACCESS_KEY=xxxxxxxxxxxx
+R2_BUCKET=email-attachments
 
 # Domain
 NEXT_PUBLIC_DOMAIN=erp.pt-rri.com
@@ -217,6 +225,49 @@ Perbaikan UI/UX Mail Center: warna tombol pakai `bg-primary`, redesign compose m
 | MC-38 | **Pagination / Load More** — range-based pagination + Load More button di inbox, sent, trash | ✅ Done | `src/app/dashboard/email/inbox/page.tsx`, `sent/page.tsx`, `trash/page.tsx` |
 | MC-39 | **Templates DB + CRUD API** — email_templates table, full CRUD API (POST/GET/PUT/DELETE) | ✅ Done | `src/lib/db/schema/email-templates.ts`, `src/app/api/v1/email/templates/route.ts`, `templates/[id]/route.ts` |
 | MC-40 | **Templates page persisted** — ganti local state dengan API fetch, tambah "Use" button | ✅ Done | `src/app/dashboard/email/templates/page.tsx` |
+| MC-41 | **Search bar di sent page** — filter email by subject/penerima client-side, Load More hidden saat search | ✅ Done | `src/app/dashboard/email/sent/page.tsx` |
+| MC-42 | **Search bar di trash page** — filter email by subject/pengirim client-side, Load More hidden saat search | ✅ Done | `src/app/dashboard/email/trash/page.tsx` |
+| MC-43 | **Search bar di templates page** — filter template by nama client-side | ✅ Done | `src/app/dashboard/email/templates/page.tsx` |
+
+### ⬜ Phase 11 — Cloudflare R2 Attachment Storage (High Priority) — IN PROGRESS
+
+Menyimpan file attachment email (outbound compose & inbound) ke Cloudflare R2 (free tier 10 GB). Menggunakan Presigned URL untuk upload langsung dari client (bypass Vercel 4.5 MB body limit). File >7 MB di-outbound dikirim sebagai link download, bukan attachment base64.
+
+| # | Task | Status | File / Lokasi |
+|---|------|--------|---------------|
+| R2-1 | **Buat R2 bucket** `email-attachments` di Cloudflare Dashboard | ✅ Done | Cloudflare Dashboard → R2 → Create Bucket |
+| R2-2 | **Buat R2 API token** — Access Key ID + Secret Access Key untuk S3-compatible API | ✅ Done | Cloudflare Dashboard → R2 → Manage R2 API Tokens |
+| R2-3 | **Install `@aws-sdk/client-s3`** — S3 SDK untuk R2 | ✅ Done | `npm install @aws-sdk/client-s3` |
+| R2-4 | **Buat `src/lib/email/r2-client.ts`** — wrapper: `getPresignedUrl()`, `uploadFromWorker()`, `getFile()`, `deleteFile()` | ✅ Done | `src/lib/email/r2-client.ts` |
+| R2-5 | **Buat `email_attachments` table** — Drizzle schema + migration (id, email_id, file_name, file_url, file_size, mime_type, created_at) | ✅ Done | `src/lib/db/schema/email-attachments.ts`, `drizzle/0053_add_email_attachments_table.sql` |
+| R2-6 | **Tambah env vars** — `R2_ENDPOINT`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET` | ✅ Done | `.env.example` + Vercel env vars |
+| R2-7 | **API `GET /api/v1/email/attachments/upload-url`** — generate dan return presigned URL untuk upload langsung dari client ke R2 | ✅ Done | `src/app/api/v1/email/attachments/upload-url/route.ts` |
+| R2-8 | **Update Compose Sheet** — upload file langsung ke R2 via presigned URL (bypass Vercel), tampilkan uploading spinner, kirim dengan reference file ID | ✅ Done | `src/components/email/email-compose-sheet.tsx` |
+| R2-9 | **Update Send API** — terima `attachmentIds`, ambil file dari R2, kirim via Brevo (base64 untuk file ≤7 MB, atau link download untuk >7 MB) | ✅ Done | `src/app/api/v1/email/send/route.ts` |
+| R2-10 | **API `GET /api/v1/email/attachments/[id]`** — download file attachment dari R2 | ✅ Done | `src/app/api/v1/email/attachments/[id]/route.ts` |
+| R2-11 | **Update Email Detail** — tampilkan daftar attachment: Paperclip icon, nama, size, tombol download | ✅ Done | `src/app/dashboard/email/[id]/page.tsx` |
+| R2-12 | **Update Email Worker** — parse MIME attachment, upload langsung ke R2 (via Worker R2 binding), kirim metadata ke inbound API | ⬜ Pending | `cloudflare-workers/email-worker.js` |
+| R2-13 | **Update Inbound API** — terima `attachments: Array<{fileName, fileUrl, fileSize, mimeType}>`, simpan ke `email_attachments` table | ⬜ Pending | `src/app/api/v1/email/inbound/route.ts` |
+| R2-14 | **Update ROADMAP + AGENTS.md** — tambah storage path convention, update semua referensi | ⬜ Pending | `ROADMAP-BREVO.md`, `AGENTS.md` |
+
+**Storage Path Convention:**
+```
+email-attachments/{emailId}/{uuid}-{originalFileName}
+```
+
+**File Size Strategy (Outbound):**
+| Ukuran File | Perlakuan |
+|-------------|-----------|
+| ≤7 MB | Upload ke R2 → ambil dari R2 → base64 → kirim via Brevo sebagai attachment |
+| >7 MB | Upload ke R2 → kirim email berisi link download (Brevo tidak support base64 >~10 MB) |
+
+**Free Tier Check:**
+- Storage: 10 GB gratis → ~5.000–50.000 attachment (rata-rata 0.1–2 MB per file)
+- Class A (write): 1 juta/bulan → paling 500 upload/bulan
+- Class B (read): 10 juta/bulan → paling 1.000 download/bulan
+- Egress: **$0 selamanya**
+
+---
 
 ### ✅ Phase 8 — Email Body Redesign & Public PDF Link (SELESAI)
 
@@ -445,7 +496,7 @@ Setup SPF, DKIM, dan DMARC agar email dari domain `pt-rri.com` tidak masuk Spam.
   - **CC/BCC:** toggle expand link (collapsible `AnimatePresence`)
   - **Subject:** `Input` dengan placeholder
   - **Body:** `Textarea` (atau rich text editor ringan, Phase 5 enhancement)
-  - **Attachments:** Upload button → upload ke Supabase Storage (`dokumen/email/{id}/`) → tampilkan list dengan nama & size + remove button
+   - **Attachments:** Upload button → minta presigned URL dari API → upload langsung ke Cloudflare R2 (bypass Vercel body limit) → tampilkan list dengan nama, size, remove button. File >7 MB dikirim sebagai link download, ≤7 MB sebagai base64 attachment via Brevo
   - **Signature:** Area signature otomatis
 - Action buttons:
   - **Send** — `Button variant="default"` dengan `bg-primary` gradient (loading state + disabled)
@@ -479,6 +530,7 @@ src/lib/email/
 ├── brevo.ts                  # Brevo client wrapper (Phase 1)
 ├── contacts.ts               # Contact sync to Brevo (Phase 3)
 ├── utm.ts                    # UTM parameter utility (Phase 3)
+├── r2-client.ts              # R2 S3 wrapper — getPresignedUrl, getFile, uploadFromWorker, deleteFile (Phase 11 ✅)
 ├── types.ts                  # Shared email types (SendEmailParams, EmailLog, etc.)
 ├── templates/
 │   ├── index.ts               # Layout + helpers (Phase 2)
@@ -506,6 +558,11 @@ src/app/api/v1/email/
 ├── contacts/
 │   └── search/
 │       └── route.ts           # GET /api/v1/email/contacts/search?q=... (Phase 10 MC-35)
+├── attachments/
+│   ├── upload-url/
+│   │   └── route.ts           # GET /api/v1/email/attachments/upload-url (Phase 11 ✅)
+│   └── [id]/
+│       └── route.ts           # GET /api/v1/email/attachments/[id] (Phase 11 ✅)
 ├── brevo-templates/
 │   └── route.ts               # GET /api/v1/email/brevo-templates (moved from templates/, Phase 3)
 ├── templates/
@@ -679,7 +736,9 @@ Brevo sekarang menjadi satu-satunya provider email. Nodemailer + seluruh kode SM
 - [ ] Klik email → tampilkan detail di panel kanan
 
 ### Mail Center UI — Sent
-- [ ] Sama dengan Inbox layout, filter otomatis status=sent
+- [x] Sama dengan Inbox layout, filter otomatis status=sent
+- [x] Search — inline search bar by subject/penerima
+- [x] Pagination — Load More button per 50 email
 - [ ] Status badge per email: Delivered (success), Opened (primary), Bounced (destructive), Pending (warning)
 - [ ] Tracking tooltip — hover badge tampilkan timestamp
 
@@ -691,7 +750,7 @@ Brevo sekarang menjadi satu-satunya provider email. Nodemailer + seluruh kode SM
 - [x] CC/BCC collapsible — toggle expand
 - [x] Signature area otomatis
 - [x] Autocomplete To — Command dialog dari contact/customer — Phase 10 MC-35
-- [ ] Attachment upload — upload ke storage, tampilkan nama + size + remove
+- [x] Attachment upload — presigned URL → R2 → Brevo (≤7 MB base64, >7 MB link download) — **Phase 11 R2-8 ✅**
 - [x] Send — loading state (disabled), toast.success/error
 - [x] Save Draft dihapus — fitur Draft diganti Trash (Phase 10)
 - [x] Discard — AlertDialog confirmation lalu close sheet
@@ -700,6 +759,8 @@ Brevo sekarang menjadi satu-satunya provider email. Nodemailer + seluruh kode SM
 
 ### Mail Center UI — Trash (Phase 10, replacing Draft)
 - [x] Tab Trash — list email WHERE status='trashed'
+- [x] Search — inline search bar by subject/pengirim
+- [x] Pagination — Load More button per 50 email
 - [x] Badge `variant="outline"` untuk status trashed di list
 - [x] Detail page: Restore + Delete Permanently button untuk email di Trash
 - [x] Detail page: Move to Trash button untuk non-trashed
@@ -709,7 +770,7 @@ Brevo sekarang menjadi satu-satunya provider email. Nodemailer + seluruh kode SM
 ### Mail Center UI — Email Detail
 - [ ] Header: Avatar sender, From, To, CC, Date, Subject (Lexend bold)
 - [ ] Body: HTML render (sanitized)
-- [ ] Attachments: Paperclip icon, filename, size, download button
+- [x] Attachments: Paperclip icon, filename, size, download button (Phase 11 R2-11 ✅)
 - [ ] Tracking timeline: Sent → Delivered → Opened → Clicked (dengan timestamp)
 - [ ] Reply: Textarea inline + Send button
 - [x] Actions: Reply, Reply All, Forward (icon button + DropdownMenu) — Phase 9
@@ -720,6 +781,7 @@ Brevo sekarang menjadi satu-satunya provider email. Nodemailer + seluruh kode SM
 
 ### Mail Center UI — Templates
 - [x] Card grid: nama template, preview snippet, icon
+- [x] Search — inline search bar by nama template
 - [x] Create: Sheet form Title + HTML body + preview toggle (Tabs: Edit | Preview)
 - [x] Edit: buka sheet prefilled
 - [x] Delete: langsung hapus via API
@@ -743,3 +805,7 @@ Brevo sekarang menjadi satu-satunya provider email. Nodemailer + seluruh kode SM
 | Cloudflare Email Routing | https://developers.cloudflare.com/email-routing/ |
 | Vercel Domains | https://vercel.com/docs/projects/domains |
 | Cloudflare DNS CNAME | https://developers.cloudflare.com/dns/manage-dns-records/ |
+| Cloudflare R2 Docs | https://developers.cloudflare.com/r2/ |
+| R2 S3 Compatible API | https://developers.cloudflare.com/r2/api/s3/api/ |
+| R2 Presigned URLs | https://developers.cloudflare.com/r2/features/presigned-urls/ |
+| AWS SDK S3 v3 | https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/client/s3/ |

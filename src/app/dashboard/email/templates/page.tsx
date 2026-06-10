@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useMemo } from "react"
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
@@ -13,7 +13,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { toast } from "sonner"
 import { apiFetch } from "@/lib/api/client"
-import { File, Plus, Pencil, Trash2, Send } from "lucide-react"
+import { File, Plus, Pencil, Trash2, Send, Search } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useEmail } from "@/components/email/email-context"
 
@@ -39,7 +39,14 @@ export default function TemplatesPage() {
   const [saving, setSaving] = useState(false)
   const [editingTemplate, setEditingTemplate] = useState<Template | null>(null)
   const [sheetOpen, setSheetOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState("")
   const { openCompose } = useEmail()
+
+  const filteredTemplates = useMemo(() => {
+    if (!searchQuery.trim()) return templates
+    const q = searchQuery.toLowerCase()
+    return templates.filter((t) => t.name.toLowerCase().includes(q))
+  }, [templates, searchQuery])
 
   const form = useForm<TemplateValues>({
     resolver: zodResolver(templateSchema),
@@ -152,16 +159,26 @@ export default function TemplatesPage() {
         </Button>
       </div>
 
-      {templates.length === 0 ? (
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Input
+          placeholder="Cari template by nama..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="pl-9 h-9"
+        />
+      </div>
+
+      {filteredTemplates.length === 0 ? (
         <div className="text-center py-12 border border-dashed rounded-lg bg-muted/20">
           <File className="mx-auto h-8 w-8 text-muted-foreground/60 mb-2" />
           <p className="text-sm font-medium text-muted-foreground">
-            Belum ada template email
+            {templates.length === 0 ? "Belum ada template email" : "Tidak ada template yang cocok"}
           </p>
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {templates.map((tmpl) => (
+          {filteredTemplates.map((tmpl) => (
             <Card key={tmpl.id} className="shadow-[0_1px_3px_rgba(0,0,0,0.05)] border-border">
               <CardHeader>
                 <CardTitle className="text-sm font-heading font-semibold tracking-tight flex items-center gap-2">

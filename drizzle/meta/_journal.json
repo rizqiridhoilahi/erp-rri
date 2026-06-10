@@ -212,6 +212,13 @@
       "when": 1748995200000,
       "tag": "0039_add_di_top_waktu_nomor_customer",
       "breakpoints": true
+    },
+    {
+      "idx": 40,
+      "version": "7",
+      "when": 1781000000000,
+      "tag": "0053_add_email_attachments_table",
+      "breakpoints": true
     }
   ]
 }

@@ -22,7 +22,7 @@
 - **Forms**: React Hook Form + Zod
 - **Database**: Drizzle ORM with Supabase (PostgreSQL)
 - **Authentication**: Supabase Auth
-- **File Storage**: Supabase Storage
+- **File Storage**: Supabase Storage (dokumen ERP) + Cloudflare R2 (email attachments — Phase 11 planned)
 - **PDF Generation**: @react-pdf/renderer
 
 ## Project Structure
@@ -50,6 +50,10 @@
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
    - `SUPABASE_SERVICE_ROLE_KEY`
    - `DATABASE_URL` (optional, for direct database access)
+   - `R2_ENDPOINT` (Cloudflare R2)
+   - `R2_ACCESS_KEY_ID` (Cloudflare R2)
+   - `R2_SECRET_ACCESS_KEY` (Cloudflare R2)
+   - `R2_BUCKET` (Cloudflare R2)
 
 ## System Dependencies
 - **poppler-utils** (required for AI OCR Kontrak PDF-to-JPEG conversion): `sudo apt-get install -y poppler-utils`
@@ -124,6 +128,12 @@ dokumen/temp/rfq-customer/{type}/{ts}-{file}"  # temp — uses timestamp
 - `avatars/` → User profile images
 - `barang/` → Product images
 - `temporary/` → Auto-deleted after 24 hours
+
+### Email Attachment Storage (Phase 11 ✅ — Cloudflare R2)
+- **Storage**: Cloudflare R2, bucket `email-attachments`
+- **Path convention**: `email-attachments/{emailId}/{uuid}-{originalFileName}`
+- **Upload flow**: Client → minta presigned URL dari API → upload langsung ke R2 (bypass Vercel 4.5 MB body limit) → API ambil dari R2 → kirim via Brevo (≤7 MB base64) atau kirim link download (>7 MB)
+- **Inbound**: Cloudflare Worker upload langsung ke R2 via Worker R2 binding (no size limit)
 
 ### Image Processing Pipeline
 1. Client-side validation (type & size)
