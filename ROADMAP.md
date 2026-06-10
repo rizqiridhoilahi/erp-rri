@@ -845,3 +845,21 @@ Customer retur barang
 | RQ-4 | **Add `nama_barang` to `quotation_item`** — migration 0047, schema, API (POST/PUT/GET with fallback to master `barang.nama`), form (tambah/edit). Free-text RFQ items carry name through quotation lifecycle. | ✅ Done | `0047_add_nama_barang_to_quotation_item.sql`, `quotation-item.ts`, `quotation/tambah/page.tsx`, `quotation/[id]/edit/page.tsx`, `api/v1/quotation/route.ts`, `api/v1/quotation/[id]/route.ts` |
 | RQ-5 | **RFQ Customer form UI** — label "Keterangan" → "Spesifikasi", add "Justification" column to detail page. Both tambah/edit forms use 4-column grid: Jumlah/Spesifikasi/Satuan/Justification. | ✅ Done | `rfq-customer/tambah/page.tsx`, `rfq-customer/[id]/edit/page.tsx`, `rfq-customer/[id]/page.tsx` |
 | RQ-6 | **Fix: CPO detail page "Konfirmasi" — auto-create master barang untuk free-text RFQ items** — Detail page "Konfirmasi" button sebelumnya hanya kirim `{ status: "confirmed" }` tanpa `barang_auto_create`, sehingga unmapped RFQ items tidak pernah dibuat sebagai master barang. Fix: tambah check unmapped items (via `/check-unmapped-barang` API) sebelum confirm, munculkan dialog pilih kategori (sama dengan Edit page), kirim payload `barang_auto_create` bersama status. | ✅ Done | `api/v1/customer-po/[id]/route.ts` (existing handler — sudah support `barang_auto_create`), `customer-po/[id]/page.tsx` (add dialog flow + handlers) |
+| RQ-7 | **Fix: CPO Create page RFQ autocomplete — barang_name tidak muncul** — RFQ items unmapped ke barang_id tidak terbaca karena `barang_id` null. Fix: ganti join `leftJoin(barang, ...)` dengan `leftJoin(quotationItem, ...)` + mapping dari `rfq_customer_item.nama_barang`. | ✅ Done | `customer-po/tambah/page.tsx` |
+| RQ-8 | **Fix: RFQ mapping — nama_barang fallback + barang_id null safety** — Saat map RFQ → Quotation, gunakan `rfqItem.nama_barang ?? barang?.nama ?? ''` untuk barang unmapped. Saat map Quotation → CPO, prioritaskan `quotationItem.nama_barang`. Fix `barang_id` bisa `null`. | ✅ Done | `customer-po/tambah/page.tsx` |
+
+## 🔴 Phase 11 — Email Attachment (Cloudflare R2) ✅ DONE
+
+| # | Task | Status | File |
+|---|------|--------|------|
+| EM-11A | **Cloudflare R2 bucket `email-attachments`** — create + CORS (origins `erp.pt-rri.com`, `localhost:3000`; methods PUT/GET/POST/DELETE; headers `*`) | ✅ Done | Cloudflare Dashboard |
+| EM-11B | **Worker inbound email** — parse MIME (MAX_BODY_SIZE 25MB), extract CC, upload attachments to R2, POST ke inbound API dengan `cc`, relay ke Brevo (>7MB attachments: yellow warning notice) | ✅ Done | `cloudflare-workers/email-worker.js` |
+| EM-11C | **Worker wrangler.toml** — R2 bucket binding + secrets | ✅ Done | `cloudflare-workers/wrangler.toml` |
+| EM-11D | **Inbound API** — accept `cc` field, store in `email_log` | ✅ Done | `src/app/api/v1/email/inbound/route.ts` |
+| EM-11E | **Presigned URL API** — generate R2 presigned URL for client upload | ✅ Done | `src/app/api/v1/email/attachments/upload-url/route.ts` |
+| EM-11F | **Attachment download API** — fetch from R2, return file with auth | ✅ Done | `src/app/api/v1/email/attachments/[id]/route.ts` |
+| EM-11G | **Email compose sheet** — BCC field, attachment upload via presigned URL, reference data (reply/forward) | ✅ Done | `src/components/email/email-compose-sheet.tsx` |
+| EM-11H | **Email detail page** — pass `referenceId`/`referenceType` to compose for reply threading | ✅ Done | `src/app/dashboard/email/[id]/page.tsx` |
+| EM-11I | **Brevo SMTP for reply threading** — Nodemailer via `smtp-relay.brevo.com:587` with custom `In-Reply-To`/`References`/`Message-ID` headers (Brevo REST API silently ignores standard headers). Route `referenceType === 'reply'` to SMTP. | ✅ Done | `src/lib/email/smtp.ts`, `src/lib/email/brevo.ts` |
+| EM-11J | **CC + BCC passthrough** — forward `cc` and `bcc` from frontend through API → sendEmail → brevoSend. Auto BCC `mazzjoeq@gmail.com` on every outbound. | ✅ Done | `src/app/api/v1/email/send/route.ts`, `src/lib/utils/email.ts`, `src/lib/email/brevo.ts`, `src/lib/email/smtp.ts` |
+| EM-11K | **Brevo SMTP credentials + env** — obtained from Brevo dashboard; `BREVO_SMTP_LOGIN` + `BREVO_SMTP_PASSWORD` added to AGENTS.md | ✅ Done | `.env.example`, `AGENTS.md` |

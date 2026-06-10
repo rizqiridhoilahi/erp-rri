@@ -133,11 +133,17 @@ export default {
       // Include attachments in relay (≤7MB per Brevo limit)
       const MAX_RELAY_ATTACHMENT_SIZE = 7 * 1024 * 1024
       const relayAttachments = []
+      const skippedAttachments = []
       for (const att of attachments) {
         if (att.content && att.content.byteLength <= MAX_RELAY_ATTACHMENT_SIZE) {
           relayAttachments.push({
             name: att.filename,
             content: uint8ArrayToBase64(att.content),
+          })
+        } else if (att.content && att.content.byteLength > MAX_RELAY_ATTACHMENT_SIZE) {
+          skippedAttachments.push({
+            filename: att.filename,
+            size: att.content.byteLength,
           })
         }
       }
@@ -147,7 +153,7 @@ export default {
         to: [{ email: env.FORWARD_TO_EMAIL }],
         replyTo: { email: replyTo, name: fromNama || fromEmail },
         subject: `${subject}`,
-        htmlContent: buildRelayBody(fromEmail, fromNama, to, subject, htmlBody || textBody),
+        htmlContent: buildRelayBody(fromEmail, fromNama, to, subject, htmlBody || textBody, skippedAttachments),
         tags: ['inbound-relay'],
       }
       if (relayAttachments.length > 0) {
@@ -388,12 +394,26 @@ function generateUUID() {
   })
 }
 
-function buildRelayBody(fromEmail, fromNama, to, subject, originalBody) {
+function buildRelayBody(fromEmail, fromNama, to, subject, originalBody, skippedAttachments) {
   const safeOriginal = String(originalBody || '')
     .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
     .replace(/on\w+="[^"]*"/gi, '')
 
   const senderDisplay = fromNama ? `${fromNama} <${fromEmail}>` : fromEmail
+
+  let skippedNotice = ''
+  if (skippedAttachments && skippedAttachments.length > 0) {
+    const items = skippedAttachments.map(a => {
+      const sizeMB = (a.size / (1024 * 1024)).toFixed(1)
+      return `<li style="color: #999; font-size: 13px; margin: 4px 0;">${escapeHtml(a.filename)} (${sizeMB} MB)</li>`
+    }).join('')
+    skippedNotice = `
+              <div style="background: #fff3cd; border: 1px solid #ffc107; border-radius: 6px; padding: 12px 16px; margin: 16px 0;">
+                <p style="color: #856404; font-size: 13px; font-weight: 600; margin: 0 0 6px;">Lampiran tidak disertakan (melebihi batas 7 MB):</p>
+                <ul style="margin: 0; padding-left: 20px;">${items}</ul>
+                <p style="color: #856404; font-size: 12px; margin: 6px 0 0;">Lampiran dapat diakses langsung melalui aplikasi ERP RRI.</p>
+              </div>`
+  }
 
   return `<!DOCTYPE html>
 <html>
@@ -422,6 +442,7 @@ function buildRelayBody(fromEmail, fromNama, to, subject, originalBody) {
               <div style="color: #333; font-size: 14px; line-height: 1.6;">
                 ${safeOriginal}
               </div>
+              ${skippedNotice}
               <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
               <p style="color: #999; font-size: 12px; font-style: italic;">
                 Pesan ini dikirim ke ${escapeHtml(to)} dan diteruskan secara otomatis oleh ERP RRI.

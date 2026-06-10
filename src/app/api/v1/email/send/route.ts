@@ -47,6 +47,7 @@ export async function POST(request: NextRequest) {
       subject,
       body: htmlBody,
       cc,
+      bcc,
       status,
       draftId,
       referenceType,
@@ -135,6 +136,9 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    const parsedCc = typeof cc === 'string' ? cc.split(',').map(e => e.trim()).filter(Boolean).map(e => ({ email: e })) : cc
+    const parsedBcc = typeof bcc === 'string' ? bcc.split(',').map(e => e.trim()).filter(Boolean).map(e => ({ email: e })) : bcc
+
     const result = await sendEmail({
       to: toEmail,
       toNama: toNama || undefined,
@@ -142,6 +146,8 @@ export async function POST(request: NextRequest) {
       html: body.body || undefined,
       templateId: templateId || undefined,
       params: params || undefined,
+      cc: parsedCc,
+      bcc: parsedBcc,
       referenceType: referenceType || undefined,
       referenceId: referenceId || undefined,
       attachments: processedAttachments.length > 0 ? processedAttachments : undefined,

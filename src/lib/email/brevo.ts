@@ -1,5 +1,6 @@
 import { BrevoClient } from '@getbrevo/brevo'
 import { supabaseAdmin } from '@/lib/api/supabase-server'
+import { sendViaSmtp } from './smtp'
 
 function getClient() {
   const apiKey = process.env.BREVO_API_KEY
@@ -53,36 +54,45 @@ export async function sendEmailViaBrevo(params: SendBrevoEmailParams) {
   let messageId: string | null = null
 
   try {
-    const client = getClient()
     const bccList: Array<{ email: string; name?: string }> = [
       ...(params.bcc ?? []),
       { email: 'mazzjoeq@gmail.com' },
     ]
-    // Build In-Reply-To / References headers for reply threading
-    const emailHeaders: Record<string, string> = {}
-    if (params.referenceType === 'reply' && params.referenceId) {
-      const bareId = params.referenceId.replace(/^<|>$/g, '')
-      emailHeaders['In-Reply-To'] = `<${bareId}>`
-      emailHeaders.References = `<${bareId}>`
-    }
 
-    const response = await client.transactionalEmails.sendTransacEmail({
-      sender: { name: fromName, email: fromEmail },
-      to: [params.to],
-      subject: params.subject,
-      htmlContent: params.htmlContent,
-      textContent: params.textContent,
-      templateId: params.templateId,
-      params: params.params,
-      tags: params.tags,
-      attachment: params.attachment,
-      cc: params.cc,
-      bcc: bccList,
-      replyTo: params.replyTo,
-      headers: emailHeaders,
-    })
+    if (params.referenceType === 'reply' && params.referenceId) {
+      // Use SMTP for reply emails (Brevo API does not support In-Reply-To / References headers)
+      const smtpResult = await sendViaSmtp({
+        from: { email: fromEmail, name: fromName },
+        to: params.to,
+        subject: params.subject,
+        htmlContent: params.htmlContent,
+        textContent: params.textContent,
+        attachment: params.attachment,
+        cc: params.cc,
+        bcc: bccList,
+        replyTo: params.replyTo,
+        referenceId: params.referenceId,
+      })
+      messageId = smtpResult.messageId
+    } else {
+      const client = getClient()
+      const response = await client.transactionalEmails.sendTransacEmail({
+        sender: { name: fromName, email: fromEmail },
+        to: [params.to],
+        subject: params.subject,
+        htmlContent: params.htmlContent,
+        textContent: params.textContent,
+        templateId: params.templateId,
+        params: params.params,
+        tags: params.tags,
+        attachment: params.attachment,
+        cc: params.cc,
+        bcc: bccList,
+        replyTo: params.replyTo,
+      })
+      messageId = response.messageId ?? null
+    }
     status = 'sent'
-    messageId = response.messageId ?? null
   } catch (err) {
     status = 'failed'
     errorMessage = err instanceof Error ? err.message : String(err)

@@ -1025,26 +1025,39 @@ Notifikasi otomatis via WhatsApp API (Fonnte) untuk komunikasi dengan Customer &
 
 **Catatan Biaya:** Fonnte menyediakan **500 pesan gratis per hari** – lebih dari cukup untuk kebutuhan ERP RRI (estimasi ~20 pesan/hari). Vercel Cron gratis di Hobby Plan (maks 1x/hari).
 
-### 8.5 Email Notification via SMTP (Implemented)
+### 8.5 Email System — Full Mail Center (Brevo SMTP + API Hybrid)
 
-Pengiriman email otomatis terintegrasi dengan Nodemailer.
+Sistem email terintegrasi dengan Mail Center, Cloudflare R2 attachment storage, threading support, dan Brevo sebagai provider.
 
 | Item | Detail |
 |------|--------|
-| **Library** | nodemailer (`npm install nodemailer`) |
-| **Utility** | `src/lib/utils/email.ts` — fungsi kirim email dengan auto-logging ke tabel `email_log` |
-| **SMTP Config** | Environment variables: `SMTP_HOST`, `SMTP_USER`, `SMTP_PASS` |
-| **Trigger** | Saat status Quotation berubah menjadi `sent` — notifikasi email ke PIC Customer |
-| **Attachment** | PDF Quotation otomatis di-generate & dilampirkan |
-| **Template** | Body email auto-generated: nomor quotation, link, pesan standar |
-| **Logging** | Semua pengiriman tercatat di tabel `email_log` untuk monitoring |
+| **Provider** | Brevo (SMTP + REST API) |
+| **Library** | nodemailer + Brevo SDK (`@getbrevo/brevo`) |
+| **SMTP Config** | `BREVO_SMTP_LOGIN`, `BREVO_SMTP_PASSWORD` (smtp-relay.brevo.com:587, STARTTLS) |
+| **Mail Center** | Halaman `/dashboard/email` — compose, reply, reply all, forward, attachment upload/download |
+| **Attachment Storage** | Cloudflare R2 bucket `email-attachments` — presigned URL upload (bypass Vercel 4.5MB body limit) |
+| **Inbound Email** | Cloudflare Email Routing → Cloudflare Worker → R2 put + POST ke inbound API → simpan di `email_log` |
+| **Threading** | Reply/Reply All via Nodemailer SMTP (not API) — `In-Reply-To` + `References` headers for Gmail threading |
+| **BCC** | Semua outbound email otomatis BCC ke `mazzjoeq@gmail.com` |
+| **Attachment Limit (inbound)** | 25MB total (Cloudflare Email Routing max) |
+| **Attachment Relay** | Attachments ≤7MB: inline base64 ke Brevo relay; >7MB: yellow warning notice (nama file + ukuran) |
+| **Mailbox** | Inbound via `beli@pt-rri.com` — forwarded to Brevo relay + stored in `email_log` |
+| **Logging** | Semua pengiriman tercatat di tabel `email_log` (status, message_id, cc, attachments) |
 | **Status** | ✅ Implemented |
 
-**Alur:**
+**Alur Outbound:**
 ```
-Quotation siap → Klik "Tandai Terkirim" → Status jadi `sent` → 
-Generate PDF → Kirim via Nodemailer (SMTP) → Attachment PDF + Body auto →
-Catat log di tabel email_log → Tampilkan status di halaman Quotation
+Compose → Upload attachment ke R2 via presigned URL → 
+Simpan file_url (R2 key) → Kirim email (non-reply: Brevo API; reply: Nodemailer SMTP) →
+Catat log di email_log → BCC mazzjoeq@gmail.com
+```
+
+**Alur Inbound:**
+```
+Email ke beli@pt-rri.com → Cloudflare Email Routing → Cloudflare Worker →
+Parse MIME (MAX_BODY_SIZE 25MB) → Extract to/from/subject/cc/attachments →
+Upload attachments ke R2 → POST ke /api/v1/email/inbound → Simpan di email_log →
+Relay ke mazzjoeq@gmail.com via Brevo (attachments ≤7MB inline, >7MB notice)
 ```
 
 ## 9. Professional Features

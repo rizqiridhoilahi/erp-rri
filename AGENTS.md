@@ -54,6 +54,8 @@
    - `R2_ACCESS_KEY_ID` (Cloudflare R2)
    - `R2_SECRET_ACCESS_KEY` (Cloudflare R2)
    - `R2_BUCKET` (Cloudflare R2)
+   - `BREVO_SMTP_LOGIN` (Brevo SMTP login, e.g. `adfecc001@smtp-brevo.com`)
+   - `BREVO_SMTP_PASSWORD` (Brevo SMTP Master Password)
 
 ## System Dependencies
 - **poppler-utils** (required for AI OCR Kontrak PDF-to-JPEG conversion): `sudo apt-get install -y poppler-utils`

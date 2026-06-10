@@ -22,6 +22,7 @@ interface SendEmailParams {
   referenceId?: string
   toNama?: string
   cc?: Array<{ email: string; name?: string }>
+  bcc?: Array<{ email: string; name?: string }>
   tags?: string[]
 }
 
@@ -38,6 +39,7 @@ export async function sendEmail(params: SendEmailParams) {
       content: a.content.toString('base64'),
     })),
     cc: params.cc,
+    bcc: params.bcc,
     tags: params.tags,
     referenceType: params.referenceType,
     referenceId: params.referenceId,
