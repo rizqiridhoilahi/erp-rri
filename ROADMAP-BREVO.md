@@ -169,7 +169,7 @@ Halaman email client di dalam ERP layaknya Gmail/Outlook web.
 | MC-8 | **Draft page** — `/dashboard/email/draft` — list from `email_log` WHERE `status='draft'` | ✅ Done (Phase 10: dihapus, diganti Trash) | `src/app/dashboard/email/draft/page.tsx` (deleted Phase 10) | Skeleton loading; Empty state §14.2 |
 | MC-9 | **Templates page** — `/dashboard/email/templates` — Card grid, Create Sheet with Tabs (Edit/Preview), Edit, Delete | ✅ Done | `src/app/dashboard/email/templates/page.tsx` | Card §3.7; Sheet §3.11; Tabs §3.12 |
 
-### ⬜ Phase 7 — Inbound Email Pipeline & Mail Center Inbox (High Priority) — PENDING
+### ✅ Phase 7 — Inbound Email Pipeline & Mail Center Inbox (High Priority) — SELESAI
 
 Setup Cloudflare Email Worker untuk menerima inbound email, menyimpannya di `email_log` (Mail Center Inbox), dan relay ke Gmail via Brevo (fix Spam issue).
 
@@ -180,8 +180,8 @@ Setup Cloudflare Email Worker untuk menerima inbound email, menyimpannya di `ema
 | IN-3 | **Test manual insert** — insert record `inbound=true` langsung ke DB → verifikasi Mail Center Inbox muncul | ✅ Done | Supabase SQL: `INSERT INTO email_log (inbound=true, ...)` |
 | IN-4 | **Cloudflare Email Worker script** — parse MIME, POST ke ERP API, relay via Brevo, fallback forward | ✅ Done | `cloudflare-workers/email-worker.js` |
 | IN-5 | **Deploy Worker** — deploy via wrangler CLI + set 6 env vars | ✅ Done | `erp-rri-email-worker` di Cloudflare |
-| IN-6 | **Hubungkan Email Routing → Worker** — ubah routing rule dari forward ke worker | ⬜ **KAMU** | Cloudflare Dashboard → Email Routing |
-| IN-7 | **Test end-to-end** — kirim email dari Gmail → `marzuqi@pt-rri.com` → cek Inbox (Mail Center + Gmail) | ⬜ **KAMU** | Manual test |
+| IN-6 | **Hubungkan Email Routing → Worker** — ubah routing rule dari forward ke worker | ✅ Done | Cloudflare Dashboard → Email Routing |
+| IN-7 | **Test end-to-end** — kirim email dari Gmail → `marzuqi@pt-rri.com` → cek Inbox (Mail Center + Gmail) | ✅ Done | Email test chain 5 emails verified |
 
 ---
 
@@ -373,7 +373,7 @@ Setup SPF, DKIM, dan DMARC agar email dari domain `pt-rri.com` tidak masuk Spam.
 | ED-2 | **DKIM Brevo** — CNAME `brevo1._domainkey` + `brevo2._domainkey` via Brevo managed DKIM | ✅ Done | Cloudflare DNS + Brevo Dashboard |
 | ED-3 | **DMARC record** — `_dmarc` → `"v=DMARC1; p=none; rua=mailto:rua@dmarc.brevo.com"` | ✅ Done | Cloudflare DNS |
 | ED-4 | **Verify sender di Brevo** — `Muhammad Marzuqi<marzuqi@pt-rri.com>` verified | ✅ Done | Brevo Dashboard → Settings → Senders |
-| ED-5 | **Test kirim ulang** — dari Gmail `bee7rafiud@gmail.com` → `marzuqi@pt-rri.com` → cek Inbox | ⬜ **KAMU** | Manual test |
+| ED-5 | **Test kirim ulang** — dari Gmail `bee7rafiud@gmail.com` → `marzuqi@pt-rri.com` → cek Inbox | ✅ Done | 5-email test chain verified |
 
 ### ✅ Phase 3 — Enhancement & Marketing (Low Priority) — SELESAI
 
@@ -702,8 +702,8 @@ Brevo sekarang menjadi satu-satunya provider email. Nodemailer + seluruh kode SM
 - [x] `EMAIL_INBOUND_SECRET` — shared secret di env vars (`.env` + Vercel + Worker)
 - [x] Test manual insert — record `inbound=true` terverifikasi muncul di Mail Center Inbox
 - [x] Worker deployed — `erp-rri-email-worker` via wrangler CLI ✅ (6 env vars set)
-- [ ] Email Routing → Worker — routing rule diubah dari forward ke worker ⬅️ **Langkah 3**
-- [ ] Test end-to-end — kirim ke `marzuqi@pt-rri.com` → muncul di Inbox ERP + Gmail Inbox
+- [x] Email Routing → Worker — routing rule diubah dari forward ke worker ⬅️ **Langkah 3**
+- [x] Test end-to-end — kirim ke `marzuqi@pt-rri.com` → muncul di Inbox ERP + Gmail Inbox
 
 ### Brevo API
 - [ ] `POST /v3/smtp/email` — kirim email HTML sederhana
@@ -805,9 +805,14 @@ Mail Center kini mendukung Gmail-like conversation view: email dalam thread yang
 | TH-2 | **Schema `email-log.ts`** — tambah `threadId: text("thread_id")` di Drizzle schema | ✅ Done | `src/lib/db/schema/email-log.ts` |
 | TH-3 | **`brevo.ts` — thread_id assignment outbound** — saat send reply, resolve `thread_id` dari parent email (via `referenceId` → `message_id`). Jika tidak ada parent, generate UUID baru via `crypto.randomUUID()`. | ✅ Done | `src/lib/email/brevo.ts` |
 | TH-4 | **`inbound/route.ts` — thread_id assignment inbound** — accept `inReplyTo` + `references` fields. Parse `References` header, cari parent email di DB, gunakan `thread_id` yang sama. Jika reply ke email baru, generate UUID baru. | ✅ Done | `src/app/api/v1/email/inbound/route.ts` |
+| TH-4b | **Thread fallback by subject + participant** — jika header In-Reply-To/References tidak cocok, cari existing email dengan normalized subject (strip Re:/Fwd:) dan overlapping sender/recipient, lalu link threadId-nya. Fallback seperti Gmail behavior. | ✅ Done | `src/app/api/v1/email/inbound/route.ts` |
 | TH-5 | **`email-worker.js` — extract threading headers** — tambah extract `in-reply-to` + `references` dari MIME headers, kirim ke inbound API. | ✅ Done | `cloudflare-workers/email-worker.js` |
 | TH-6 | **`email-list.tsx` — thread grouping** — grup email by `thread_id`. Tiap grup: avatar lingkaran (inisial, warna random konsisten per seed), sender name, subject, body preview, count badge (jumlah email dalam thread), timestamp email terbaru. Click → navigasi ke detail email terbaru dalam thread. | ✅ Done | `src/components/email/email-list.tsx` |
+| TH-6b | **Subject-based secondary grouping** — jika threadId berbeda tapi subject sama (setelah strip Re:/Fwd:) dan sender/recipient overlap, tetap jadi 1 thread. Fallback untuk SEMUA email (bukan hanya yang tanpa threadId) — merger dengan grup existing jika subject dan participant cocok. | ✅ Done | `src/components/email/email-list.tsx` |
+| TH-6c | **Fix normalizeSubject multi-prefix** — ubah dari `replace()` sekali menjadi `while` loop agar strip SEMUA prefix `Re:`/`Fwd:`/`Aw:`/`Fw:` (misal "Re: Re: TEST 12" → "test 12"). | ✅ Done | `src/components/email/email-list.tsx` |
 | TH-7 | **`[id]/page.tsx` — conversation view** — fetch semua email dalam thread yang sama (by `thread_id`). Tampilkan vertical conversation: tiap email punya avatar + metadata (from, to, date) + body + attachments + action buttons (Reply/Reply All/Forward). Bisa collapse/expand per email. Tracking timeline untuk email terbaru. | ✅ Done | `src/app/dashboard/email/[id]/page.tsx` |
+| TH-7b | **Default collapsed + subject in header** — ubah state dari `collapsedEmails` (semua expand) menjadi `expandedEmails` (semua collapse by default). Tambah subject line di header metadata agar pengguna bisa lihat subject tiap email tanpa expand. Chevron icon inverted sesuai state. | ✅ Done | `src/app/dashboard/email/[id]/page.tsx` |
+| TH-7c | **Detail page subject-based fallback** — jika thread query return ≤1 email, lakukan secondary fetch dengan normalized subject ILIKE + participant overlap, merge hasilnya. Fix untuk data existing yang punya threadId berbeda. | ✅ Done | `src/app/dashboard/email/[id]/page.tsx` |
 | TH-8 | **`EmailItem` interface** — tambah `threadId?: string` field, update `mapEmailLogRow()` | ✅ Done | `src/components/email/email-list.tsx` |
 
 ## 📋 Future Plan — Multi-Email Perusahaan (Rencana)

@@ -30,7 +30,7 @@ export default {
     const startTime = Date.now()
 
     // ---- 1. Extract headers ----
-    const rawFrom = message.from
+    const rawFrom = message.headers.get('from') || message.from
     const to = message.to
     const subject = message.headers.get('subject') || '(No Subject)'
     const messageId = message.headers.get('message-id') || `cf-${Date.now()}-${Math.random().toString(36).slice(2)}`
@@ -198,12 +198,13 @@ export default {
 
 // ---- Parse From header: "Name <email>" → { email, nama } ----
 function parseFromHeader(raw) {
-  // "John Doe <john@example.com>" → { email: "john@example.com", nama: "John Doe" }
-  // "john@example.com" → { email: "john@example.com", nama: null }
-  // "<john@example.com>" → { email: "john@example.com", nama: null }
+  // "John Doe" <john@example.com> → { email: "john@example.com", nama: "John Doe" }
+  // <john@example.com> → { email: "john@example.com", nama: null }
+  // john@example.com → { email: "john@example.com", nama: null }
   const match = String(raw).match(/^(.+?)\s*<(.+)>$/)
   if (match) {
-    return { email: match[2].trim(), nama: match[1].trim() }
+    const nama = match[1].trim().replace(/^"|"$/g, '').trim() || null
+    return { email: match[2].trim(), nama }
   }
   return { email: String(raw).trim(), nama: null }
 }

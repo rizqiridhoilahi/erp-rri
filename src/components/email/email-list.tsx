@@ -117,13 +117,39 @@ interface ThreadGroup {
   emails: EmailItem[]
 }
 
+function normalizeSubject(subject: string): string {
+  let s = subject
+  while (/^(Re|Fwd|Aw|Fw)\s*:\s*/i.test(s)) {
+    s = s.replace(/^(Re|Fwd|Aw|Fw)\s*:\s*/i, '')
+  }
+  return s.trim().toLowerCase()
+}
+
 function groupThreads(emails: EmailItem[]): ThreadGroup[] {
   const map = new Map<string, EmailItem[]>()
-  for (const email of emails) {
-    const tid = email.threadId || email.id
+
+  for (const email of [...emails].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())) {
+    let tid = email.threadId || email.id
+
+    if (!map.has(tid)) {
+      const normSubj = normalizeSubject(email.subject)
+      if (normSubj) {
+        for (const [existingId, existingEmails] of map) {
+          if (normalizeSubject(existingEmails[0].subject) !== normSubj) continue
+          const participants = new Set([existingEmails[0].fromEmail, existingEmails[0].toEmail].filter(Boolean))
+          const overlaps = [email.fromEmail, email.toEmail].filter(Boolean).some(p => participants.has(p))
+          if (overlaps) {
+            tid = existingId
+            break
+          }
+        }
+      }
+    }
+
     if (!map.has(tid)) map.set(tid, [])
     map.get(tid)!.push(email)
   }
+
   return Array.from(map.entries())
     .map(([threadId, items]) => ({
       threadId,
@@ -139,7 +165,9 @@ function groupThreads(emails: EmailItem[]): ThreadGroup[] {
 function EmailThreadRow({ thread, path }: { thread: ThreadGroup; path: string }) {
   const pathname = usePathname()
   const latest = thread.emails[thread.emails.length - 1]
-  const isUnread = thread.emails.some((e) => e.status === "sent")
+  const isUnread = latest.inbound
+    ? (latest.status === 'delivered' && !latest.openedAt)
+    : (latest.status === 'sent')
   const isCurrent = pathname === `${path}/${latest.id}`
 
   return (

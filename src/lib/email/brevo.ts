@@ -127,6 +127,17 @@ export async function sendEmailViaBrevo(params: SendBrevoEmailParams) {
     threadId = crypto.randomUUID()
   }
 
+  // Fallback: resolve to_nama dari customer_pic jika null
+  let resolvedToNama = params.to.name ?? null
+  if (!resolvedToNama && params.to.email) {
+    const { data: pic } = await supabaseAdmin
+      .from("customer_pic")
+      .select("nama")
+      .eq("email", params.to.email)
+      .maybeSingle()
+    if (pic?.nama) resolvedToNama = pic.nama
+  }
+
   const now = new Date().toISOString()
   const { data: emailLogResult, error: insertError } = await supabaseAdmin
     .from('email_log')
@@ -136,7 +147,7 @@ export async function sendEmailViaBrevo(params: SendBrevoEmailParams) {
       from_email: fromEmail,
       from_nama: fromName,
       to_email: params.to.email,
-      to_nama: params.to.name ?? null,
+      to_nama: resolvedToNama,
       subject: params.subject,
       body: params.htmlContent ?? params.textContent ?? null,
       cc: params.cc?.map(c => c.email).join(', ') ?? null,

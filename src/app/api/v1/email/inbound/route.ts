@@ -4,6 +4,10 @@ import { z } from "zod"
 
 const MAX_ATTACHMENT_SIZE = 25 * 1024 * 1024 // 25MB
 
+function normalizeSubject(subject: string): string {
+  return subject.replace(/^(Re|Fwd|Aw|Fw)\s*:\s*/gi, '').trim().toLowerCase()
+}
+
 const attachmentSchema = z.object({
   key: z.string(),
   fileName: z.string(),
@@ -97,8 +101,39 @@ export async function POST(request: NextRequest) {
         if (parent?.thread_id) threadId = parent.thread_id
       }
     }
+    // Fallback: subject-based + participant overlap
+    if (!threadId) {
+      const normSubj = normalizeSubject(subject)
+      if (normSubj) {
+        const { data: existing } = await supabaseAdmin
+          .from("email_log")
+          .select("thread_id")
+          .or(`from_email.eq.${fromEmail},to_email.eq.${fromEmail},from_email.eq.${toEmail},to_email.eq.${toEmail}`)
+          .ilike("subject", `%${normSubj}%`)
+          .not("thread_id", "is", null)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle()
+
+        if (existing?.thread_id) {
+          threadId = existing.thread_id
+        }
+      }
+    }
+
     if (!threadId) {
       threadId = crypto.randomUUID()
+    }
+
+    // Fallback: resolve from_nama dari customer_pic jika null
+    let resolvedFromNama = fromNama ?? null
+    if (!resolvedFromNama && fromEmail) {
+      const { data: pic } = await supabaseAdmin
+        .from("customer_pic")
+        .select("nama")
+        .eq("email", fromEmail)
+        .maybeSingle()
+      if (pic?.nama) resolvedFromNama = pic.nama
     }
 
     // Insert into email_log
@@ -108,7 +143,7 @@ export async function POST(request: NextRequest) {
         message_id: messageId ?? null,
         thread_id: threadId,
         from_email: fromEmail,
-        from_nama: fromNama ?? null,
+        from_nama: resolvedFromNama,
         to_email: toEmail || defaultTo,
         cc: cc ?? null,
         subject,

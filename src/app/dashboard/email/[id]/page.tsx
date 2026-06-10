@@ -176,6 +176,14 @@ function AvatarCircle({ name, email }: { name?: string | null; email?: string | 
 
 import { cn } from "@/lib/utils"
 
+function normalizeSubject(subject: string): string {
+  let s = subject
+  while (/^(Re|Fwd|Aw|Fw)\s*:\s*/i.test(s)) {
+    s = s.replace(/^(Re|Fwd|Aw|Fw)\s*:\s*/i, '')
+  }
+  return s.trim().toLowerCase()
+}
+
 export default function EmailDetailPage() {
   const params = useParams()
   const router = useRouter()
@@ -190,7 +198,7 @@ export default function EmailDetailPage() {
   const [trashing, setTrashing] = useState(false)
   const [attachmentsMap, setAttachmentsMap] = useState<Record<string, EmailAttachment[]>>({})
   const [downloadingId, setDownloadingId] = useState<string | null>(null)
-  const [collapsedEmails, setCollapsedEmails] = useState<Set<string>>(new Set())
+  const [expandedEmails, setExpandedEmails] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     if (!params.id) return
@@ -214,6 +222,30 @@ export default function EmailDetailPage() {
               .order("created_at", { ascending: true })
             if (siblings) {
               threadData = siblings.map(mapEmailDetail)
+            }
+          }
+
+          // Subject-based fallback: jika thread query return ≤1 email,
+          // cari email lain dengan normalized subject sama + participant overlap
+          if (threadData.length <= 1) {
+            const normSubj = normalizeSubject(email.subject)
+            if (normSubj) {
+              const { data: related } = await supabase
+                .from("email_log")
+                .select("*")
+                .neq("id", params.id)
+                .ilike("subject", `%${normSubj}%`)
+                .or(
+                  `from_email.eq.${email.fromEmail},to_email.eq.${email.fromEmail}` +
+                    `,from_email.eq.${email.toEmail},to_email.eq.${email.toEmail}`,
+                )
+                .order("created_at", { ascending: true })
+              if (related) {
+                const relatedMapped = related.map(mapEmailDetail)
+                threadData = [...threadData, ...relatedMapped].sort(
+                  (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+                )
+              }
             }
           }
           setThreadEmails(threadData)
@@ -383,8 +415,8 @@ export default function EmailDetailPage() {
     }
   }
 
-  const toggleCollapse = (id: string) => {
-    setCollapsedEmails((prev) => {
+  const toggleExpand = (id: string) => {
+    setExpandedEmails((prev) => {
       const next = new Set(prev)
       if (next.has(id)) next.delete(id)
       else next.add(id)
@@ -450,7 +482,7 @@ export default function EmailDetailPage() {
         {threadEmails.map((emailItem, idx) => {
           const isLatest = idx === threadEmails.length - 1
           const isCurrentEmail = emailItem.id === email.id
-          const isCollapsed = collapsedEmails.has(emailItem.id)
+          const isExpanded = expandedEmails.has(emailItem.id)
           const atts = attachmentsMap[emailItem.id] || []
 
           return (
@@ -466,7 +498,7 @@ export default function EmailDetailPage() {
               {/* Header row: avatar + metadata + collapse */}
               <div
                 className="flex items-start gap-3 p-4 cursor-pointer select-none"
-                onClick={() => toggleCollapse(emailItem.id)}
+                onClick={() => toggleExpand(emailItem.id)}
               >
                 <AvatarCircle
                   name={emailItem.inbound ? emailItem.fromNama : emailItem.toNama}
@@ -490,18 +522,21 @@ export default function EmailDetailPage() {
                       {emailItem.status}
                     </Badge>
                   </div>
+                  <p className="truncate text-xs font-medium text-foreground/70 mt-0.5">
+                    {emailItem.subject}
+                  </p>
                   <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
                     <span>{formatDateTime(emailItem.createdAt)}</span>
                     {emailItem.cc && <span>CC: {emailItem.cc}</span>}
                   </div>
                 </div>
                 <Button variant="ghost" size="sm" className="h-6 w-6 p-0 shrink-0">
-                  {isCollapsed ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronUp className="h-3.5 w-3.5" />}
+                  {isExpanded ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
                 </Button>
               </div>
 
               {/* Body + attachments */}
-              {!isCollapsed && (
+              {isExpanded && (
                 <div className="px-4 pb-4 space-y-3">
                   {emailItem.body && (
                     <div className="border-t border-border pt-3">
