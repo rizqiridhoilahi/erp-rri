@@ -4,7 +4,7 @@ import { supabaseAdmin } from "@/lib/api/supabase-server"
 import { sendEmail } from "@/lib/utils/email"
 import { getFile } from "@/lib/email/r2-client"
 
-const MAX_BREVO_ATTACHMENT_SIZE = 7 * 1024 * 1024 // 7MB
+const MAX_BREVO_ATTACHMENT_SIZE = 7 * 1024 * 1024 // 7MB — Brevo transactional email limit
 
 interface AttachmentInput {
   key: string

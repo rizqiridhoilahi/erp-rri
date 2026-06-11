@@ -52,14 +52,18 @@ export async function syncContact(email: string, listId: number) {
       listIds: [listId],
     })
     return { action: 'updated', email }
-  } catch {
-    await client.contacts.createContact({
-      email,
-      attributes,
-      listIds: [listId],
-      updateEnabled: true,
-    })
-    return { action: 'created', email }
+  } catch (err) {
+    const status = (err as { status?: number }).status
+    if (status === 404) {
+      await client.contacts.createContact({
+        email,
+        attributes,
+        listIds: [listId],
+        updateEnabled: true,
+      })
+      return { action: 'created', email }
+    }
+    throw err
   }
 }
 

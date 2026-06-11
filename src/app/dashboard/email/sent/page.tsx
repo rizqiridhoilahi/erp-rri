@@ -27,7 +27,8 @@ export default function SentPage() {
     const { data, error } = await supabase
       .from("email_log")
       .select("*")
-      .in("status", ["sent", "delivered", "opened", "clicked", "bounced", "failed"])
+      .in("status", ["sent", "delivered", "opened", "clicked", "bounced"])
+      .eq("inbound", false)
       .neq("status", "trashed")
       .order("created_at", { ascending: false })
       .range(start, end)

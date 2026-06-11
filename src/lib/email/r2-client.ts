@@ -46,7 +46,10 @@ export async function getFile(key: string): Promise<{ body: Uint8Array; contentT
     Bucket: bucket,
     Key: key,
   }))
-  const body = await result.Body!.transformToByteArray()
+  if (!result.Body) {
+    throw new Error(`R2 object body is empty for key: ${key}`)
+  }
+  const body = await result.Body.transformToByteArray()
   return { body, contentType: result.ContentType ?? "application/octet-stream" }
 }
 
