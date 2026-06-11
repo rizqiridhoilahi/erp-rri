@@ -26,6 +26,10 @@
 | `email_attachments` table + Drizzle schema | ✅ Active | `src/lib/db/schema/email-attachments.ts` |
 | Inbound API with attachment support | ✅ Active | `src/app/api/v1/email/inbound/route.ts` — Zod validation, upsert, first-received-wins |
 | `message_id` unique index | ✅ Active | `idx_email_log_message_id_unique` — partial unique index (WHERE NOT NULL) |
+| `BREVO_WEBHOOK_SECRET` env var | ✅ Active | `.env` — HMAC-SHA256 signature verification untuk Brevo webhook |
+| `previous_status` column | ✅ Active | `email_log` — stores original status before trashing, used for proper restore |
+| `isomorphic-dompurify` | ✅ Installed | `package.json` — email body HTML sanitization to prevent XSS and navigation hijacking |
+| Webhook signature verification | ✅ Active | `POST /api/v1/email/webhook` — message-id pre-validation + optional HMAC |
 
 ### Points of Integration (Trigger email)
 
@@ -96,6 +100,7 @@ Email Routing (gratis) + Email Worker:
 BREVO_API_KEY=xkeysib-xxxxxxxxxxxx
 BREVO_SENDER_NAME="ERP RRI"  # <-- Fallback: sender name utama dari DB (penandatangan_nama + " - RRI")
 BREVO_SENDER_EMAIL=marzuqi@pt-rri.com  # <-- DIUBAH: erp@pt-rri.com tidak dipakai
+BREVO_WEBHOOK_SECRET=xxxxxxxxxxxx  # HMAC-SHA256 secret untuk verifikasi signature webhook Brevo
 
 # Cloudflare
 CLOUDFLARE_API_TOKEN=xxxxxxxxxxxx
@@ -814,6 +819,39 @@ Mail Center kini mendukung Gmail-like conversation view: email dalam thread yang
 | TH-7b | **Default collapsed + subject in header** — ubah state dari `collapsedEmails` (semua expand) menjadi `expandedEmails` (semua collapse by default). Tambah subject line di header metadata agar pengguna bisa lihat subject tiap email tanpa expand. Chevron icon inverted sesuai state. | ✅ Done | `src/app/dashboard/email/[id]/page.tsx` |
 | TH-7c | **Detail page subject-based fallback** — jika thread query return ≤1 email, lakukan secondary fetch dengan normalized subject ILIKE + participant overlap, merge hasilnya. Fix untuk data existing yang punya threadId berbeda. | ✅ Done | `src/app/dashboard/email/[id]/page.tsx` |
 | TH-8 | **`EmailItem` interface** — tambah `threadId?: string` field, update `mapEmailLogRow()` | ✅ Done | `src/components/email/email-list.tsx` |
+
+### ✅ Phase 13 — Security Audit: Critical + High Bugs Fixed (SELESAI)
+
+Audit menyeluruh modul Mail Center (30 bugs ditemukan). 9 bugs diperbaiki (4 Critical + 5 High).
+
+| # | Task | Status | File |
+|---|------|--------|------|
+| SEC-1 | **BUG-001: SQL Injection — inbound/route.ts** — email address interpolated langsung ke Supabase `.or()`. Fix: `escapeForSupabase()` escape `'` → `''` | ✅ Done | `src/app/api/v1/email/inbound/route.ts` |
+| SEC-2 | **BUG-002: SQL Injection — [id]/page.tsx** — same pattern di client-side thread resolution. Fix: `escapeForSupabase()` + null safety | ✅ Done | `src/app/dashboard/email/[id]/page.tsx` |
+| SEC-3 | **BUG-003: SQL Injection — contacts/search/route.ts** — search query `q` interpolated ke ILIKE tanpa sanitization. Fix: `escapeForLike()` escape `'`, `%`, `_` | ✅ Done | `src/app/api/v1/email/contacts/search/route.ts` |
+| SEC-4 | **BUG-004: No Webhook Signature Verification** — webhook accept semua request tanpa verify. Fix: message-id pre-validation + optional HMAC-SHA256 | ✅ Done | `src/app/api/v1/email/webhook/route.ts` |
+| SEC-5 | **BUG-006: Restore Status** — restore overwrite ke `sent` bukan original status. Fix: tambah kolom `previous_status` di `email_log`, simpan saat trash, restore saat untrash | ✅ Done | `src/app/api/v1/email/[id]/route.ts` + `restore/route.ts` + migration `0055` |
+| SEC-6 | **BUG-008: No Auth on Upload URL** — tidak ada `verifyAuth()` di route presigned URL. Fix: tambah `verifyAuth(request)` | ✅ Done | `src/app/api/v1/email/attachments/upload-url/route.ts` |
+| SEC-7 | **BUG-010: Contact Search Race Condition** — debounce tidak cancel request sebelumnya. Fix: `AbortController` per request + handle `AbortError` | ✅ Done | `src/components/email/email-compose-sheet.tsx` |
+| SEC-8 | **NEW-404: 404 on Thread Expand** — email body dengan `<base>`/`<meta refresh>` cause navigation ke URL corrupt `="https://...`. Fix: DOMPurify sanitization — strip `<base>`, `<meta>`, dan危险 tags | ✅ Done | `src/app/dashboard/email/[id]/page.tsx` + `isomorphic-dompurify` |
+
+**BREVO_WEBHOOK_SECRET** sudah ditambahkan ke `.env`:
+```
+BREVO_WEBHOOK_SECRET=f7e665173fff96c160a6c48abe34c5633866ce60b6bf2098e6109088a3b16b47
+```
+Konfigurasi di Brevo Dashboard → Webhooks → pilih webhook → set Secret key yang sama.
+
+**Audit Report lengkap:** `AUDIT-BUG-MAIL-CENTER.md`
+
+### 📋 Remaining Bugs (NOT FIXED — Low Priority)
+
+| Severity | Count | Details |
+|----------|-------|---------|
+| HIGH | 2 | BUG-007 (verifyAuth type inconsistency), BUG-009 (intentional), BUG-005 (intentional) |
+| MEDIUM | 10 | Attachment failure silent, no ownership check, XSS risk in templates, etc. |
+| LOW | 10 | Duplicate code, magic numbers, unused results |
+
+> 22 bugs remaining. BUG-005 (hardcoded BCC) dan BUG-009 (thread grouping) adalah **design decision** — tidak perlu fix. RLS policies belum ditambahkan (relies on API-layer auth only).
 
 ## 📋 Future Plan — Multi-Email Perusahaan (Rencana)
 

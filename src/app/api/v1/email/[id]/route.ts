@@ -9,10 +9,21 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
   try {
     const { id } = await params
 
+    // First get current status to store as previous_status
+    const { data: email } = await supabaseAdmin
+      .from("email_log")
+      .select("status")
+      .eq("id", id)
+      .maybeSingle()
+
+    if (!email) {
+      return NextResponse.json({ error: "Email not found" }, { status: 404 })
+    }
+
     const now = new Date().toISOString()
     const { error } = await supabaseAdmin
       .from("email_log")
-      .update({ status: "trashed", updated_at: now })
+      .update({ status: "trashed", previous_status: email.status, updated_at: now })
       .eq("id", id)
 
     if (error) {

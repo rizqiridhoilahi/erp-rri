@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { supabase } from "@/lib/db/client"
+import DOMPurify from "isomorphic-dompurify"
 import { format } from "date-fns"
 import { id as idLocale } from "date-fns/locale"
 import { Button } from "@/components/ui/button"
@@ -184,6 +185,25 @@ function normalizeSubject(subject: string): string {
   return s.trim().toLowerCase()
 }
 
+function escapeForSupabase(value: string): string {
+  return value.replace(/'/g, "''")
+}
+
+function sanitizeBody(html: string): string {
+  return DOMPurify.sanitize(html, {
+    ALLOWED_TAGS: [
+      "b", "i", "em", "strong", "u", "a", "p", "br", "span", "div",
+      "ul", "ol", "li", "blockquote", "pre", "code", "h1", "h2", "h3",
+      "h4", "h5", "h6", "table", "thead", "tbody", "tr", "th", "td",
+      "hr", "img",
+    ],
+    ALLOWED_ATTR: ["href", "src", "alt", "title", "class", "target", "rel"],
+    FORBID_TAGS: ["base", "meta", "link", "style", "script", "form", "input"],
+    ADD_ATTR: ["target"],
+    FORCE_BODY: false,
+  })
+}
+
 export default function EmailDetailPage() {
   const params = useParams()
   const router = useRouter()
@@ -236,8 +256,8 @@ export default function EmailDetailPage() {
                 .neq("id", params.id)
                 .ilike("subject", `%${normSubj}%`)
                 .or(
-                  `from_email.eq.${email.fromEmail},to_email.eq.${email.fromEmail}` +
-                    `,from_email.eq.${email.toEmail},to_email.eq.${email.toEmail}`,
+                  `from_email.eq.${escapeForSupabase(email.fromEmail ?? '')},to_email.eq.${escapeForSupabase(email.fromEmail ?? '')}` +
+                    `,from_email.eq.${escapeForSupabase(email.toEmail ?? '')},to_email.eq.${escapeForSupabase(email.toEmail ?? '')}`,
                 )
                 .order("created_at", { ascending: true })
               if (related) {
@@ -542,7 +562,7 @@ export default function EmailDetailPage() {
                     <div className="border-t border-border pt-3">
                       <div
                         className="text-sm leading-relaxed text-foreground prose prose-sm max-w-none"
-                        dangerouslySetInnerHTML={{ __html: emailItem.body }}
+                        dangerouslySetInnerHTML={{ __html: sanitizeBody(emailItem.body) }}
                       />
                     </div>
                   )}

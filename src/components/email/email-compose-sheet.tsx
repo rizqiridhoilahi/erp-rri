@@ -58,6 +58,7 @@ export function EmailComposeSheet({ open, onOpenChange, initialData, onSent }: E
   const [contactResults, setContactResults] = useState<ContactResult[]>([])
   const [contactLoading, setContactLoading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const contactAbortRef = useRef<AbortController | null>(null)
 
   const replyType = initialData?.replyType
   const isReply = replyType === "reply" || replyType === "replyAll"
@@ -114,19 +115,32 @@ export function EmailComposeSheet({ open, onOpenChange, initialData, onSent }: E
       setContactResults([])
       return
     }
+    // Cancel any in-flight request before starting new one
+    if (contactAbortRef.current) {
+      contactAbortRef.current.abort()
+    }
+    const abortController = new AbortController()
+    contactAbortRef.current = abortController
+
     const timer = setTimeout(async () => {
       setContactLoading(true)
       try {
         const res = await apiFetch<ContactResult[]>(
           `/api/v1/email/contacts/search?q=${encodeURIComponent(contactQuery)}`,
+          { signal: abortController.signal },
         )
         setContactResults(res.data)
-      } catch {
+      } catch (err) {
+        if (err instanceof Error && err.name === 'AbortError') return
         setContactResults([])
+      } finally {
+        setContactLoading(false)
       }
-      setContactLoading(false)
     }, 300)
-    return () => clearTimeout(timer)
+    return () => {
+      clearTimeout(timer)
+      abortController.abort()
+    }
   }, [contactQuery])
 
   const handleSelectContact = useCallback(

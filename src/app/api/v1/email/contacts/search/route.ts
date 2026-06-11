@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from "next/server"
 import { verifyAuth } from "@/lib/api/auth"
 import { supabaseAdmin } from "@/lib/api/supabase-server"
 
+function escapeForLike(value: string): string {
+  return value.replace(/'/g, "''").replace(/%/g, "\\%").replace(/_/g, "\\_")
+}
+
 export async function GET(request: NextRequest) {
   const auth = await verifyAuth(request)
   if (auth.error) return NextResponse.json({ error: auth.error }, { status: 401 })
@@ -25,7 +29,7 @@ export async function GET(request: NextRequest) {
         customer:customer_id ( nama, kode )
       `)
       .eq("is_active", true)
-      .or(`nama.ilike.%${q}%,email.ilike.%${q}%`)
+      .or(`nama.ilike.%${escapeForLike(q)}%,email.ilike.%${escapeForLike(q)}%`)
       .limit(10)
 
     if (error) {

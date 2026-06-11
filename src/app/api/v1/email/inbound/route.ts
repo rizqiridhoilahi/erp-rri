@@ -8,6 +8,10 @@ function normalizeSubject(subject: string): string {
   return subject.replace(/^(Re|Fwd|Aw|Fw)\s*:\s*/gi, '').trim().toLowerCase()
 }
 
+function escapeForSupabase(value: string): string {
+  return value.replace(/'/g, "''")
+}
+
 const attachmentSchema = z.object({
   key: z.string(),
   fileName: z.string(),
@@ -108,7 +112,7 @@ export async function POST(request: NextRequest) {
         const { data: existing } = await supabaseAdmin
           .from("email_log")
           .select("thread_id")
-          .or(`from_email.eq.${fromEmail},to_email.eq.${fromEmail},from_email.eq.${toEmail},to_email.eq.${toEmail}`)
+          .or(`from_email.eq.${escapeForSupabase(fromEmail)},to_email.eq.${escapeForSupabase(fromEmail)},from_email.eq.${escapeForSupabase(toEmail)},to_email.eq.${escapeForSupabase(toEmail)}`)
           .ilike("subject", `%${normSubj}%`)
           .not("thread_id", "is", null)
           .order("created_at", { ascending: false })

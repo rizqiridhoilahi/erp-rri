@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { verifyAuth } from '@/lib/api/auth'
 import { getPresignedUrl } from '@/lib/email/r2-client'
 
 export async function GET(request: NextRequest) {
+  const auth = await verifyAuth(request)
+  if (auth.error) return NextResponse.json({ error: auth.error }, { status: 401 })
   const { searchParams } = new URL(request.url)
   const fileName = searchParams.get('fileName')
   const contentType = searchParams.get('contentType') ?? 'application/octet-stream'

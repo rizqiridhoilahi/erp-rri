@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/api/supabase-server'
+import { createHmac } from 'crypto'
 
 interface BrevoWebhookEvent {
   event: string
@@ -19,15 +20,59 @@ function normalizeMessageId(raw: string): string {
   return raw.replace(/^<|>$/g, '').trim()
 }
 
+function verifyWebhookSignature(request: NextRequest, rawBody: string): boolean {
+  const secret = process.env.BREVO_WEBHOOK_SECRET
+  if (!secret) return true
+
+  const signature = request.headers.get('X Brevo Signature') ||
+                    request.headers.get('x-brevo-signature') ||
+                    request.headers.get('authorization')?.replace(/^Bearer\s+/i, '')
+
+  if (!signature) return false
+
+  const expectedSig = createHmac('sha256', secret).update(rawBody).digest('hex')
+  return signature === expectedSig || signature === expectedSig.toLowerCase()
+}
+
+async function verifyMessageIdExists(messageId: string): Promise<boolean> {
+  const { data } = await supabaseAdmin
+    .from('email_log')
+    .select('id')
+    .eq('message_id', messageId)
+    .maybeSingle()
+  return !!data
+}
+
 export async function POST(request: NextRequest) {
-  const body: BrevoWebhookEvent | BrevoWebhookEvent[] = await request.json().catch(() => null)
-  if (!body) return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
+  const rawBody = await request.text().catch(() => '')
+  if (!rawBody) return NextResponse.json({ error: 'Invalid body' }, { status: 400 })
+
+  if (!verifyWebhookSignature(request, rawBody)) {
+    const secret = process.env.BREVO_WEBHOOK_SECRET
+    if (secret) {
+      console.log('Webhook: signature verification failed')
+      return NextResponse.json({ error: 'Invalid signature' }, { status: 401 })
+    }
+  }
+
+  let body: BrevoWebhookEvent | BrevoWebhookEvent[]
+  try {
+    body = JSON.parse(rawBody)
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
+  }
 
   const events = Array.isArray(body) ? body : [body]
 
   for (const event of events) {
     const messageId = normalizeMessageId(event['message-id'] ?? '')
     if (!messageId) continue
+
+    const messageExists = await verifyMessageIdExists(messageId)
+    if (!messageExists) {
+      console.log(`Webhook: message-id ${messageId} not found in email_log, skipping`)
+      continue
+    }
 
     const now = new Date(event.ts ? event.ts * 1000 : Date.now()).toISOString()
 
@@ -96,7 +141,6 @@ export async function POST(request: NextRequest) {
         break
       }
       case 'unsubscribed': {
-        // Just log, no status update needed
         break
       }
       default: {
