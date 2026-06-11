@@ -4,6 +4,25 @@ import { z } from "zod"
 
 const MAX_ATTACHMENT_SIZE = 25 * 1024 * 1024 // 25MB
 
+// Simple in-memory rate limiter: 100 requests per minute per IP
+const rateLimitMap = new Map<string, { count: number; resetAt: number }>()
+const RATE_LIMIT = 100
+const RATE_WINDOW_MS = 60 * 1000
+
+function checkRateLimit(ip: string): boolean {
+  const now = Date.now()
+  const entry = rateLimitMap.get(ip)
+  if (!entry || now > entry.resetAt) {
+    rateLimitMap.set(ip, { count: 1, resetAt: now + RATE_WINDOW_MS })
+    return true
+  }
+  if (entry.count >= RATE_LIMIT) {
+    return false
+  }
+  entry.count++
+  return true
+}
+
 function normalizeSubject(subject: string): string {
   return subject.replace(/^(Re|Fwd|Aw|Fw)\s*:\s*/gi, '').trim().toLowerCase()
 }
@@ -49,6 +68,11 @@ const inboundBodySchema = z.object({
 })
 
 export async function POST(request: NextRequest) {
+  const ip = request.headers.get('x-forwarded-for')?.split(',')[0] || 'unknown'
+  if (!checkRateLimit(ip)) {
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
+  }
+
   const authHeader = request.headers.get("authorization")
   const secret = process.env.EMAIL_INBOUND_SECRET
   if (!secret || authHeader !== `Bearer ${secret}`) {
@@ -240,6 +264,7 @@ export async function POST(request: NextRequest) {
       },
     })
   } catch (err) {
+    console.error('[INBOUND] Process failed:', { error: err instanceof Error ? err.stack : err })
     const message = err instanceof Error ? err.message : "Failed to process inbound email"
     return NextResponse.json({ error: message }, { status: 500 })
   }

@@ -40,6 +40,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
     return NextResponse.json({ data: { status: restoredStatus } })
   } catch (err) {
+    console.error('[RESTORE] Restore failed:', { error: err instanceof Error ? err.stack : err })
     const message = err instanceof Error ? err.message : "Failed to restore email"
     return NextResponse.json({ error: message }, { status: 500 })
   }

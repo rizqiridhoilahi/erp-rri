@@ -19,6 +19,7 @@ export async function POST(request: NextRequest) {
     const result = await syncAllCustomers()
     return NextResponse.json({ data: result })
   } catch (err) {
+    console.error('[SYNC-CONTACTS] Sync failed:', { error: err instanceof Error ? err.stack : err })
     const message = err instanceof Error ? err.message : 'Failed to sync contacts'
     return NextResponse.json({ error: message }, { status: 500 })
   }

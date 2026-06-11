@@ -159,7 +159,16 @@ export async function POST(request: NextRequest) {
 
     // Store attachment metadata after successful send
     if (attachments && Array.isArray(attachments) && attachments.length > 0 && result.emailLogId) {
-      await storeEmailAttachments(result.emailLogId, attachments as AttachmentInput[])
+      try {
+        await storeEmailAttachments(result.emailLogId, attachments as AttachmentInput[])
+      } catch (attErr) {
+        console.error('[SEND] Failed to store attachment metadata:', {
+          emailLogId: result.emailLogId,
+          attachments: (attachments as AttachmentInput[]).map(a => a.id),
+          error: attErr instanceof Error ? attErr.message : String(attErr),
+          stack: attErr instanceof Error ? attErr.stack : undefined,
+        })
+      }
     }
 
     return NextResponse.json({ data: result })

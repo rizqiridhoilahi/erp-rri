@@ -307,6 +307,8 @@ export default function EmailDetailPage() {
   }, [params.id])
 
   const handleReply = (email: EmailDetail) => {
+    // For outbound emails (!inbound): reply goes to the recipient, not the sender (self)
+    // For inbound emails (inbound): reply goes to the original sender
     openCompose({
       toEmail: email.inbound ? (email.fromEmail || email.toEmail) : email.toEmail,
       toNama: email.inbound ? (email.fromNama || undefined) : (email.toNama || undefined),

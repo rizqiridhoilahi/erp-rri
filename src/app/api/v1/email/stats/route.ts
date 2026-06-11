@@ -64,6 +64,7 @@ export async function GET(request: NextRequest) {
       },
     })
   } catch (err) {
+    console.error('[STATS] Failed:', { error: err instanceof Error ? err.stack : err })
     const message = err instanceof Error ? err.message : 'Failed to fetch stats'
     return NextResponse.json({ error: message }, { status: 500 })
   }

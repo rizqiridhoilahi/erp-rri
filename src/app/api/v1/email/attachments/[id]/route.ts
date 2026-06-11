@@ -24,6 +24,28 @@ export async function GET(
       return notFound('Attachment not found')
     }
 
+    // Ownership check: verify the authenticated user is a participant in the email
+    const userEmail = auth.user?.email?.toLowerCase()
+    if (!userEmail) {
+      return NextResponse.json({ error: 'User email not found' }, { status: 403 })
+    }
+
+    const { data: emailRecord } = await supabaseAdmin
+      .from('email_log')
+      .select('from_email, to_email')
+      .eq('id', attachment.email_id)
+      .single()
+
+    if (!emailRecord) {
+      return notFound('Email record not found')
+    }
+
+    const fromEmail = (emailRecord.from_email || '').toLowerCase()
+    const toEmail = (emailRecord.to_email || '').toLowerCase()
+    if (userEmail !== fromEmail && userEmail !== toEmail) {
+      return NextResponse.json({ error: 'Access denied' }, { status: 403 })
+    }
+
     let key = attachment.file_url
     // Handle both raw R2 key ("email-attachments/...") and full URL ("https://...")
     if (key.includes('://')) {

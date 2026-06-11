@@ -32,6 +32,7 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
 
     return NextResponse.json({ data: { status: "trashed" } })
   } catch (err) {
+    console.error('[EMAIL:id] Trash failed:', { error: err instanceof Error ? err.stack : err })
     const message = err instanceof Error ? err.message : "Failed to trash email"
     return NextResponse.json({ error: message }, { status: 500 })
   }

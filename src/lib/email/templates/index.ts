@@ -4,10 +4,20 @@ export interface FooterData {
   companyEmail?: string
 }
 
+function escapeHtml(str: string | undefined | null): string {
+  if (!str) return ''
+  return str
+    .replace(/&/g, '&')
+    .replace(/</g, '<')
+    .replace(/>/g, '>')
+    .replace(/"/g, '"')
+    .replace(/'/g, '&#039;')
+}
+
 export function emailLayout(content: string, title: string, footer?: FooterData): string {
-  const nama = footer?.companyNama || 'PT. Rizqi Ridho Ilahi'
-  const noHp = footer?.companyNoHp || '+6281 2607 5500'
-  const email = footer?.companyEmail || 'info@pt-rri.com'
+  const nama = escapeHtml(footer?.companyNama) || 'PT. Rizqi Ridho Ilahi'
+  const noHp = escapeHtml(footer?.companyNoHp) || '+6281 2607 5500'
+  const email = escapeHtml(footer?.companyEmail) || 'info@pt-rri.com'
 
   return `
 <!DOCTYPE html>
@@ -39,7 +49,7 @@ ${content}
 }
 
 export function tableRow(label: string, value: string): string {
-  return `<tr><td style="padding:8px 12px;border:1px solid #e2e8f0;font-weight:600;color:#475569;background-color:#f8fafc;white-space:nowrap;width:140px;font-size:14px">${label}</td><td style="padding:8px 12px;border:1px solid #e2e8f0;color:#1e293b;font-size:14px">${value}</td></tr>`
+  return `<tr><td style="padding:8px 12px;border:1px solid #e2e8f0;font-weight:600;color:#475569;background-color:#f8fafc;white-space:nowrap;width:140px;font-size:14px">${escapeHtml(label)}</td><td style="padding:8px 12px;border:1px solid #e2e8f0;color:#1e293b;font-size:14px">${escapeHtml(value)}</td></tr>`
 }
 
 export const COMPANY_KEYS = [
