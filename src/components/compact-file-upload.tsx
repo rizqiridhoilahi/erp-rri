@@ -11,6 +11,7 @@ export interface DocumentFile {
   file_url: string
   drive_file_id?: string | null
   uploaded_at: string
+  document_type?: string | null
 }
 
 interface CompactFileUploadProps {

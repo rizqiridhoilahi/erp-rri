@@ -97,11 +97,11 @@ export function EmailTabs() {
       <Button
         variant="ghost"
         size="icon"
-        className="mr-1 shrink-0 text-muted-foreground hover:text-foreground"
+        className="mr-1 shrink-0 text-success hover:text-success h-[25px] w-[25px] [&_svg]:!h-[25px] [&_svg]:!w-[25px]"
         onClick={handleRefresh}
         disabled={refreshing}
       >
-        <RefreshCw className={cn("h-4 w-4", refreshing && "animate-spin")} />
+        <RefreshCw className={cn("h-[25px] w-[25px]", refreshing && "animate-spin")} />
       </Button>
     </div>
   )

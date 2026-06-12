@@ -2,11 +2,15 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { useState } from "react"
 import { format } from "date-fns"
 import { id } from "date-fns/locale"
-import { Paperclip, InboxIcon, MessageSquare } from "lucide-react"
+import { toast } from "sonner"
+import { Paperclip, InboxIcon, MessageSquare, Check, Trash2, RotateCcw, AlertTriangle, ListChecks } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { getAuthToken } from "@/lib/api/client"
 
 export interface EmailItem {
   id: string
@@ -48,13 +52,14 @@ export function mapEmailLogRow(row: Record<string, unknown>): EmailItem {
   }
 }
 
-const statusVariant: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
-  sent: "default",
-  delivered: "default",
+const statusVariant: Record<string, "default" | "secondary" | "destructive" | "outline" | "success" | "warning"> = {
+  sent: "warning",
+  delivered: "success",
   opened: "default",
+  clicked: "default",
   failed: "destructive",
   bounced: "destructive",
-  trashed: "outline",
+  trashed: "destructive",
 }
 
 function formatDate(dateStr: string | null | undefined) {
@@ -66,8 +71,8 @@ function formatDate(dateStr: string | null | undefined) {
   const days = Math.floor(diff / (1000 * 60 * 60 * 24))
 
   if (days === 0) return format(date, "HH:mm")
-  if (days < 7) return format(date, "EEE", { locale: id })
-  return format(date, "dd/MM/yy")
+  if (days < 7) return format(date, "EEE HH:mm", { locale: id })
+  return format(date, "dd MMM yyyy", { locale: id })
 }
 
 function getInitials(name?: string | null, email?: string | null): string {
@@ -162,68 +167,96 @@ function groupThreads(emails: EmailItem[]): ThreadGroup[] {
     })
 }
 
-function EmailThreadRow({ thread, path }: { thread: ThreadGroup; path: string }) {
+function EmailThreadRow({ thread, path, selectedIds, toggleSelect, selectMode }: { thread: ThreadGroup; path: string; selectedIds: Set<string>; toggleSelect: (id: string) => void; selectMode?: boolean }) {
   const pathname = usePathname()
   const latest = thread.emails[thread.emails.length - 1]
   const isUnread = latest.inbound
     ? (latest.status === 'delivered' && !latest.openedAt)
     : (latest.status === 'sent')
   const isCurrent = pathname === `${path}/${latest.id}`
+  const isSelected = selectedIds.has(thread.threadId)
 
   return (
     <Link
       key={thread.threadId}
       href={`${path}/${latest.id}`}
       className={cn(
-        "flex items-center gap-3 px-4 py-3 transition-colors duration-200 hover:bg-muted/40 cursor-pointer",
-        isCurrent && "bg-primary/5 border-l-2 border-primary",
+        "relative rounded-l-none rounded-r-[30px] transition-all border shadow-md block",
+        "before:absolute before:inset-y-0 before:left-0 before:w-[10px] before:[clip-path:polygon(0_0,100%_0,30%_100%,0_100%)]",
+        isCurrent
+          ? "before:bg-gradient-to-b before:from-ring before:to-transparent border-ring bg-primary/[0.08]"
+          : isSelected
+            ? "before:bg-primary/40 border-primary/50 bg-primary/[0.05]"
+            : "before:bg-primary/20 border-foreground/30 bg-card hover:border-foreground/50",
       )}
     >
-      <AvatarCircle name={latest.fromNama || latest.toNama} email={latest.fromEmail || latest.toEmail} />
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <span
+      <div className="flex items-start gap-3 pl-3 pr-4 py-4 cursor-pointer">
+        <div className="flex items-center gap-1.5 shrink-0">
+          {selectMode && (
+            <button
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                toggleSelect(thread.threadId)
+              }}
+              className={cn(
+                "h-4 w-4 rounded shrink-0 border transition-colors flex items-center justify-center mt-1",
+                isSelected
+                  ? "bg-primary border-primary text-primary-foreground"
+                  : "border-foreground/30 hover:border-foreground/50",
+              )}
+              aria-label="Select thread"
+            >
+              {isSelected && <Check className="h-3 w-3" />}
+            </button>
+          )}
+          <AvatarCircle name={latest.fromNama || latest.toNama} email={latest.fromEmail || latest.toEmail} />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span
+              className={cn(
+                "font-heading text-base text-primary",
+                isUnread ? "font-semibold" : "font-medium",
+              )}
+            >
+              {latest.inbound
+                ? (latest.fromNama || latest.fromEmail || latest.toEmail)
+                : (latest.toNama || latest.toEmail)}
+            </span>
+            <span className="text-sm text-foreground">
+              {latest.inbound ? "to" : "from"}{" "}
+              <span className="font-medium text-amber-600 dark:text-amber-400">
+                {latest.inbound ? latest.toEmail : (latest.fromEmail || latest.toEmail)}
+              </span>
+            </span>
+            <Badge variant={statusVariant[latest.status] ?? "outline"} className="text-sm px-2 py-0.5">
+              {latest.status}
+            </Badge>
+            {latest.hasAttachments && <Paperclip className="h-3 w-3 shrink-0 text-muted-foreground" />}
+            {thread.emails.length > 1 && (
+              <span className="flex items-center gap-1 text-sm font-bold text-success shrink-0">
+                <MessageSquare className="h-3.5 w-3.5" strokeWidth={2.5} />
+                {thread.emails.length}
+              </span>
+            )}
+          </div>
+          <p
             className={cn(
-              "truncate text-sm",
-              isUnread
-                ? "font-heading font-semibold text-foreground"
-                : "font-heading font-medium text-foreground",
+              "truncate text-sm text-[#D946EF] mt-0.5",
+              isUnread ? "font-medium" : "",
             )}
           >
-            {latest.inbound
-              ? (latest.fromNama || latest.fromEmail || latest.toEmail)
-              : (latest.toNama || latest.toEmail)}
-          </span>
-          {latest.hasAttachments && <Paperclip className="h-3 w-3 shrink-0 text-muted-foreground" />}
-          {thread.emails.length > 1 && (
-            <span className="flex items-center gap-1 text-xs text-muted-foreground shrink-0">
-              <MessageSquare className="h-3 w-3" />
-              {thread.emails.length}
-            </span>
-          )}
+            {latest.subject}
+          </p>
+          <div className="flex items-center gap-2 text-sm font-medium text-primary mt-0.5">
+            <span>{formatDate(latest.createdAt)}</span>
+            {latest.cc && <span>CC: {latest.cc}</span>}
+          </div>
+          <p className="truncate text-sm font-medium text-foreground mt-0.5">
+            {latest.body?.replace(/<[^>]*>/g, "").slice(0, 100) || ""}
+          </p>
         </div>
-        <p
-          className={cn(
-            "truncate text-sm",
-            isUnread ? "font-medium text-foreground" : "text-muted-foreground",
-          )}
-        >
-          {latest.subject}
-        </p>
-        <p className="truncate text-sm text-muted-foreground">
-          {latest.body?.replace(/<[^>]*>/g, "").slice(0, 100) || ""}
-        </p>
-        {latest.cc && (
-          <p className="truncate text-xs text-muted-foreground/70">CC: {latest.cc}</p>
-        )}
-      </div>
-      <div className="flex flex-col items-end gap-1 shrink-0">
-        <span className="text-xs text-muted-foreground whitespace-nowrap">
-          {formatDate(latest.createdAt)}
-        </span>
-        <Badge variant={statusVariant[latest.status] ?? "outline"} className="text-[10px] px-1.5 py-0">
-          {latest.status}
-        </Badge>
       </div>
     </Link>
   )
@@ -232,11 +265,116 @@ function EmailThreadRow({ thread, path }: { thread: ThreadGroup; path: string })
 export function EmailList({
   emails,
   basePath,
+  onRefresh,
+  isFirstPage,
 }: {
   emails: EmailItem[]
   basePath?: string
+  onRefresh?: () => void
+  isFirstPage?: boolean
 }) {
   const path = basePath ?? "/dashboard/email"
+  const pathname = usePathname()
+  const isTrash = pathname.includes("/trash")
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [actionLoading, setActionLoading] = useState(false)
+
+  const [selectMode, setSelectMode] = useState(false)
+  const threads = groupThreads(emails)
+
+  function handleSelectAll() {
+    setSelectedIds(new Set(threads.map((t) => t.threadId)))
+  }
+
+  function toggleSelect(id: string) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  function getSelectedEmailIds(): string[] {
+    return threads
+      .filter((t) => selectedIds.has(t.threadId))
+      .flatMap((t) => t.emails.map((e) => e.id))
+  }
+
+  async function handleBulkTrash() {
+    const token = await getAuthToken()
+    if (!token) return
+    const emailIds = getSelectedEmailIds()
+    const toastId = toast.loading(`Memindahkan ${emailIds.length} email ke Trash...`)
+    setActionLoading(true)
+    const results = await Promise.allSettled(
+      emailIds.map((id) =>
+        fetch(`/api/v1/email/${id}`, {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+      ),
+    )
+    setActionLoading(false)
+    setSelectedIds(new Set())
+    const ok = results.filter((r) => r.status === "fulfilled" && (r.value as Response).ok).length
+    if (ok === emailIds.length) {
+      toast.success(`${ok} email dipindahkan ke Trash`, { id: toastId })
+      onRefresh?.()
+    } else {
+      toast.error(`${emailIds.length - ok} dari ${emailIds.length} email gagal dipindahkan`, { id: toastId })
+    }
+  }
+
+  async function handleBulkRestore() {
+    const token = await getAuthToken()
+    if (!token) return
+    const emailIds = getSelectedEmailIds()
+    const toastId = toast.loading(`Mengembalikan ${emailIds.length} email...`)
+    setActionLoading(true)
+    const results = await Promise.allSettled(
+      emailIds.map((id) =>
+        fetch(`/api/v1/email/${id}/restore`, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+      ),
+    )
+    setActionLoading(false)
+    setSelectedIds(new Set())
+    const ok = results.filter((r) => r.status === "fulfilled" && (r.value as Response).ok).length
+    if (ok === emailIds.length) {
+      toast.success(`${ok} email dikembalikan`, { id: toastId })
+      onRefresh?.()
+    } else {
+      toast.error(`${emailIds.length - ok} dari ${emailIds.length} email gagal dikembalikan`, { id: toastId })
+    }
+  }
+
+  async function handleBulkPurge() {
+    const token = await getAuthToken()
+    if (!token) return
+    const emailIds = getSelectedEmailIds()
+    const toastId = toast.loading(`Menghapus permanen ${emailIds.length} email...`)
+    setActionLoading(true)
+    const results = await Promise.allSettled(
+      emailIds.map((id) =>
+        fetch(`/api/v1/email/${id}/purge`, {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+      ),
+    )
+    setActionLoading(false)
+    setSelectedIds(new Set())
+    const ok = results.filter((r) => r.status === "fulfilled" && (r.value as Response).ok).length
+    if (ok === emailIds.length) {
+      toast.success(`${ok} email dihapus permanen`, { id: toastId })
+      onRefresh?.()
+    } else {
+      toast.error(`${emailIds.length - ok} dari ${emailIds.length} email gagal dihapus`, { id: toastId })
+    }
+  }
 
   if (emails.length === 0) {
     return (
@@ -247,12 +385,87 @@ export function EmailList({
     )
   }
 
-  const threads = groupThreads(emails)
-
   return (
-    <div className="divide-y divide-border">
+    <div className="space-y-[10px]">
+      {!selectMode && selectedIds.size === 0 && (
+        <div className="flex justify-end pr-4">
+          <Button
+            variant="outline"
+            size="sm"
+            className="mr-2 bg-success border-success text-white hover:bg-success/90"
+            onClick={() => setSelectMode(true)}
+          >
+            <ListChecks className="mr-1 h-3.5 w-3.5" />
+            Select
+          </Button>
+        </div>
+      )}
+      {selectMode && isFirstPage && (
+        <div className="flex justify-end pr-4">
+          <Button
+            variant="outline"
+            size="sm"
+            className="bg-success border-success text-white hover:bg-success/90"
+            onClick={handleSelectAll}
+          >
+            <Check className="mr-1 h-3.5 w-3.5" />
+            Select All
+          </Button>
+        </div>
+      )}
+      {selectedIds.size > 0 && (
+        <div className="sticky top-0 z-20 bg-card border border-foreground/30 rounded-none shadow-md p-3 flex items-center gap-3">
+          <span className="text-sm font-medium text-foreground min-w-fit">
+            {selectedIds.size} selected
+          </span>
+          <div className="flex-1" />
+          {isTrash ? (
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleBulkRestore}
+                disabled={actionLoading}
+              >
+                <RotateCcw className="mr-1 h-3.5 w-3.5" />
+                Restore
+              </Button>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={handleBulkPurge}
+                disabled={actionLoading}
+              >
+                <AlertTriangle className="mr-1 h-3.5 w-3.5" />
+                Delete Permanently
+              </Button>
+            </>
+          ) : (
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={handleBulkTrash}
+              disabled={actionLoading}
+            >
+              <Trash2 className="mr-1 h-3.5 w-3.5" />
+              Move to Trash
+            </Button>
+          )}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              setSelectedIds(new Set())
+              setSelectMode(false)
+            }}
+            className="bg-zinc-700 text-foreground hover:bg-zinc-600 px-4"
+          >
+            Cancel
+          </Button>
+        </div>
+      )}
       {threads.map((thread) => (
-        <EmailThreadRow key={thread.threadId} thread={thread} path={path} />
+        <EmailThreadRow key={thread.threadId} thread={thread} path={path} selectedIds={selectedIds} toggleSelect={toggleSelect} selectMode={selectMode} />
       ))}
     </div>
   )

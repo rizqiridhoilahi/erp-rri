@@ -6,13 +6,18 @@ import { storageService } from '@/lib/storage'
 
 const TABLE = 'invoice_document'
 const FK_COL = 'invoice_id'
-const STORAGE_PREFIX = 'dokumen/invoice'
+const STORAGE_PREFIX = 'dokumen/grn-customer'
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const auth = await verifyAuth(req)
   if (auth.error) return auth.error
   const { id } = await params
-  const { data, error } = await supabaseAdmin.from(TABLE).select('*').eq(FK_COL, id).order('uploaded_at', { ascending: false })
+  const { data, error } = await supabaseAdmin
+    .from(TABLE)
+    .select('*')
+    .eq(FK_COL, id)
+    .eq('document_type', 'grn_customer')
+    .order('uploaded_at', { ascending: false })
   if (error) return internalError(error)
   return NextResponse.json({ data: data ?? [] })
 }
@@ -25,7 +30,6 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   if (!formData) return badRequest('Invalid form data')
   const file = formData.get('file') as File | null
   if (!file) return badRequest('File harus diupload')
-  const documentType = (formData.get('document_type') as string | null) || 'document'
   const maxSize = 10 * 1024 * 1024
   if (file.size > maxSize) return badRequest('Ukuran file maksimal 10MB')
   const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp']
@@ -39,7 +43,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     return internalError('Gagal upload file: ' + (err instanceof Error ? err.message : 'unknown error'))
   }
   const { data: doc, error: dbError } = await supabaseAdmin.from(TABLE).insert({
-    id: crypto.randomUUID(), [FK_COL]: id, document_type: documentType, file_name: file.name, file_url: uploadResult.webViewLink, drive_file_id: uploadResult.fileId,
+    id: crypto.randomUUID(), [FK_COL]: id, document_type: 'grn_customer', file_name: file.name, file_url: uploadResult.webViewLink, drive_file_id: uploadResult.fileId,
   }).select().single()
   if (dbError) {
     await storageService.delete(uploadResult.fileId).catch(() => {})

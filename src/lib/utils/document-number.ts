@@ -22,18 +22,18 @@ export async function generateDocumentNumber(kodeDokumen: string, tahun?: number
   return formatNumber(kodeDokumen, year, month, data ?? 1);
 }
 
-export async function generateGlobalDocumentNumber(kodeDokumen: string): Promise<string> {
+export async function generateGlobalDocumentNumber(kodeDokumen: string, tahun?: number, bulan?: number): Promise<string> {
   const now = new Date();
-  const tahun = now.getFullYear();
-  const bulan = now.getMonth() + 1;
+  const tahunFinal = tahun ?? now.getFullYear();
+  const bulanFinal = bulan ?? now.getMonth() + 1;
 
   const { data, error } = await supabase.rpc('increment_global_counter', {
-    p_tahun: tahun,
-    p_bulan: bulan,
+    p_tahun: tahunFinal,
+    p_bulan: bulanFinal,
   });
 
   if (error) throw new Error(`Failed to generate global document number: ${error.message}`);
-  return formatNumber(kodeDokumen, tahun, bulan, data ?? 1);
+  return formatNumber(kodeDokumen, tahunFinal, bulanFinal, data ?? 1);
 }
 
 export function formatChildNumber(parentNomor: string, childKode: string): string {

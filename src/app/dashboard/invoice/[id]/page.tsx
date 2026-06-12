@@ -92,6 +92,7 @@ export default function InvoiceDetailPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [documents, setDocuments] = useState<DocumentFile[]>([])
+  const [grnDocuments, setGrnDocuments] = useState<DocumentFile[]>([])
   const [uploading, setUploading] = useState(false)
   const [kwitansiList, setKwitansiList] = useState<Array<{ id: string; nomor: string; invoice_id: string; status: string }>>([])
   const [payments, setPayments] = useState<Array<{ id: string; amount: number; metode: string; tanggal: string; keterangan: string | null }>>([])
@@ -131,13 +132,15 @@ export default function InvoiceDetailPage() {
     Promise.all([
       apiFetch<Invoice & { items: InvoiceItem[] }>(`/api/v1/invoice/${id}`),
       apiFetch<DocumentFile[]>(`/api/v1/invoice/${id}/documents`),
+      apiFetch<DocumentFile[]>(`/api/v1/invoice/${id}/grn-document`),
       apiFetch<Array<{ id: string; nomor: string; invoice_id: string; status: string }>>(`/api/v1/kwitansi?invoice_id=${id}`),
       apiFetch<Array<{ id: string; amount: number; metode: string; tanggal: string; keterangan: string | null }>>(`/api/v1/invoice/${id}/payment`),
-    ]).then(([invRes, docRes, kwtRes, payRes]) => {
+    ]).then(([invRes, docRes, grnRes, kwtRes, payRes]) => {
       const invData = invRes.data
       setInv(invData)
       setItems(invData?.items ?? [])
       setDocuments(docRes.data ?? [])
+      setGrnDocuments(grnRes.data ?? [])
       setKwitansiList(kwtRes.data ?? [])
       setPayments(payRes.data ?? [])
       setGrnCustomerNomor(invData?.grn_customer_nomor ?? "")
@@ -212,11 +215,39 @@ export default function InvoiceDetailPage() {
     }
   }
 
+  const handleUploadGrn = async (file: File) => {
+    if (!id) return
+    setUploading(true)
+    try {
+      const formData = new FormData()
+      formData.append("file", file)
+      const { apiFetchFormData } = await import("@/lib/api/client")
+      const r = await apiFetchFormData(`/api/v1/invoice/${id}/grn-document`, formData)
+      setGrnDocuments((prev) => [r.data as DocumentFile, ...prev].filter(Boolean))
+      toast.success("File berhasil diupload")
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Gagal upload file")
+    } finally {
+      setUploading(false)
+    }
+  }
+
   const handleDeleteDocument = async (docId: string) => {
     if (!id) return
     try {
       await apiFetch(`/api/v1/invoice/${id}/documents?docId=${docId}`, { method: "DELETE" })
       setDocuments((prev) => prev.filter((d) => d.id !== docId))
+      toast.success("File berhasil dihapus")
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Gagal hapus file")
+    }
+  }
+
+  const handleDeleteGrnDocument = async (docId: string) => {
+    if (!id) return
+    try {
+      await apiFetch(`/api/v1/invoice/${id}/grn-document?docId=${docId}`, { method: "DELETE" })
+      setGrnDocuments((prev) => prev.filter((d) => d.id !== docId))
       toast.success("File berhasil dihapus")
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Gagal hapus file")
@@ -608,7 +639,7 @@ export default function InvoiceDetailPage() {
       <Card>
         <CardContent className="pt-6">
           <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <FileText className="h-4 w-4" />Retur Barang (GRN)
+            <FileText className="h-4 w-4" />Dokumen Penerimaan Barang (GRN)
           </h3>
           <div className="space-y-4">
             {inv.internal_grn && (
@@ -633,15 +664,12 @@ export default function InvoiceDetailPage() {
                 </Button>
               </div>
             </div>
-            <div>
-              <p className="text-sm text-muted-foreground mb-2">Dokumen GRN</p>
-              <CompactFileUpload
-                documents={documents.filter(d => d.file_name?.includes('GRN') || documents.length === 0)}
-                onUpload={handleUpload}
-                onDelete={handleDeleteDocument}
-                uploading={uploading}
-              />
-            </div>
+            <CompactFileUpload
+              documents={grnDocuments}
+              onUpload={handleUploadGrn}
+              onDelete={handleDeleteGrnDocument}
+              uploading={uploading}
+            />
           </div>
         </CardContent>
       </Card>

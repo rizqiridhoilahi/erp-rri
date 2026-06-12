@@ -41,7 +41,8 @@ const modulOptions = [
   'Delivery Order',
   'Delivery Slip',
   'Resi Pengiriman',
-  'GRN',
+  'GRN Supplier',
+  'GRN Customer',
   'Retur Barang (GRN)',
   'Invoice',
   'Kwitansi',
@@ -77,7 +78,8 @@ const modulBadgeClasses: Record<string, string> = {
   'Retur Pembelian': 'bg-lime-500/10 text-lime-500 font-medium',
   
   // Inventory - Abu
-  'GRN': 'bg-slate-500/10 text-slate-500 font-medium',
+  'GRN Supplier': 'bg-gray-500/10 text-gray-500 font-medium',
+  'GRN Customer': 'bg-slate-500/10 text-slate-500 font-medium',
   'Retur Barang (GRN)': 'bg-zinc-500/10 text-zinc-500 font-medium',
   
   // Legal - Ungu

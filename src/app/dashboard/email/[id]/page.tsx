@@ -111,7 +111,13 @@ function formatDateTime(dateStr: string | null | undefined) {
   if (!dateStr) return ""
   const date = new Date(dateStr)
   if (isNaN(date.getTime())) return ""
-  return format(date, "dd MMM yyyy, HH:mm", { locale: idLocale })
+  const now = new Date()
+  const diff = now.getTime() - date.getTime()
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24))
+
+  if (days === 0) return format(date, "HH:mm")
+  if (days < 7) return format(date, "EEE HH:mm", { locale: idLocale })
+  return format(date, "dd MMM yyyy", { locale: idLocale })
 }
 
 function formatTrackingTime(dateStr: string | null | undefined) {
@@ -494,11 +500,11 @@ export default function EmailDetailPage() {
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
-        <Button variant="ghost" size="sm" onClick={() => router.back()} className="-ml-2">
+        <Button variant="secondary" size="sm" onClick={() => router.back()} className="bg-zinc-500/70 text-white hover:bg-zinc-500/90">
           <ArrowLeft className="mr-1 h-4 w-4" />
           Back
         </Button>
-        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+        <div className="flex items-center gap-1 text-xs text-foreground">
           {threadEmails.length > 1 && (
             <span className="flex items-center gap-1">
               {threadEmails.length} emails in this conversation
@@ -508,7 +514,7 @@ export default function EmailDetailPage() {
       </div>
 
       {/* Thread conversation */}
-      <div className="space-y-4">
+      <div className="space-y-[10px]">
         {threadEmails.map((emailItem, idx) => {
           const isLatest = idx === threadEmails.length - 1
           const isCurrentEmail = emailItem.id === email.id
@@ -519,15 +525,15 @@ export default function EmailDetailPage() {
             <div
               key={emailItem.id}
               className={cn(
-                "border rounded-lg transition-colors",
-                isCurrentEmail
-                  ? "border-primary/30 bg-primary/[0.02]"
-                  : "border-border bg-card",
+                "relative rounded-l-none rounded-r-[30px] transition-colors border shadow-md before:absolute before:inset-y-0 before:left-0 before:w-[10px] before:[clip-path:polygon(0_0,100%_0,30%_100%,0_100%)]",
+                isExpanded
+                  ? "before:bg-gradient-to-b before:from-ring before:to-transparent border-ring bg-primary/[0.08]"
+                  : "before:bg-primary/20 border-foreground/30 bg-card",
               )}
             >
               {/* Header row: avatar + metadata + collapse */}
               <div
-                className="flex items-start gap-3 p-4 cursor-pointer select-none"
+                className="flex items-start gap-3 pl-6 pr-4 py-4 cursor-pointer select-none"
                 onClick={() => toggleExpand(emailItem.id)}
               >
                 <AvatarCircle
@@ -536,26 +542,28 @@ export default function EmailDetailPage() {
                 />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-heading font-semibold text-sm text-foreground">
+                    <span className="font-heading font-semibold text-base text-primary">
                       {emailItem.inbound
                         ? (emailItem.fromNama || emailItem.fromEmail)
                         : (emailItem.toNama || emailItem.toEmail)}
                     </span>
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-sm text-foreground">
                       {emailItem.inbound ? "to" : "from"}{" "}
-                      {emailItem.inbound ? emailItem.toEmail : (emailItem.fromEmail || emailItem.toEmail)}
+                      <span className="font-medium text-amber-600 dark:text-amber-400">
+                        {emailItem.inbound ? emailItem.toEmail : (emailItem.fromEmail || emailItem.toEmail)}
+                      </span>
                     </span>
                     <Badge
                       variant={statusVariant[emailItem.status] ?? "outline"}
-                      className="text-[10px] px-1.5 py-0"
+                      className="text-sm px-2 py-0.5"
                     >
                       {emailItem.status}
                     </Badge>
                   </div>
-                  <p className="truncate text-xs font-medium text-foreground/70 mt-0.5">
+                  <p className="truncate text-sm font-medium text-[#D946EF] mt-0.5">
                     {emailItem.subject}
                   </p>
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
+                  <div className="flex items-center gap-2 text-sm font-medium text-primary mt-0.5">
                     <span>{formatDateTime(emailItem.createdAt)}</span>
                     {emailItem.cc && <span>CC: {emailItem.cc}</span>}
                   </div>
@@ -567,18 +575,18 @@ export default function EmailDetailPage() {
 
               {/* Body + attachments */}
               {isExpanded && (
-                <div className="px-4 pb-4 space-y-3">
+                <div className="pl-6 pr-4 pb-4 space-y-3">
                   {emailItem.body && (
-                    <div className="border-t border-border pt-3">
+                    <div className="ml-6 border-t border-foreground/20 pt-4">
                       <div
-                        className="text-sm leading-relaxed text-foreground prose prose-sm max-w-none"
+                        className="text-sm font-medium leading-relaxed text-foreground prose prose-sm max-w-none"
                         dangerouslySetInnerHTML={{ __html: sanitizeBody(emailItem.body) }}
                       />
                     </div>
                   )}
 
                   {atts.length > 0 && (
-                    <div className="border-t border-border pt-3 space-y-1.5">
+                    <div className="ml-6 border-t border-foreground/20 pt-4 space-y-1.5">
                       <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                         <Paperclip className="h-3 w-3" />
                         Lampiran ({atts.length})
@@ -618,16 +626,18 @@ export default function EmailDetailPage() {
 
                   {/* Action buttons per email */}
                   {!isTrashed && (
-                    <div className="border-t border-border pt-3 flex gap-1">
-                      <Button variant="ghost" size="sm" onClick={() => handleReply(emailItem)}>
-                        <Reply className="mr-1 h-3.5 w-3.5" /> Reply
-                      </Button>
-                      <Button variant="ghost" size="sm" onClick={() => handleReplyAll(emailItem)}>
-                        <ReplyAll className="mr-1 h-3.5 w-3.5" /> Reply All
-                      </Button>
-                      <Button variant="ghost" size="sm" onClick={() => handleForward(emailItem)}>
-                        <Forward className="mr-1 h-3.5 w-3.5" /> Forward
-                      </Button>
+                    <div className="ml-6 border-t border-foreground/20 pt-4">
+                      <div className="bg-primary/[0.50] border border-primary/30 rounded-full p-1 flex items-center gap-0.5 w-fit">
+                        <Button variant="ghost" size="sm" className="text-white hover:text-white" onClick={() => handleReply(emailItem)}>
+                          <Reply className="mr-1 h-3.5 w-3.5" /> Reply
+                        </Button>
+                        <Button variant="ghost" size="sm" className="text-white hover:text-white" onClick={() => handleReplyAll(emailItem)}>
+                          <ReplyAll className="mr-1 h-3.5 w-3.5" /> Reply All
+                        </Button>
+                        <Button variant="ghost" size="sm" className="text-white hover:text-white" onClick={() => handleForward(emailItem)}>
+                          <Forward className="mr-1 h-3.5 w-3.5" /> Forward
+                        </Button>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -639,7 +649,7 @@ export default function EmailDetailPage() {
 
       {/* Tracking timeline for latest email */}
       {trackingEvents.length > 0 && !isTrashed && latestEmail?.id === email.id && (
-        <div className="border border-border rounded-lg p-4 space-y-3">
+        <div className="border border-foreground/30 rounded-lg p-4 space-y-3">
           <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Tracking</h3>
           <div className="space-y-2">
             {trackingEvents.map((event, i) => {
@@ -662,15 +672,15 @@ export default function EmailDetailPage() {
 
       {/* Section-wide actions */}
       {!isTrashed && (
-        <div className="flex gap-2 border-t border-border pt-4">
-          <Button variant="outline" size="sm" className="text-muted-foreground hover:text-foreground" onClick={() => setTrashOpen(true)}>
+        <div className="flex gap-2 border-t border-foreground/30 pt-4">
+          <Button variant="destructive" size="sm" onClick={() => setTrashOpen(true)}>
             <Trash2 className="mr-1 h-4 w-4" /> Move to Trash
           </Button>
         </div>
       )}
 
       {isTrashed && (
-        <div className="flex gap-2 border-t border-border pt-4">
+        <div className="flex gap-2 border-t border-foreground/30 pt-4">
           <Button variant="ghost" size="sm" onClick={handleRestore} disabled={restoring}>
             <RotateCcw className="mr-1 h-4 w-4" />
             {restoring ? "Mengembalikan..." : "Restore"}
@@ -718,11 +728,12 @@ export default function EmailDetailPage() {
   )
 }
 
-const statusVariant: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
-  sent: "default",
-  delivered: "default",
+const statusVariant: Record<string, "default" | "secondary" | "destructive" | "outline" | "success" | "warning"> = {
+  sent: "warning",
+  delivered: "success",
   opened: "default",
+  clicked: "default",
   failed: "destructive",
   bounced: "destructive",
-  trashed: "outline",
+  trashed: "destructive",
 }

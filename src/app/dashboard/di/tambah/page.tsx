@@ -78,6 +78,7 @@ export default function TambahDiPage() {
   const [dynamicTopOpts, setDynamicTopOpts] = useState<string[]>([])
   const [waktuPengiriman, setWaktuPengiriman] = useState('')
   const [tanggal, setTanggal] = useState(new Date().toISOString().split('T')[0])
+  const prevTanggalRef = useRef(tanggal)
   const [keterangan, setKeterangan] = useState('')
 
   const [kontrakItemsMap, setKontrakItemsMap] = useState<KontrakItemData[]>([])
@@ -105,6 +106,14 @@ export default function TambahDiPage() {
     return d.toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })
   }, [tanggal, waktuPengiriman])
 
+  function updatePreviewNomor(tgl: string) {
+    const d = tgl ? new Date(tgl) : new Date()
+    const params = `kode=DI&tahun=${d.getFullYear()}&bulan=${d.getMonth() + 1}`
+    apiFetch<{ nomor: string }>(`/api/v1/system/nomor-baru?${params}`)
+      .then(res => setNomorDokumen(res.data.nomor))
+      .catch(() => {})
+  }
+
   useEffect(() => {
     apiFetch<Array<{ id: string; nama: string; kode: string }>>('/api/v1/master/customer')
       .then(res => {
@@ -112,10 +121,15 @@ export default function TambahDiPage() {
         setLoading(false)
       })
       .catch(() => { setLoading(false); toast.error('Gagal memuat data') })
-    apiFetch<{ nomor: string }>('/api/v1/system/nomor-baru?kode=DI')
-      .then(res => setNomorDokumen(res.data.nomor))
-      .catch(() => {})
+    updatePreviewNomor(tanggal)
   }, [])
+
+  useEffect(() => {
+    if (tanggal && tanggal !== prevTanggalRef.current) {
+      prevTanggalRef.current = tanggal
+      updatePreviewNomor(tanggal)
+    }
+  }, [tanggal])
 
   const prevCustomerRef = useRef('')
   useEffect(() => {
@@ -128,9 +142,7 @@ export default function TambahDiPage() {
       setJsonInput('')
       apiFetch<Array<{ id: string; nama: string; nomor_kontrak: string | null; tanggal_selesai: string | null }>>(`/api/v1/master/kontrak?customer_id=${customerId}&is_active=true`)
         .then(res => {
-          const today = new Date().toISOString().split('T')[0]
-          const aktif = (res.data ?? []).filter(k => !k.tanggal_selesai || k.tanggal_selesai >= today)
-          setKontrakOpts(aktif.map(x => ({
+          setKontrakOpts((res.data ?? []).map(x => ({
             value: x.id,
             label: x.nomor_kontrak ? `${x.nama} (${x.nomor_kontrak})` : x.nama,
           })))

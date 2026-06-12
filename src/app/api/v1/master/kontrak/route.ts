@@ -31,8 +31,13 @@ export async function GET(request: NextRequest) {
     .order('created_at', { ascending: false })
 
   if (customerId) query = query.eq('customer_id', customerId)
-  if (isActive === 'true') query = query.eq('is_active', true)
-  else if (isActive === 'false') query = query.eq('is_active', false)
+  if (isActive === 'true') {
+    const today = new Date().toISOString().split('T')[0]
+    query = query.or(`tanggal_selesai.is.null,tanggal_selesai.gte.${today}`)
+  } else if (isActive === 'false') {
+    const today = new Date().toISOString().split('T')[0]
+    query = query.lt('tanggal_selesai', today)
+  }
 
   const { data, error } = await query
   if (error) return internalError(error)

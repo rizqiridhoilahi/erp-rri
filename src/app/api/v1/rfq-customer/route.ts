@@ -57,7 +57,8 @@ export async function POST(request: NextRequest) {
   const parsed = schema.safeParse(body)
   if (!parsed.success) return badRequest(parsed.error.issues.map(e => e.message).join(', '))
 
-  const nomor = await generateGlobalDocumentNumber('RFQC')
+  const tgl = new Date(parsed.data.tanggal)
+  const nomor = await generateGlobalDocumentNumber('RFQC', tgl.getFullYear(), tgl.getMonth() + 1)
 
   const now = new Date().toISOString()
   const recordId = parsed.data.id || crypto.randomUUID()

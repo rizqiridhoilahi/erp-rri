@@ -31,11 +31,22 @@ export async function verifyAuthWithRole(
   const { data, error } = await supabase.auth.getUser(token)
   if (error || !data.user) return { user: null, error: unauthorized('Invalid or expired token') }
 
-  const { data: dbUser } = await supabaseAdmin
+  let { data: dbUser } = await supabaseAdmin
     .from('users')
     .select('id, email, name, role, is_active')
     .eq('id', data.user.id)
-    .single()
+    .maybeSingle()
+
+  if (!dbUser && data.user.email) {
+    const { data: emailUser } = await supabaseAdmin
+      .from('users')
+      .select('id, email, name, role, is_active')
+      .eq('email', data.user.email)
+      .maybeSingle()
+    if (emailUser) {
+      dbUser = { ...emailUser, id: data.user.id }
+    }
+  }
 
   if (!dbUser) return { user: null, error: unauthorized('User not found') }
   if (!dbUser.is_active) return { user: null, error: forbidden('Akun dinonaktifkan') }

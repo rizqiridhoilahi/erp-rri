@@ -77,6 +77,15 @@ export default function TambahRfqCustomerPage() {
   const { handleSubmit, control, register, setValue, watch, formState } = form
   const { fields, append, remove } = useFieldArray({ control, name: 'items' })
   const customerId = watch('customer_id')
+  const selectedTanggal = watch('tanggal')
+
+  function updatePreviewNomor(tgl: string) {
+    const d = tgl ? new Date(tgl) : new Date()
+    const params = `kode=RFQC&tahun=${d.getFullYear()}&bulan=${d.getMonth() + 1}`
+    apiFetch<{ nomor: string }>(`/api/v1/system/nomor-baru?${params}`)
+      .then(res => setNomorDokumen(res.data.nomor))
+      .catch(() => {})
+  }
 
   useEffect(() => {
     Promise.all([
@@ -86,10 +95,12 @@ export default function TambahRfqCustomerPage() {
       setCustomerOptions((customers.data ?? []).map(c => ({ value: c.id, label: `[${c.kode}] ${c.nama}` })))
       setBarangOptions((barang.data ?? []).map(b => ({ value: b.id, label: `[${b.kode}] ${b.nama}`, satuan: b.satuan })))
     }).catch(() => toast.error('Gagal memuat data referensi'))
-    apiFetch<{ nomor: string }>('/api/v1/system/nomor-baru?kode=RFQC')
-      .then(res => setNomorDokumen(res.data.nomor))
-      .catch(() => {})
+    updatePreviewNomor(today)
   }, [])
+
+  useEffect(() => {
+    if (selectedTanggal) updatePreviewNomor(selectedTanggal)
+  }, [selectedTanggal])
 
   useEffect(() => {
     if (!customerId) {

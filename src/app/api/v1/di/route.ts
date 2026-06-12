@@ -48,7 +48,8 @@ export async function POST(request: NextRequest) {
   const parsed = schema.safeParse(body)
   if (!parsed.success) return badRequest(parsed.error.issues.map(e => e.message).join(', '))
 
-  const nomor = await generateGlobalDocumentNumber('DI')
+  const tgl = new Date(parsed.data.tanggal)
+  const nomor = await generateGlobalDocumentNumber('DI', tgl.getFullYear(), tgl.getMonth() + 1)
 
   const now = new Date().toISOString()
 

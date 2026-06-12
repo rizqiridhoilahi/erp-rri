@@ -6,7 +6,7 @@ import { EmailList, EmailItem, mapEmailLogRow } from "@/components/email/email-l
 import { Skeleton } from "@/components/ui/skeleton"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Search, Loader2 } from "lucide-react"
+import { Search } from "lucide-react"
 
 const PAGE_SIZE = 50
 
@@ -16,22 +16,33 @@ export default function SentPage() {
   const [loadingMore, setLoadingMore] = useState(false)
   const [page, setPage] = useState(1)
   const [hasMore, setHasMore] = useState(true)
+  const [totalPages, setTotalPages] = useState(0)
   const [searchQuery, setSearchQuery] = useState("")
+  const [refreshKey, setRefreshKey] = useState(0)
 
   const fetchPage = useCallback(async (pageNum: number, append: boolean) => {
     const start = (pageNum - 1) * PAGE_SIZE
     const end = start + PAGE_SIZE - 1
 
     if (append) setLoadingMore(true)
+    else setLoading(true)
 
-    const { data, error } = await supabase
-      .from("email_log")
-      .select("*")
-      .in("status", ["sent", "delivered", "opened", "clicked", "bounced"])
-      .eq("inbound", false)
-      .neq("status", "trashed")
-      .order("created_at", { ascending: false })
-      .range(start, end)
+    const [{ data, error }, { data: allData }] = await Promise.all([
+      supabase
+        .from("email_log")
+        .select("*", { count: "exact" })
+        .in("status", ["sent", "delivered", "opened", "clicked", "bounced"])
+        .eq("inbound", false)
+        .neq("status", "trashed")
+        .order("created_at", { ascending: false })
+        .range(start, end),
+      supabase
+        .from("email_log")
+        .select("*", { count: "exact", head: true })
+        .in("status", ["sent", "delivered", "opened", "clicked", "bounced"])
+        .eq("inbound", false)
+        .neq("status", "trashed"),
+    ])
 
     if (!error && data) {
       const mapped = data.map(mapEmailLogRow)
@@ -43,20 +54,28 @@ export default function SentPage() {
       setHasMore(data.length === PAGE_SIZE)
     }
 
+    const totalCount = allData?.length ?? 0
+    setTotalPages(Math.ceil(totalCount / PAGE_SIZE) || 1)
+
     if (append) setLoadingMore(false)
     else setLoading(false)
+  }, [])
+
+  const goToPage = useCallback((n: number) => {
+    setPage(n)
+    fetchPage(n, false)
+  }, [fetchPage])
+
+  const handleRefresh = useCallback(() => {
+    setPage(1)
+    setHasMore(true)
+    setRefreshKey((k) => k + 1)
   }, [])
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchPage(1, false)
-  }, [fetchPage])
-
-  const handleLoadMore = () => {
-    const nextPage = page + 1
-    setPage(nextPage)
-    fetchPage(nextPage, true)
-  }
+  }, [fetchPage, refreshKey])
 
   const filteredEmails = useMemo(() => {
     if (!searchQuery.trim()) return emails
@@ -101,24 +120,28 @@ export default function SentPage() {
         </div>
       </div>
 
-      <EmailList emails={filteredEmails} basePath="/dashboard/email" />
+      <EmailList emails={filteredEmails} basePath="/dashboard/email" onRefresh={handleRefresh} isFirstPage={page === 1} />
 
-      {hasMore && searchQuery === "" && (
-        <div className="flex justify-center py-4 border-t border-border">
+      {searchQuery === "" && totalPages > 1 && (
+        <div className="flex items-center justify-center gap-3 py-4 border-t border-border">
           <Button
             variant="outline"
             size="sm"
-            onClick={handleLoadMore}
-            disabled={loadingMore}
+            onClick={() => goToPage(page - 1)}
+            disabled={page === 1}
           >
-            {loadingMore ? (
-              <>
-                <Loader2 className="mr-2 h-3 w-3 animate-spin" />
-                Memuat...
-              </>
-            ) : (
-              "Muat lebih banyak"
-            )}
+            Prev
+          </Button>
+          <span className="text-sm text-muted-foreground">
+            Page {page} of {totalPages}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => goToPage(page + 1)}
+            disabled={page >= totalPages}
+          >
+            Next
           </Button>
         </div>
       )}

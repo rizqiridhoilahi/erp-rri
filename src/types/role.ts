@@ -36,6 +36,7 @@ export const ROLE_HIERARCHY: Record<Role, number> = {
 export const MODULE_PERMISSIONS: Record<string, Role[]> = {
   system: ['owner', 'admin'],
   master: ['owner', 'admin', 'manager'],
+  'document-counter': ['owner', 'admin'],
   'pre-sales': ['owner', 'admin', 'manager', 'sales'],
   sales: ['owner', 'admin', 'manager', 'sales'],
   procurement: ['owner', 'admin', 'manager', 'procurement'],

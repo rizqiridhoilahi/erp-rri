@@ -548,6 +548,30 @@ Menu berikut di-sidebar di-*disable* (opacity 50%, tidak bisa diklik, muncul toa
 
 ---
 
+## ✅ Done — Document Counter Admin Page & Date-Aware Numbering
+
+| # | Task | Status | File |
+|---|------|--------|------|
+| DC-1 | **Fix DB corruption** — hapus row `'\nGLOBAL'` (newline prefix), insert clean `('GLOBAL', 2026, 6, 48)` | ✅ Done | SQL via Supabase |
+| DC-2 | **`generateGlobalDocumentNumber()` — tambah params tahun/bulan** — fungsi sekarang terima `tahun?: number, bulan?: number`, default ke current date jika tidak diisi | ✅ Done | `src/lib/utils/document-number.ts` |
+| DC-3 | **RFQC POST route — pakai tanggal** — parse `tanggal` dari body → pass ke `generateGlobalDocumentNumber('RFQC', tahun, bulan)` | ✅ Done | `src/app/api/v1/rfq-customer/route.ts` |
+| DC-4 | **DI POST route — pakai tanggal** — same as RFQC | ✅ Done | `src/app/api/v1/di/route.ts` |
+| DC-5 | **Preview endpoint — accept tahun/bulan** — `/api/v1/system/nomor-baru` sekarang terima query params `tahun` & `bulan` opsional | ✅ Done | `src/app/api/v1/system/nomor-baru/route.ts` |
+| DC-6 | **RFQC form page — preview sesuai tanggal** — preview nomor otomatis update saat user ganti tanggal | ✅ Done | `src/app/dashboard/rfq-customer/tambah/page.tsx` |
+| DC-7 | **DI form page — preview sesuai tanggal** — same as RFQC | ✅ Done | `src/app/dashboard/di/tambah/page.tsx` |
+| DC-8 | **API document-counters (GET/PATCH)** — list all counter rows + update counter value. Auth: owner/admin only | ✅ Done | `src/app/api/v1/document-counters/route.ts` |
+| DC-9 | **API document-counters/reset (POST)** — auto-detect nomor tertinggi dari rfq_customer + di, update GLOBAL counter | ✅ Done | `src/app/api/v1/document-counters/reset/route.ts` |
+| DC-10 | **Admin page Document Counter** — table view, edit dialog per row, Reset button, role guard (owner/admin) | ✅ Done | `src/app/dashboard/admin/document-counters/page.tsx` |
+| DC-11 | **Sidebar — tambah di Master Data** — link "Document Counter" dengan Hash icon, di bawah "Import Excel" | ✅ Done | `src/components/sidebar-content.tsx` |
+| DC-12 | **Role permissions** — tambah module `'document-counter': ['owner', 'admin']` | ✅ Done | `src/types/role.ts` |
+
+### Fitur
+- **Edit counter**: Klik icon pensil pada baris → dialog ubah nilai counter
+- **Reset to Actual**: Tombol "Reset ke Aktual" → query semua nomor RFQC + DI → cari nomor tertinggi → update GLOBAL
+- **Preview nomor sesuai tanggal**: Nomor dokumen di form create RFQC/DI otomatis menyesuaikan dengan tanggal yang dipilih
+
+---
+
 ## Catatan
 
 ### Flow Quotation Status

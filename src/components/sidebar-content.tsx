@@ -8,7 +8,7 @@ import {
   Home, Package, Users, Building2, UserCircle, BookOpen,   FileText, FileSpreadsheet, FolderTree, Briefcase, Users2,
   Search, ShoppingCart, Landmark, Receipt, ReceiptText, BookOpenCheck, TrendingUp, TrendingDown,
   PieChart, Banknote, Bot, ScanLine, Lightbulb, MessageSquare, Clock, DollarSign, ShieldCheck, Store, AlertTriangle, ListOrdered, CreditCard,
-  ClipboardList, ClipboardCheck, Bell, Sun, Moon, Mail, LucideIcon,
+  ClipboardList, ClipboardCheck, Bell, Sun, Moon, Mail, LucideIcon, Hash,
 } from 'lucide-react'
 import { useTheme } from '@/components/theme/theme-provider'
 import { PanduanButton } from '@/components/onboarding/panduan-button'
@@ -55,6 +55,7 @@ const menuItems: MenuItem[] = [
     { href: '/dashboard/master/jabatan', label: 'Jabatan', icon: Briefcase, disabled: true },
     { href: '/dashboard/master/karyawan', label: 'Karyawan', icon: Users2, disabled: true },
     { href: '/dashboard/tools/bulk-import', label: 'Import Excel', icon: FileSpreadsheet, disabled: true },
+    { href: '/dashboard/admin/document-counters', label: 'Document Counter', icon: Hash },
   ]},
   { label: 'Pre-Sales', icon: Search, children: [
     { href: '/dashboard/master/kontrak', label: 'Kontrak', icon: FileText },
@@ -137,6 +138,7 @@ const labelToModule: Record<string, string> = {
   'AI Agent': 'ai',
   HR: 'hr',
   System: 'system',
+  'Document Counter': 'document-counter',
 }
 
 function isActive(href: string, pathname: string): boolean {

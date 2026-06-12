@@ -20,8 +20,8 @@ export async function GET(request: NextRequest) {
   }
 
   const now = new Date()
-  const tahun = now.getFullYear()
-  const bulan = now.getMonth() + 1
+  const tahun = searchParams.has('tahun') ? parseInt(searchParams.get('tahun')!) : now.getFullYear()
+  const bulan = searchParams.has('bulan') ? parseInt(searchParams.get('bulan')!) : now.getMonth() + 1
 
   const { data } = await supabaseAdmin
     .from('document_counter')
