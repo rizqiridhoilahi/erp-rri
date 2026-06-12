@@ -74,8 +74,6 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
   if (!body) return badRequest('Invalid JSON body')
 
   if (body.status === 'dikirim' || body.status === 'ditolak') {
-    if (!doDoc.foto_barang_diterima_url) return badRequest('Foto barang diterima wajib diupload')
-    if (!doDoc.foto_surat_jalan_url) return badRequest('Foto surat jalan wajib diupload')
     if (body.status === 'ditolak') {
       if (!body.alasan_penolakan) return badRequest('Alasan penolakan wajib diisi')
     }
