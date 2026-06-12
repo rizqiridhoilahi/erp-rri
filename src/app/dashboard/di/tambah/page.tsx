@@ -140,12 +140,16 @@ export default function TambahDiPage() {
       setKontrakItemsMap([])
       setAddedItems([])
       setJsonInput('')
-      apiFetch<Array<{ id: string; nama: string; nomor_kontrak: string | null; tanggal_selesai: string | null }>>(`/api/v1/master/kontrak?customer_id=${customerId}&is_active=true`)
+      apiFetch<Array<{ id: string; nama: string; nomor_kontrak: string | null; tanggal_selesai: string | null }>>(`/api/v1/master/kontrak?customer_id=${customerId}`)
         .then(res => {
-          setKontrakOpts((res.data ?? []).map(x => ({
-            value: x.id,
-            label: x.nomor_kontrak ? `${x.nama} (${x.nomor_kontrak})` : x.nama,
-          })))
+          setKontrakOpts((res.data ?? []).map(x => {
+            const expired = x.tanggal_selesai && new Date(x.tanggal_selesai) < new Date(new Date().toDateString())
+            const label = x.nomor_kontrak ? `${x.nama} (${x.nomor_kontrak})` : x.nama
+            return {
+              value: x.id,
+              label: expired ? `${label} — Tidak Aktif` : label,
+            }
+          }))
         })
         .catch(() => setKontrakOpts([]))
       apiFetch<Array<{ id: string; nama: string; jabatan: string | null }>>(`/api/v1/master/pic-customer?customer_id=${customerId}`)
