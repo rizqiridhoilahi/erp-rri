@@ -441,7 +441,7 @@ export default function CustomerPoDetailPage() {
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Pilih kategori" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent position="item-aligned" className="z-[60]">
                     {kategoriOptions.map(opt => (
                       <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
                     ))}

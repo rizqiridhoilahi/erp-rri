@@ -54,6 +54,9 @@ export default function TambahPoPage() {
   const [dynamicTopOpts, setDynamicTopOpts] = useState<string[]>([])
   const [picCustomerId, setPicCustomerId] = useState('')
   const [waktuPengiriman, setWaktuPengiriman] = useState('')
+  const [nomorPrCustomer, setNomorPrCustomer] = useState('')
+  const [namaPenandatangan, setNamaPenandatangan] = useState('')
+  const [jabatanPenandatangan, setJabatanPenandatangan] = useState('')
   const [manualBarangId, setManualBarangId] = useState('')
   const [manualJumlah, setManualJumlah] = useState(1)
   const [manualHargaSatuan, setManualHargaSatuan] = useState(0)
@@ -242,6 +245,9 @@ export default function TambahPoPage() {
         quotation_id: selectedQtnId || undefined,
         tanggal,
         nomor_po_customer: nomorPoCustomer || undefined,
+        nomor_pr_customer: nomorPrCustomer || undefined,
+        nama_penandatangan: namaPenandatangan || undefined,
+        jabatan_penandatangan: jabatanPenandatangan || undefined,
         terms_of_payment: effectiveTop || undefined,
         waktu_pengiriman: waktuPengiriman ? Number(waktuPengiriman) : undefined,
         pic_customer_id: picCustomerId || undefined,
@@ -361,6 +367,21 @@ export default function TambahPoPage() {
                 onChange={e => setWaktuPengiriman(e.target.value)}
               />
             </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label>No. PR Customer</Label>
+              <Input value={nomorPrCustomer} onChange={e => setNomorPrCustomer(e.target.value)} placeholder="Nomor PR dari customer" />
+            </div>
+            <div>
+              <Label>Nama Penandatangan</Label>
+              <Input value={namaPenandatangan} onChange={e => setNamaPenandatangan(e.target.value)} placeholder="Nama penandatangan PO" />
+            </div>
+          </div>
+          <div>
+            <Label>Jabatan Penandatangan</Label>
+            <Input value={jabatanPenandatangan} onChange={e => setJabatanPenandatangan(e.target.value)} placeholder="Jabatan penandatangan PO" />
           </div>
 
           {(effectiveTop || waktuPengiriman) && (

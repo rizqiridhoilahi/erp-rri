@@ -18,7 +18,7 @@ import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@
 import { FileUpload } from '@/components/file-upload'
 import type { DocumentFile } from '@/components/file-upload'
 
-const schema = z.object({ status: z.string().optional(), nomor_po_customer: z.string().optional(), terms_of_payment: z.enum(['Net 14', 'Net 20', 'Net 30', 'Net 60', 'Net 90', 'Cash', 'Custom']).optional().or(z.literal('')), waktu_pengiriman: z.coerce.number().int().positive().optional(), nama_penandatangan: z.string().optional().nullable(), jabatan_penandatangan: z.string().optional().nullable() })
+const schema = z.object({ status: z.string().optional(), nomor_po_customer: z.string().optional(), nomor_pr_customer: z.string().optional(), terms_of_payment: z.enum(['Net 14', 'Net 20', 'Net 30', 'Net 60', 'Net 90', 'Cash', 'Custom']).optional().or(z.literal('')), waktu_pengiriman: z.coerce.number().int().positive().optional(), nama_penandatangan: z.string().optional().nullable(), jabatan_penandatangan: z.string().optional().nullable() })
 type FV = z.input<typeof schema>
 const statusOpts = [{ value: 'draft', label: 'Draft' }, { value: 'confirmed', label: 'Dikonfirmasi' }, { value: 'cancelled', label: 'Batal' }]
 
@@ -84,15 +84,18 @@ export default function EditPoPage() {
 
   useEffect(() => {
     Promise.all([
-      apiFetch<{ customer_id: string; status: string; nomor_po_customer: string | null; terms_of_payment: string | null; waktu_pengiriman: number | null; tanggal: string; customer: { nama: string; kode: string } | null; quotation: { nomor: string } | null; customer_pic: { nama: string; jabatan: string | null } | null; items?: PoItem[]; nama_penandatangan: string | null; jabatan_penandatangan: string | null }>(`/api/v1/customer-po/${params.id}`),
+      apiFetch<{ customer_id: string; status: string; nomor_po_customer: string | null; nomor_pr_customer: string | null; terms_of_payment: string | null; waktu_pengiriman: number | null; tanggal: string; customer: { nama: string; kode: string } | null; quotation: { nomor: string } | null; customer_pic: { nama: string; jabatan: string | null } | null; items?: PoItem[]; nama_penandatangan: string | null; jabatan_penandatangan: string | null }>(`/api/v1/customer-po/${params.id}`),
       apiFetch<DocumentFile[]>(`/api/v1/customer-po/${params.id}/documents`).catch(() => ({ data: [] })),
     ])
       .then(async ([poRes, docRes]) => {
         reset({
           status: poRes.data.status,
           nomor_po_customer: poRes.data.nomor_po_customer ?? '',
+          nomor_pr_customer: poRes.data.nomor_pr_customer ?? '',
           terms_of_payment: (poRes.data.terms_of_payment ?? '') as FV['terms_of_payment'],
           waktu_pengiriman: poRes.data.waktu_pengiriman ?? undefined,
+          nama_penandatangan: poRes.data.nama_penandatangan ?? '',
+          jabatan_penandatangan: poRes.data.jabatan_penandatangan ?? '',
         })
         setCustomerLabel(poRes.data.customer ? `[${poRes.data.customer.kode}] ${poRes.data.customer.nama}` : '-')
         setCustomerId(poRes.data.customer_id ?? '')
@@ -284,7 +287,7 @@ export default function EditPoPage() {
                       <SelectTrigger>
                         <SelectValue placeholder="Pilih TOP" />
                       </SelectTrigger>
-                      <SelectContent>
+                  <SelectContent position="item-aligned" className="z-[60]">
                         {(topOpts.length > 0 ? topOpts : ['Net 14', 'Net 20', 'Net 30', 'Net 60', 'Net 90', 'Cash', 'Custom']).map(o => (
                           <SelectItem key={o} value={o}>{o}</SelectItem>
                         ))}
@@ -296,6 +299,18 @@ export default function EditPoPage() {
               <div className="space-y-2">
                 <label className="text-sm font-medium">Waktu Pengiriman (hari)</label>
                 <Input type="number" min="1" placeholder="Contoh: 7" {...register('waktu_pengiriman')} />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">No. PR Customer</label>
+                <Input {...register('nomor_pr_customer')} placeholder="Nomor PR dari customer" />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Nama Penandatangan</label>
+                <Input {...register('nama_penandatangan')} placeholder="Nama penandatangan PO" />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Jabatan Penandatangan</label>
+                <Input {...register('jabatan_penandatangan')} placeholder="Jabatan penandatangan PO" />
               </div>
               {(termsOfPayment || waktuPengirimanVal) && (
                 <div className="text-sm bg-blue-50 border border-blue-200 rounded-md px-4 py-3 space-y-1">

@@ -24,6 +24,7 @@ const schema = z.object({
   quotation_id: z.string().optional(),
   tanggal: z.string().min(1),
   nomor_po_customer: z.string().optional(),
+  nomor_pr_customer: z.string().optional(),
   terms_of_payment: z.string().optional(),
   waktu_pengiriman: z.coerce.number().int().positive().optional(),
   pic_customer_id: z.string().optional(),
@@ -70,7 +71,8 @@ export async function POST(request: NextRequest) {
   const { data: po, error: poError } = await supabaseAdmin.from('customer_po').insert({
     nomor, customer_id: parsed.data.customer_id, quotation_id: parsed.data.quotation_id ?? null,
     nomor_quotation_rri: nomorQuotationRri,
-    tanggal: parsed.data.tanggal, status: 'draft', nomor_po_customer: parsed.data.nomor_po_customer ?? null,
+    tanggal: parsed.data.tanggal, status: 'draft',     nomor_po_customer: parsed.data.nomor_po_customer ?? null,
+    nomor_pr_customer: parsed.data.nomor_pr_customer ?? null,
     terms_of_payment: parsed.data.terms_of_payment ?? null,
     waktu_pengiriman: parsed.data.waktu_pengiriman ?? null,
     pic_customer_id: parsed.data.pic_customer_id ?? null,

@@ -54,6 +54,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
   const upd: Record<string, unknown> = {}
   if (body.status) upd.status = body.status
   if (body.nomor_po_customer !== undefined) upd.nomor_po_customer = body.nomor_po_customer
+  if (body.nomor_pr_customer !== undefined) upd.nomor_pr_customer = body.nomor_pr_customer
   if (body.terms_of_payment !== undefined) upd.terms_of_payment = body.terms_of_payment
   if (body.keterangan !== undefined) upd.keterangan = body.keterangan
   if (body.waktu_pengiriman !== undefined) upd.waktu_pengiriman = body.waktu_pengiriman
