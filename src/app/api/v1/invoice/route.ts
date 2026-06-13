@@ -103,18 +103,29 @@ export async function POST(request: NextRequest) {
       created_at: now, updated_at: now,
     }
   })
-  const { error: itemsError } = await supabaseAdmin.from('invoice_item').insert(items)
+  const { data: invItems, error: itemsError } = await supabaseAdmin.from('invoice_item').insert(items).select('id, harga, jumlah, diskon')
   if (itemsError) { await supabaseAdmin.from('invoice').delete().eq('id', inv.id); return internalError(itemsError) }
 
   const nomorKwt = formatChildNumber(nomor, 'KWT')
-  await supabaseAdmin.from('kwitansi').insert({
+  const { data: kwt } = await supabaseAdmin.from('kwitansi').insert({
     nomor: nomorKwt,
     invoice_id: inv.id,
     tanggal: now,
     status: 'draft',
     created_at: now,
     updated_at: now,
-  })
+  }).select().single()
+
+  if (kwt) {
+    const kwtItems = (invItems ?? []).map((invItem) => ({
+      kwitansi_id: kwt.id,
+      invoice_item_id: invItem.id,
+      jumlah: (Number(invItem.harga) * Number(invItem.jumlah)) - (Number(invItem.diskon) || 0),
+      created_at: now,
+      updated_at: now,
+    }))
+    await supabaseAdmin.from('kwitansi_item').insert(kwtItems)
+  }
 
   const jurnalResult = await generateInvoiceJournal(inv.id)
 

@@ -33,12 +33,12 @@
 
 ### Points of Integration (Trigger email)
 
-| Modul | File | Trigger |
-|-------|------|---------|
-| Quotation → sent | `quotation/[id]/status/route.ts` | Status → `sent` |
-| Invoice → sent | `invoice/[id]/route.ts` (PUT) | Status → `sent` |
-| Customer PO → confirmed | `customer-po/[id]/route.ts` (PUT) | Status → `confirmed` |
-| Delivery Order → dikirim | `delivery-order/[id]/route.ts` (PUT) | Status → `dikirim` |
+| Modul | File | Trigger | Status |
+|-------|------|---------|--------|
+| Quotation → sent | `quotation/[id]/status/route.ts` | Status → `sent` | ⏸️ Disabled (AUTO-EMAIL) |
+| Invoice → sent | `invoice/[id]/route.ts` (PUT) | Status → `sent` | ⏸️ Disabled (AUTO-EMAIL) |
+| Customer PO → confirmed | `customer-po/[id]/route.ts` (PUT) | Status → `confirmed` | ⏸️ Disabled (AUTO-EMAIL) |
+| Delivery Order → dikirim | `delivery-order/[id]/route.ts` (PUT) | Status → `dikirim` | ⏸️ Disabled (AUTO-EMAIL) |
 
 ### Infrastructure Rencana (Domain & Infra)
 
@@ -853,6 +853,22 @@ Konfigurasi di Brevo Dashboard → Webhooks → pilih webhook → set Secret key
 | LOW | 10 | Duplicate code, magic numbers, unused results |
 
 > 21 bugs remaining (11 fixed). BUG-005 (hardcoded BCC) dan BUG-009 (thread grouping) adalah **design decision** — tidak perlu fix. RLS policies belum ditambahkan (relies on API-layer auth only).
+
+### ✅ Phase 14 — Auto-Email Tempered (SELESAI)
+
+Auto-email saat status change (Quotation → sent, Invoice → sent, CPO → confirmed, DO → dikirim) dinonaktifkan sementara. Kode tetap ada sebagai comment, mudah di-enable kembali.
+
+| # | Task | Status | File |
+|---|------|--------|------|
+| AE-1 | **Quotation auto-email disabled** — comment out `sendEmail()` + imports | ✅ Done | `src/app/api/v1/quotation/[id]/status/route.ts` |
+| AE-2 | **Invoice auto-email disabled** — comment out `sendEmail()` + imports | ✅ Done | `src/app/api/v1/invoice/[id]/route.ts` |
+| AE-3 | **CPO auto-email disabled** — comment out `sendEmail()` + imports | ✅ Done | `src/app/api/v1/customer-po/[id]/route.ts` |
+| AE-4 | **DO auto-email disabled** — comment out `sendEmail()` + imports | ✅ Done | `src/app/api/v1/delivery-order/[id]/route.ts` |
+| AE-5 | **ROADMAP updated** — status table + Phase 14 added | ✅ Done | `ROADMAP-BREVO.md` |
+
+**Cara re-enable:** Cari `AUTO-EMAIL DISABLED` di 4 file di atas, uncomment `sendEmail()` + template imports, hapus placeholder comment.
+
+---
 
 ## 📋 Future Plan — Multi-Email Perusahaan (Rencana)
 

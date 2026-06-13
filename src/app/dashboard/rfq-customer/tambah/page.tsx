@@ -14,6 +14,7 @@ import { DatePicker } from '@/components/ui/date-picker'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select'
+import { DocumentSearchCombobox, type SearchOption } from '@/components/ui/document-search-combobox'
 import { Plus, Trash2, ArrowLeft, Loader2, Upload, FileText, X, Image as ImageIcon } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -50,7 +51,7 @@ export default function TambahRfqCustomerPage() {
   const router = useRouter()
   const [customerOptions, setCustomerOptions] = useState<Array<{ value: string; label: string }>>([])
   const [picOptions, setPicOptions] = useState<Array<{ value: string; label: string }>>([])
-  const [barangOptions, setBarangOptions] = useState<Array<{ value: string; label: string; satuan: string }>>([])
+  const [barangLabels, setBarangLabels] = useState<Record<string, string>>({})
   const [submitting, setSubmitting] = useState(false)
   const [pendingFiles, setPendingFiles] = useState<PendingFile[]>([])
   const [uploadingFile, setUploadingFile] = useState(false)
@@ -88,13 +89,10 @@ export default function TambahRfqCustomerPage() {
   }
 
   useEffect(() => {
-    Promise.all([
-      apiFetch<Array<{ id: string; nama: string; kode: string }>>('/api/v1/master/customer'),
-      apiFetch<Array<{ id: string; nama: string; kode: string; satuan: string }>>('/api/v1/master/barang/dropdown'),
-    ]).then(([customers, barang]) => {
-      setCustomerOptions((customers.data ?? []).map(c => ({ value: c.id, label: `[${c.kode}] ${c.nama}` })))
-      setBarangOptions((barang.data ?? []).map(b => ({ value: b.id, label: `[${b.kode}] ${b.nama}`, satuan: b.satuan })))
-    }).catch(() => toast.error('Gagal memuat data referensi'))
+    apiFetch<Array<{ id: string; nama: string; kode: string }>>('/api/v1/master/customer')
+      .then((customers) => {
+        setCustomerOptions((customers.data ?? []).map(c => ({ value: c.id, label: `[${c.kode}] ${c.nama}` })))
+      }).catch(() => toast.error('Gagal memuat data customer'))
     updatePreviewNomor(today)
   }, [])
 
@@ -371,20 +369,30 @@ export default function TambahRfqCustomerPage() {
                     <FormField control={control} name={`items.${index}.barang_id`} render={({ field }) => (
                       <FormItem>
                         <FormLabel>Barang (Master)</FormLabel>
-                        <Select onValueChange={(val) => {
-                          field.onChange(val)
-                          const selected = barangOptions.find(b => b.value === val)
-                          if (selected?.satuan) setValue(`items.${index}.satuan`, selected.satuan)
-                        }} value={field.value}>
-                          <FormControl>
-                            <SelectTrigger><SelectValue placeholder="- Pilih Barang -" /></SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {barangOptions.map(opt => (
-                              <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        <FormControl>
+                          <DocumentSearchCombobox
+                            placeholder="Cari barang..."
+                            emptyMessage="Barang tidak ditemukan"
+                            value={field.value ?? ''}
+                            onChange={field.onChange}
+                            selectedLabel={barangLabels[field.value ?? '']}
+                            onSearch={async (q: string) => {
+                              const res = await apiFetch<{
+                                items: Array<{ id: string; nama: string; kode: string; satuan: string }>
+                              }>(`/api/v1/master/barang?search=${encodeURIComponent(q)}&limit=20`)
+                              return (res.data?.items ?? []).map((b) => ({
+                                value: b.id,
+                                label: `[${b.kode}] ${b.nama}`,
+                                sublabel: b.satuan,
+                              }))
+                            }}
+                            onSelectOption={(option: SearchOption) => {
+                              setBarangLabels((prev) => ({ ...prev, [option.value]: option.label }))
+                              const satuan = option.sublabel
+                              if (satuan) setValue(`items.${index}.satuan`, satuan)
+                            }}
+                          />
+                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />

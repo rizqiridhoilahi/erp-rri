@@ -5,9 +5,10 @@ import { supabaseAdmin } from '@/lib/api/supabase-server'
 import { verifyAuth } from '@/lib/api/auth'
 import { badRequest, notFound, internalError } from '@/lib/api/errors'
 import { logAudit } from '@/lib/audit'
-import { sendEmail } from '@/lib/utils/email'
-import { fetchCompanySettings } from '@/lib/email/templates'
-import { quotationEmailHtml } from '@/lib/email/templates/quotation'
+// AUTO-EMAIL DISABLED
+// import { sendEmail } from '@/lib/utils/email'
+// import { fetchCompanySettings } from '@/lib/email/templates'
+// import { quotationEmailHtml } from '@/lib/email/templates/quotation'
 
 const VALID_STATUSES = ['draft', 'sent', 'proses_negosiasi', 'approved', 'rejected', 'closed'] as const
 
@@ -113,29 +114,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
         if (!pic?.email) {
           emailMessage = 'PIC customer belum memiliki alamat email'
         } else {
-          const company = await fetchCompanySettings()
-
-          const origin = new URL(request.url).origin
-          const pdfUrl = `${origin}/api/v1/quotation/public/${data.email_access_token}/pdf`
-
-          const html = quotationEmailHtml({
-            nomor: data.nomor,
-            referensi: data.referensi,
-            perihal: data.perihal,
-            tanggal: new Date(data.tanggal).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }),
-            customerNama: data.customer?.nama ?? '',
-            pdfUrl,
-          }, company, pic.nama)
-
-          await sendEmail({
-            to: pic.email,
-            toNama: pic.nama,
-            subject: `Quotation: ${data.nomor} - ${data.perihal}`,
-            html,
-            referenceType: 'quotation',
-            referenceId: id,
-          })
-          emailMessage = `Email terkirim ke ${pic.nama} (${pic.email})`
+          // AUTO-EMAIL DISABLED — uncomment to re-enable
         }
       }
     } catch (err) {

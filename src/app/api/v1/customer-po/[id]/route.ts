@@ -5,9 +5,10 @@ import { badRequest, notFound, internalError } from '@/lib/api/errors'
 import { generateSOFromPO } from '@/lib/auto-sales'
 import { createBarangFromRfqItem, getUnmappedRfqItems } from '@/lib/utils/barang-auto-create'
 import { sendWhatsapp } from '@/lib/utils/whatsapp'
-import { sendEmail } from '@/lib/utils/email'
-import { fetchCompanySettings } from '@/lib/email/templates'
-import { cpoEmailHtml } from '@/lib/email/templates/cpo'
+// AUTO-EMAIL DISABLED
+// import { sendEmail } from '@/lib/utils/email'
+// import { fetchCompanySettings } from '@/lib/email/templates'
+// import { cpoEmailHtml } from '@/lib/email/templates/cpo'
 
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const auth = await verifyAuth(_request); if (auth.error) return auth.error
@@ -105,27 +106,16 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
         const msg = `Kepada Yth. ${pic.nama},\n\nPO/DI No. *${poWithCustomer.nomor}* dari ${poWithCustomer.customer.nama} telah DEAL dan dikonfirmasi.\n\nTerima kasih atas kerjasamanya.\n\n- ERP RRI`
         await sendWhatsapp(pic.no_hp, msg, auth.user?.id)
       }
-      if (pic?.email) {
-        try {
-          const company = await fetchCompanySettings()
-          const html = cpoEmailHtml({
-            nomor: poWithCustomer.nomor,
-            tanggal: new Date(poWithCustomer.tanggal).toLocaleDateString('id-ID'),
-            customerNama: poWithCustomer.customer.nama,
-            nomorPoCustomer: poWithCustomer.nomor_po_customer ?? undefined,
-          }, company, pic.nama)
-          await sendEmail({
-            to: pic.email,
-            toNama: pic.nama,
-            subject: `PO Dikonfirmasi: ${poWithCustomer.nomor}`,
-            html,
-            referenceType: 'customer_po',
-            referenceId: id,
-          })
-        } catch {
-          // Email sending is best-effort
-        }
-      }
+      // AUTO-EMAIL DISABLED — uncomment to re-enable
+      // if (pic?.email) {
+      //   try {
+      //     const company = await fetchCompanySettings()
+      //     const html = cpoEmailHtml({...})
+      //     await sendEmail({...})
+      //   } catch {
+      //     // Email sending is best-effort
+      //   }
+      // }
     }
 
     // Auto-create master barang from unmapped RFQ items

@@ -33,6 +33,7 @@ interface DocumentSearchComboboxProps {
   value: string
   onChange: (value: string) => void
   onSelectOption?: (option: SearchOption) => void
+  selectedLabel?: string
   disabled?: boolean
 }
 
@@ -43,6 +44,7 @@ export function DocumentSearchCombobox({
   value,
   onChange,
   onSelectOption,
+  selectedLabel,
   disabled = false,
 }: DocumentSearchComboboxProps) {
   const [open, setOpen] = React.useState(false)
@@ -85,7 +87,7 @@ export function DocumentSearchCombobox({
           disabled={disabled}
         >
           {value ? (
-            <span className="truncate font-medium">{value}</span>
+            <span className="truncate font-medium">{selectedLabel ?? value}</span>
           ) : (
             <span className="text-muted-foreground">{placeholder}</span>
           )}

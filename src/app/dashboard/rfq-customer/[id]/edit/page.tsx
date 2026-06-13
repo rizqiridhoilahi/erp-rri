@@ -13,6 +13,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select'
+import { DocumentSearchCombobox, type SearchOption } from '@/components/ui/document-search-combobox'
 import { DatePicker } from '@/components/ui/date-picker'
 import { Plus, Trash2, ArrowLeft, Loader2, ImageIcon, X, Upload, FileText } from 'lucide-react'
 import { toast } from 'sonner'
@@ -47,7 +48,7 @@ export default function EditRfqCustomerPage() {
   const [submitting, setSubmitting] = useState(false)
   const [customerOptions, setCustomerOptions] = useState<Array<{ value: string; label: string }>>([])
   const [picOptions, setPicOptions] = useState<Array<{ value: string; label: string }>>([])
-  const [barangOptions, setBarangOptions] = useState<Array<{ value: string; label: string; satuan: string }>>([])
+  const [barangLabels, setBarangLabels] = useState<Record<string, string>>({})
   const [uploadingItemImage, setUploadingItemImage] = useState<string | null>(null)
   const [documents, setDocuments] = useState<Array<{ id: string; file_name: string; file_url: string }>>([])
   const [uploadingDoc, setUploadingDoc] = useState(false)
@@ -96,19 +97,17 @@ export default function EditRfqCustomerPage() {
           satuan: string | null
           image_url: string | null
           keterangan: string | null
+          barang: { id: string; nama: string; kode: string; satuan: string } | null
         }>
         customer: { id: string; nama: string; kode: string }
         pic_customer: { id: string; nama: string } | null
       }>(`/api/v1/rfq-customer/${id}`),
       apiFetch<Array<{ id: string; nama: string; kode: string }>>('/api/v1/master/customer'),
-      apiFetch<Array<{ id: string; nama: string; kode: string; satuan: string }>>('/api/v1/master/barang/dropdown'),
-    ]).then(([rfqRes, customersRes, barangRes]) => {
+    ]).then(([rfqRes, customersRes]) => {
       const rfq = rfqRes.data
       const customers = customersRes.data ?? []
-      const barang = barangRes.data ?? []
 
       setCustomerOptions(customers.map(c => ({ value: c.id, label: `[${c.kode}] ${c.nama}` })))
-      setBarangOptions(barang.map(b => ({ value: b.id, label: `[${b.kode}] ${b.nama}`, satuan: b.satuan })))
 
       setEditId(id)
       setNomor(rfq.nomor || '')
@@ -129,6 +128,14 @@ export default function EditRfqCustomerPage() {
           keterangan: item.keterangan || '',
         })),
       })
+
+      const labels: Record<string, string> = {}
+      for (const item of rfq.items ?? []) {
+        if (item.barang_id && item.barang) {
+          labels[item.barang_id] = `[${item.barang.kode}] ${item.barang.nama}`
+        }
+      }
+      setBarangLabels(labels)
 
       setLoading(false)
     }).catch(() => {
@@ -374,20 +381,30 @@ export default function EditRfqCustomerPage() {
                     <FormField control={control} name={`items.${index}.barang_id`} render={({ field }) => (
                       <FormItem>
                         <FormLabel>Barang (Master)</FormLabel>
-                        <Select onValueChange={(val) => {
-                          field.onChange(val)
-                          const selected = barangOptions.find(b => b.value === val)
-                          if (selected?.satuan) setValue(`items.${index}.satuan`, selected.satuan)
-                        }} value={field.value}>
-                          <FormControl>
-                            <SelectTrigger><SelectValue placeholder="- Pilih Barang -" /></SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {barangOptions.map(opt => (
-                              <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        <FormControl>
+                          <DocumentSearchCombobox
+                            placeholder="Cari barang..."
+                            emptyMessage="Barang tidak ditemukan"
+                            value={field.value ?? ''}
+                            onChange={field.onChange}
+                            selectedLabel={barangLabels[field.value ?? '']}
+                            onSearch={async (q: string) => {
+                              const res = await apiFetch<{
+                                items: Array<{ id: string; nama: string; kode: string; satuan: string }>
+                              }>(`/api/v1/master/barang?search=${encodeURIComponent(q)}&limit=20`)
+                              return (res.data?.items ?? []).map((b) => ({
+                                value: b.id,
+                                label: `[${b.kode}] ${b.nama}`,
+                                sublabel: b.satuan,
+                              }))
+                            }}
+                            onSelectOption={(option: SearchOption) => {
+                              setBarangLabels((prev) => ({ ...prev, [option.value]: option.label }))
+                              const satuan = option.sublabel
+                              if (satuan) setValue(`items.${index}.satuan`, satuan)
+                            }}
+                          />
+                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />

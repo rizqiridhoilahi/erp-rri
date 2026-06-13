@@ -3,9 +3,10 @@ import { supabaseAdmin } from '@/lib/api/supabase-server'
 import { verifyAuth } from '@/lib/api/auth'
 import { badRequest, notFound, internalError } from '@/lib/api/errors'
 import { generateInvoiceJournal } from '@/lib/auto-jurnal'
-import { sendEmail } from '@/lib/utils/email'
-import { fetchCompanySettings } from '@/lib/email/templates'
-import { invoiceEmailHtml } from '@/lib/email/templates/invoice'
+// AUTO-EMAIL DISABLED
+// import { sendEmail } from '@/lib/utils/email'
+// import { fetchCompanySettings } from '@/lib/email/templates'
+// import { invoiceEmailHtml } from '@/lib/email/templates/invoice'
 
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const auth = await verifyAuth(_request); if (auth.error) return auth.error
@@ -123,24 +124,12 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
         if (customerId) {
           const { data: pics } = await supabaseAdmin.from('customer_pic').select('nama, email').eq('customer_id', customerId).eq('is_active', true).limit(1)
           const pic = pics?.[0]
-          if (pic?.email) {
-            const company = await fetchCompanySettings()
-            const html = invoiceEmailHtml({
-              nomor: data.nomor,
-              tanggal: new Date(data.tanggal).toLocaleDateString('id-ID'),
-              customerNama: customer?.nama ?? '',
-              top: data.top,
-              total: new Intl.NumberFormat('id-ID').format(total),
-            }, company, pic.nama)
-            await sendEmail({
-              to: pic.email,
-              toNama: pic.nama,
-              subject: `Invoice: ${data.nomor}`,
-              html,
-              referenceType: 'invoice',
-              referenceId: id,
-            })
-          }
+          // AUTO-EMAIL DISABLED — uncomment to re-enable
+          // if (pic?.email) {
+          //   const company = await fetchCompanySettings()
+          //   const html = invoiceEmailHtml({...})
+          //   await sendEmail({...})
+          // }
         }
       }
     } catch {
