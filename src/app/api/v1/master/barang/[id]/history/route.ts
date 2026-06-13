@@ -123,110 +123,117 @@ export async function GET(
     .from('sales_order')
     .select('customer_po_id')
     .not('customer_po_id', 'is', null)
-  const excludeCpoIds: string[] = (soCpoIds ?? []).map(s => s.customer_po_id).filter(Boolean)
+  const excludeCpoIds = new Set((soCpoIds ?? []).map(s => s.customer_po_id).filter(Boolean))
 
-  let cpoQuery = supabaseAdmin
+  const { data: extCpoRaw, error: extCpoErr } = await (supabaseAdmin
     .from('customer_po_item')
-    .select('id, harga_satuan, jumlah, customer_po!customer_po_id(id, nomor, tanggal, nomor_po_customer, customer!customer_id(nama, kode))')
-    .eq('barang_id', id)
-  if (excludeCpoIds.length > 0) {
-    cpoQuery = cpoQuery.not('customer_po_id', 'in', excludeCpoIds)
-  }
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: extCpoRaw } = await (cpoQuery as any)
+    .select('id, customer_po_id, harga_satuan, jumlah, customer_po!customer_po_id(id, nomor, tanggal, nomor_po_customer, customer!customer_id(nama, kode))')
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .eq('barang_id', id) as any)
+
+  if (extCpoErr) console.error('EXT CPO query error:', extCpoErr)
+
+  const extCpoItems = (extCpoRaw ?? [])
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .filter((i: any) => !excludeCpoIds.has(i.customer_po_id) && i.customer_po?.customer)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .map((item: any) => ({
+      invoice_id: 'cpo-' + item.id,
+      invoice_nomor: '',
+      invoice_tanggal: item.customer_po.tanggal,
+      invoice_status: '',
+      customer_nama: item.customer_po.customer.nama,
+      customer_kode: item.customer_po.customer.kode,
+      so_nomor: null,
+      di_nomor: null,
+      di_nomor_customer: null,
+      kontrak_nomor: null,
+      cpo_nomor: item.customer_po.nomor,
+      cpo_nomor_customer: item.customer_po.nomor_po_customer ?? null,
+      harga_satuan: Number(item.harga_satuan),
+      jumlah: item.jumlah,
+      diskon: 0,
+      total: Number(item.harga_satuan) * item.jumlah,
+      path: 'Import PO',
+    }))
 
   // --- 3. EXT: DI items tanpa sales_order (Import DI) ---
   const { data: soDiIds } = await supabaseAdmin
     .from('sales_order')
     .select('di_id')
     .not('di_id', 'is', null)
-  const excludeDiIds: string[] = (soDiIds ?? []).map(s => s.di_id).filter(Boolean)
+  const excludeDiIds = new Set((soDiIds ?? []).map(s => s.di_id).filter(Boolean))
 
-  let diQuery = supabaseAdmin
+  const { data: extDiItemRaw, error: extDiErr } = await (supabaseAdmin
     .from('di_item')
-    .select('id, harga_satuan, jumlah, di!di_id(id, nomor, tanggal, nomor_di_customer, kontrak_id, customer!customer_id(nama, kode))')
-    .eq('barang_id', id)
-  if (excludeDiIds.length > 0) {
-    diQuery = diQuery.not('di_id', 'in', excludeDiIds)
+    .select('id, di_id, harga_satuan, jumlah')
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .eq('barang_id', id) as any)
+
+  if (extDiErr) console.error('EXT DI items query error:', extDiErr)
+
+  // Fetch DI records + customer untuk item yang tidak punya sales_order
+  const extDiItemIds = [...new Set((extDiItemRaw ?? [])
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .filter((i: any) => !excludeDiIds.has(i.di_id))
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .map((i: any) => i.di_id)
+    .filter(Boolean))]
+
+  const diMap = new Map<string, { nomor: string; tanggal: string; nomor_di_customer: string | null; kontrak_id: string | null; customer: { nama: string; kode: string } }>()
+
+  if (extDiItemIds.length > 0) {
+    const { data: diRecords } = await (supabaseAdmin
+      .from('di')
+      .select('id, nomor, tanggal, nomor_di_customer, kontrak_id, customer!customer_id(nama, kode)')
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .in('id', extDiItemIds) as any)
+
+    for (const d of diRecords ?? []) {
+      if (d.customer) {
+        diMap.set(d.id, {
+          nomor: d.nomor,
+          tanggal: d.tanggal,
+          nomor_di_customer: d.nomor_di_customer,
+          kontrak_id: d.kontrak_id,
+          customer: d.customer,
+        })
+      }
+    }
   }
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: extDiRaw } = await (diQuery as any)
-
-  const extCpoItems = (extCpoRaw ?? []) as Array<{
-    id: string
-    harga_satuan: number
-    jumlah: number
-    customer_po: {
-      id: string
-      nomor: string
-      tanggal: string
-      nomor_po_customer: string | null
-      customer: { nama: string; kode: string } | null
-    } | null
-  }>
-
-  const extDiItems = (extDiRaw ?? []) as Array<{
-    id: string
-    harga_satuan: number
-    jumlah: number
-    di: {
-      id: string
-      nomor: string
-      tanggal: string
-      nomor_di_customer: string | null
-      kontrak_id: string | null
-      customer: { nama: string; kode: string } | null
-    } | null
-  }>
 
   // Fetch kontrak nomor untuk EXT DI items
-  const diKontrakIds = [...new Set(extDiItems.map(i => i.di?.kontrak_id).filter((k): k is string => k != null))]
-  const extKontrakMap: Record<string, string> = {}
+  const diKontrakIds = [...new Set(
+    [...diMap.values()].map(d => d.kontrak_id).filter((k): k is string => k != null)
+  )]
+  const extDiKontrakMap: Record<string, string> = {}
   if (diKontrakIds.length > 0) {
     const { data: kontraks } = await supabaseAdmin
       .from('kontrak')
       .select('id, nomor_kontrak')
       .in('id', diKontrakIds)
     for (const k of kontraks ?? []) {
-      extKontrakMap[k.id] = k.nomor_kontrak
+      extDiKontrakMap[k.id] = k.nomor_kontrak
     }
   }
 
-  const extHistory = [
-    ...extCpoItems
-      .filter(i => i.customer_po?.customer)
-      .map(item => ({
-        invoice_id: 'cpo-' + item.id,
-        invoice_nomor: '',
-        invoice_tanggal: item.customer_po!.tanggal,
-        invoice_status: '',
-        customer_nama: item.customer_po!.customer!.nama,
-        customer_kode: item.customer_po!.customer!.kode,
-        so_nomor: null,
-        di_nomor: null,
-        di_nomor_customer: null,
-        kontrak_nomor: null,
-        cpo_nomor: item.customer_po!.nomor,
-        cpo_nomor_customer: item.customer_po!.nomor_po_customer ?? null,
-        harga_satuan: Number(item.harga_satuan),
-        jumlah: item.jumlah,
-        diskon: 0,
-        total: Number(item.harga_satuan) * item.jumlah,
-        path: 'Import PO',
-      })),
-    ...extDiItems
-      .filter(i => i.di?.customer)
-      .map(item => ({
+  const extDiItems = (extDiItemRaw ?? [])
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .filter((i: any) => !excludeDiIds.has(i.di_id) && diMap.has(i.di_id))
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .map((item: any) => {
+      const di = diMap.get(item.di_id)!
+      return {
         invoice_id: 'di-' + item.id,
         invoice_nomor: '',
-        invoice_tanggal: item.di!.tanggal,
+        invoice_tanggal: di.tanggal,
         invoice_status: '',
-        customer_nama: item.di!.customer!.nama,
-        customer_kode: item.di!.customer!.kode,
+        customer_nama: di.customer.nama,
+        customer_kode: di.customer.kode,
         so_nomor: null,
-        di_nomor: item.di!.nomor,
-        di_nomor_customer: item.di!.nomor_di_customer ?? null,
-        kontrak_nomor: item.di!.kontrak_id ? (extKontrakMap[item.di!.kontrak_id] ?? null) : null,
+        di_nomor: di.nomor,
+        di_nomor_customer: di.nomor_di_customer ?? null,
+        kontrak_nomor: di.kontrak_id ? (extDiKontrakMap[di.kontrak_id] ?? null) : null,
         cpo_nomor: null,
         cpo_nomor_customer: null,
         harga_satuan: Number(item.harga_satuan),
@@ -234,10 +241,10 @@ export async function GET(
         diskon: 0,
         total: Number(item.harga_satuan) * item.jumlah,
         path: 'Import DI',
-      })),
-  ]
+      }
+    })
 
-  const allHistory = [...history, ...extHistory]
+  const allHistory = [...history, ...extCpoItems, ...extDiItems]
   allHistory.sort((a, b) => new Date(b.invoice_tanggal).getTime() - new Date(a.invoice_tanggal).getTime())
 
   return NextResponse.json({ data: allHistory })
