@@ -38,7 +38,14 @@ export async function GET(request: NextRequest) {
   let query = supabaseAdmin.from('barang').select('*, kategori_barang!kategori_id(nama)', { count: 'exact' })
 
   if (search) {
-    query = query.or(`nama.ilike.%${search}%,kode.ilike.%${search}%`)
+    const words = search.trim().split(/\s+/).filter(Boolean)
+    if (words.length === 1) {
+      query = query.or(`nama.ilike.%${search}%,kode.ilike.%${search}%`)
+    } else {
+      words.forEach(word => {
+        query = query.ilike('nama', `%${word}%`)
+      })
+    }
   }
 
   if (kategoriId && kategoriId !== '__all__') {

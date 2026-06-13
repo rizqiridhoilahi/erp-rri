@@ -41,36 +41,49 @@ const routeMap: Record<string, string> = {
   email_log: '/dashboard/email',
 }
 
+function buildBarangQuery(q: string) {
+  const words = q.trim().split(/\s+/).filter(Boolean)
+  let qb = supabaseAdmin.from('barang').select('id, nama, kode')
+  if (words.length === 1) {
+    qb = qb.or(`nama.ilike.%${q}%,kode.ilike.%${q}%`)
+  } else {
+    words.forEach(word => {
+      qb = qb.ilike('nama', `%${word}%`)
+    })
+  }
+  return qb.order('nama', { ascending: true }).limit(15)
+}
+
 const tableConfigs = [
-  { table: 'barang', select: 'id, nama, kode', query: (q: string) => supabaseAdmin.from('barang').select('id, nama, kode').or(`nama.ilike.%${q}%,kode.ilike.%${q}%`).limit(5) },
-  { table: 'supplier', select: 'id, nama', query: (q: string) => supabaseAdmin.from('supplier').select('id, nama').ilike('nama', `%${q}%`).limit(5) },
-  { table: 'customer', select: 'id, nama', query: (q: string) => supabaseAdmin.from('customer').select('id, nama').ilike('nama', `%${q}%`).limit(5) },
-  { table: 'karyawan', select: 'id, nama', query: (q: string) => supabaseAdmin.from('karyawan').select('id, nama').ilike('nama', `%${q}%`).limit(5) },
-  { table: 'purchase_order', select: 'id, nomor', query: (q: string) => supabaseAdmin.from('purchase_order').select('id, nomor').ilike('nomor', `%${q}%`).limit(5) },
-  { table: 'purchase_request', select: 'id, nomor', query: (q: string) => supabaseAdmin.from('purchase_request').select('id, nomor').ilike('nomor', `%${q}%`).limit(5) },
-  { table: 'sales_order', select: 'id, nomor', query: (q: string) => supabaseAdmin.from('sales_order').select('id, nomor').ilike('nomor', `%${q}%`).limit(5) },
-  { table: 'customer_po', select: 'id, nomor', query: (q: string) => supabaseAdmin.from('customer_po').select('id, nomor').ilike('nomor', `%${q}%`).limit(5) },
-  { table: 'delivery_order', select: 'id, nomor', query: (q: string) => supabaseAdmin.from('delivery_order').select('id, nomor').ilike('nomor', `%${q}%`).limit(5) },
-  { table: 'invoice', select: 'id, nomor', query: (q: string) => supabaseAdmin.from('invoice').select('id, nomor').ilike('nomor', `%${q}%`).limit(5) },
-  { table: 'quotation', select: 'id, nomor', query: (q: string) => supabaseAdmin.from('quotation').select('id, nomor').ilike('nomor', `%${q}%`).limit(5) },
-  { table: 'rfq_supplier', select: 'id, nomor', query: (q: string) => supabaseAdmin.from('rfq_supplier').select('id, nomor').ilike('nomor', `%${q}%`).limit(5) },
-  { table: 'rfq_customer', select: 'id, nomor', query: (q: string) => supabaseAdmin.from('rfq_customer').select('id, nomor').ilike('nomor', `%${q}%`).limit(5) },
-  { table: 'di', select: 'id, nomor', query: (q: string) => supabaseAdmin.from('di').select('id, nomor').ilike('nomor', `%${q}%`).limit(5) },
-  { table: 'grn', select: 'id, nomor', query: (q: string) => supabaseAdmin.from('grn').select('id, nomor').ilike('nomor', `%${q}%`).limit(5) },
-  { table: 'faktur_pajak', select: 'id, nomor', query: (q: string) => supabaseAdmin.from('faktur_pajak').select('id, nomor').ilike('nomor', `%${q}%`).limit(5) },
-  { table: 'kwitansi', select: 'id, nomor', query: (q: string) => supabaseAdmin.from('kwitansi').select('id, nomor').ilike('nomor', `%${q}%`).limit(5) },
-  { table: 'retur_penjualan', select: 'id, nomor', query: (q: string) => supabaseAdmin.from('retur_penjualan').select('id, nomor').ilike('nomor', `%${q}%`).limit(5) },
-  { table: 'retur_pembelian', select: 'id, nomor', query: (q: string) => supabaseAdmin.from('retur_pembelian').select('id, nomor').ilike('nomor', `%${q}%`).limit(5) },
-  { table: 'jurnal', select: 'id, nomor', query: (q: string) => supabaseAdmin.from('jurnal').select('id, nomor').ilike('nomor', `%${q}%`).limit(5) },
-  { table: 'negoiasi', select: 'id, nomor', query: (q: string) => supabaseAdmin.from('negoiasi').select('id, nomor').ilike('nomor', `%${q}%`).limit(5) },
-  { table: 'kontrak', select: 'id, nomor', query: (q: string) => supabaseAdmin.from('kontrak').select('id, nomor').ilike('nomor', `%${q}%`).limit(5) },
-  { table: 'absensi', select: 'id, keterangan', query: (q: string) => supabaseAdmin.from('absensi').select('id, keterangan').ilike('keterangan', `%${q}%`).limit(5) },
-  { table: 'coa', select: 'id, nama', query: (q: string) => supabaseAdmin.from('coa').select('id, nama').ilike('nama', `%${q}%`).limit(5) },
-  { table: 'jabatan', select: 'id, nama', query: (q: string) => supabaseAdmin.from('jabatan').select('id, nama').ilike('nama', `%${q}%`).limit(5) },
-  { table: 'kategori_barang', select: 'id, nama', query: (q: string) => supabaseAdmin.from('kategori_barang').select('id, nama').ilike('nama', `%${q}%`).limit(5) },
-  { table: 'gudang', select: 'id, nama', query: (q: string) => supabaseAdmin.from('gudang').select('id, nama').ilike('nama', `%${q}%`).limit(5) },
-  { table: 'customer_pic', select: 'id, nama', query: (q: string) => supabaseAdmin.from('customer_pic').select('id, nama').ilike('nama', `%${q}%`).limit(5) },
-  { table: 'email_log', select: 'id, subject, from_email, from_nama', query: (q: string) => supabaseAdmin.from('email_log').select('id, subject, from_email, from_nama').or(`subject.ilike.%${q}%,from_email.ilike.%${q}%,from_nama.ilike.%${q}%`).limit(5) },
+  { table: 'barang', select: 'id, nama, kode', query: (q: string) => buildBarangQuery(q) },
+  { table: 'supplier', select: 'id, nama', query: (q: string) => supabaseAdmin.from('supplier').select('id, nama').ilike('nama', `%${q}%`).limit(10) },
+  { table: 'customer', select: 'id, nama', query: (q: string) => supabaseAdmin.from('customer').select('id, nama').ilike('nama', `%${q}%`).limit(10) },
+  { table: 'karyawan', select: 'id, nama', query: (q: string) => supabaseAdmin.from('karyawan').select('id, nama').ilike('nama', `%${q}%`).limit(10) },
+  { table: 'purchase_order', select: 'id, nomor', query: (q: string) => supabaseAdmin.from('purchase_order').select('id, nomor').ilike('nomor', `%${q}%`).limit(10) },
+  { table: 'purchase_request', select: 'id, nomor', query: (q: string) => supabaseAdmin.from('purchase_request').select('id, nomor').ilike('nomor', `%${q}%`).limit(10) },
+  { table: 'sales_order', select: 'id, nomor', query: (q: string) => supabaseAdmin.from('sales_order').select('id, nomor').ilike('nomor', `%${q}%`).limit(10) },
+  { table: 'customer_po', select: 'id, nomor', query: (q: string) => supabaseAdmin.from('customer_po').select('id, nomor').ilike('nomor', `%${q}%`).limit(10) },
+  { table: 'delivery_order', select: 'id, nomor', query: (q: string) => supabaseAdmin.from('delivery_order').select('id, nomor').ilike('nomor', `%${q}%`).limit(10) },
+  { table: 'invoice', select: 'id, nomor', query: (q: string) => supabaseAdmin.from('invoice').select('id, nomor').ilike('nomor', `%${q}%`).limit(10) },
+  { table: 'quotation', select: 'id, nomor', query: (q: string) => supabaseAdmin.from('quotation').select('id, nomor').ilike('nomor', `%${q}%`).limit(10) },
+  { table: 'rfq_supplier', select: 'id, nomor', query: (q: string) => supabaseAdmin.from('rfq_supplier').select('id, nomor').ilike('nomor', `%${q}%`).limit(10) },
+  { table: 'rfq_customer', select: 'id, nomor', query: (q: string) => supabaseAdmin.from('rfq_customer').select('id, nomor').ilike('nomor', `%${q}%`).limit(10) },
+  { table: 'di', select: 'id, nomor', query: (q: string) => supabaseAdmin.from('di').select('id, nomor').ilike('nomor', `%${q}%`).limit(10) },
+  { table: 'grn', select: 'id, nomor', query: (q: string) => supabaseAdmin.from('grn').select('id, nomor').ilike('nomor', `%${q}%`).limit(10) },
+  { table: 'faktur_pajak', select: 'id, nomor', query: (q: string) => supabaseAdmin.from('faktur_pajak').select('id, nomor').ilike('nomor', `%${q}%`).limit(10) },
+  { table: 'kwitansi', select: 'id, nomor', query: (q: string) => supabaseAdmin.from('kwitansi').select('id, nomor').ilike('nomor', `%${q}%`).limit(10) },
+  { table: 'retur_penjualan', select: 'id, nomor', query: (q: string) => supabaseAdmin.from('retur_penjualan').select('id, nomor').ilike('nomor', `%${q}%`).limit(10) },
+  { table: 'retur_pembelian', select: 'id, nomor', query: (q: string) => supabaseAdmin.from('retur_pembelian').select('id, nomor').ilike('nomor', `%${q}%`).limit(10) },
+  { table: 'jurnal', select: 'id, nomor', query: (q: string) => supabaseAdmin.from('jurnal').select('id, nomor').ilike('nomor', `%${q}%`).limit(10) },
+  { table: 'negoiasi', select: 'id, nomor', query: (q: string) => supabaseAdmin.from('negoiasi').select('id, nomor').ilike('nomor', `%${q}%`).limit(10) },
+  { table: 'kontrak', select: 'id, nomor', query: (q: string) => supabaseAdmin.from('kontrak').select('id, nomor').ilike('nomor', `%${q}%`).limit(10) },
+  { table: 'absensi', select: 'id, keterangan', query: (q: string) => supabaseAdmin.from('absensi').select('id, keterangan').ilike('keterangan', `%${q}%`).limit(10) },
+  { table: 'coa', select: 'id, nama', query: (q: string) => supabaseAdmin.from('coa').select('id, nama').ilike('nama', `%${q}%`).limit(10) },
+  { table: 'jabatan', select: 'id, nama', query: (q: string) => supabaseAdmin.from('jabatan').select('id, nama').ilike('nama', `%${q}%`).limit(10) },
+  { table: 'kategori_barang', select: 'id, nama', query: (q: string) => supabaseAdmin.from('kategori_barang').select('id, nama').ilike('nama', `%${q}%`).limit(10) },
+  { table: 'gudang', select: 'id, nama', query: (q: string) => supabaseAdmin.from('gudang').select('id, nama').ilike('nama', `%${q}%`).limit(10) },
+  { table: 'customer_pic', select: 'id, nama', query: (q: string) => supabaseAdmin.from('customer_pic').select('id, nama').ilike('nama', `%${q}%`).limit(10) },
+  { table: 'email_log', select: 'id, subject, from_email, from_nama', query: (q: string) => supabaseAdmin.from('email_log').select('id, subject, from_email, from_nama').or(`subject.ilike.%${q}%,from_email.ilike.%${q}%,from_nama.ilike.%${q}%`).limit(10) },
 ]
 
 export async function POST(request: NextRequest) {
