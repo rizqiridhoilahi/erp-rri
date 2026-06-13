@@ -19,7 +19,24 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
     if (!autoErr) kwt.status = 'completed'
   }
 
-  const { data: items } = await supabaseAdmin.from('kwitansi_item').select('*, invoice_item!invoice_item_id(barang_id, harga, barang!barang_id(nama, kode, satuan))').eq('kwitansi_id', id)
+  const { data: kwtItems } = await supabaseAdmin.from('kwitansi_item').select('*').eq('kwitansi_id', id)
+  let items: Array<Record<string, unknown>> = []
+  if (kwtItems && kwtItems.length > 0) {
+    const invItemIds = kwtItems.map((ki: Record<string, unknown>) => ki.invoice_item_id)
+    const { data: invItems } = await supabaseAdmin
+      .from('invoice_item')
+      .select('id, barang_id, harga, barang!barang_id(nama, kode, satuan)')
+      .in('id', invItemIds)
+    items = kwtItems.map((ki: Record<string, unknown>) => {
+      const matched = (invItems ?? []).find((inv: Record<string, unknown>) => inv.id === ki.invoice_item_id)
+      return {
+        ...ki,
+        invoice_item: matched
+          ? { barang_id: matched.barang_id, harga: matched.harga, barang: matched.barang }
+          : null,
+      }
+    })
+  }
 
   type SalesOrderWithPIC = {
     nomor: string

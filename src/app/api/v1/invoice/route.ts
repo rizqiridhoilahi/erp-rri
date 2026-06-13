@@ -124,7 +124,11 @@ export async function POST(request: NextRequest) {
       created_at: now,
       updated_at: now,
     }))
-    await supabaseAdmin.from('kwitansi_item').insert(kwtItems)
+    const { error: kwtItemsError } = await supabaseAdmin.from('kwitansi_item').insert(kwtItems)
+    if (kwtItemsError) {
+      console.error('Gagal insert kwitansi_item:', kwtItemsError)
+      await supabaseAdmin.from('kwitansi').delete().eq('id', kwt.id)
+    }
   }
 
   const jurnalResult = await generateInvoiceJournal(inv.id)

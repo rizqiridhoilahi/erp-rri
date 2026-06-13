@@ -393,10 +393,11 @@ export default function EditQuotationPage() {
             <div className="grid grid-cols-3 gap-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium">Status</label>
-                <select {...register('status')}
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring">
+                <select {...register('status')} disabled
+                  className="flex h-10 w-full rounded-md border border-input bg-muted px-3 py-2 text-sm text-muted-foreground cursor-not-allowed">
                   {statusOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
                 </select>
+                <p className="text-xs text-muted-foreground">Ubah status di halaman detail quotation</p>
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium">Masa Berlaku</label>

@@ -237,6 +237,18 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
   if (error) return internalError(error)
   if (!data) return notFound('Quotation tidak ditemukan')
 
+  if (parsed.data.status) {
+    const newRfqStatus = parsed.data.status === 'sent' ? 'sent'
+      : parsed.data.status === 'closed' ? 'closed'
+      : null
+    if (newRfqStatus && data.rfq_id) {
+      await supabaseAdmin
+        .from('rfq_customer')
+        .update({ status: newRfqStatus })
+        .eq('id', data.rfq_id)
+    }
+  }
+
   const changes: Record<string, unknown> = { ...updateData }
   if (parsed.data.status) {
     changes.status = { old: current.status, new: parsed.data.status }

@@ -241,7 +241,11 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
                 created_at: now,
                 updated_at: now,
               }))
-              await supabaseAdmin.from('kwitansi_item').insert(kwtItems)
+              const { error: kwtItemsErr } = await supabaseAdmin.from('kwitansi_item').insert(kwtItems)
+              if (kwtItemsErr) {
+                console.error('Gagal insert kwitansi_item (DO route):', kwtItemsErr)
+                await supabaseAdmin.from('kwitansi').delete().eq('id', kwt.id)
+              }
             }
           }
         }
