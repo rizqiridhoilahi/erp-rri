@@ -9,6 +9,7 @@ import { PageHeader } from "@/components/page-header"
 import { MasterDataTable, Column } from "@/components/master-data-table"
 import { apiFetch } from "@/lib/api/client"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover"
 import { DeleteConfirmationDialog } from "@/components/delete-confirmation-dialog"
 import { TableSkeleton } from "@/components/ui/skeleton"
 import { Eye, Pencil, Trash2 } from "lucide-react"
@@ -223,17 +224,27 @@ export default function BarangPage() {
       const kontraks = item.kontrak ?? []
       if (kontraks.length === 0) return <span className="text-muted-foreground">tidak ada</span>
       return (
-        <div className="space-y-1">
-          {kontraks.map((k, idx) => {
-            const tglMulai = k.tanggal_mulai ? new Date(k.tanggal_mulai).toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "2-digit" }) : "..."
-            const tglSelesai = k.tanggal_selesai ? new Date(k.tanggal_selesai).toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "2-digit" }) : "..."
-            return (
-              <div key={k.nomor_kontrak} className={idx < kontraks.length - 1 ? "border-b border-border pb-1 mb-1" : ""}>
-                {k.nama || k.nomor_kontrak} ({tglMulai} - {tglSelesai})
-              </div>
-            )
-          })}
-        </div>
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" size="sm" className="h-7 text-xs font-normal">
+              {kontraks.length} Kontrak
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent align="start" className="w-72 p-3">
+            <div className="space-y-2">
+              {kontraks.map((k, idx) => {
+                const tglMulai = k.tanggal_mulai ? new Date(k.tanggal_mulai).toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "2-digit" }) : "..."
+                const tglSelesai = k.tanggal_selesai ? new Date(k.tanggal_selesai).toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "2-digit" }) : "..."
+                return (
+                  <div key={k.nomor_kontrak} className={idx < kontraks.length - 1 ? "border-b border-border pb-2 mb-2" : ""}>
+                    <p className="text-sm font-medium">{k.nama || k.nomor_kontrak}</p>
+                    <p className="text-xs text-muted-foreground">{tglMulai} — {tglSelesai}</p>
+                  </div>
+                )
+              })}
+            </div>
+          </PopoverContent>
+        </Popover>
       )
     } },
     { header: "Satuan", accessor: (item) => item.satuan || "-", sortKey: "satuan" },
