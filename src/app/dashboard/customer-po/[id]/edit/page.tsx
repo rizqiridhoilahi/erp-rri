@@ -18,7 +18,7 @@ import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@
 import { FileUpload } from '@/components/file-upload'
 import type { DocumentFile } from '@/components/file-upload'
 
-const schema = z.object({ status: z.string().optional(), nomor_po_customer: z.string().optional(), nomor_pr_customer: z.string().optional(), terms_of_payment: z.enum(['Net 14', 'Net 20', 'Net 30', 'Net 60', 'Net 90', 'Cash', 'Custom']).optional().or(z.literal('')), waktu_pengiriman: z.coerce.number().int().positive().optional(), nama_penandatangan: z.string().optional().nullable(), jabatan_penandatangan: z.string().optional().nullable() })
+const schema = z.object({ status: z.string().optional(), nomor_po_customer: z.string().optional(), nomor_pr_customer: z.string().optional(), terms_of_payment: z.enum(['Net 14', 'Net 20', 'Net 30', 'Net 60', 'Net 90', 'Cash', 'Custom']).optional().or(z.literal('')), waktu_pengiriman: z.coerce.number().int().positive().optional(), nama_penandatangan: z.string().optional().nullable(), jabatan_penandatangan: z.string().optional().nullable(), tanggal: z.string().optional() })
 type FV = z.input<typeof schema>
 const statusOpts = [{ value: 'draft', label: 'Draft' }, { value: 'confirmed', label: 'Dikonfirmasi' }, { value: 'cancelled', label: 'Batal' }]
 
@@ -96,6 +96,7 @@ export default function EditPoPage() {
           waktu_pengiriman: poRes.data.waktu_pengiriman ?? undefined,
           nama_penandatangan: poRes.data.nama_penandatangan ?? '',
           jabatan_penandatangan: poRes.data.jabatan_penandatangan ?? '',
+          tanggal: poRes.data.tanggal ? (poRes.data.tanggal as string).split('T')[0] : '',
         })
         setCustomerLabel(poRes.data.customer ? `[${poRes.data.customer.kode}] ${poRes.data.customer.nama}` : '-')
         setCustomerId(poRes.data.customer_id ?? '')
@@ -311,6 +312,10 @@ export default function EditPoPage() {
               <div className="space-y-2">
                 <label className="text-sm font-medium">Jabatan Penandatangan</label>
                 <Input {...register('jabatan_penandatangan')} placeholder="Jabatan penandatangan PO" />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Tanggal PO</label>
+                <Input type="date" {...register('tanggal')} onChange={(e) => setTanggal(e.target.value)} />
               </div>
               {(termsOfPayment || waktuPengirimanVal) && (
                 <div className="text-sm bg-blue-50 border border-blue-200 rounded-md px-4 py-3 space-y-1">
