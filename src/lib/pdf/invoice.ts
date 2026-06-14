@@ -344,6 +344,7 @@ export function InvoicePDF({ data }: { data: InvoiceData }) {
     }),
     hasClosingPage ? H(Page, { key: 'closing', size: 'A4', style: styles.page, wrap: true },
       headerSection,
+      docInfoSection,
       paymentSection,
       penutupSection,
       signatureSection,

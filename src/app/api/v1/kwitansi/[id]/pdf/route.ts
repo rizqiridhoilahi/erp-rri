@@ -5,6 +5,7 @@ import { verifyAuth } from '@/lib/api/auth'
 import { notFound, internalError } from '@/lib/api/errors'
 import { KwitansiPDF } from '@/lib/pdf/kwitansi'
 import { terbilang } from '@/lib/utils/terbilang'
+import { toRoman } from '@/lib/utils/roman'
 
 const COMPANY_KEYS = [
   'company_nama',
@@ -75,16 +76,35 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   const refType = so?.di ? 'DI' as const : so?.customer_po ? 'PO' as const : null
   const refNomor = so?.di?.nomor_di_customer ?? so?.customer_po?.nomor_po_customer ?? null
 
+  let invoiceNomor = (kwt.invoice as { nomor: string })?.nomor ?? '-'
+  let tanggal: string
+
+  if (kwt.schedule_id) {
+    const { data: schedule } = await supabaseAdmin
+      .from('invoice_payment_schedule')
+      .select('urutan')
+      .eq('id', kwt.schedule_id)
+      .single()
+    if (schedule) {
+      invoiceNomor = invoiceNomor + '/' + toRoman(schedule.urutan)
+    }
+    tanggal = 'Jepara, ' + new Date().toLocaleDateString('id-ID', {
+      day: 'numeric', month: 'long', year: 'numeric',
+    })
+  } else {
+    tanggal = 'Jepara, ' + new Date(inv.tanggal).toLocaleDateString('id-ID', {
+      day: 'numeric', month: 'long', year: 'numeric',
+    })
+  }
+
   const pdfData = {
     nomor: kwt.nomor,
     customerNama: (inv?.customer as { nama: string })?.nama ?? '-',
-    tanggal: 'Jepara, ' + new Date(inv.tanggal).toLocaleDateString('id-ID', {
-      day: 'numeric', month: 'long', year: 'numeric',
-    }),
+    tanggal,
     terbilangStr: terbilang(total),
     total,
     keterangan: kwt.keterangan,
-    invoiceNomor: (kwt.invoice as { nomor: string })?.nomor ?? '-',
+    invoiceNomor,
     refType,
     refNomor,
     companyNama: company.company_nama ?? 'PT. RIZQI RIDHO ILAHI',

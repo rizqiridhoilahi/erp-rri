@@ -135,7 +135,7 @@ export default function KwitansiDetailPage({ params }: { params: Promise<{ id: s
     )
   }
 
-  const totalItems = data.items.reduce((sum, i) => sum + i.jumlah, 0)
+  const totalItems = data.items.reduce((sum, i) => sum + (i.jumlah ?? 0) * (i.invoice_item?.harga ?? 0), 0)
 
   const getBarangInfo = (item: KwitansiItem) => {
     if (!item.invoice_item?.barang) return { nama: '-', kode: '', satuan: '' }
@@ -266,6 +266,7 @@ export default function KwitansiDetailPage({ params }: { params: Promise<{ id: s
                   <TableHead>#</TableHead>
                   <TableHead>Barang</TableHead>
                   <TableHead>Kode</TableHead>
+                  <TableHead className="text-center">QTY</TableHead>
                   <TableHead className="text-right">Harga Satuan</TableHead>
                   <TableHead className="text-right">Jumlah (Rp)</TableHead>
                 </TableRow>
@@ -278,8 +279,9 @@ export default function KwitansiDetailPage({ params }: { params: Promise<{ id: s
                       <TableCell className="text-muted-foreground">{i + 1}</TableCell>
                       <TableCell className="font-medium">{nama}</TableCell>
                       <TableCell className="text-muted-foreground">{kode}</TableCell>
+                      <TableCell className="text-center">{item.jumlah}</TableCell>
                       <TableCell className="text-right">{item.invoice_item?.harga ? item.invoice_item.harga.toLocaleString('id-ID') : '-'}</TableCell>
-                      <TableCell className="text-right font-medium">{item.jumlah.toLocaleString('id-ID')}</TableCell>
+                      <TableCell className="text-right font-medium">{((item.jumlah ?? 0) * (item.invoice_item?.harga ?? 0)).toLocaleString('id-ID')}</TableCell>
                     </TableRow>
                   )
                 })}
