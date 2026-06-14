@@ -46,7 +46,7 @@ const styles = StyleSheet.create({
   tableHeaderCell: { fontSize: 9, fontWeight: 'bold', padding: 2, textAlign: 'center', borderRightWidth: 1, borderRightColor: '#000' },
   tableRow: { flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: '#000' },
   tableTotalRow: { flexDirection: 'row', borderTopWidth: 1, borderTopColor: '#000' },
-  keteranganSection: { marginTop: 2, marginBottom: 2 },
+  keteranganSection: { marginTop: 15, marginBottom: 2 },
   keteranganTitle: { fontSize: 11, fontWeight: 'bold', marginBottom: 4 },
   keteranganLine: { fontSize: 11, marginBottom: 2, marginLeft: 10 },
   paymentSection: { marginTop: 2, marginBottom: 2 },
@@ -65,6 +65,14 @@ interface InvoiceItem {
   hargaSatuan: number
   diskon: number
   urutan: number
+}
+
+interface ScheduleItem {
+  urutan: number
+  deskripsi: string
+  persentase: number
+  jumlah: number
+  catatan: string | null
 }
 
 interface CompanyData {
@@ -96,6 +104,11 @@ interface InvoiceData {
   items: InvoiceItem[]
   keteranganInvoice: string | null
   company: CompanyData
+  termLabel?: string
+  termPersentase?: number
+  termNomor?: string
+  termAmount?: number
+  scheduleItems?: ScheduleItem[]
 }
 
 function formatCurrency(v: number | null | undefined): string {
@@ -138,6 +151,8 @@ export function InvoicePDF({ data }: { data: InvoiceData }) {
 
   const itemSlices = getItemSlices(data.items.length, data.itemsPerPage)
   const totalPages = itemSlices.length || 1
+  const hasClosingPage = data.scheduleItems && data.scheduleItems.length > 0
+  const totalDocPages = hasClosingPage ? totalPages + 1 : totalPages
 
   const v = (child: any, style: any) => H(View, { style: { justifyContent: 'center', ...style } }, child)
 
@@ -174,7 +189,7 @@ export function InvoicePDF({ data }: { data: InvoiceData }) {
       H(View, { style: styles.labelValueRow },
         H(Text, { style: styles.labelText }, 'No'),
         H(Text, { style: styles.colonText }, ':'),
-        H(Text, { style: styles.valueText }, data.nomor)
+        H(Text, { style: styles.valueText }, data.termNomor ?? data.nomor)
       ),
       ...(data.customerRef
         ? [H(View, { style: styles.labelValueRow },
@@ -187,7 +202,7 @@ export function InvoicePDF({ data }: { data: InvoiceData }) {
       H(View, { style: styles.labelValueRow },
         H(Text, { style: styles.labelText }, 'Perihal'),
         H(Text, { style: styles.colonText }, ':'),
-        H(Text, { style: { fontSize: 11, fontWeight: 'bold' } }, 'Tagihan')
+        H(Text, { style: { fontSize: 11, fontWeight: 'bold' } }, data.termLabel ? 'Tagihan ' + data.termLabel + ' ' + String(data.termPersentase ?? 0) + '%' : 'Tagihan')
       ),
     ),
     H(Text, { style: styles.valueText }, data.tanggal)
@@ -206,6 +221,31 @@ export function InvoicePDF({ data }: { data: InvoiceData }) {
     H(Text, { style: styles.bodyText }, 'Dengan hormat,'),
     H(Text, { style: styles.bodyText }, 'Dengan ini kami bermaksud untuk meminta pembayaran atas pembelian barang sebagai berikut:'),
   )
+
+  const scheduleSection = data.scheduleItems && data.scheduleItems.length > 0
+    ? H(View, { style: { marginTop: 15, marginBottom: 4 } },
+        H(Text, { style: { fontSize: 11, fontWeight: 'bold', marginBottom: 4 } }, 'Jadwal Pembayaran:'),
+        H(View, { style: { width: '100%', borderStyle: 'solid', borderWidth: 1, borderColor: '#000' } },
+          H(View, { style: { flexDirection: 'row', backgroundColor: '#f0f0f0', borderBottomWidth: 1, borderBottomColor: '#000' } },
+            H(Text, { style: { fontSize: 9, fontWeight: 'bold', width: 20, padding: 3, textAlign: 'center', borderRightWidth: 1, borderRightColor: '#000' } }, '#'),
+            H(Text, { style: { fontSize: 9, fontWeight: 'bold', width: 60, padding: 3, textAlign: 'center', borderRightWidth: 1, borderRightColor: '#000' } }, 'Termin'),
+            H(Text, { style: { fontSize: 9, fontWeight: 'bold', width: 35, padding: 3, textAlign: 'center', borderRightWidth: 1, borderRightColor: '#000' } }, '%'),
+            H(Text, { style: { fontSize: 9, fontWeight: 'bold', width: 75, padding: 3, textAlign: 'center', borderRightWidth: 1, borderRightColor: '#000' } }, 'Jumlah'),
+            H(Text, { style: { fontSize: 9, fontWeight: 'bold', flex: 1, padding: 3, textAlign: 'center' } }, 'Catatan'),
+          ),
+          ...data.scheduleItems.map((s) => {
+            const isCurrent = data.termLabel && s.deskripsi === data.termLabel
+            return H(View, { key: s.urutan, style: { flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: '#000', backgroundColor: isCurrent ? '#E8F0FE' : 'transparent' } },
+              H(Text, { style: { fontSize: 9, width: 20, padding: 3, textAlign: 'center', borderRightWidth: 1, borderRightColor: '#000' } }, String(s.urutan)),
+              H(Text, { style: { fontSize: 9, width: 60, padding: 3, fontWeight: isCurrent ? 'bold' : 'normal', borderRightWidth: 1, borderRightColor: '#000' } }, s.deskripsi),
+              H(Text, { style: { fontSize: 9, width: 35, padding: 3, textAlign: 'center', borderRightWidth: 1, borderRightColor: '#000' } }, String(s.persentase) + '%'),
+              H(Text, { style: { fontSize: 9, width: 75, padding: 3, textAlign: 'right', fontWeight: 'bold', borderRightWidth: 1, borderRightColor: '#000' } }, 'Rp ' + formatCurrency(s.jumlah)),
+              H(Text, { style: { fontSize: 9, flex: 1, padding: 3, textAlign: 'left' } }, s.catatan || ''),
+            )
+          }),
+        ),
+      )
+    : null
 
   const paymentSection = H(View, { style: styles.paymentSection },
     H(Text, { style: styles.paymentText }, 'Pembayaran untuk dapat dilakukan kepada:'),
@@ -284,22 +324,31 @@ export function InvoicePDF({ data }: { data: InvoiceData }) {
           }),
           isLastPage ? H(View, { style: styles.tableTotalRow },
             H(View, { style: { flex: 1, padding: 2, justifyContent: 'center' } },
-              H(Text, { style: { fontSize: 9, fontWeight: 'bold', textAlign: 'right' } }, 'GRAND TOTAL')
+              H(Text, { style: { fontSize: 9, fontWeight: 'bold', textAlign: 'right' } }, data.termLabel ? 'GRAND TOTAL ' + data.termLabel + ' ' + String(data.termPersentase ?? 0) + '%' : 'GRAND TOTAL')
             ),
             H(View, { style: { width: 75, padding: 2, justifyContent: 'center' } },
-              H(Text, { style: { fontSize: 9, fontWeight: 'bold', textAlign: 'right' } }, 'Rp ' + formatCurrency(data.grandTotal))
+              H(Text, { style: { fontSize: 9, fontWeight: 'bold', textAlign: 'right' } }, 'Rp ' + formatCurrency(data.termAmount ?? data.grandTotal))
             ),
           ) : null,
         ),
 
+        isLastPage && scheduleSection ? scheduleSection : null,
         isLastPage && keteranganSection ? keteranganSection : null,
-        isLastPage ? paymentSection : null,
-        isLastPage ? penutupSection : null,
-        isLastPage ? signatureSection : null,
+        isLastPage && !hasClosingPage ? paymentSection : null,
+        isLastPage && !hasClosingPage ? penutupSection : null,
+        isLastPage && !hasClosingPage ? signatureSection : null,
 
         footerView,
-        H(Text, { style: styles.pageNum }, `Page ${pageNumber} of ${totalPages}`)
+        H(Text, { style: styles.pageNum }, `Page ${pageNumber} of ${totalDocPages}`)
       )
     }),
+    hasClosingPage ? H(Page, { key: 'closing', size: 'A4', style: styles.page, wrap: true },
+      headerSection,
+      paymentSection,
+      penutupSection,
+      signatureSection,
+      footerView,
+      H(Text, { style: styles.pageNum }, `Page ${totalDocPages} of ${totalDocPages}`)
+    ) : null,
   )
 }

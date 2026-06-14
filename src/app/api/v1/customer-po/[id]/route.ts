@@ -59,7 +59,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
   if (body.terms_of_payment !== undefined) upd.terms_of_payment = body.terms_of_payment
   if (body.keterangan !== undefined) upd.keterangan = body.keterangan
   if (body.waktu_pengiriman !== undefined) upd.waktu_pengiriman = body.waktu_pengiriman
-  if (body.tanggal !== undefined) upd.tanggal = body.tanggal
+  if (body.tanggal !== undefined && body.tanggal !== '') upd.tanggal = body.tanggal
   if (body.pic_customer_id !== undefined) upd.pic_customer_id = body.pic_customer_id || null
   if (body.nama_penandatangan !== undefined) upd.nama_penandatangan = body.nama_penandatangan || null
   if (body.jabatan_penandatangan !== undefined) upd.jabatan_penandatangan = body.jabatan_penandatangan || null

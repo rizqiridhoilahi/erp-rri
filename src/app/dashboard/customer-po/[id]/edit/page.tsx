@@ -315,7 +315,7 @@ export default function EditPoPage() {
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium">Tanggal PO</label>
-                <Input type="date" {...register('tanggal')} onChange={(e) => setTanggal(e.target.value)} />
+                <Input type="date" {...register('tanggal', { onChange: (e) => setTanggal(e.target.value) })} />
               </div>
               {(termsOfPayment || waktuPengirimanVal) && (
                 <div className="text-sm bg-blue-50 border border-blue-200 rounded-md px-4 py-3 space-y-1">

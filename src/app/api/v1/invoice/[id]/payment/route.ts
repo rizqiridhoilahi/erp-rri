@@ -41,6 +41,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     .from('invoice_payment')
     .insert({
       invoice_id: id,
+      schedule_id: body.schedule_id ?? null,
       tanggal,
       amount: body.amount,
       metode: body.metode,

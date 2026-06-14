@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react"
 import { useRouter, usePathname } from "next/navigation"
-import { apiFetch } from "@/lib/api/client"
+import { apiFetch, getAuthToken } from "@/lib/api/client"
+import { toRoman } from "@/lib/utils/roman"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
@@ -11,7 +12,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
 import { DatePicker } from "@/components/ui/date-picker"
-import { ArrowLeft, FileText, Pencil, FileSpreadsheet, Wallet, Loader2, Send } from "lucide-react"
+import { ArrowLeft, FileText, Pencil, FileSpreadsheet, Wallet, Loader2, Send, Download, Eye, Save } from "lucide-react"
 import { InvoiceDetailSkeleton } from "@/components/ui/skeleton"
 import { InvoicePdfActions } from "@/components/invoice-pdf-actions"
 import { TandaTerimaPdfActions } from "@/components/tanda-terima-pdf-actions"
@@ -67,6 +68,7 @@ interface PaymentSchedule {
   due_date: string
   status: string
   paid_amount: number
+  catatan?: string | null
 }
 
 interface InvoiceItem {
@@ -94,9 +96,11 @@ export default function InvoiceDetailPage() {
   const [documents, setDocuments] = useState<DocumentFile[]>([])
   const [grnDocuments, setGrnDocuments] = useState<DocumentFile[]>([])
   const [uploading, setUploading] = useState(false)
-  const [kwitansiList, setKwitansiList] = useState<Array<{ id: string; nomor: string; invoice_id: string; status: string }>>([])
-  const [payments, setPayments] = useState<Array<{ id: string; amount: number; metode: string; tanggal: string; keterangan: string | null }>>([])
+  const [kwitansiList, setKwitansiList] = useState<Array<{ id: string; nomor: string; invoice_id: string; status: string; schedule_id: string | null }>>([])
+  const [payments, setPayments] = useState<Array<{ id: string; amount: number; metode: string; tanggal: string; keterangan: string | null; schedule_id?: string | null }>>([])
   const [schedule, setSchedule] = useState<PaymentSchedule[]>([])
+  const [savingCatatan, setSavingCatatan] = useState<Record<string, boolean>>({})
+  const [catatanInputs, setCatatanInputs] = useState<Record<string, string>>({})
   const [generatingSchedule, setGeneratingSchedule] = useState(false)
   const [customerHasPaymentTerm, setCustomerHasPaymentTerm] = useState<boolean | null>(null)
   const [grnCustomerNomor, setGrnCustomerNomor] = useState("")
@@ -133,7 +137,7 @@ export default function InvoiceDetailPage() {
       apiFetch<Invoice & { items: InvoiceItem[] }>(`/api/v1/invoice/${id}`),
       apiFetch<DocumentFile[]>(`/api/v1/invoice/${id}/documents`),
       apiFetch<DocumentFile[]>(`/api/v1/invoice/${id}/grn-document`),
-      apiFetch<Array<{ id: string; nomor: string; invoice_id: string; status: string }>>(`/api/v1/kwitansi?invoice_id=${id}`),
+      apiFetch<Array<{ id: string; nomor: string; invoice_id: string; status: string; schedule_id: string | null }>>(`/api/v1/kwitansi?invoice_id=${id}`),
       apiFetch<Array<{ id: string; amount: number; metode: string; tanggal: string; keterangan: string | null }>>(`/api/v1/invoice/${id}/payment`),
     ]).then(([invRes, docRes, grnRes, kwtRes, payRes]) => {
       const invData = invRes.data
@@ -149,6 +153,7 @@ export default function InvoiceDetailPage() {
 
       const sched = invData?.schedule ?? []
       setSchedule(sched)
+      setCatatanInputs(Object.fromEntries(sched.map(s => [s.id, s.catatan ?? ''])))
       const firstUnpaid = sched.find(s => s.status !== 'paid')
       if (firstUnpaid) setPayScheduleId(firstUnpaid.id)
 
@@ -172,6 +177,7 @@ export default function InvoiceDetailPage() {
       const invRes = await apiFetch<Invoice & { items: InvoiceItem[] }>(`/api/v1/invoice/${id}`)
       const sched = invRes.data?.schedule ?? []
       setSchedule(sched)
+      setCatatanInputs(Object.fromEntries(sched.map(s => [s.id, s.catatan ?? ''])))
       const firstUnpaid = sched.find(s => s.status !== 'paid')
       if (firstUnpaid) setPayScheduleId(firstUnpaid.id)
       setCustomerHasPaymentTerm(true)
@@ -271,7 +277,7 @@ export default function InvoiceDetailPage() {
           schedule_id: payScheduleId || undefined,
         }),
       })
-      setPayments((prev) => [r.data as { id: string; amount: number; metode: string; tanggal: string; keterangan: string | null }, ...prev])
+      setPayments((prev) => [r.data as { id: string; amount: number; metode: string; tanggal: string; keterangan: string | null; schedule_id?: string | null }, ...prev])
       setPayAmount("")
       setPayTanggal("")
       setPayScheduleId("")
@@ -282,6 +288,7 @@ export default function InvoiceDetailPage() {
         setInv(invRes.data)
         const sched = invRes.data.schedule ?? []
         setSchedule(sched)
+        setCatatanInputs(Object.fromEntries(sched.map(s => [s.id, s.catatan ?? ''])))
         const nextUnpaid = sched.find(s => s.status !== 'paid')
         if (nextUnpaid) setPayScheduleId(nextUnpaid.id)
       }
@@ -307,6 +314,46 @@ export default function InvoiceDetailPage() {
       toast.error(err instanceof Error ? err.message : 'Gagal mengirim invoice')
     } finally {
       setStatusLoading(false)
+    }
+  }
+
+  const handlePdfPreview = async (term: number) => {
+    const url = `/api/v1/invoice/${id}/pdf?term=${term}`
+    const token = await getAuthToken()
+    const res = await fetch(url, { headers: token ? { Authorization: `Bearer ${token}` } : {} })
+    if (!res.ok) { toast.error('Gagal memuat PDF'); return }
+    const blob = await res.blob()
+    window.open(URL.createObjectURL(blob), '_blank')
+  }
+
+  const handlePdfDownload = async (term: number, nomorSuffix: string) => {
+    const url = `/api/v1/invoice/${id}/pdf?term=${term}`
+    const token = await getAuthToken()
+    const res = await fetch(url, { headers: token ? { Authorization: `Bearer ${token}` } : {} })
+    if (!res.ok) { toast.error('Gagal mengunduh PDF'); return }
+    const blob = await res.blob()
+    const blobUrl = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = blobUrl
+    a.download = `Invoice - ${inv?.nomor} ${nomorSuffix}.pdf`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(blobUrl)
+  }
+
+  const handleSaveCatatan = async (scheduleId: string) => {
+    setSavingCatatan(prev => ({ ...prev, [scheduleId]: true }))
+    try {
+      await apiFetch(`/api/v1/invoice/${id}/payment-schedule`, {
+        method: 'PATCH',
+        body: JSON.stringify({ scheduleId, catatan: catatanInputs[scheduleId] ?? '' }),
+      })
+      toast.success('Catatan tersimpan')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Gagal menyimpan catatan')
+    } finally {
+      setSavingCatatan(prev => ({ ...prev, [scheduleId]: false }))
     }
   }
 
@@ -470,12 +517,14 @@ export default function InvoiceDetailPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>#</TableHead>
-                  <TableHead>Termin</TableHead>
-                  <TableHead className="text-right">Persentase</TableHead>
-                  <TableHead className="text-right">Jumlah</TableHead>
-                  <TableHead>Jatuh Tempo</TableHead>
-                  <TableHead>Status</TableHead>
+                  <TableHead className="text-center">#</TableHead>
+                  <TableHead className="text-center">Termin</TableHead>
+                  <TableHead className="text-center">Persentase</TableHead>
+                  <TableHead className="text-center">Jumlah</TableHead>
+                  <TableHead className="text-center">Catatan</TableHead>
+                  <TableHead className="text-center">Jatuh Tempo</TableHead>
+                  <TableHead className="text-center">Status</TableHead>
+                  <TableHead className="text-center">Aksi</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -483,21 +532,52 @@ export default function InvoiceDetailPage() {
                   const isDueOverdue = s.due_date ? new Date(s.due_date) < new Date() && s.status === 'pending' : false
                   return (
                     <TableRow key={s.id}>
-                      <TableCell>{s.urutan}</TableCell>
-                      <TableCell>{s.deskripsi}</TableCell>
-                      <TableCell className="text-right">{s.persentase}%</TableCell>
-                      <TableCell className="text-right font-medium">{s.jumlah.toLocaleString("id-ID")}</TableCell>
-                      <TableCell>
+                      <TableCell className="text-center">{s.urutan}</TableCell>
+                      <TableCell className="text-center">{s.deskripsi}</TableCell>
+                      <TableCell className="text-center">{s.persentase}%</TableCell>
+                      <TableCell className="text-center font-medium">{s.jumlah.toLocaleString("id-ID")}</TableCell>
+                      <TableCell className="text-center">
+                        <div className="flex items-center justify-center gap-1">
+                          <input
+                            value={catatanInputs[s.id] ?? ''}
+                            onChange={(e) => setCatatanInputs(prev => ({ ...prev, [s.id]: e.target.value }))}
+                            placeholder="Catatan..."
+                            className="h-7 w-32 rounded border border-input bg-background px-2 text-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                          />
+                          <button
+                            onClick={() => handleSaveCatatan(s.id)}
+                            disabled={savingCatatan[s.id]}
+                            className="inline-flex items-center justify-center h-7 w-7 rounded-md hover:bg-muted shrink-0"
+                            title="Simpan catatan">
+                            {savingCatatan[s.id] ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
+                          </button>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-center">
                         {s.due_date ? (
                           <span className={`${isDueOverdue ? 'text-destructive font-medium' : ''}`}>
                             {new Date(s.due_date).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })}
                           </span>
                         ) : "-"}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="text-center">
                         <Badge variant={s.status === 'paid' ? 'success' : s.status === 'partial' ? 'warning' : isDueOverdue ? 'destructive' : 'secondary'}>
                           {s.status === 'paid' ? 'Lunas' : s.status === 'partial' ? 'Sebagian' : isDueOverdue ? 'Overdue' : 'Pending'}
                         </Badge>
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <div className="flex items-center justify-center gap-1">
+                          <button onClick={() => handlePdfPreview(s.urutan)}
+                            className="inline-flex items-center justify-center h-8 w-8 rounded-md hover:bg-muted"
+                            title="Preview PDF termin ini">
+                            <Eye className="h-4 w-4" />
+                          </button>
+                          <button onClick={() => handlePdfDownload(s.urutan, toRoman(s.urutan))}
+                            className="inline-flex items-center justify-center h-8 w-8 rounded-md hover:bg-muted"
+                            title="Download PDF termin ini">
+                            <Download className="h-4 w-4" />
+                          </button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   )
@@ -532,20 +612,25 @@ export default function InvoiceDetailPage() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Tanggal</TableHead>
+                    {schedule.length > 0 && <TableHead>Termin</TableHead>}
                     <TableHead>Metode</TableHead>
                     <TableHead className="text-right">Jumlah</TableHead>
                     <TableHead>Keterangan</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {payments.map((p) => (
+                  {payments.map((p) => {
+                    const term = schedule.find(s => s.id === p.schedule_id)
+                    return (
                     <TableRow key={p.id}>
                       <TableCell>{new Date(p.tanggal).toLocaleDateString("id-ID")}</TableCell>
+                      {schedule.length > 0 && <TableCell>{term ? `Term ${term.urutan}: ${term.deskripsi}` : '-'}</TableCell>}
                       <TableCell className="capitalize">{p.metode}</TableCell>
                       <TableCell className="text-right font-medium">{p.amount.toLocaleString("id-ID")}</TableCell>
                       <TableCell className="text-muted-foreground">{p.keterangan ?? "-"}</TableCell>
                     </TableRow>
-                  ))}
+                    )
+                  })}
                 </TableBody>
               </Table>
               <div className="flex justify-end items-center gap-8 border-t mt-2 pt-2">
@@ -619,7 +704,34 @@ export default function InvoiceDetailPage() {
         </CardContent>
       </Card>
 
-      {kwitansiList.length > 0 && (
+      {schedule.length > 0 ? (
+        <Card>
+          <CardContent className="pt-6">
+            <h3 className="text-lg font-semibold mb-2">Kwitansi</h3>
+            <div className="space-y-2">
+              {schedule.map((term) => {
+                const kwt = kwitansiList.find(k => k.schedule_id === term.id)
+                return (
+                  <div key={term.id} className="flex items-center gap-2">
+                    <FileText className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm text-muted-foreground min-w-[100px]">{term.deskripsi}:</span>
+                    {kwt ? (
+                      <>
+                        <a href={`/dashboard/kwitansi/${kwt.id}`} className="text-primary hover:underline font-medium">
+                          {kwt.nomor}
+                        </a>
+                        <Badge variant="outline" className="text-xs">{kwt.status}</Badge>
+                      </>
+                    ) : (
+                      <span className="text-xs text-muted-foreground italic">Belum dibuat</span>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      ) : kwitansiList.length > 0 ? (
         <Card>
           <CardContent className="pt-6">
             <h3 className="text-lg font-semibold mb-2">Kwitansi</h3>
@@ -634,7 +746,7 @@ export default function InvoiceDetailPage() {
             ))}
           </CardContent>
         </Card>
-      )}
+      ) : null}
 
       <Card>
         <CardContent className="pt-6">

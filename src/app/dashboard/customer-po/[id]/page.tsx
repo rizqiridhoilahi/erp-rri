@@ -279,7 +279,7 @@ export default function CustomerPoDetailPage() {
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Tanggal</p>
-              <p className="font-medium">{new Date(po.tanggal).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })}</p>
+              <p className="font-medium">{(() => { const [y,m,d] = po.tanggal.split('T')[0].split('-'); const months = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember']; return `${parseInt(d)} ${months[parseInt(m)-1]} ${y}` })()}</p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Customer</p>

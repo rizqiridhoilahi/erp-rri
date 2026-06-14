@@ -29,6 +29,16 @@ interface InvoiceItem {
   diskon: number | null
 }
 
+interface PaymentSchedule {
+  id: string
+  urutan: number
+  deskripsi: string
+  persentase: number
+  jumlah: number
+  due_date: string
+  status: string
+}
+
 interface InvoiceData {
   id: string
   nomor: string
@@ -38,6 +48,7 @@ interface InvoiceData {
   top: string
   status: string
   items: InvoiceItem[]
+  schedule?: PaymentSchedule[]
 }
 
 const schema = z.object({
@@ -58,6 +69,8 @@ export default function EditInvoicePage() {
   const [inv, setInv] = useState<InvoiceData | null>(null)
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
+  const [schedule, setSchedule] = useState<PaymentSchedule[]>([])
+  const [generatingSchedule, setGeneratingSchedule] = useState(false)
 
   const form = useForm<FV>({
     resolver: zodResolver(schema),
@@ -66,7 +79,7 @@ export default function EditInvoicePage() {
 
   useEffect(() => {
     if (!params.id) return
-    apiFetch<InvoiceData>(`/api/v1/invoice/${params.id}`)
+    apiFetch<InvoiceData & { schedule?: PaymentSchedule[] }>(`/api/v1/invoice/${params.id}`)
       .then((r) => {
         const d = r.data
         const invTanggal = (() => {
@@ -75,6 +88,7 @@ export default function EditInvoicePage() {
           return (t as string | undefined)?.split('T')[0] ?? ''
         })()
         setInv(d)
+        setSchedule(d.schedule ?? [])
         form.reset({
           tanggal: invTanggal,
           status: d.status,
@@ -101,6 +115,20 @@ export default function EditInvoicePage() {
       toast.error(err instanceof Error ? err.message : 'Terjadi kesalahan')
     } finally {
       setSubmitting(false)
+    }
+  }
+
+  const handleGenerateSchedule = async () => {
+    setGeneratingSchedule(true)
+    try {
+      await apiFetch(`/api/v1/invoice/${params.id}/payment-schedule?regenerate=true`, { method: 'POST' })
+      toast.success('Jadwal pembayaran berhasil digenerate!')
+      const r = await apiFetch<{ schedule?: PaymentSchedule[] }>(`/api/v1/invoice/${params.id}`)
+      setSchedule(r.data?.schedule ?? [])
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Gagal generate jadwal')
+    } finally {
+      setGeneratingSchedule(false)
     }
   }
 
@@ -235,6 +263,46 @@ export default function EditInvoicePage() {
               </CardContent>
             </Card>
           )}
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle className="text-base">Jadwal Pembayaran</CardTitle>
+              <Button type="button" variant="outline" size="sm" onClick={handleGenerateSchedule} disabled={generatingSchedule}>
+                {generatingSchedule && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                {generatingSchedule ? 'Mengenerate...' : 'Generate Ulang Jadwal'}
+              </Button>
+            </CardHeader>
+            <CardContent>
+              {schedule.length > 0 ? (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="text-center">#</TableHead>
+                      <TableHead className="text-center">Termin</TableHead>
+                      <TableHead className="text-center">Persentase</TableHead>
+                      <TableHead className="text-center">Jumlah</TableHead>
+                      <TableHead className="text-center">Jatuh Tempo</TableHead>
+                      <TableHead className="text-center">Status</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {schedule.map((s) => (
+                      <TableRow key={s.id}>
+                        <TableCell className="text-center">{s.urutan}</TableCell>
+                        <TableCell className="text-center">{s.deskripsi}</TableCell>
+                        <TableCell className="text-center">{s.persentase}%</TableCell>
+                        <TableCell className="text-center font-medium">{s.jumlah.toLocaleString("id-ID")}</TableCell>
+                        <TableCell className="text-center">{s.due_date ? new Date(s.due_date).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" }) : "-"}</TableCell>
+                        <TableCell className="text-center capitalize">{s.status}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              ) : (
+                <p className="text-sm text-muted-foreground">Belum ada jadwal pembayaran. Tekan tombol &quot;Generate Ulang Jadwal&quot; untuk membuat dari payment term customer.</p>
+              )}
+            </CardContent>
+          </Card>
 
           <div className="flex justify-end gap-3">
             <Button type="button" variant="outline" asChild>

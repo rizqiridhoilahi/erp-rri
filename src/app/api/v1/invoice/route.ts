@@ -6,6 +6,7 @@ import { badRequest, internalError } from '@/lib/api/errors'
 import { generateGlobalDocumentNumber, formatChildNumber } from '@/lib/utils/document-number'
 import { generateInvoiceJournal } from '@/lib/auto-jurnal'
 import { addDays } from 'date-fns'
+import { toRoman } from '@/lib/utils/roman'
 
 const itemSchema = z.object({
   barang_id: z.string().min(1),
@@ -106,33 +107,7 @@ export async function POST(request: NextRequest) {
   const { data: invItems, error: itemsError } = await supabaseAdmin.from('invoice_item').insert(items).select('id, harga, jumlah, diskon')
   if (itemsError) { await supabaseAdmin.from('invoice').delete().eq('id', inv.id); return internalError(itemsError) }
 
-  const nomorKwt = formatChildNumber(nomor, 'KWT')
-  const { data: kwt } = await supabaseAdmin.from('kwitansi').insert({
-    nomor: nomorKwt,
-    invoice_id: inv.id,
-    tanggal: now,
-    status: 'draft',
-    created_at: now,
-    updated_at: now,
-  }).select().single()
-
-  if (kwt) {
-    const kwtItems = (invItems ?? []).map((invItem) => ({
-      kwitansi_id: kwt.id,
-      invoice_item_id: invItem.id,
-      jumlah: (Number(invItem.harga) * Number(invItem.jumlah)) - (Number(invItem.diskon) || 0),
-      created_at: now,
-      updated_at: now,
-    }))
-    const { error: kwtItemsError } = await supabaseAdmin.from('kwitansi_item').insert(kwtItems)
-    if (kwtItemsError) {
-      console.error('Gagal insert kwitansi_item:', kwtItemsError)
-      await supabaseAdmin.from('kwitansi').delete().eq('id', kwt.id)
-    }
-  }
-
-  const jurnalResult = await generateInvoiceJournal(inv.id)
-
+  // Generate payment schedule if customer has payment_term_id
   let schedule: Record<string, unknown>[] | null = null
   const { data: cust } = await supabaseAdmin.from('customer').select('payment_term_id').eq('id', parsed.data.customer_id).single()
   if (cust?.payment_term_id) {
@@ -163,6 +138,70 @@ export async function POST(request: NextRequest) {
       if (schedError) console.error('Failed to generate payment schedule:', schedError)
     }
   }
+
+  const baseNomorKwt = formatChildNumber(nomor, 'KWT')
+
+  if (schedule && schedule.length > 0) {
+    // Multi-termin: create one kwitansi per term
+    for (const term of schedule) {
+      const termNomorKwt = baseNomorKwt + '/' + toRoman((term as Record<string, unknown>).urutan as number)
+      const { data: kwtTerm } = await supabaseAdmin.from('kwitansi').insert({
+        nomor: termNomorKwt,
+        invoice_id: inv.id,
+        schedule_id: term.id,
+        total: term.jumlah,
+        tanggal: now,
+        status: 'draft',
+        created_at: now,
+        updated_at: now,
+      }).select().single()
+
+      if (kwtTerm) {
+        const kwtTermItems = (invItems ?? []).map((invItem) => ({
+          kwitansi_id: kwtTerm.id,
+          invoice_item_id: invItem.id,
+          jumlah: Math.round(
+            (Number(invItem.harga) * Number(invItem.jumlah) - (Number(invItem.diskon) || 0))
+            * Number((term as Record<string, unknown>).persentase) / 100 * 100
+          ) / 100,
+          created_at: now,
+          updated_at: now,
+        }))
+        const { error: kwtItemsError } = await supabaseAdmin.from('kwitansi_item').insert(kwtTermItems)
+        if (kwtItemsError) {
+          console.error('Gagal insert kwitansi_item untuk term', (term as Record<string, unknown>).urutan, ':', kwtItemsError)
+          await supabaseAdmin.from('kwitansi').delete().eq('id', kwtTerm.id)
+        }
+      }
+    }
+  } else {
+    // Single term (no schedule): single kwitansi (existing behavior)
+    const { data: kwt } = await supabaseAdmin.from('kwitansi').insert({
+      nomor: baseNomorKwt,
+      invoice_id: inv.id,
+      tanggal: now,
+      status: 'draft',
+      created_at: now,
+      updated_at: now,
+    }).select().single()
+
+    if (kwt) {
+      const kwtItems = (invItems ?? []).map((invItem) => ({
+        kwitansi_id: kwt.id,
+        invoice_item_id: invItem.id,
+        jumlah: (Number(invItem.harga) * Number(invItem.jumlah)) - (Number(invItem.diskon) || 0),
+        created_at: now,
+        updated_at: now,
+      }))
+      const { error: kwtItemsError } = await supabaseAdmin.from('kwitansi_item').insert(kwtItems)
+      if (kwtItemsError) {
+        console.error('Gagal insert kwitansi_item:', kwtItemsError)
+        await supabaseAdmin.from('kwitansi').delete().eq('id', kwt.id)
+      }
+    }
+  }
+
+  const jurnalResult = await generateInvoiceJournal(inv.id)
 
   return NextResponse.json({ data: { ...inv, items, schedule, jurnal: jurnalResult.success ? jurnalResult.jurnal : null } }, { status: 201 })
 }

@@ -4,6 +4,7 @@ import { supabaseAdmin } from '@/lib/api/supabase-server'
 import { verifyAuth } from '@/lib/api/auth'
 import { notFound, internalError } from '@/lib/api/errors'
 import { InvoicePDF } from '@/lib/pdf/invoice'
+import { toRoman } from '@/lib/utils/roman'
 
 const COMPANY_KEYS = [
   'company_nama', 'company_bidang_usaha', 'company_alamat',
@@ -59,6 +60,47 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
   const grandTotal = displayItems.reduce((s, i) => s + (i.harga * i.jumlah - (i.diskon ?? 0)), 0)
 
+  // Multi-termin: handle ?term=N query param
+  const termParam = request.nextUrl.searchParams.get('term')
+  let termNomor: string | undefined
+  let termLabel: string | undefined
+  let termPersentase: number | undefined
+  let termAmount: number | undefined
+  let scheduleItems: Array<{ urutan: number; deskripsi: string; persentase: number; jumlah: number; catatan: string | null }> | undefined
+
+  if (termParam) {
+    const termNum = Number(termParam)
+    if (!isNaN(termNum) && termNum > 0) {
+      const { data: selectedTerm } = await supabaseAdmin
+        .from('invoice_payment_schedule')
+        .select('*')
+        .eq('invoice_id', id)
+        .eq('urutan', termNum)
+        .single()
+
+      if (selectedTerm) {
+        termNomor = inv.nomor + '/' + toRoman(termNum)
+        termLabel = selectedTerm.deskripsi
+        termPersentase = Number(selectedTerm.persentase)
+        termAmount = Number(selectedTerm.jumlah)
+
+        const { data: allSchedules } = await supabaseAdmin
+          .from('invoice_payment_schedule')
+          .select('*')
+          .eq('invoice_id', id)
+          .order('urutan')
+
+        scheduleItems = (allSchedules ?? []).map(s => ({
+          urutan: s.urutan,
+          deskripsi: s.deskripsi,
+          persentase: Number(s.persentase),
+          jumlah: Number(s.jumlah),
+          catatan: (s as Record<string, unknown>).catatan as string | null ?? null,
+        }))
+      }
+    }
+  }
+
   const so = inv.sales_order as {
     nomor: string
     customer_po_id?: string
@@ -77,15 +119,24 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     : so?.di?.nomor_di_customer ?? null
   const refLabel = sourceIsCPO ? 'No. Ref. PO' : 'No. Ref. DI'
 
+  const tanggal = termParam
+    ? 'Jepara, ' + new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
+    : 'Jepara, ' + new Date(inv.tanggal).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
+
   const pdfData = {
     nomor: inv.nomor,
+    termNomor,
+    termLabel,
+    termPersentase,
+    termAmount,
+    scheduleItems,
     itemsPerPage: pdfItemsPerPage,
     keteranganInvoice: inv.keterangan_invoice ?? null,
     customerNama: customer?.nama ?? '-',
     customerAlamat: customer?.alamat ?? null,
     picNama,
     picJenisKelamin,
-    tanggal: 'Jepara, ' + new Date(inv.tanggal).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }),
+    tanggal,
     customerRef,
     refLabel,
     grandTotal,

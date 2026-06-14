@@ -35,19 +35,24 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       )`)
     .eq('id', invoiceId).single()
 
-  const { data: kwtItems } = await supabaseAdmin
-    .from('kwitansi_item')
-    .select('invoice_item_id')
-    .eq('kwitansi_id', id)
+  let total: number
+  if (kwt.total != null) {
+    total = Number(kwt.total)
+  } else {
+    const { data: kwtItems } = await supabaseAdmin
+      .from('kwitansi_item')
+      .select('invoice_item_id')
+      .eq('kwitansi_id', id)
 
-  const invItemIds = (kwtItems ?? []).map(i => i.invoice_item_id)
-  let total = 0
-  if (invItemIds.length > 0) {
-    const { data: invItems } = await supabaseAdmin
-      .from('invoice_item')
-      .select('harga, jumlah, diskon')
-      .in('id', invItemIds)
-    total = (invItems ?? []).reduce((sum, i) => sum + (i.harga * i.jumlah - (i.diskon ?? 0)), 0)
+    const invItemIds = (kwtItems ?? []).map(i => i.invoice_item_id)
+    total = 0
+    if (invItemIds.length > 0) {
+      const { data: invItems } = await supabaseAdmin
+        .from('invoice_item')
+        .select('harga, jumlah, diskon')
+        .in('id', invItemIds)
+      total = (invItems ?? []).reduce((sum, i) => sum + (i.harga * i.jumlah - (i.diskon ?? 0)), 0)
+    }
   }
 
   const { data: settingsRows } = await supabaseAdmin
