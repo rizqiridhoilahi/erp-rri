@@ -12,9 +12,12 @@ import { KwitansiPdfActions } from "@/components/kwitansi-pdf-actions"
 import { CompactFileUpload, type DocumentFile } from "@/components/compact-file-upload"
 import { toast } from "sonner"
 
-const statusMap: Record<string, { label: string; variant: 'secondary' | 'success' | 'outline' }> = {
+const statusMap: Record<string, { label: string; variant: 'secondary' | 'success' | 'outline' | 'warning' | 'destructive' }> = {
   draft: { label: 'Draft', variant: 'secondary' },
   completed: { label: 'Selesai', variant: 'success' },
+  pending: { label: 'Pending', variant: 'secondary' },
+  partial: { label: 'Dibayar Sebagian', variant: 'warning' },
+  paid: { label: 'Lunas', variant: 'success' },
 }
 
 interface KwitansiItem {
@@ -53,6 +56,8 @@ interface KwitansiData {
   pic_jabatan: string | null
   cpo_ref: string | null
   cpo_cust_ref: string | null
+  schedule_id: string | null
+  schedule_status: string | null
 }
 
 export default function KwitansiDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -166,8 +171,8 @@ export default function KwitansiDetailPage({ params }: { params: Promise<{ id: s
         <CardContent className="pt-6">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-lg font-semibold">Status Kwitansi</h3>
-            <Badge variant={statusMap[data.status]?.variant ?? 'outline'} className="text-sm px-4 py-1">
-              {statusMap[data.status]?.label ?? data.status}
+            <Badge variant={statusMap[data.schedule_id ? (data.schedule_status ?? 'pending') : data.status]?.variant ?? 'outline'} className="text-sm px-4 py-1">
+              {statusMap[data.schedule_id ? (data.schedule_status ?? 'pending') : data.status]?.label ?? (data.schedule_id ? 'Pending' : data.status)}
             </Badge>
           </div>
         </CardContent>

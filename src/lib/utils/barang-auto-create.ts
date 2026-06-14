@@ -36,6 +36,16 @@ export async function createBarangFromRfqItem(
   harga_jual_default?: number | null,
   spesifikasi?: string | null,
 ) {
+  const trimmed = nama_barang.trim()
+  if (trimmed) {
+    const { data: existing } = await supabaseAdmin
+      .from('barang')
+      .select('id, nama, kode')
+      .ilike('nama', trimmed)
+      .maybeSingle()
+    if (existing) return existing as { id: string; nama: string; kode: string }
+  }
+
   const kode = await generateAutoKode()
   const kategori = kategori_id || await getDefaultKategoriId()
 

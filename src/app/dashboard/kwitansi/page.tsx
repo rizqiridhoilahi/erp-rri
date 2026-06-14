@@ -7,8 +7,11 @@ import { Plus, Pencil, Eye } from 'lucide-react'
 import { ExportButton } from "@/components/export-button"
 export const dynamic = 'force-dynamic'
 
-const s: Record<string, { label: string; v: 'secondary' | 'success' | 'outline' }> = {
+const s: Record<string, { label: string; v: 'secondary' | 'success' | 'outline' | 'warning' | 'destructive' }> = {
   draft: { label: 'Draft', v: 'secondary' }, completed: { label: 'Selesai', v: 'success' },
+  pending: { label: 'Pending', v: 'secondary' },
+  partial: { label: 'Dibayar Sebagian', v: 'warning' },
+  paid: { label: 'Lunas', v: 'success' },
 }
 
 export default async function KwitansiPage() {
@@ -19,6 +22,13 @@ export default async function KwitansiPage() {
   const invoiceTotals: Record<string, number> = {}
   for (const item of invItemsData ?? []) {
     invoiceTotals[item.invoice_id] = (invoiceTotals[item.invoice_id] || 0) + (item.harga * item.jumlah - (item.diskon ?? 0))
+  }
+
+  const scheduleIds = [...new Set((data ?? []).map(k => (k as Record<string, unknown>).schedule_id).filter(Boolean))] as string[]
+  const scheduleStatusMap: Record<string, string> = {}
+  if (scheduleIds.length > 0) {
+    const { data: scheds } = await supabase.from('invoice_payment_schedule').select('id, status').in('id', scheduleIds)
+    for (const s of scheds ?? []) scheduleStatusMap[s.id] = s.status
   }
 
   return (
@@ -55,7 +65,17 @@ export default async function KwitansiPage() {
             <TableCell className="font-medium">{item.invoice?.customer?.nama ?? '-'}</TableCell>
             <TableCell className="font-medium">Rp {(invoiceTotals[item.invoice_id] ?? 0).toLocaleString('id-ID')}</TableCell>
             <TableCell className="font-medium">{new Date(item.tanggal).toLocaleDateString('id-ID')}</TableCell>
-            <TableCell><Badge variant={s[item.status]?.v ?? 'outline'}>{s[item.status]?.label ?? item.status}</Badge></TableCell>
+            <TableCell>
+              <Badge variant={
+                (item as Record<string, unknown>).schedule_id
+                  ? (s[scheduleStatusMap[(item as Record<string, unknown>).schedule_id as string]]?.v ?? 'outline')
+                  : (s[item.status]?.v ?? 'outline')
+              }>
+                {(item as Record<string, unknown>).schedule_id
+                  ? (s[scheduleStatusMap[(item as Record<string, unknown>).schedule_id as string]]?.label ?? 'Pending')
+                  : (s[item.status]?.label ?? item.status)}
+              </Badge>
+            </TableCell>
             <TableCell className="text-right space-x-1">
               <Button variant="ghost" size="sm" asChild><Link href={`/dashboard/kwitansi/${item.id}`}><Eye className="h-4 w-4" /></Link></Button>
               <Button variant="ghost" size="sm" asChild><Link href={`/dashboard/kwitansi/${item.id}/edit`}><Pencil className="h-4 w-4" /></Link></Button>

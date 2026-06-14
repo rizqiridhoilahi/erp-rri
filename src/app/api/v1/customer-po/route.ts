@@ -86,6 +86,7 @@ export async function POST(request: NextRequest) {
     customer_po_id: string; barang_id: string; jumlah: number
     harga_satuan: number; keterangan: string | null; created_at: string; updated_at: string
   }> = []
+  const createdBarangMap = new Map<string, string>()
 
   for (const item of parsed.data.items) {
     let barangId = item.barang_id
@@ -100,6 +101,7 @@ export async function POST(request: NextRequest) {
         item.spesifikasi ?? null,
       )
       barangId = newBarang.id
+      if (item.nama_barang) createdBarangMap.set(item.nama_barang, barangId)
     }
 
     if (!barangId) {
@@ -126,6 +128,28 @@ export async function POST(request: NextRequest) {
 
   const { error: itemsError } = await supabaseAdmin.from('customer_po_item').insert(processedItems)
   if (itemsError) { await supabaseAdmin.from('customer_po').delete().eq('id', po.id); return internalError(itemsError) }
+
+  // Link auto-created barang to originating rfq_customer_item
+  if (parsed.data.quotation_id && createdBarangMap.size > 0) {
+    const { data: qtn } = await supabaseAdmin
+      .from('quotation')
+      .select('rfq_id')
+      .eq('id', parsed.data.quotation_id)
+      .maybeSingle()
+    if (qtn?.rfq_id) {
+      const { data: rfqItems } = await supabaseAdmin
+        .from('rfq_customer_item')
+        .select('id, nama_barang')
+        .eq('rfq_customer_id', qtn.rfq_id)
+        .is('barang_id', null)
+      for (const rfqItem of rfqItems ?? []) {
+        const barangId = rfqItem.nama_barang ? createdBarangMap.get(rfqItem.nama_barang) : undefined
+        if (barangId) {
+          await supabaseAdmin.from('rfq_customer_item').update({ barang_id: barangId }).eq('id', rfqItem.id)
+        }
+      }
+    }
+  }
 
   await logAudit({
     userId: auth.user?.id, action: 'CREATE', tableName: 'customer_po',

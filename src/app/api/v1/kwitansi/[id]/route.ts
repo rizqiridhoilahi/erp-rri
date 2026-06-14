@@ -19,6 +19,18 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
     if (!autoErr) kwt.status = 'completed'
   }
 
+  // Fetch schedule status if multi-term
+  let scheduleStatus: string | null = null
+  const scheduleId = (kwt as Record<string, unknown>).schedule_id as string | null
+  if (scheduleId) {
+    const { data: sched } = await supabaseAdmin
+      .from('invoice_payment_schedule')
+      .select('status')
+      .eq('id', scheduleId)
+      .single()
+    if (sched) scheduleStatus = sched.status
+  }
+
   const { data: kwtItems } = await supabaseAdmin.from('kwitansi_item').select('*').eq('kwitansi_id', id)
   let items: Array<Record<string, unknown>> = []
   if (kwtItems && kwtItems.length > 0) {
@@ -68,7 +80,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
   const cpo_ref = salesOrder?.customer_po?.nomor ?? null
   const cpo_cust_ref = salesOrder?.customer_po?.nomor_po_customer ?? null
 
-  return NextResponse.json({ data: { ...kwt, items: items ?? [], kontrak_nomor, pic_nama, pic_jabatan, cpo_ref, cpo_cust_ref } })
+  return NextResponse.json({ data: { ...kwt, items: items ?? [], kontrak_nomor, pic_nama, pic_jabatan, cpo_ref, cpo_cust_ref, schedule_id: scheduleId, schedule_status: scheduleStatus } })
 }
 
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
