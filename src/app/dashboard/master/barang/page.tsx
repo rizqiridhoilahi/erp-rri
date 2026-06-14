@@ -32,7 +32,7 @@ interface Barang {
   kode: string
   image_url: string | null
   kategori_barang: { nama: string }
-  kontrak: { nomor_kontrak: string; nama: string; tanggal_mulai: string | null; tanggal_selesai: string | null } | null
+  kontrak: { nomor_kontrak: string; nama: string; tanggal_mulai: string | null; tanggal_selesai: string | null }[]
   satuan: string | null
   spesifikasi: string | null
   harga_beli_default: number | null
@@ -131,10 +131,11 @@ export default function BarangPage() {
   }
 
   const statusBadge = (item: Barang) => {
-    const kontrakIsExpired = item.kontrak?.tanggal_selesai
-      ? item.kontrak.tanggal_selesai < new Date().toISOString().split('T')[0]
-      : false
-    const active = item.is_active && !kontrakIsExpired
+    const kontraks = item.kontrak ?? []
+    const allExpired = kontraks.length > 0 && kontraks.every(k =>
+      k.tanggal_selesai && k.tanggal_selesai < new Date().toISOString().split('T')[0]
+    )
+    const active = item.is_active && !allExpired
     return (
       <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
         active ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"
@@ -219,11 +220,21 @@ export default function BarangPage() {
     { header: "Nama Barang", accessor: (item) => item.nama, sortKey: "nama" },
     { header: "Kategori", accessor: (item) => item.kategori_barang?.nama || "-" },
     { header: "Kontrak", accessor: (item) => {
-      const k = item.kontrak
-      if (!k?.nomor_kontrak) return "tidak ada"
-      const tglMulai = k.tanggal_mulai ? new Date(k.tanggal_mulai).toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "2-digit" }) : "..."
-      const tglSelesai = k.tanggal_selesai ? new Date(k.tanggal_selesai).toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "2-digit" }) : "..."
-      return `${k.nama || k.nomor_kontrak} (${tglMulai} - ${tglSelesai})`
+      const kontraks = item.kontrak ?? []
+      if (kontraks.length === 0) return <span className="text-muted-foreground">tidak ada</span>
+      return (
+        <div className="space-y-1">
+          {kontraks.map((k, idx) => {
+            const tglMulai = k.tanggal_mulai ? new Date(k.tanggal_mulai).toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "2-digit" }) : "..."
+            const tglSelesai = k.tanggal_selesai ? new Date(k.tanggal_selesai).toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "2-digit" }) : "..."
+            return (
+              <div key={k.nomor_kontrak} className={idx < kontraks.length - 1 ? "border-b border-border pb-1 mb-1" : ""}>
+                {k.nama || k.nomor_kontrak} ({tglMulai} - {tglSelesai})
+              </div>
+            )
+          })}
+        </div>
+      )
     } },
     { header: "Satuan", accessor: (item) => item.satuan || "-", sortKey: "satuan" },
     { header: "Harga Beli", accessor: (item) => formatCurrency(item.harga_beli_default), sortKey: "harga_beli_default" },

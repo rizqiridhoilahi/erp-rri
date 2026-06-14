@@ -25,7 +25,19 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
   const { data, error } = await supabaseAdmin.from('barang').select('*, kategori_barang!kategori_id(nama)').eq('id', id).single()
   if (error) return internalError(error)
   if (!data) return notFound('Barang tidak ditemukan')
-  return NextResponse.json({ data })
+
+  const { data: kontrakItems } = await supabaseAdmin
+    .from('kontrak_item')
+    .select('kontrak!kontrak_id(nomor_kontrak, nama, tanggal_mulai, tanggal_selesai)')
+    .eq('barang_id', id)
+
+  const kontraks: Array<{ nomor_kontrak: string; nama: string; tanggal_mulai: string | null; tanggal_selesai: string | null }> = []
+  for (const ki of kontrakItems ?? []) {
+    const arr = (ki as { kontrak: Array<{ nomor_kontrak: string; nama: string; tanggal_mulai: string | null; tanggal_selesai: string | null }> }).kontrak
+    if (arr && arr.length > 0) kontraks.push(arr[0])
+  }
+
+  return NextResponse.json({ data: { ...data, kontrak: kontraks } })
 }
 
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {

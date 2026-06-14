@@ -99,6 +99,28 @@ export async function GET(request: NextRequest) {
 
   if (error) return internalError(error)
 
+  // Fetch kontrak via kontrak_item for all returned barang
+  const barangIds = (items ?? []).map(i => (i as { id: string }).id)
+  const kontrakPerBarang: Record<string, Array<{ nomor_kontrak: string; nama: string; tanggal_mulai: string | null; tanggal_selesai: string | null }>> = {}
+  if (barangIds.length > 0) {
+    const { data: kontrakItems } = await supabaseAdmin
+      .from('kontrak_item')
+      .select('barang_id, kontrak!kontrak_id(nomor_kontrak, nama, tanggal_mulai, tanggal_selesai)')
+      .in('barang_id', barangIds)
+    for (const ki of kontrakItems ?? []) {
+      const raw = ki as { barang_id: string; kontrak: Array<{ nomor_kontrak: string; nama: string; tanggal_mulai: string | null; tanggal_selesai: string | null }> }
+      const kontrakArr = raw.kontrak
+      if (!kontrakArr || kontrakArr.length === 0) continue
+      if (!kontrakPerBarang[raw.barang_id]) kontrakPerBarang[raw.barang_id] = []
+      kontrakPerBarang[raw.barang_id].push(kontrakArr[0])
+    }
+  }
+
+  const itemsWithKontrak = (items ?? []).map(i => ({
+    ...i,
+    kontrak: kontrakPerBarang[(i as { id: string }).id] ?? [],
+  }))
+
   const totalPages = Math.ceil((count ?? 0) / limit)
 
   const { data: categories } = await supabaseAdmin
@@ -135,7 +157,7 @@ export async function GET(request: NextRequest) {
 
   return NextResponse.json({
     data: {
-      items: items ?? [],
+        items: itemsWithKontrak,
       count: count ?? 0,
       page,
       totalPages,

@@ -71,32 +71,44 @@ export default function DetailBarangPage() {
 
   useEffect(() => {
     if (!id) return
-    supabase
-      .from("barang")
-      .select(`
-        id,
-        nama,
-        kode,
-        barcode,
-        kategori_barang!inner(nama),
-        kontrak!left(nomor_kontrak, nama, tanggal_mulai, tanggal_selesai),
-        satuan,
-        spesifikasi,
-        justification,
-        image_url,
-        harga_beli_default,
-        harga_jual_default,
-        stok_minimum,
-        is_active,
-        created_at
-      `)
-      .eq("id", id)
-      .single()
-      .then(({ data: result, error: err }) => {
-        if (err) setError(err.message)
-        else setData(result as Barang)
-        setLoading(false)
-      })
+    ;(async () => {
+      const { data: result, error: err } = await supabase
+        .from("barang")
+        .select(`
+          id,
+          nama,
+          kode,
+          barcode,
+          kategori_barang!inner(nama),
+          satuan,
+          spesifikasi,
+          justification,
+          image_url,
+          harga_beli_default,
+          harga_jual_default,
+          stok_minimum,
+          is_active,
+          created_at
+        `)
+        .eq("id", id)
+        .single()
+
+      if (err) { setError(err.message); setLoading(false); return }
+
+      const { data: kontrakItems } = await supabase
+        .from('kontrak_item')
+        .select('kontrak!kontrak_id(nomor_kontrak, nama, tanggal_mulai, tanggal_selesai)')
+        .eq('barang_id', id)
+
+      const kontraks: Barang['kontrak'] = []
+      for (const ki of kontrakItems ?? []) {
+        const arr = (ki as { kontrak: Array<{ nomor_kontrak: string; nama: string; tanggal_mulai: string | null; tanggal_selesai: string | null }> }).kontrak
+        if (arr && arr.length > 0) kontraks.push(arr[0])
+      }
+
+      setData({ ...result, kontrak: kontraks } as Barang)
+      setLoading(false)
+    })()
   }, [id])
 
   useEffect(() => {
@@ -205,25 +217,22 @@ export default function DetailBarangPage() {
               <p className="text-sm font-medium">{data.stok_minimum ?? "-"}</p>
             </div>
             {(() => {
-              const k = data.kontrak?.[0]
-              if (!k?.nomor_kontrak) return null
-              const tglMulai = k.tanggal_mulai ? new Date(k.tanggal_mulai).toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" }) : "-"
-              const tglSelesai = k.tanggal_selesai ? new Date(k.tanggal_selesai).toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" }) : "-"
+              const kontraks = data.kontrak ?? []
+              if (kontraks.length === 0) return null
               return (
-                <>
-                  <div>
-                    <label className="block text-sm font-medium text-muted-foreground mb-1">Nama Kontrak</label>
-                    <p className="text-sm font-medium">{k.nama || "-"}</p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-muted-foreground mb-1">No. Kontrak</label>
-                    <p className="text-sm font-medium">{k.nomor_kontrak}</p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-muted-foreground mb-1">Periode Kontrak</label>
-                    <p className="text-sm font-medium">{tglMulai} — {tglSelesai}</p>
-                  </div>
-                </>
+                <div className="md:col-span-2 space-y-2">
+                  <label className="block text-sm font-medium text-muted-foreground">Kontrak</label>
+                  {kontraks.map((k, idx) => {
+                    const tglMulai = k.tanggal_mulai ? new Date(k.tanggal_mulai).toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" }) : "-"
+                    const tglSelesai = k.tanggal_selesai ? new Date(k.tanggal_selesai).toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" }) : "-"
+                    return (
+                      <div key={k.nomor_kontrak} className={idx < kontraks.length - 1 ? "border-b border-border pb-2 mb-2" : ""}>
+                        <p className="text-sm font-medium">{k.nama || k.nomor_kontrak}</p>
+                        <p className="text-xs text-muted-foreground">{tglMulai} — {tglSelesai}</p>
+                      </div>
+                    )
+                  })}
+                </div>
               )
             })()}
             <div>
