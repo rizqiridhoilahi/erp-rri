@@ -3,7 +3,7 @@ import { supabase } from '@/lib/db/client'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
-import { Plus, Pencil, Download, Eye } from 'lucide-react'
+import { Plus, Pencil, Eye } from 'lucide-react'
 import { ExportButton } from "@/components/export-button"
 export const dynamic = 'force-dynamic'
 
@@ -58,7 +58,6 @@ export default async function InvoicePage() {
             <TableCell><Badge variant={s[item.status]?.v ?? 'outline'}>{s[item.status]?.label ?? item.status}</Badge></TableCell>
             <TableCell className="text-right space-x-1">
               <Button variant="ghost" size="sm" asChild><Link href={`/dashboard/invoice/${item.id}`}><Eye className="h-4 w-4" /></Link></Button>
-              <Button variant="ghost" size="sm" asChild><a href={`/api/v1/invoice/${item.id}/pdf`} target="_blank"><Download className="h-4 w-4" /></a></Button>
               <Button variant="ghost" size="sm" asChild><Link href={`/dashboard/invoice/${item.id}/edit`}><Pencil className="h-4 w-4" /></Link></Button>
             </TableCell>
           </TableRow>

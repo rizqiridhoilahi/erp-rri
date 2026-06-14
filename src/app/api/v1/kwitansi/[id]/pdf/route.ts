@@ -78,20 +78,25 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
   let invoiceNomor = (kwt.invoice as { nomor: string })?.nomor ?? '-'
   let tanggal: string
+  let keterangan: string
 
   if (kwt.schedule_id) {
     const { data: schedule } = await supabaseAdmin
       .from('invoice_payment_schedule')
-      .select('urutan')
+      .select('urutan, deskripsi, persentase')
       .eq('id', kwt.schedule_id)
       .single()
     if (schedule) {
       invoiceNomor = invoiceNomor + '/' + toRoman(schedule.urutan)
+      keterangan = `Pembelian Barang - ${schedule.deskripsi} ${Number(schedule.persentase)}%`
+    } else {
+      keterangan = kwt.keterangan ?? 'Pembelian Barang'
     }
     tanggal = 'Jepara, ' + new Date().toLocaleDateString('id-ID', {
       day: 'numeric', month: 'long', year: 'numeric',
     })
   } else {
+    keterangan = kwt.keterangan
     tanggal = 'Jepara, ' + new Date(inv.tanggal).toLocaleDateString('id-ID', {
       day: 'numeric', month: 'long', year: 'numeric',
     })
@@ -103,7 +108,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     tanggal,
     terbilangStr: terbilang(total),
     total,
-    keterangan: kwt.keterangan,
+    keterangan,
     invoiceNomor,
     refType,
     refNomor,
