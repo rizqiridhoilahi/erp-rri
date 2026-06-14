@@ -9,14 +9,15 @@ import { Receipt } from 'lucide-react'
 interface Props {
   doId: string
   nomor: string
+  totalItems: number
 }
 
-export function DOHeaderActions({ doId, nomor }: Props) {
+export function DOHeaderActions({ doId, nomor, totalItems }: Props) {
   const [resiOpen, setResiOpen] = useState(false)
 
   return (
     <div className="flex items-center gap-2">
-      <DOPdfDownload doId={doId} nomor={nomor} />
+      <DOPdfDownload doId={doId} nomor={nomor} totalItems={totalItems} />
       <Button variant="outline" size="sm" onClick={() => setResiOpen(true)}>
         <Receipt className="h-3.5 w-3.5 mr-1" />
         Resi Packing

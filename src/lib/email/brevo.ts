@@ -1,11 +1,12 @@
 import { BrevoClient } from '@getbrevo/brevo'
 import { supabaseAdmin } from '@/lib/api/supabase-server'
 import { sendViaSmtp } from './smtp'
+import { getBrevoApiKey, getBrevoSenderEmail, getBrevoSenderName } from './config'
 
-function getClient() {
-  const apiKey = process.env.BREVO_API_KEY
+async function getClient() {
+  const apiKey = await getBrevoApiKey()
   if (!apiKey) {
-    throw new Error('Brevo not configured. Set BREVO_API_KEY env var')
+    throw new Error('Brevo not configured. Set BREVO_API_KEY env var or save via Email Config')
   }
   return new BrevoClient({ apiKey })
 }
@@ -16,7 +17,7 @@ export async function getCompanyEmail(): Promise<string> {
     .select('value')
     .eq('key', 'company_email')
     .maybeSingle()
-  return data?.value ?? process.env.BREVO_SENDER_EMAIL ?? 'noreply@erp-rri.com'
+  return data?.value ?? (await getBrevoSenderEmail()) ?? 'noreply@erp-rri.com'
 }
 
 async function getCompanySenderName(): Promise<string | null> {
@@ -65,9 +66,10 @@ async function resolveThreadId(referenceId?: string | null): Promise<string | nu
 }
 
 export async function sendEmailViaBrevo(params: SendBrevoEmailParams) {
-  const rawSender = process.env.BREVO_SENDER_EMAIL?.trim()
+  const rawSender = (await getBrevoSenderEmail())?.trim()
   const fromEmail = rawSender || (await getCompanyEmail())
-  const fromName = (await getCompanySenderName()) ?? process.env.BREVO_SENDER_NAME ?? 'ERP RRI'
+  const senderName = await getBrevoSenderName()
+  const fromName = (await getCompanySenderName()) ?? senderName ?? 'ERP RRI'
 
   let status: string
   let errorMessage: string | null = null
@@ -95,7 +97,7 @@ export async function sendEmailViaBrevo(params: SendBrevoEmailParams) {
       })
       messageId = smtpResult.messageId
     } else {
-      const client = getClient()
+      const client = await getClient()
       const response = await client.transactionalEmails.sendTransacEmail({
         sender: { name: fromName, email: fromEmail },
         to: [params.to],

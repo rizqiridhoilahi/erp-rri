@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type { ReactElement } from 'react'
 import { Document, Page, Text, View, Image, StyleSheet, Font } from '@react-pdf/renderer'
+import { getItemSlices } from '@/lib/pdf/utils'
 
 Font.register({
   family: 'Arial',
@@ -92,6 +93,7 @@ interface CompanyData {
 
 interface QuotData {
   nomor: string
+  itemsPerPage?: number[]
   revisi: number
   referensi: string | null
   lampiran: string | null
@@ -164,8 +166,8 @@ export function QuotationPDF({ data }: { data: QuotData }) {
     : bidangUsaha.split(',').map(s => s.trim()).filter(Boolean)
 
   const hasSpec = data.items.some(i => i.specification)
-  const ROWS_PER_PAGE = 10
-  const totalLampiranPages = Math.ceil(data.items.length / ROWS_PER_PAGE)
+  const lampiranSlices = getItemSlices(data.items.length, data.itemsPerPage, 10, 10)
+  const totalLampiranPages = lampiranSlices.length
   const totalPages = 1 + totalLampiranPages
 
   const H = createEl
@@ -272,7 +274,9 @@ export function QuotationPDF({ data }: { data: QuotData }) {
     ),
 
     ...Array.from({ length: totalLampiranPages }, (_, pageIdx) => {
-      const pageItems = data.items.slice(pageIdx * ROWS_PER_PAGE, (pageIdx + 1) * ROWS_PER_PAGE)
+      const startIdx = lampiranSlices.slice(0, pageIdx).reduce((a, b) => a + b, 0)
+      const pageItemCount = lampiranSlices[pageIdx]
+      const pageItems = data.items.slice(startIdx, startIdx + pageItemCount)
       const pageNumber = 2 + pageIdx
       const isLast = pageIdx === totalLampiranPages - 1
 
@@ -303,7 +307,7 @@ export function QuotationPDF({ data }: { data: QuotData }) {
             const hasImage = !!item.image_url
             const v = (child: any, style: any) => H(View, { style: { justifyContent: 'center', ...style } }, child)
             const cells = [
-              v(H(Text, { style: { fontSize: 9, textAlign: 'center' } }, String(pageIdx * ROWS_PER_PAGE + i + 1)), { width: 25, padding: 4, borderRightWidth: 1, borderRightColor: '#000' }),
+              v(H(Text, { style: { fontSize: 9, textAlign: 'center' } }, String(startIdx + i + 1)), { width: 25, padding: 4, borderRightWidth: 1, borderRightColor: '#000' }),
               v(H(Text, { style: { fontSize: 9 } }, item.nama), { flex: 1, padding: 4, borderRightWidth: 1, borderRightColor: '#000' }),
             ]
             if (hasSpec) {

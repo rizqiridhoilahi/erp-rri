@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer'
+import { getBrevoSmtpLogin, getBrevoSmtpPassword } from './config'
 
 function generateMessageId(): string {
   const uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
@@ -23,11 +24,11 @@ export interface SmtpSendParams {
 }
 
 export async function sendViaSmtp(params: SmtpSendParams) {
-  const smtpLogin = process.env.BREVO_SMTP_LOGIN
-  const smtpPassword = process.env.BREVO_SMTP_PASSWORD
+  const smtpLogin = await getBrevoSmtpLogin()
+  const smtpPassword = await getBrevoSmtpPassword()
 
   if (!smtpLogin || !smtpPassword) {
-    throw new Error('Brevo SMTP not configured. Set BREVO_SMTP_LOGIN and BREVO_SMTP_PASSWORD env vars')
+    throw new Error('Brevo SMTP not configured. Set BREVO_SMTP_LOGIN and BREVO_SMTP_PASSWORD env vars or save via Email Config')
   }
 
   const transporter = nodemailer.createTransport({

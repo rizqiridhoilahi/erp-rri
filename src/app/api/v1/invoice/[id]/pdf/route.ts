@@ -16,7 +16,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   const auth = await verifyAuth(request)
   if (auth.error) return auth.error
   const { id } = await params
-  const itemsCountParam = request.nextUrl.searchParams.get('itemsCount')
+  const itemsPerPageParam = request.nextUrl.searchParams.get('itemsPerPage')
 
   const { data: inv, error } = await supabaseAdmin
     .from('invoice')
@@ -44,12 +44,18 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     .order('urutan')
   if (!items) return internalError('Gagal memuat item')
 
-  const displayItems = (() => {
-    if (!itemsCountParam) return items
-    const n = parseInt(itemsCountParam, 10)
-    if (isNaN(n) || n < 1) return items
-    return items.slice(0, n)
-  })()
+  let displayItems = items
+  let pdfItemsPerPage: number[] | undefined
+
+  if (itemsPerPageParam) {
+    const parsed = itemsPerPageParam.split(',').map(Number).filter(n => !isNaN(n) && n > 0)
+    if (parsed.length > 0) {
+      const requestedTotal = parsed.reduce((a, b) => a + b, 0)
+      const actualTotal = Math.min(requestedTotal, items.length)
+      displayItems = items.slice(0, actualTotal)
+      pdfItemsPerPage = parsed
+    }
+  }
 
   const grandTotal = displayItems.reduce((s, i) => s + (i.harga * i.jumlah - (i.diskon ?? 0)), 0)
 
@@ -73,6 +79,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
   const pdfData = {
     nomor: inv.nomor,
+    itemsPerPage: pdfItemsPerPage,
     keteranganInvoice: inv.keterangan_invoice ?? null,
     customerNama: customer?.nama ?? '-',
     customerAlamat: customer?.alamat ?? null,

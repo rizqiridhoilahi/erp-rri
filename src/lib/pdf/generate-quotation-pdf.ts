@@ -27,7 +27,7 @@ async function resolveImageUrl(url: string | null): Promise<string | null> {
   }
 }
 
-export async function generateQuotationPdfBlob(id: string): Promise<Blob | null> {
+export async function generateQuotationPdfBlob(id: string, itemsPerPage?: number[]): Promise<Blob | null> {
   const { data: qtn, error } = await supabaseAdmin
     .from('quotation')
     .select('*')
@@ -110,8 +110,36 @@ export async function generateQuotationPdfBlob(id: string): Promise<Blob | null>
     tanda_tangan_stempel_url: settingsMap.get('tanda_tangan_stempel_url') ?? null,
   }
 
+  const allItems = await Promise.all(items.map(async (i, idx) => {
+    const barang = i.barang_id ? barangMap.get(i.barang_id) : null
+    const rfqName = idx < rfqItemNames.length ? rfqItemNames[idx] : null
+    const imageUrl = i.image_url ?? barang?.image_url ?? null
+    return {
+      nama: barang?.nama ?? i.nama_barang ?? rfqName ?? '-',
+      kode: barang?.kode ?? '-',
+      specification: i.specification ?? barang?.spesifikasi ?? null,
+      justification: i.justification ?? null,
+      image_url: await resolveImageUrl(imageUrl),
+      satuan: i.satuan ?? barang?.satuan ?? null,
+      jumlah: i.jumlah,
+      hargaSatuan: i.harga_satuan,
+      diskon: i.diskon ?? 0,
+    }
+  }))
+
+  let displayItems = allItems
+  let pdfItemsPerPage: number[] | undefined
+
+  if (itemsPerPage && itemsPerPage.length > 0) {
+    const requestedTotal = itemsPerPage.reduce((a, b) => a + b, 0)
+    const actualTotal = Math.min(requestedTotal, allItems.length)
+    displayItems = allItems.slice(0, actualTotal)
+    pdfItemsPerPage = itemsPerPage
+  }
+
   const pdfData = {
     nomor: qtn.nomor,
+    itemsPerPage: pdfItemsPerPage,
     revisi: qtn.revisi ?? 0,
     referensi: qtn.referensi ?? null,
     lampiran: qtn.lampiran ?? null,
@@ -130,22 +158,7 @@ export async function generateQuotationPdfBlob(id: string): Promise<Blob | null>
     ppn_enabled: qtn.ppn_enabled,
     total_harga: qtn.total_harga,
     keterangan: qtn.keterangan ?? null,
-    items: await Promise.all(items.map(async (i, idx) => {
-      const barang = i.barang_id ? barangMap.get(i.barang_id) : null
-      const rfqName = idx < rfqItemNames.length ? rfqItemNames[idx] : null
-      const imageUrl = i.image_url ?? barang?.image_url ?? null
-      return {
-        nama: barang?.nama ?? i.nama_barang ?? rfqName ?? '-',
-        kode: barang?.kode ?? '-',
-        specification: i.specification ?? barang?.spesifikasi ?? null,
-        justification: i.justification ?? null,
-        image_url: await resolveImageUrl(imageUrl),
-        satuan: i.satuan ?? barang?.satuan ?? null,
-        jumlah: i.jumlah,
-        hargaSatuan: i.harga_satuan,
-        diskon: i.diskon ?? 0,
-      }
-    })),
+    items: displayItems,
     company,
   }
 

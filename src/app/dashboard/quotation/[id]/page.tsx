@@ -6,7 +6,7 @@ import { apiFetch, getAuthToken } from "@/lib/api/client"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Loader2, Eye, Download, Pencil, Trash2, FileText, Send, CheckCircle, XCircle, MessageSquare, ShoppingCart } from "lucide-react"
+import { Loader2, Eye, Download, Pencil, Trash2, FileText, Send, CheckCircle, XCircle, MessageSquare, ShoppingCart, ListOrdered } from "lucide-react"
 import { toast } from "sonner"
 import { CopyButton } from "@/components/copy-button"
 import { StatusWorkflow } from "@/components/status-workflow"
@@ -19,6 +19,8 @@ import {
   Table, TableHeader, TableBody, TableRow, TableHead, TableCell,
 } from "@/components/ui/table"
 import { CompactFileUpload, type DocumentFile } from "@/components/compact-file-upload"
+import { AturItemsPerPage } from "@/components/atur-items-per-page"
+import { computeDefaultDistribution } from "@/lib/pdf/utils"
 
 const statusLabel: Record<string, { label: string; variant: "secondary" | "warning" | "success" | "destructive" | "outline" }> = {
   draft: { label: "Draft", variant: "secondary" },
@@ -160,17 +162,26 @@ export default function QuotationDetailPage() {
     return `Rp ${Number(v).toLocaleString("id-ID")}`
   }
 
-  const handlePreviewPDF = async () => {
+  const fetchPdfBlob = async (itemsPerPageParam?: string) => {
+    if (!id) return null
+    const token = await getAuthToken()
+    const url = itemsPerPageParam
+      ? `/api/v1/quotation/${id}/pdf?itemsPerPage=${itemsPerPageParam}`
+      : `/api/v1/quotation/${id}/pdf`
+    const res = await fetch(url, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    })
+    if (!res.ok) throw new Error('Gagal memuat PDF')
+    return res.blob()
+  }
+
+  const handlePreviewPDF = async (itemsPerPage: number[]) => {
     if (!id) return
     setPreviewLoading(true)
     try {
-      const token = await getAuthToken()
-      const res = await fetch(`/api/v1/quotation/${id}/pdf`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      })
-      if (!res.ok) throw new Error('Gagal memuat PDF')
-      const blob = await res.blob()
-      window.open(URL.createObjectURL(blob), '_blank')
+      const param = itemsPerPage.join(',')
+      const blob = await fetchPdfBlob(param)
+      if (blob) window.open(URL.createObjectURL(blob), '_blank')
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Gagal memuat PDF')
     } finally {
@@ -178,22 +189,20 @@ export default function QuotationDetailPage() {
     }
   }
 
-  const handleDownloadPDF = async () => {
+  const handleDownloadPDF = async (itemsPerPage: number[]) => {
     if (!id) return
     setDownloadLoading(true)
     try {
-      const token = await getAuthToken()
-      const res = await fetch(`/api/v1/quotation/${id}/pdf`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      })
-      if (!res.ok) throw new Error('Gagal download PDF')
-      const blob = await res.blob()
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `${data?.nomor ?? id}.pdf`
-      a.click()
-      URL.revokeObjectURL(url)
+      const param = itemsPerPage.join(',')
+      const blob = await fetchPdfBlob(param)
+      if (blob) {
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `${data?.nomor ?? id}.pdf`
+        a.click()
+        URL.revokeObjectURL(url)
+      }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Gagal download PDF')
     } finally {
@@ -246,14 +255,24 @@ export default function QuotationDetailPage() {
         actions={
           <div className="flex gap-2">
             <Button variant="back" onClick={() => router.push("/dashboard/quotation")}>Kembali</Button>
-            <Button variant="outline" onClick={handlePreviewPDF} disabled={previewLoading}>
-              {previewLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Eye className="h-4 w-4 mr-2" />}
-              Preview PDF
-            </Button>
-            <Button variant="outline" onClick={handleDownloadPDF} disabled={downloadLoading}>
-              {downloadLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Download className="h-4 w-4 mr-2" />}
-              Download PDF
-            </Button>
+            <AturItemsPerPage
+              trigger={
+                <Button variant="outline">
+                  <ListOrdered className="h-4 w-4 mr-2" />
+                  Atur Items
+                </Button>
+              }
+              totalItems={data?.items?.length ?? 0}
+              initialDistribution={computeDefaultDistribution(data?.items?.length ?? 0, 10, 10)}
+              defaultPageCount={10}
+              pageLabel="Lampiran"
+              startNumber={1}
+              title="Atur Items Quotation"
+              previewLoading={previewLoading}
+              downloadLoading={downloadLoading}
+              onPreview={handlePreviewPDF}
+              onDownload={handleDownloadPDF}
+            />
             {data.status === 'draft' && (
               <>
                 <Button variant="default" onClick={() => handleStatusChange('sent')} disabled={statusLoading}>
@@ -525,8 +544,19 @@ export default function QuotationDetailPage() {
       </Card>
 
       <div className="flex justify-end gap-2 print:hidden">
-        <Button variant="outline" onClick={handlePreviewPDF} disabled={previewLoading}>
-          {previewLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <FileText className="h-4 w-4 mr-2" />}
+        <Button variant="outline" onClick={async () => {
+          if (!id) return
+          try {
+            const token = await getAuthToken()
+            const res = await fetch(`/api/v1/quotation/${id}/pdf`, {
+              headers: token ? { Authorization: `Bearer ${token}` } : {},
+            })
+            if (!res.ok) return
+            const blob = await res.blob()
+            window.open(URL.createObjectURL(blob), '_blank')
+          } catch { /* ignore */ }
+        }}>
+          <FileText className="h-4 w-4 mr-2" />
           Cetak PDF
         </Button>
         <Button asChild>

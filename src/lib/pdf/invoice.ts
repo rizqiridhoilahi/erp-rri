@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type { ReactElement } from 'react'
 import { Document, Page, Text, View, Image, StyleSheet, Font } from '@react-pdf/renderer'
+import { getItemSlices } from '@/lib/pdf/utils'
 
 Font.register({
   family: 'Arial',
@@ -83,6 +84,7 @@ interface CompanyData {
 
 interface InvoiceData {
   nomor: string
+  itemsPerPage?: number[]
   customerNama: string
   customerAlamat: string | null
   picNama: string | null
@@ -134,19 +136,7 @@ export function InvoicePDF({ data }: { data: InvoiceData }) {
     ? bidangUsaha.split('\n').map(s => s.trim()).filter(Boolean)
     : bidangUsaha.split(',').map(s => s.trim()).filter(Boolean)
 
-  function getItemSlices(total: number): number[] {
-    const slices: number[] = []
-    let remaining = total
-    let pageIdx = 0
-    while (remaining > 0) {
-      const limit = pageIdx === 0 ? 16 : 24
-      slices.push(Math.min(limit, remaining))
-      remaining -= slices[slices.length - 1]
-      pageIdx++
-    }
-    return slices
-  }
-  const itemSlices = getItemSlices(data.items.length)
+  const itemSlices = getItemSlices(data.items.length, data.itemsPerPage)
   const totalPages = itemSlices.length || 1
 
   const v = (child: any, style: any) => H(View, { style: { justifyContent: 'center', ...style } }, child)

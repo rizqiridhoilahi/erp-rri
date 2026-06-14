@@ -116,6 +116,7 @@ const menuItems: MenuItem[] = [
   ]},
   { label: 'System', icon: ShieldCheck, children: [
     { href: '/dashboard/system/users', label: 'User Management', icon: Users },
+    { href: '/dashboard/system/email-config', label: 'Email Config', icon: Mail },
     { href: '/dashboard/system/health', label: 'System Health', icon: Activity },
     { href: '/dashboard/system/maintenance', label: 'Maintenance', icon: Wrench },
     { href: '/dashboard/system/archive', label: 'Data Archive', icon: Archive },

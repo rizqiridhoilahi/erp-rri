@@ -17,6 +17,10 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
   if (auth.error) return auth.error
   const { id } = await params
 
+  const { searchParams } = new URL(_request.url)
+  const itemsPerPageParam = searchParams.get('itemsPerPage')
+  const itemsPerPage = itemsPerPageParam ? itemsPerPageParam.split(',').map(Number) : undefined
+
   const { data: sj, error } = await supabaseAdmin
     .from('delivery_order')
     .select('*, sales_order!sales_order_id(nomor, customer_po_id, di_id), kendaraan!kendaraan_id(nama, no_polisi)')
@@ -120,6 +124,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
       tanda_tangan_stempel_url: company.tanda_tangan_stempel_url ?? null,
     },
     sourcePath: (so?.customer_po_id ? 'customer_po' : so?.di_id ? 'di' : null) as 'customer_po' | 'di' | null,
+    itemsPerPage,
   }
 
   try {

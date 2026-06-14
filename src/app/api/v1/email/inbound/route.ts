@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { supabaseAdmin } from "@/lib/api/supabase-server"
 import { z } from "zod"
+import { getEmailInboundSecret, getBrevoSenderEmail } from "@/lib/email/config"
 
 const MAX_ATTACHMENT_SIZE = 25 * 1024 * 1024 // 25MB
 
@@ -74,7 +75,7 @@ export async function POST(request: NextRequest) {
   }
 
   const authHeader = request.headers.get("authorization")
-  const secret = process.env.EMAIL_INBOUND_SECRET
+  const secret = await getEmailInboundSecret()
   if (!secret || authHeader !== `Bearer ${secret}`) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
@@ -103,7 +104,8 @@ export async function POST(request: NextRequest) {
     console.log('[INBOUND API] parsed attachments:', attachments)
 
     const now = new Date().toISOString()
-    const defaultTo = process.env.BREVO_SENDER_EMAIL || 'marzuqi@pt-rri.com'
+    const senderEmail = await getBrevoSenderEmail()
+    const defaultTo = senderEmail || 'marzuqi@pt-rri.com'
 
     if (!fromEmail || !subject) {
       return NextResponse.json({ error: "fromEmail and subject are required" }, { status: 400 })

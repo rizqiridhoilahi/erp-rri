@@ -83,7 +83,7 @@ export default async function DeliveryOrderDetailPage({ params }: { params: Prom
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" asChild><Link href="/dashboard/delivery-order"><ArrowLeft className="h-5 w-5" /></Link></Button>
         <div className="flex-1"><h1 className="text-3xl font-heading font-bold">Detail DO</h1><p className="text-muted-foreground mt-1">{doDoc.nomor}</p></div>
-        <DOHeaderActions doId={id} nomor={doDoc.nomor} />
+        <DOHeaderActions doId={id} nomor={doDoc.nomor} totalItems={items?.length ?? 0} />
       </div>
 
       <Card>

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/api/supabase-server'
 import { createHmac } from 'crypto'
+import { getBrevoWebhookSecret } from '@/lib/email/config'
 
 interface BrevoWebhookEvent {
   event: string
@@ -20,8 +21,8 @@ function normalizeMessageId(raw: string): string {
   return raw.replace(/^<|>$/g, '').trim()
 }
 
-function verifyWebhookSignature(request: NextRequest, rawBody: string): boolean {
-  const secret = process.env.BREVO_WEBHOOK_SECRET
+async function verifyWebhookSignature(request: NextRequest, rawBody: string): Promise<boolean> {
+  const secret = await getBrevoWebhookSecret()
   if (!secret) return true
 
   const signature = request.headers.get('X Brevo Signature') ||
@@ -47,8 +48,8 @@ export async function POST(request: NextRequest) {
   const rawBody = await request.text().catch(() => '')
   if (!rawBody) return NextResponse.json({ error: 'Invalid body' }, { status: 400 })
 
-  if (!verifyWebhookSignature(request, rawBody)) {
-    const secret = process.env.BREVO_WEBHOOK_SECRET
+  if (!(await verifyWebhookSignature(request, rawBody))) {
+    const secret = await getBrevoWebhookSecret()
     if (secret) {
       console.log('Webhook: signature verification failed')
       return NextResponse.json({ error: 'Invalid signature' }, { status: 401 })

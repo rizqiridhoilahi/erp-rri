@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type { ReactElement } from 'react'
 import { Document, Page, Text, View, Image, StyleSheet, Font } from '@react-pdf/renderer'
+import { getItemSlices } from '@/lib/pdf/utils'
 
 Font.register({
   family: 'Arial',
@@ -87,6 +88,7 @@ interface DOData {
   kendaraanNoPolisi: string | null
   company: CompanyData
   sourcePath: 'customer_po' | 'di' | null
+  itemsPerPage?: number[]
 }
 
 function formatDateWithCity(dateStr: string): string {
@@ -133,8 +135,8 @@ export function DeliveryOrderPDF({ data }: { data: DOData }): ReactElement {
   const ROW_BORDER = { borderRightWidth: 1, borderRightColor: '#000' } as const
   const v = (child: any, style: any) => H(View, { style: { justifyContent: 'center', ...style } }, child)
 
-  const ROWS_PER_PAGE = data.sourcePath === 'di' ? 20 : 10
-  const totalPages = Math.ceil(data.items.length / ROWS_PER_PAGE) || 1
+  const itemSlices = getItemSlices(data.items.length, data.itemsPerPage, 20, 20)
+  const totalPages = itemSlices.length || 1
 
   const tableHeaderRow = [
     v(H(Text, { style: styles.tableHeaderCell }, 'No'), { width: 25, padding: 4, borderRightWidth: 1, borderRightColor: '#000', ...COL_BORDER }),
@@ -236,8 +238,9 @@ export function DeliveryOrderPDF({ data }: { data: DOData }): ReactElement {
   return H(Document, null,
     ...Array.from({ length: totalPages }, (_, pageIdx) => {
       const isLastPage = pageIdx === totalPages - 1
-      const startIdx = pageIdx * ROWS_PER_PAGE
-      const pageItems = data.items.slice(startIdx, startIdx + ROWS_PER_PAGE)
+      const pageItemCount = itemSlices[pageIdx]
+      const startIdx = itemSlices.slice(0, pageIdx).reduce((a, b) => a + b, 0)
+      const pageItems = data.items.slice(startIdx, startIdx + pageItemCount)
       const pageNumber = pageIdx + 1
 
       return H(Page, { key: pageIdx, size: 'A4', style: styles.page },

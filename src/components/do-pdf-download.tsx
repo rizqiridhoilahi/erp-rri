@@ -2,22 +2,30 @@
 
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { Eye, Download, Loader2 } from 'lucide-react'
+import { ListOrdered } from 'lucide-react'
+import { AturItemsPerPage } from '@/components/atur-items-per-page'
+import { computeDefaultDistribution } from '@/lib/pdf/utils'
 import { getAuthToken } from '@/lib/api/client'
 import { toast } from 'sonner'
 
 interface Props {
   doId: string
   nomor: string
+  totalItems: number
 }
 
-export function DOPdfDownload({ doId, nomor }: Props) {
+export function DOPdfDownload({ doId, nomor, totalItems }: Props) {
   const [previewLoading, setPreviewLoading] = useState(false)
   const [downloadLoading, setDownloadLoading] = useState(false)
 
-  const fetchPdfBlob = async () => {
+  const initialDistribution = computeDefaultDistribution(totalItems, 20, 20)
+
+  const fetchPdfBlob = async (itemsPerPageParam?: string) => {
     const token = await getAuthToken()
-    const res = await fetch(`/api/v1/delivery-order/${doId}/pdf`, {
+    const url = itemsPerPageParam
+      ? `/api/v1/delivery-order/${doId}/pdf?itemsPerPage=${itemsPerPageParam}`
+      : `/api/v1/delivery-order/${doId}/pdf`
+    const res = await fetch(url, {
       headers: token ? { Authorization: `Bearer ${token}` } : {},
     })
     if (!res.ok) {
@@ -27,10 +35,11 @@ export function DOPdfDownload({ doId, nomor }: Props) {
     return res.blob()
   }
 
-  const handlePreview = async () => {
+  const handlePreview = async (itemsPerPage: number[]) => {
     setPreviewLoading(true)
     try {
-      const blob = await fetchPdfBlob()
+      const param = itemsPerPage.join(',')
+      const blob = await fetchPdfBlob(param)
       window.open(URL.createObjectURL(blob), '_blank')
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Gagal memuat PDF')
@@ -39,10 +48,11 @@ export function DOPdfDownload({ doId, nomor }: Props) {
     }
   }
 
-  const handleDownload = async () => {
+  const handleDownload = async (itemsPerPage: number[]) => {
     setDownloadLoading(true)
     try {
-      const blob = await fetchPdfBlob()
+      const param = itemsPerPage.join(',')
+      const blob = await fetchPdfBlob(param)
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
@@ -57,15 +67,23 @@ export function DOPdfDownload({ doId, nomor }: Props) {
   }
 
   return (
-    <div className="flex gap-1">
-      <Button variant="outline" size="sm" onClick={handlePreview} disabled={previewLoading}>
-        {previewLoading ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : <Eye className="h-3.5 w-3.5 mr-1" />}
-        SJ
-      </Button>
-      <Button variant="default" size="sm" onClick={handleDownload} disabled={downloadLoading}>
-        {downloadLoading ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : <Download className="h-3.5 w-3.5 mr-1" />}
-        Download SJ
-      </Button>
-    </div>
+    <AturItemsPerPage
+      trigger={
+        <Button variant="outline" size="sm">
+          <ListOrdered className="h-3.5 w-3.5 mr-1" />
+          Atur Items
+        </Button>
+      }
+      totalItems={totalItems}
+      initialDistribution={initialDistribution}
+      defaultPageCount={20}
+      pageLabel="Halaman"
+      startNumber={1}
+      title="Atur Items Surat Jalan"
+      previewLoading={previewLoading}
+      downloadLoading={downloadLoading}
+      onPreview={handlePreview}
+      onDownload={handleDownload}
+    />
   )
 }

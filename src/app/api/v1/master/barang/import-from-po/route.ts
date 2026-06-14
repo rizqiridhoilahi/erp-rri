@@ -221,6 +221,11 @@ export async function POST(request: NextRequest) {
     errors.push({ nama_barang: 'system', error: `Tidak ada item yang berhasil diproses dari ${data.items.length} item. Semua item gagal di tahap query/insert barang.` })
   }
 
+  // Track barang baru untuk cleanup jika PO gagal
+  const createdBarangIds = imported
+    .filter(i => i.status === 'created')
+    .map(i => i.barangId)
+
   // Step 7: Create customer_po
   const poId = crypto.randomUUID()
   const { error: poError } = await supabaseAdmin
@@ -243,6 +248,9 @@ export async function POST(request: NextRequest) {
     })
 
   if (poError) {
+    if (createdBarangIds.length > 0) {
+      await supabaseAdmin.from('barang').delete().in('id', createdBarangIds)
+    }
     return internalError('Gagal membuat PO: ' + poError.message)
   }
 
@@ -271,6 +279,10 @@ export async function POST(request: NextRequest) {
       .insert(poItems)
 
     if (itemsError) {
+      await supabaseAdmin.from('customer_po').delete().eq('id', poId)
+      if (createdBarangIds.length > 0) {
+        await supabaseAdmin.from('barang').delete().in('id', createdBarangIds)
+      }
       errors.push({ nama_barang: 'system', error: 'Gagal menyimpan item PO: ' + itemsError.message })
     }
   }
