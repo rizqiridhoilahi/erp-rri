@@ -108,11 +108,11 @@ export async function GET(request: NextRequest) {
       .select('barang_id, kontrak!kontrak_id(nomor_kontrak, nama, tanggal_mulai, tanggal_selesai)')
       .in('barang_id', barangIds)
     for (const ki of kontrakItems ?? []) {
-      const raw = ki as { barang_id: string; kontrak: Array<{ nomor_kontrak: string; nama: string; tanggal_mulai: string | null; tanggal_selesai: string | null }> }
-      const kontrakArr = raw.kontrak
-      if (!kontrakArr || kontrakArr.length === 0) continue
+      const raw = ki as { barang_id: string; kontrak: unknown }
+      if (!raw.kontrak) continue
+      const k = raw.kontrak as { nomor_kontrak: string; nama: string; tanggal_mulai: string | null; tanggal_selesai: string | null }
       if (!kontrakPerBarang[raw.barang_id]) kontrakPerBarang[raw.barang_id] = []
-      kontrakPerBarang[raw.barang_id].push(kontrakArr[0])
+      kontrakPerBarang[raw.barang_id].push(k)
     }
   }
 
