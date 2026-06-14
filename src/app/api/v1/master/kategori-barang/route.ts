@@ -15,6 +15,13 @@ const schema = z.object({
  *   get:
  *     tags: [Kategori Barang]
  *     summary: Daftar kategori barang
+ *     parameters:
+ *       - in: query
+ *         name: show_all
+ *         schema:
+ *           type: string
+ *           enum: [true, false]
+ *         description: Tampilkan semua termasuk non-aktif (default hanya aktif)
  *     responses:
  *       200:
  *         description: Berhasil
@@ -22,7 +29,11 @@ const schema = z.object({
 export async function GET(req: NextRequest) {
   const auth = await verifyAuth(req)
   if (auth.error) return auth.error
-  const { data, error } = await supabaseAdmin.from('kategori_barang').select('*').order('nama')
+  const { searchParams } = new URL(req.url)
+  const showAll = searchParams.get('show_all') === 'true'
+  let query = supabaseAdmin.from('kategori_barang').select('*')
+  if (!showAll) query = query.eq('is_active', true)
+  const { data, error } = await query.order('nama')
   if (error) return internalError(error)
   return NextResponse.json({ data: data ?? [] })
 }

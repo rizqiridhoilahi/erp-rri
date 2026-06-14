@@ -9,6 +9,10 @@ const schema = z.object({
   keterangan: z.string().optional(),
 })
 
+const patchSchema = z.object({
+  is_active: z.boolean(),
+})
+
 /**
  * @openapi
  * /api/v1/master/kategori-barang/{id}:
@@ -44,6 +48,35 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
   if (!parsed.success) return badRequest(parsed.error.issues.map(e => e.message).join(', '))
 
   const { data, error } = await supabaseAdmin.from('kategori_barang').update({ ...parsed.data, updated_at: new Date().toISOString() }).eq('id', id).select().single()
+  if (error) return internalError(error)
+  if (!data) return notFound('Kategori barang tidak ditemukan')
+  return NextResponse.json({ data })
+}
+
+/**
+ * @openapi
+ * /api/v1/master/kategori-barang/{id}:
+ *   patch:
+ *     tags: [Kategori Barang]
+ *     summary: Aktif/nonaktifkan kategori barang
+ */
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const auth = await verifyAuth(request)
+  if (auth.error) return auth.error
+
+  const { id } = await params
+  const body = await request.json().catch(() => null)
+  if (!body) return badRequest('Invalid JSON body')
+
+  const parsed = patchSchema.safeParse(body)
+  if (!parsed.success) return badRequest(parsed.error.issues.map(e => e.message).join(', '))
+
+  const { data, error } = await supabaseAdmin
+    .from('kategori_barang')
+    .update({ is_active: parsed.data.is_active, updated_at: new Date().toISOString() })
+    .eq('id', id)
+    .select()
+    .single()
   if (error) return internalError(error)
   if (!data) return notFound('Kategori barang tidak ditemukan')
   return NextResponse.json({ data })

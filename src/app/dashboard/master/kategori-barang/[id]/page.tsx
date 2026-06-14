@@ -4,11 +4,14 @@ import { useState, useEffect } from "react"
 import { useRouter, usePathname } from "next/navigation"
 import { supabase } from "@/lib/db/client"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
-import { Loader2 } from "lucide-react"
+import { Loader2, ToggleLeft, ToggleRight } from "lucide-react"
 import { BreadcrumbNav, BreadcrumbItem } from "@/components/breadcrumb-nav"
 import { PageHeader } from "@/components/page-header"
 import { EmptyState } from "@/components/empty-state"
+import { toast } from "sonner"
+import { apiFetch } from "@/lib/api/client"
 const breadcrumbItems: BreadcrumbItem[] = [
   { label: "Dashboard", href: "/dashboard" },
   { label: "Master Data" },
@@ -20,6 +23,7 @@ interface KategoriBarang {
   id: string
   nama: string
   keterangan: string | null
+  is_active: boolean
   created_at: string
 }
 
@@ -62,6 +66,19 @@ export default function DetailKategoriBarangPage() {
     </div>
   )
 
+  const handleToggleActive = async () => {
+    try {
+      await apiFetch(`/api/v1/master/kategori-barang/${data.id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ is_active: !data.is_active }),
+      })
+      toast.success(`Kategori ${data.is_active ? 'dinonaktifkan' : 'diaktifkan'}`)
+      setData({ ...data, is_active: !data.is_active })
+    } catch {
+      toast.error('Gagal mengubah status kategori')
+    }
+  }
+
   return (
     <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-8">
       <BreadcrumbNav items={breadcrumbItems} />
@@ -85,6 +102,18 @@ export default function DetailKategoriBarangPage() {
             <div>
               <label className="block text-sm font-medium text-muted-foreground mb-1">Nama</label>
               <p className="text-sm font-medium">{data.nama}</p>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-muted-foreground mb-1">Status</label>
+              <div className="flex items-center gap-2">
+                <Badge variant={data.is_active ? 'default' : 'secondary'}>
+                  {data.is_active ? 'Aktif' : 'Nonaktif'}
+                </Badge>
+                <Button variant="ghost" size="sm" onClick={handleToggleActive} className="h-7 px-2">
+                  {data.is_active ? <ToggleLeft className="h-4 w-4 text-muted-foreground" /> : <ToggleRight className="h-4 w-4 text-green-500" />}
+                  <span className="ml-1 text-xs">{data.is_active ? 'Nonaktifkan' : 'Aktifkan'}</span>
+                </Button>
+              </div>
             </div>
             <div>
               <label className="block text-sm font-medium text-muted-foreground mb-1">Dibuat Pada</label>

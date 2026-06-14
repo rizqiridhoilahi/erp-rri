@@ -1,0 +1,1 @@
+ALTER TABLE "kategori_barang" ADD COLUMN "is_active" boolean DEFAULT true NOT NULL;

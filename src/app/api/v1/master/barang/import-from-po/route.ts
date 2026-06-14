@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { supabaseAdmin } from '@/lib/api/supabase-server'
 import { verifyAuth } from '@/lib/api/auth'
-import { badRequest, internalError } from '@/lib/api/errors'
-import { generateAutoKode, generateCustomerAutoKode, getDefaultKategoriId } from '@/lib/utils/barang-auto-create'
+import { badRequest, internalError, notFound } from '@/lib/api/errors'
+import { generateAutoKode, getDefaultKategoriId } from '@/lib/utils/barang-auto-create'
 import { generateDocumentNumber } from '@/lib/utils/document-number'
 import { storageService } from '@/lib/storage'
 
@@ -102,17 +102,7 @@ export async function POST(request: NextRequest) {
       return badRequest(`Field wajib untuk ${existingCustomer.nama}: ${custMissing.join(', ')}`)
     }
   } else {
-    const customerKode = await generateCustomerAutoKode()
-    const { data: newCustomer, error: customerError } = await supabaseAdmin
-      .from('customer')
-      .insert({ nama: data.nama_customer, kode: customerKode, is_active: true })
-      .select('id')
-      .single()
-
-    if (customerError || !newCustomer) {
-      return internalError('Gagal membuat customer: ' + (customerError?.message || 'unknown'))
-    }
-    customerId = newCustomer.id
+    return notFound(`Customer "${data.nama_customer}" tidak ditemukan. Import PO hanya untuk customer yang sudah terdaftar.`)
   }
 
   // Step 2: Auto-match / create PIC
