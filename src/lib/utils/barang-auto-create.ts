@@ -124,12 +124,19 @@ export async function getUnmappedRfqItems(customerPoId: string): Promise<Unmappe
 
   const { data: qtnItems } = await supabaseAdmin
     .from('quotation_item')
-    .select('harga_satuan')
+    .select('harga_satuan, is_rejected')
     .eq('quotation_id', po.quotation_id)
     .order('created_at', { ascending: true })
 
-  return (items ?? []).map((rfqItem, idx) => ({
-    ...rfqItem,
-    harga_satuan: (qtnItems?.[idx] as { harga_satuan: number } | undefined)?.harga_satuan ?? null,
-  })) as UnmappedItem[]
+  const qtnWithMeta = (qtnItems ?? []) as Array<{ harga_satuan: number; is_rejected: boolean }>
+
+  return (items ?? []).reduce((acc, rfqItem, idx) => {
+    const qtn = qtnWithMeta[idx]
+    if (qtn?.is_rejected) return acc
+    acc.push({
+      ...rfqItem,
+      harga_satuan: qtn?.harga_satuan ?? null,
+    })
+    return acc
+  }, [] as UnmappedItem[])
 }
