@@ -40,6 +40,7 @@ interface Barang {
   harga_jual_default: number | null
   stok_minimum: number | null
   is_active: boolean
+  status_nego: string | null
   created_at: string
 }
 
@@ -61,6 +62,7 @@ const defaultFilters: BarangFilterValues = {
   search: "",
   kategori_id: "__all__",
   status: "all",
+  status_nego: "all",
   kontrak: "all",
   satuan: "__all__",
   nama_kontrak: "__all__",
@@ -84,6 +86,7 @@ export default function BarangPage() {
     if (f.search) params.set('search', f.search)
     if (f.kategori_id !== '__all__') params.set('kategori_id', f.kategori_id)
     if (f.status !== 'all') params.set('status', f.status)
+    if (f.status_nego !== 'all') params.set('status_nego', f.status_nego)
     if (f.kontrak !== 'all') params.set('kontrak', f.kontrak)
     if (f.satuan !== '__all__') params.set('satuan', f.satuan)
     if (f.nama_kontrak !== '__all__') params.set('nama_kontrak', f.nama_kontrak)
@@ -219,6 +222,11 @@ export default function BarangPage() {
     },
     { header: "Kode", accessor: (item) => item.kode, sortKey: "kode" },
     { header: "Nama Barang", accessor: (item) => item.nama, sortKey: "nama" },
+    { header: "Status Nego", accessor: (item) =>
+      item.status_nego === 'rejected'
+        ? <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">Rejected Nego</span>
+        : null
+    },
     { header: "Kategori", accessor: (item) => item.kategori_barang?.nama || "-" },
     { header: "Kontrak", accessor: (item) => {
       const kontraks = item.kontrak ?? []

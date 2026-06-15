@@ -1,0 +1,1 @@
+ALTER TABLE barang ADD COLUMN status_nego TEXT DEFAULT NULL;

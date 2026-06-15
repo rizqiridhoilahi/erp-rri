@@ -9,7 +9,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import {
   Table, TableHeader, TableBody, TableRow, TableHead, TableCell,
 } from "@/components/ui/table"
-import { Loader2, ShoppingBag } from "lucide-react"
+import { Loader2, ShoppingBag, FileText } from "lucide-react"
 import { apiFetch } from "@/lib/api/client"
 import { BreadcrumbNav, BreadcrumbItem } from "@/components/breadcrumb-nav"
 import { PageHeader } from "@/components/page-header"
@@ -41,6 +41,23 @@ interface HistoryItem {
   path: string | null
 }
 
+interface NegoHistoryItem {
+  nego_id: string
+  nego_nomor: string
+  nego_tanggal: string
+  nego_status: string
+  nego_revision: number
+  quotation_nomor: string | null
+  customer_nama: string | null
+  customer_kode: string | null
+  harga_satuan_lama: number | null
+  diskon_lama: number | null
+  harga_satuan_baru: number | null
+  diskon_baru: number | null
+  alasan: string | null
+  is_rejected: boolean
+}
+
 interface Barang {
   id: string
   nama: string
@@ -68,6 +85,8 @@ export default function DetailBarangPage() {
   const [loading, setLoading] = useState(true)
   const [history, setHistory] = useState<HistoryItem[]>([])
   const [historyLoading, setHistoryLoading] = useState(true)
+  const [negoHistory, setNegoHistory] = useState<NegoHistoryItem[]>([])
+  const [negoHistoryLoading, setNegoHistoryLoading] = useState(true)
 
   useEffect(() => {
     if (!id) return
@@ -116,6 +135,13 @@ export default function DetailBarangPage() {
     apiFetch<HistoryItem[]>(`/api/v1/master/barang/${id}/history`)
       .then((r) => { setHistory(r.data ?? []); setHistoryLoading(false) })
       .catch(() => setHistoryLoading(false))
+  }, [id])
+
+  useEffect(() => {
+    if (!id) return
+    apiFetch<NegoHistoryItem[]>(`/api/v1/master/barang/${id}/negoiasi-history`)
+      .then((r) => { setNegoHistory(r.data ?? []); setNegoHistoryLoading(false) })
+      .catch(() => setNegoHistoryLoading(false))
   }, [id])
 
   const formatCurrency = (value: number | null) => {
@@ -317,6 +343,75 @@ export default function DetailBarangPage() {
                               {margin >= 0 ? '+' : ''}{margin.toLocaleString('id-ID')}
                             </span>
                           ) : '-'}
+                        </TableCell>
+                      </TableRow>
+                    )
+                  })}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardContent className="pt-6">
+          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2"><FileText className="h-4 w-4" />Riwayat Negosiasi</h3>
+          {negoHistoryLoading ? (
+            <div className="flex items-center justify-center py-8 text-muted-foreground">
+              <Loader2 className="h-5 w-5 animate-spin mr-2" />Memuat riwayat...
+            </div>
+          ) : negoHistory.length === 0 ? (
+            <p className="text-center py-8 text-muted-foreground">Belum ada riwayat negosiasi.</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Tanggal</TableHead>
+                    <TableHead>No. Negosiasi</TableHead>
+                    <TableHead>Customer</TableHead>
+                    <TableHead>Status Nego</TableHead>
+                    <TableHead className="text-right">Harga Lama</TableHead>
+                    <TableHead className="text-right">Harga Baru</TableHead>
+                    <TableHead className="text-right">Diskon Baru</TableHead>
+                    <TableHead>Alasan</TableHead>
+                    <TableHead>Hasil</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {negoHistory.map((h, i) => {
+                    const statusNegoLabel: Record<string, string> = { draft: 'Draft', approved: 'Disetujui', rejected: 'Ditolak' }
+                    return (
+                      <TableRow key={`${h.nego_id}-${i}`}>
+                        <TableCell className="whitespace-nowrap">
+                          {new Date(h.nego_tanggal).toLocaleDateString('id-ID')}
+                        </TableCell>
+                        <TableCell className="font-medium">{h.nego_nomor}</TableCell>
+                        <TableCell>{h.customer_nama ?? '-'}</TableCell>
+                        <TableCell>
+                          <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
+                            h.nego_status === 'draft' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                            : h.nego_status === 'approved' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                            : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                          }`}>
+                            {statusNegoLabel[h.nego_status] ?? h.nego_status}
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-right">{h.harga_satuan_lama != null ? `Rp ${Number(h.harga_satuan_lama).toLocaleString('id-ID')}` : '-'}</TableCell>
+                        <TableCell className="text-right">{h.harga_satuan_baru != null ? `Rp ${Number(h.harga_satuan_baru).toLocaleString('id-ID')}` : '-'}</TableCell>
+                        <TableCell className="text-right">{h.diskon_baru != null ? `${h.diskon_baru}%` : '-'}</TableCell>
+                        <TableCell className="max-w-[200px] truncate" title={h.alasan ?? ''}>{h.alasan ?? '-'}</TableCell>
+                        <TableCell>
+                          {h.is_rejected ? (
+                            <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
+                              Ditolak
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                              Disetujui
+                            </span>
+                          )}
                         </TableCell>
                       </TableRow>
                     )

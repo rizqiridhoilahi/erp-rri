@@ -3,6 +3,7 @@ import { supabaseAdmin } from '@/lib/api/supabase-server'
 import { verifyAuth } from '@/lib/api/auth'
 import { badRequest, notFound, internalError } from '@/lib/api/errors'
 import { logAudit } from '@/lib/audit'
+import { createBarangFromRfqItem } from '@/lib/utils/barang-auto-create'
 
 const NEGO_QUOTATION_ALLOWED = ['sent', 'proses_negosiasi']
 
@@ -23,7 +24,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
   if (qtnItemIds.length > 0) {
     const { data: qtnItems } = await supabaseAdmin
       .from('quotation_item')
-      .select('id, harga_satuan, diskon, jumlah, image_url, satuan, barang_id')
+      .select('id, harga_satuan, diskon, jumlah, image_url, satuan, barang_id, is_rejected, nama_barang')
       .in('id', qtnItemIds)
 
     const barangIds = [...new Set((qtnItems ?? []).map(q => q.barang_id).filter(Boolean))]
@@ -100,24 +101,64 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
   if (body.status === 'approved') {
     const { data: negoItems } = await supabaseAdmin
       .from('negoiasi_item')
-      .select('quotation_item_id, harga_satuan_baru, diskon_baru')
+      .select('quotation_item_id, harga_satuan_baru, diskon_baru, is_rejected')
       .eq('negoiasi_id', id)
 
     for (const negoItem of negoItems ?? []) {
-      await supabaseAdmin
-        .from('quotation_item')
-        .update({
-          harga_satuan: negoItem.harga_satuan_baru,
-          diskon: negoItem.diskon_baru ?? 0,
-          updated_at: now,
-        })
-        .eq('id', negoItem.quotation_item_id)
+      if (negoItem.is_rejected) {
+        await supabaseAdmin
+          .from('quotation_item')
+          .update({ is_rejected: true, updated_at: now })
+          .eq('id', negoItem.quotation_item_id)
+
+        const { data: qtnItem } = await supabaseAdmin
+          .from('quotation_item')
+          .select('id, barang_id, nama_barang, satuan, image_url, harga_satuan')
+          .eq('id', negoItem.quotation_item_id)
+          .maybeSingle()
+
+        if (qtnItem) {
+          if (!qtnItem.barang_id && qtnItem.nama_barang) {
+            const newBarang = await createBarangFromRfqItem(
+              qtnItem.nama_barang,
+              qtnItem.satuan,
+              null,
+              qtnItem.image_url,
+              qtnItem.harga_satuan,
+              null,
+            )
+            await supabaseAdmin
+              .from('quotation_item')
+              .update({ barang_id: newBarang.id, updated_at: now })
+              .eq('id', negoItem.quotation_item_id)
+            await supabaseAdmin
+              .from('barang')
+              .update({ status_nego: 'rejected', updated_at: now })
+              .eq('id', newBarang.id)
+          } else if (qtnItem.barang_id) {
+            await supabaseAdmin
+              .from('barang')
+              .update({ status_nego: 'rejected', updated_at: now })
+              .eq('id', qtnItem.barang_id)
+          }
+        }
+      } else {
+        await supabaseAdmin
+          .from('quotation_item')
+          .update({
+            harga_satuan: negoItem.harga_satuan_baru,
+            diskon: negoItem.diskon_baru ?? 0,
+            updated_at: now,
+          })
+          .eq('id', negoItem.quotation_item_id)
+      }
     }
 
     const { data: qtnItems } = await supabaseAdmin
       .from('quotation_item')
       .select('id, harga_satuan, jumlah, diskon')
       .eq('quotation_id', data.quotation_id)
+      .eq('is_rejected', false)
 
     const { data: qtn } = await supabaseAdmin
       .from('quotation')

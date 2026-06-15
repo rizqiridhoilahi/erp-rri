@@ -29,6 +29,7 @@ export async function GET(request: NextRequest) {
   const search = searchParams.get('search') ?? ''
   const kategoriId = searchParams.get('kategori_id') ?? ''
   const status = searchParams.get('status') ?? 'all'
+  const statusNego = searchParams.get('status_nego') ?? 'all'
   const kontrak = searchParams.get('kontrak') ?? 'all'
   const satuanFilter = searchParams.get('satuan') ?? ''
   const namaKontrak = searchParams.get('nama_kontrak') ?? ''
@@ -56,6 +57,12 @@ export async function GET(request: NextRequest) {
     query = query.eq('is_active', true)
   } else if (status === 'non-active') {
     query = query.eq('is_active', false)
+  }
+
+  if (statusNego === 'rejected') {
+    query = query.eq('status_nego', 'rejected')
+  } else if (statusNego === 'normal') {
+    query = query.is('status_nego', null)
   }
 
   if (kontrak === 'has') {

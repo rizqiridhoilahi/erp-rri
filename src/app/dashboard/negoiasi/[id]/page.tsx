@@ -11,7 +11,7 @@ import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@
 import { PageHeader } from '@/components/page-header'
 import { StatusWorkflow } from '@/components/status-workflow'
 import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog'
-import { Loader2, ArrowLeft, CheckCircle, XCircle, Pencil, ExternalLink, ShoppingCart, AlertTriangle } from 'lucide-react'
+import { Loader2, ArrowLeft, CheckCircle, XCircle, Pencil, ExternalLink, ShoppingCart, AlertTriangle, Trash2, Undo2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatDateTime } from '@/lib/utils/date'
 
@@ -42,6 +42,7 @@ interface QuotationItemData {
   image_url: string | null
   satuan: string | null
   barang: BarangData | null
+  nama_barang: string | null
 }
 
 interface NegoItemData {
@@ -52,6 +53,7 @@ interface NegoItemData {
   harga_satuan_baru: number
   diskon_baru: number
   alasan: string | null
+  is_rejected: boolean
   quotation_item: QuotationItemData | null
 }
 
@@ -83,6 +85,7 @@ function formatCurrency(v: number | null | undefined) {
 
 function itemDisplayName(item: QuotationItemData | null) {
   if (!item) return 'Item tidak ditemukan'
+  if (item.nama_barang) return item.nama_barang
   if (item.barang) return `[${item.barang.kode}] ${item.barang.nama}`
   return 'Item #' + item.id.slice(0, 8)
 }
@@ -150,6 +153,19 @@ export default function NegoiasiDetailPage() {
     }
   }
 
+  const handleToggleRejectItem = async (itemId: string, currentRejected: boolean) => {
+    try {
+      await apiFetch(`/api/v1/negoiasi/${id}/items/${itemId}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ is_rejected: !currentRejected }),
+      })
+      toast.success(currentRejected ? 'Item dikembalikan' : 'Item ditolak')
+      fetchNego()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Gagal mengubah status item')
+    }
+  }
+
   const handleDelete = async () => {
     if (!id) return
     await apiFetch(`/api/v1/negoiasi/${id}`, { method: 'DELETE' })
@@ -178,6 +194,7 @@ export default function NegoiasiDetailPage() {
 
   const isQtnStatusValid = data.quotation?.status === 'sent' || data.quotation?.status === 'proses_negosiasi'
   const confirmedPO = poList.find((p) => p.status === 'confirmed')
+  const allItemsRejected = data.items?.length > 0 && data.items.every(i => i.is_rejected)
 
   return (
     <div className="mx-auto max-w-5xl px-4 sm:px-6 py-8 space-y-6">
@@ -194,7 +211,8 @@ export default function NegoiasiDetailPage() {
                 <Button
                   variant="default"
                   onClick={handleApprove}
-                  disabled={statusLoading || !isQtnStatusValid || !!confirmedPO}
+                  disabled={statusLoading || !isQtnStatusValid || !!confirmedPO || allItemsRejected}
+                  title={allItemsRejected ? 'Semua item ditolak, tidak ada yang bisa disetujui' : ''}
                 >
                   {statusLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <CheckCircle className="h-4 w-4 mr-2" />}
                   Setujui
@@ -315,7 +333,12 @@ export default function NegoiasiDetailPage() {
         <CardContent className="pt-6">
           <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
             Item Negosiasi
-            <span className="text-sm font-normal text-muted-foreground">({data.items?.length || 0} item)</span>
+            <span className="text-sm font-normal text-muted-foreground">
+              {data.items?.filter(i => !i.is_rejected).length || 0} deal
+              {data.items?.some(i => i.is_rejected) && (
+                <span className="text-destructive">, {data.items.filter(i => i.is_rejected).length} ditolak</span>
+              )}
+            </span>
           </h3>
 
           {!data.items?.length ? (
@@ -334,6 +357,7 @@ export default function NegoiasiDetailPage() {
                     <TableHead className="text-right">Diskon Baru</TableHead>
                     <TableHead className="text-right">Selisih</TableHead>
                     <TableHead>Alasan</TableHead>
+                    <TableHead className="w-12">Aksi</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -346,9 +370,10 @@ export default function NegoiasiDetailPage() {
                     const diffAbs = Math.abs(diff)
                     const isLower = diff < 0
                     const isHigher = diff > 0
+                    const isRejected = item.is_rejected
 
                     return (
-                      <TableRow key={item.id}>
+                      <TableRow key={item.id} className={isRejected ? 'bg-muted/50' : ''}>
                         <TableCell className="text-muted-foreground text-xs align-top pt-4">{i + 1}</TableCell>
                         <TableCell>
                           <div className="flex items-center gap-3">
@@ -356,18 +381,23 @@ export default function NegoiasiDetailPage() {
                               <img
                                 src={imgUrl}
                                 alt=""
-                                className="w-10 h-10 object-cover rounded border shrink-0"
+                                className={`w-10 h-10 object-cover rounded border shrink-0 ${isRejected ? 'opacity-50' : ''}`}
                               />
                             )}
                             <div>
-                              <p className="font-medium text-sm">{itemDisplayName(qi)}</p>
+                              <p className={`font-medium text-sm ${isRejected ? 'line-through text-muted-foreground' : ''}`}>
+                                {itemDisplayName(qi)}
+                              </p>
+                              {isRejected && (
+                                <Badge variant="destructive" className="mt-0.5 text-[10px] px-1.5 py-0">Ditolak</Badge>
+                              )}
                               {qi?.barang?.satuan && (
                                 <p className="text-xs text-muted-foreground">{qi.barang.satuan}</p>
                               )}
                             </div>
                           </div>
                         </TableCell>
-                        <TableCell className="text-right align-top pt-4">
+                        <TableCell className={`text-right align-top pt-4 ${isRejected ? 'text-muted-foreground' : ''}`}>
                           {qi ? `${qi.jumlah} ${qi.satuan || qi?.barang?.satuan || ''}` : '-'}
                         </TableCell>
                         <TableCell className="text-right align-top pt-4">{formatCurrency(hargaLama)}</TableCell>
@@ -382,6 +412,19 @@ export default function NegoiasiDetailPage() {
                         </TableCell>
                         <TableCell className="text-muted-foreground text-sm align-top pt-4 max-w-[160px]">
                           {item.alasan || '-'}
+                        </TableCell>
+                        <TableCell className="align-top pt-4">
+                          {data.status === 'draft' && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className={isRejected ? 'h-7 w-7 text-green-600' : 'h-7 w-7 text-destructive'}
+                              onClick={() => handleToggleRejectItem(item.id, isRejected)}
+                              title={isRejected ? 'Kembalikan item' : 'Tolak item'}
+                            >
+                              {isRejected ? <Undo2 className="h-4 w-4" /> : <Trash2 className="h-4 w-4" />}
+                            </Button>
+                          )}
                         </TableCell>
                       </TableRow>
                     )

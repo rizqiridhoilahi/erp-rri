@@ -99,6 +99,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
     .from('quotation_item')
     .select('*')
     .eq('quotation_id', id)
+    .eq('is_rejected', false)
     .order('created_at', { ascending: true })
 
   const barangIds = [...new Set(items?.filter(i => i.barang_id).map(i => i.barang_id) ?? [])]

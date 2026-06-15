@@ -49,6 +49,7 @@ export async function generateQuotationPdfBlob(id: string, itemsPerPage?: number
     .from('quotation_item')
     .select('*')
     .eq('quotation_id', id)
+    .eq('is_rejected', false)
   if (!items) return null
 
   const barangIds = [...new Set(items?.filter(i => i.barang_id).map(i => i.barang_id) ?? [])]

@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm"
-import { pgTable, text, timestamp, integer, real } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, integer, real, boolean } from "drizzle-orm/pg-core";
 
 export const quotationItem = pgTable("quotation_item", {
   id: text("id").primaryKey().default(sql`gen_random_uuid()::text`),
@@ -16,6 +16,7 @@ export const quotationItem = pgTable("quotation_item", {
   totalHarga: real("total_harga"),
   namaBarang: text("nama_barang"),
   keterangan: text("keterangan"),
+  isRejected: boolean("is_rejected").notNull().default(false),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });

@@ -16,6 +16,7 @@ export interface BarangFilterValues {
   search: string
   kategori_id: string
   status: string
+  status_nego: string
   kontrak: string
   satuan: string
   nama_kontrak: string
@@ -37,6 +38,7 @@ const defaultValues: BarangFilterValues = {
   search: "",
   kategori_id: "__all__",
   status: "all",
+  status_nego: "all",
   kontrak: "all",
   satuan: "__all__",
   nama_kontrak: "__all__",
@@ -58,7 +60,7 @@ export function BarangFilter({ options, values, onChange }: BarangFilterProps) {
     onChange(defaultValues)
   }
 
-  const hasActive = local.search || local.kategori_id !== "__all__" || local.status !== "all" || local.kontrak !== "all" || local.satuan !== "__all__" || local.nama_kontrak !== "__all__"
+  const hasActive = local.search || local.kategori_id !== "__all__" || local.status !== "all" || local.status_nego !== "all" || local.kontrak !== "all" || local.satuan !== "__all__" || local.nama_kontrak !== "__all__"
 
   return (
     <div className="flex flex-wrap items-end gap-3 mb-4">
@@ -96,6 +98,19 @@ export function BarangFilter({ options, values, onChange }: BarangFilterProps) {
             <SelectItem value="all">Semua Status</SelectItem>
             <SelectItem value="active">Aktif</SelectItem>
             <SelectItem value="non-active">Non-Aktif</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="w-[170px]">
+        <Select value={local.status_nego} onValueChange={(v) => update({ status_nego: v })}>
+          <SelectTrigger>
+            <SelectValue placeholder="Status Nego" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Semua Status Nego</SelectItem>
+            <SelectItem value="rejected">Rejected Nego</SelectItem>
+            <SelectItem value="normal">Normal</SelectItem>
           </SelectContent>
         </Select>
       </div>
