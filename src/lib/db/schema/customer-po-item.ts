@@ -7,7 +7,8 @@ export const customerPoItem = pgTable("customer_po_item", {
  barangId: text("barang_id").notNull(),
  jumlah: integer("jumlah").notNull(),
  hargaSatuan: real("harga_satuan").notNull(),
- keterangan: text("keterangan"),
- createdAt: timestamp("created_at").notNull().defaultNow(),
+  keterangan: text("keterangan"),
+  urutan: integer("urutan"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
  updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });

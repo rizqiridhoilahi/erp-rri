@@ -175,6 +175,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
         .from('sales_order_item')
         .select('barang_id, jumlah, harga_satuan, nama_barang, kode_barang, satuan')
         .eq('sales_order_id', data.sales_order_id)
+        .order('urutan', { ascending: true })
 
       if (soItems && soItems.length > 0 && customerId) {
         const { data: inv, error: invErr } = await supabaseAdmin.from('invoice').insert({

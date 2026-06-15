@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
 
   const processedItems: Array<{
     customer_po_id: string; barang_id: string; jumlah: number
-    harga_satuan: number; keterangan: string | null; created_at: string; updated_at: string
+    harga_satuan: number; keterangan: string | null; urutan: number; created_at: string; updated_at: string
   }> = []
   const createdBarangMap = new Map<string, string>()
 
@@ -115,6 +115,7 @@ export async function POST(request: NextRequest) {
       jumlah: item.jumlah,
       harga_satuan: item.harga_satuan,
       keterangan: item.keterangan ?? null,
+      urutan: processedItems.length + 1,
       created_at: now,
       updated_at: now,
     })
@@ -137,13 +138,19 @@ export async function POST(request: NextRequest) {
       .eq('id', parsed.data.quotation_id)
       .maybeSingle()
     if (qtn?.rfq_id) {
+      const normalizedMap = new Map<string, string>()
+      for (const [nama, id] of createdBarangMap) {
+        const key = nama.trim().toLowerCase()
+        if (key) normalizedMap.set(key, id)
+      }
       const { data: rfqItems } = await supabaseAdmin
         .from('rfq_customer_item')
         .select('id, nama_barang')
         .eq('rfq_customer_id', qtn.rfq_id)
         .is('barang_id', null)
       for (const rfqItem of rfqItems ?? []) {
-        const barangId = rfqItem.nama_barang ? createdBarangMap.get(rfqItem.nama_barang) : undefined
+        if (!rfqItem.nama_barang) continue
+        const barangId = createdBarangMap.get(rfqItem.nama_barang) ?? normalizedMap.get(rfqItem.nama_barang.trim().toLowerCase())
         if (barangId) {
           await supabaseAdmin.from('rfq_customer_item').update({ barang_id: barangId }).eq('id', rfqItem.id)
         }

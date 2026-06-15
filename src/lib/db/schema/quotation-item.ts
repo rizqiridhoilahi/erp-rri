@@ -17,6 +17,7 @@ export const quotationItem = pgTable("quotation_item", {
   namaBarang: text("nama_barang"),
   keterangan: text("keterangan"),
   isRejected: boolean("is_rejected").notNull().default(false),
+  urutan: integer("urutan"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });

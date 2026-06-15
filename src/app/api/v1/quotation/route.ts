@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
   const ppnRate = parsed.data.ppn_rate ?? await getConfigNumber('ppn_rate', 0.11)
   const now = new Date().toISOString()
 
-  const items = parsed.data.items.map(item => {
+  const items = parsed.data.items.map((item, idx) => {
     const totalHarga = item.jumlah * item.harga_satuan
     return {
       barang_id: item.barang_id,
@@ -105,6 +105,7 @@ export async function POST(request: NextRequest) {
       diskon: item.diskon ?? 0,
       total_harga: totalHarga,
       keterangan: item.keterangan ?? null,
+      urutan: idx + 1,
     }
   })
 

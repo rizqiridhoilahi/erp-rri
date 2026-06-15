@@ -16,7 +16,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
   const { data: po, error } = await supabaseAdmin.from('customer_po').select('*, customer!customer_id(nama, kode), customer_pic!pic_customer_id(nama, jabatan, no_hp), quotation!quotation_id(nomor)').eq('id', id).single()
   if (error) return internalError(error)
   if (!po) return notFound('PO tidak ditemukan')
-  const { data: items } = await supabaseAdmin.from('customer_po_item').select('*, barang!barang_id(nama, kode, satuan, image_url)').eq('customer_po_id', id)
+  const { data: items } = await supabaseAdmin.from('customer_po_item').select('*, barang!barang_id(nama, kode, satuan, image_url)').eq('customer_po_id', id).order('urutan', { ascending: true })
   const { data: so } = await supabaseAdmin.from('sales_order').select('id, nomor, status').eq('customer_po_id', id).maybeSingle()
   return NextResponse.json({ data: { ...po, items: items ?? [], sales_order: so ?? null } })
 }
@@ -72,9 +72,9 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
   if (body.items) {
     await supabaseAdmin.from('customer_po_item').delete().eq('customer_po_id', id)
     const now = new Date().toISOString()
-    const items = body.items.map((item: { barang_id: string; jumlah: number; harga_satuan: number; keterangan?: string; image_url?: string | null }) => ({
+    const items = body.items.map((item: { barang_id: string; jumlah: number; harga_satuan: number; keterangan?: string; image_url?: string | null }, idx: number) => ({
       customer_po_id: id, barang_id: item.barang_id, jumlah: item.jumlah,
-      harga_satuan: item.harga_satuan, keterangan: item.keterangan ?? null, created_at: now, updated_at: now,
+      harga_satuan: item.harga_satuan, keterangan: item.keterangan ?? null, urutan: idx + 1, created_at: now, updated_at: now,
     }))
     const { error: itemsError } = await supabaseAdmin.from('customer_po_item').insert(items)
     if (itemsError) return internalError(itemsError)

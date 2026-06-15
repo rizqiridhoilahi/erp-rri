@@ -83,7 +83,7 @@ export async function POST(request: NextRequest) {
 
   if (rfqError) return internalError(rfqError)
 
-  const items = (parsed.data.items ?? []).map(item => ({
+  const items = (parsed.data.items ?? []).map((item, idx) => ({
     rfq_customer_id: recordId,
     barang_id: item.barang_id ?? null,
     nama_barang: item.nama_barang ?? null,
@@ -92,6 +92,7 @@ export async function POST(request: NextRequest) {
     image_url: item.image_url ?? null,
     keterangan: item.keterangan ?? null,
     justification: item.justification ?? null,
+    urutan: idx + 1,
     created_at: now,
     updated_at: now,
   }))

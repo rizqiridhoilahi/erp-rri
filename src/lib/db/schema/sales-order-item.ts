@@ -10,7 +10,8 @@ export const salesOrderItem = pgTable("sales_order_item", {
  namaBarang: text("nama_barang"),
  kodeBarang: text("kode_barang"),
  satuan: text("satuan"),
- keterangan: text("keterangan"),
- createdAt: timestamp("created_at").notNull().defaultNow(),
+  keterangan: text("keterangan"),
+  urutan: integer("urutan"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
  updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });

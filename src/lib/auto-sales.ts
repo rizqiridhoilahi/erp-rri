@@ -20,6 +20,7 @@ export async function generateSOFromPO(customerPoId: string) {
     .from('customer_po_item')
     .select('*')
     .eq('customer_po_id', customerPoId)
+    .order('urutan', { ascending: true })
   if (!items?.length) return { success: false, error: 'No items in PO' }
 
   const nomor = formatChildNumber(po.nomor, 'SO')
@@ -36,12 +37,13 @@ export async function generateSOFromPO(customerPoId: string) {
   }).select().single()
   if (soError) return { success: false, error: soError.message }
 
-  const soItems = items.map(i => ({
+  const soItems = items.map((i, idx) => ({
     sales_order_id: so.id,
     barang_id: i.barang_id,
     jumlah: i.jumlah,
     harga_satuan: i.harga_satuan,
     keterangan: i.keterangan ?? null,
+    urutan: idx + 1,
     created_at: now,
     updated_at: now,
   }))
@@ -74,6 +76,7 @@ export async function generateSOFromDI(diId: string) {
     .from('di_item')
     .select('*')
     .eq('di_id', diId)
+    .order('created_at', { ascending: true })
   if (!diItems?.length) return { success: false, error: 'No items in DI' }
 
   const { data: kontrakItems } = diDoc.kontrak_id
@@ -104,7 +107,7 @@ export async function generateSOFromDI(diId: string) {
   }).select().single()
   if (soError) return { success: false, error: soError.message }
 
-  const soItems = diItems.map(i => ({
+  const soItems = diItems.map((i, idx) => ({
     sales_order_id: so.id,
     barang_id: i.barang_id,
     jumlah: i.jumlah,
@@ -113,6 +116,7 @@ export async function generateSOFromDI(diId: string) {
     kode_barang: i.kode_barang ?? null,
     satuan: i.satuan ?? null,
     keterangan: i.keterangan ?? null,
+    urutan: idx + 1,
     created_at: now,
     updated_at: now,
   }))
@@ -145,6 +149,7 @@ export async function generateDOFromSO(salesOrderId: string) {
     .from('sales_order_item')
     .select('*')
     .eq('sales_order_id', salesOrderId)
+    .order('urutan', { ascending: true })
   if (!items?.length) return { success: false, error: 'No items in SO' }
 
   const nomor = formatChildNumber(so.nomor, 'SJ')

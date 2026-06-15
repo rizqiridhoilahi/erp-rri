@@ -69,9 +69,9 @@ export async function POST(request: NextRequest) {
   }).select().single()
   if (soError) return internalError(soError)
 
-  const items = parsed.data.items.map(item => ({
+  const items = parsed.data.items.map((item, idx) => ({
     sales_order_id: so.id, barang_id: item.barang_id, jumlah: item.jumlah,
-    harga_satuan: item.harga_satuan, keterangan: item.keterangan ?? null, created_at: now, updated_at: now,
+    harga_satuan: item.harga_satuan, keterangan: item.keterangan ?? null, urutan: idx + 1, created_at: now, updated_at: now,
   }))
   const { error: itemsError } = await supabaseAdmin.from('sales_order_item').insert(items)
   if (itemsError) { await supabaseAdmin.from('sales_order').delete().eq('id', so.id); return internalError(itemsError) }

@@ -100,7 +100,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
     .select('*')
     .eq('quotation_id', id)
     .eq('is_rejected', false)
-    .order('created_at', { ascending: true })
+    .order('urutan', { ascending: true })
 
   const barangIds = [...new Set(items?.filter(i => i.barang_id).map(i => i.barang_id) ?? [])]
   let barangMap = new Map<string, { id: string; nama: string; kode: string; satuan: string; spesifikasi?: string; justification?: string; image_url?: string }>()
@@ -110,16 +110,6 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
       .select('id, nama, kode, satuan, spesifikasi, justification, image_url')
       .in('id', barangIds)
     barangMap = new Map(barangList?.map(b => [b.id, b]) ?? [])
-  }
-
-  let rfqItemNames: string[] = []
-  if (qtn.rfq_id) {
-    const { data: rfqItems } = await supabaseAdmin
-      .from('rfq_customer_item')
-      .select('nama_barang')
-      .eq('rfq_customer_id', qtn.rfq_id)
-      .order('created_at', { ascending: true })
-    rfqItemNames = rfqItems?.map(i => i.nama_barang) ?? []
   }
 
   let picCustomer = null
@@ -132,10 +122,10 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
     if (pic) picCustomer = pic
   }
 
-  const itemsWithBarang = (items ?? []).map((item, idx) => ({
+  const itemsWithBarang = (items ?? []).map(item => ({
     ...item,
     barang: item.barang_id ? (barangMap.get(item.barang_id) ?? null) : null,
-    nama_barang: item.nama_barang ?? (idx < rfqItemNames.length ? rfqItemNames[idx] : null),
+    nama_barang: item.nama_barang ?? null,
   }))
 
   return NextResponse.json({ data: { ...qtn, customer, rfq_customer: rfqCustomer, pic_customer: picCustomer, items: itemsWithBarang } })
@@ -202,15 +192,15 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       .from('quotation_item')
       .select('barang_id, specification, justification, image_url, nama_barang, satuan, jumlah, harga_satuan, diskon, keterangan')
       .eq('quotation_id', id)
-      .order('created_at', { ascending: true })
+      .order('urutan', { ascending: true })
 
     const newItemsNormalized = parsed.data.items.map(normalizeItem)
     const existingNormalized = (existingItems ?? []).map(i => ({ ...i }))
 
     if (JSON.stringify(newItemsNormalized) !== JSON.stringify(existingNormalized)) {
-      const items = newItemsNormalized.map(item => {
+      const items = newItemsNormalized.map((item, idx) => {
         const totalHarga = item.jumlah * item.harga_satuan
-        return { ...item, quotation_id: id, total_harga: totalHarga }
+        return { ...item, quotation_id: id, total_harga: totalHarga, urutan: idx + 1 }
       })
       const totalHarga = items.reduce((sum, i) => sum + (i.total_harga ?? 0), 0)
       updateData.total_harga = totalHarga
