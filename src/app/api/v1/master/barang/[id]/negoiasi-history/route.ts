@@ -17,16 +17,32 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
 
   const { data: negoItems, error } = await supabaseAdmin
     .from('negoiasi_item')
-    .select('id, harga_satuan_lama, diskon_lama, harga_satuan_baru, diskon_baru, alasan, is_rejected, created_at, negoiasi!negoiasi_id(id, nomor, tanggal, status, revision, quotation_id)')
+    .select('id, negoiasi_id, harga_satuan_lama, diskon_lama, harga_satuan_baru, diskon_baru, alasan, is_rejected, created_at')
     .in('quotation_item_id', qtnIds)
     .order('created_at', { ascending: false })
 
   if (error) return internalError(error)
 
+  const negoIds = [...new Set(
+    (negoItems ?? []).map(n => n.negoiasi_id).filter(Boolean) as string[]
+  )]
+
+  const negoMap = new Map<string, { id: string; nomor: string; tanggal: string; status: string; revision: number; quotation_id: string }>()
+  if (negoIds.length > 0) {
+    const { data: negos } = await supabaseAdmin
+      .from('negoiasi')
+      .select('id, nomor, tanggal, status, revision, quotation_id')
+      .in('id', negoIds)
+    for (const n of negos ?? []) {
+      const raw = n as { id: string; nomor: string; tanggal: string; status: string; revision: number; quotation_id: string }
+      negoMap.set(raw.id, raw)
+    }
+  }
+
   const quotationIds = [...new Set(
     (negoItems ?? []).map(n => {
-      const arr = (n as Record<string, unknown>).negoiasi as Array<{ quotation_id: string }> | undefined
-      return arr?.[0]?.quotation_id
+      const nego = negoMap.get(n.negoiasi_id)
+      return nego?.quotation_id
     }).filter(Boolean) as string[]
   )]
 
@@ -44,11 +60,8 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
   }
 
   const history = (negoItems ?? []).map(item => {
-    const raw = item as Record<string, unknown>
-    const negoArr = raw.negoiasi as Array<Record<string, unknown>> | undefined
-    const nego = negoArr?.[0] ?? {}
-
-    const quotation = nego.quotation_id ? quotationMap.get(nego.quotation_id as string) : null
+    const nego = negoMap.get(item.negoiasi_id) ?? {} as { id: string; nomor: string; tanggal: string; status: string; revision: number; quotation_id: string }
+    const quotation = nego.quotation_id ? quotationMap.get(nego.quotation_id) : null
 
     return {
       nego_id: nego.id ?? null,
@@ -59,12 +72,12 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
       quotation_nomor: quotation?.nomor ?? null,
       customer_nama: quotation?.customer?.nama ?? null,
       customer_kode: quotation?.customer?.kode ?? null,
-      harga_satuan_lama: raw.harga_satuan_lama ?? null,
-      diskon_lama: raw.diskon_lama ?? null,
-      harga_satuan_baru: raw.harga_satuan_baru ?? null,
-      diskon_baru: raw.diskon_baru ?? null,
-      alasan: raw.alasan ?? null,
-      is_rejected: raw.is_rejected ?? false,
+      harga_satuan_lama: item.harga_satuan_lama ?? null,
+      diskon_lama: item.diskon_lama ?? null,
+      harga_satuan_baru: item.harga_satuan_baru ?? null,
+      diskon_baru: item.diskon_baru ?? null,
+      alasan: item.alasan ?? null,
+      is_rejected: item.is_rejected ?? false,
     }
   })
 

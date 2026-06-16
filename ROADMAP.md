@@ -942,3 +942,51 @@ Customer retur barang
 | IC-6 | **Drizzle schema** — `faktur-pajak-item.ts` + `ai-search-result.ts` | ✅ Done | kedua schema files |
 | IC-7 | **faktur_pajak_item updates** — API routes, PDF route, auto-faktur-pajak, tambah page, PDF component | ✅ Done | 6 files |
 | IC-8 | **ai_search_result updates** — `search-harga.ts` INSERT key, GET API response field | ✅ Done | 2 files |
+
+### 🟢 Invoice List Page Enhancement
+
+| # | Task | Status | File |
+|---|------|--------|------|
+| IL-1 | **Hapus 4 kolom** — SO Ref, CPO Ref, DI Ref, DO Ref | ✅ Done | `page.tsx` |
+| IL-2 | **Merge CPO Cust. Ref + DI Cust. Ref** → "Customer PO / DI" (prioritas DI) | ✅ Done | `page.tsx` |
+| IL-3 | **Tambah kolom PIC** — dari DI/CPO customer_pic, posisi sebelum GRN Cust | ✅ Done | `page.tsx` |
+| IL-4 | **Tambah kolom Tgl Jatuh Tempo** — computed dari `tanggal + top`, multi-termin support (tampilkan termin paling mendesak) | ✅ Done | `page.tsx` |
+| IL-5 | **Tambah kolom Hari** — H-XX (text-primary) / H+XX (text-red-600). Untuk status `paid`: hitung dari tgl bayar. Multi-termin: pakai termin paling mendesak | ✅ Done | `page.tsx` |
+| IL-6 | **Tambah kolom Tgl Pembayaran** — latest `invoice_payment.tanggal` | ✅ Done | `page.tsx` |
+| IL-7 | **Query update** — tambah join `invoice_payment` + `invoice_payment_schedule` | ✅ Done | `page.tsx` |
+| IL-8 | **Reusable DataTable** — search + filter dropdowns + pagination + loading/error/empty states + render-prop pattern | ✅ Done | `data-table.tsx` |
+| IL-9 | **Invoice → client component + DataTable** — search, filter (Customer/PIC/Status), pagination client-side | ✅ Done | `page.tsx` |
+
+### Cara Pakai DataTable di modul lain:
+1. Import: `import { DataTable, type DataTableFilter } from "@/components/data-table"` + `import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"`
+2. Definisikan `DataTableFilter[]` untuk filter dropdown:
+   ```tsx
+   const filters: DataTableFilter[] = [
+     { key: "status", label: "Status", options: [{ value: "draft", label: "Draft" }, ...] },
+   ]
+   ```
+3. Bungkus tabel dengan `<DataTable>`, render `<Table>` + `<TableHeader>` + `<TableBody>` di children:
+   ```tsx
+   <DataTable<RowType>
+     data={rows}
+     loading={loading}
+     error={error}
+     searchFields={["field1", "field2"]}
+     searchPlaceholder="Cari..."
+     filters={filters}
+     pageSize={20}
+   >
+     {(paginatedRows) => (
+       <Table>
+         <TableHeader>...</TableHeader>
+         <TableBody>{paginatedRows.map(r => <TableRow key={r.id}>...</TableRow>)}</TableBody>
+       </Table>
+     )}
+   </DataTable>
+   ```
+4. **Syarat:** Row type harus punya `id: string`. Filter value dicocokkan via `String(row[key]) === filterValue`. Search fields dicocokkan via `String(row[field]).includes(query)`.
+5. Filter options dibuat dari data: `useMemo(() => uniqueValues(rows.map(r => ({ value: r.someId, label: r.someLabel }))), [rows])`.
+6. Reset state otomatis saat user klik tombol "Reset" — search query + filter values + page number di-reset.
+
+### File baru:
+- `src/components/data-table.tsx`

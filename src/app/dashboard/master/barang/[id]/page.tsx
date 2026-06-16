@@ -158,7 +158,7 @@ export default function DetailBarangPage() {
   )
 
   if (loading) return (
-    <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-8">
+    <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-8">
       <BreadcrumbNav items={breadcrumbItems} />
       <div className="min-h-[200px] flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -168,14 +168,14 @@ export default function DetailBarangPage() {
   )
 
   if (error || !data) return (
-    <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-8">
+    <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-8">
       <BreadcrumbNav items={breadcrumbItems} />
       <EmptyState title="Gagal memuat data" description={error || "Data tidak ditemukan"} />
     </div>
   )
 
   return (
-    <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-8">
+    <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-8">
       <BreadcrumbNav items={breadcrumbItems} />
       <PageHeader
         title={data.nama || "Detail Barang"}
@@ -193,7 +193,7 @@ export default function DetailBarangPage() {
       />
       <Card>
         <CardContent className="pt-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div>
               <label className="block text-sm font-medium text-muted-foreground mb-1">Kode</label>
               <p className="text-sm font-medium">{data.kode}</p>
@@ -214,19 +214,19 @@ export default function DetailBarangPage() {
               <label className="block text-sm font-medium text-muted-foreground mb-1">Satuan</label>
               <p className="text-sm font-medium">{data.satuan || "-"}</p>
             </div>
-            <div className="md:col-span-2">
+            <div className="lg:col-span-3">
               <label className="block text-sm font-medium text-muted-foreground mb-1">Spesifikasi</label>
               <p className="text-sm font-medium">{data.spesifikasi || "-"}</p>
             </div>
-            <div className="md:col-span-2">
+            <div className="lg:col-span-3">
               <label className="block text-sm font-medium text-muted-foreground mb-1">Justification</label>
               <p className="text-sm font-medium">{data.justification || "-"}</p>
             </div>
             {data.image_url && (
-              <div className="md:col-span-2">
+              <div className="lg:col-span-3">
                 <label className="block text-sm font-medium text-muted-foreground mb-1">Image</label>
                 <ImageLightbox src={data.image_url} alt={data.nama}>
-                  <img src={data.image_url} alt={data.nama} className="h-24 w-24 object-contain rounded border" />
+                  <img src={data.image_url} alt={data.nama} className="h-32 w-32 object-contain rounded border" />
                 </ImageLightbox>
               </div>
             )}
@@ -246,7 +246,7 @@ export default function DetailBarangPage() {
               const kontraks = data.kontrak ?? []
               if (kontraks.length === 0) return null
               return (
-                <div className="md:col-span-2 space-y-2">
+                <div className="lg:col-span-3 space-y-2">
                   <label className="block text-sm font-medium text-muted-foreground">Kontrak</label>
                   {kontraks.map((k, idx) => {
                     const tglMulai = k.tanggal_mulai ? new Date(k.tanggal_mulai).toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" }) : "-"
@@ -370,6 +370,7 @@ export default function DetailBarangPage() {
                   <TableRow>
                     <TableHead>Tanggal</TableHead>
                     <TableHead>No. Negosiasi</TableHead>
+                    <TableHead>No. Quotation</TableHead>
                     <TableHead>Customer</TableHead>
                     <TableHead>Status Nego</TableHead>
                     <TableHead className="text-right">Harga Lama</TableHead>
@@ -388,6 +389,7 @@ export default function DetailBarangPage() {
                           {new Date(h.nego_tanggal).toLocaleDateString('id-ID')}
                         </TableCell>
                         <TableCell className="font-medium">{h.nego_nomor}</TableCell>
+                        <TableCell>{h.quotation_nomor ?? '-'}</TableCell>
                         <TableCell>{h.customer_nama ?? '-'}</TableCell>
                         <TableCell>
                           <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
