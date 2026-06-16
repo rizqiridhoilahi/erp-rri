@@ -11,7 +11,7 @@ import { FormSkeleton } from '@/components/ui/skeleton'
 
 interface InvoiceItemData {
   id: string
-  harga: number
+  harga_satuan: number
   jumlah: number
   diskon: number | null
   ppn: number | null
@@ -59,7 +59,7 @@ export default function TambahKwitansiPage() {
     const toAdd = [...selectedIds].filter(id => !currentItems.has(id))
     const toRemove = fields.filter(f => !selectedIds.has(f.invoice_item_id))
     toRemove.forEach(f => { const idx = fields.findIndex(ff => ff.id === f.id); if (idx >= 0) remove(idx) })
-    toAdd.forEach(id => append({ invoice_item_id: id, jumlah: invoiceItems.find(i => i.id === id)?.harga ?? 0 }))
+    toAdd.forEach(id => append({ invoice_item_id: id, jumlah: invoiceItems.find(i => i.id === id)?.harga_satuan ?? 0 }))
   }, [selectedIds])
 
   const toggleItem = (id: string) => {
@@ -134,7 +134,7 @@ export default function TambahKwitansiPage() {
                             <TableCell><Checkbox checked={selectedIds.has(item.id)} onCheckedChange={() => toggleItem(item.id)} /></TableCell>
                             <TableCell className="font-medium">{nama}</TableCell>
                             <TableCell className="text-muted-foreground">{kode}</TableCell>
-                            <TableCell className="text-right">{item.harga.toLocaleString('id-ID')}</TableCell>
+                            <TableCell className="text-right">{item.harga_satuan.toLocaleString('id-ID')}</TableCell>
                             <TableCell className="text-right">{item.jumlah} {satuan}</TableCell>
                           </TableRow>
                         )

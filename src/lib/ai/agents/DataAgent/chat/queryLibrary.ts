@@ -27,7 +27,7 @@ WHERE i.nomor = $1`,
     category: 'INVOICE',
     intentName: 'INVOICE_LIST_PENDING',
     exampleQuery: 'List invoice yang belum lunas?',
-    sql: `SELECT i.nomor, i.tanggal, i.status, c.nama as customer_nama, SUM(ii.harga * ii.jumlah) as total
+    sql: `SELECT i.nomor, i.tanggal, i.status, c.nama as customer_nama, SUM(ii.harga_satuan * ii.jumlah) as total
 FROM invoice i
 JOIN customer c ON i.customer_id = c.id
 JOIN invoice_item ii ON i.id = ii.invoice_id
@@ -56,7 +56,7 @@ ORDER BY overdue_days DESC`,
     category: 'INVOICE',
     intentName: 'AR_TOTAL_CUSTOMER',
     exampleQuery: 'Total AR customer ABC?',
-    sql: `SELECT c.nama, SUM(ii.harga * ii.jumlah * (1 + COALESCE(ii.ppn, 0))) as total_ar
+    sql: `SELECT c.nama, SUM(ii.harga_satuan * ii.jumlah * (1 + COALESCE(ii.ppn, 0))) as total_ar
 FROM invoice i
 JOIN customer c ON i.customer_id = c.id
 JOIN invoice_item ii ON i.id = ii.invoice_id
@@ -70,7 +70,7 @@ GROUP BY c.nama`,
     category: 'INVOICE',
     intentName: 'AR_TOTAL_ALL',
     exampleQuery: 'Total AR seluruhnya?',
-    sql: `SELECT SUM(ii.harga * ii.jumlah * (1 + COALESCE(ii.ppn, 0))) as total_ar
+    sql: `SELECT SUM(ii.harga_satuan * ii.jumlah * (1 + COALESCE(ii.ppn, 0))) as total_ar
 FROM invoice i
 JOIN invoice_item ii ON i.id = ii.invoice_id
 WHERE i.status != 'paid'`,
@@ -83,7 +83,7 @@ WHERE i.status != 'paid'`,
     intentName: 'INVOICE_BY_DATE_RANGE',
     exampleQuery: 'Invoice bulan Mei 2026?',
     sql: `SELECT i.nomor, i.tanggal, i.status, c.nama as customer_nama,
-  SUM(ii.harga * ii.jumlah) as total
+  SUM(ii.harga_satuan * ii.jumlah) as total
 FROM invoice i
 JOIN customer c ON i.customer_id = c.id
 JOIN invoice_item ii ON i.id = ii.invoice_id
@@ -97,8 +97,8 @@ GROUP BY i.id, c.nama`,
     category: 'INVOICE',
     intentName: 'INVOICE_ITEM_DETAIL',
     exampleQuery: 'Detail barang di invoice INV/2026/05/0001?',
-    sql: `SELECT b.nama as barang_nama, ii.jumlah, ii.harga, ii.diskon, ii.ppn,
-  (ii.harga * ii.jumlah * (1 + COALESCE(ii.ppn, 0))) as subtotal
+    sql: `SELECT b.nama as barang_nama, ii.jumlah, ii.harga_satuan, ii.diskon, ii.ppn,
+  (ii.harga_satuan * ii.jumlah * (1 + COALESCE(ii.ppn, 0))) as subtotal
 FROM invoice_item ii
 JOIN barang b ON ii.barang_id = b.id
 WHERE ii.invoice_id = $1`,
@@ -124,9 +124,9 @@ ORDER BY count DESC`,
     intentName: 'AR_AGING_REPORT',
     exampleQuery: 'AR aging report?',
     sql: `SELECT c.nama as customer_nama,
-  SUM(CASE WHEN i.tanggal < NOW() - INTERVAL '60 days' THEN ii.harga * ii.jumlah ELSE 0 END) as "above_60_days",
-  SUM(CASE WHEN i.tanggal >= NOW() - INTERVAL '60 days' AND i.tanggal < NOW() - INTERVAL '30 days' THEN ii.harga * ii.jumlah ELSE 0 END) as "31_to_60_days",
-  SUM(CASE WHEN i.tanggal >= NOW() - INTERVAL '30 days' THEN ii.harga * ii.jumlah ELSE 0 END) as "0_to_30_days"
+  SUM(CASE WHEN i.tanggal < NOW() - INTERVAL '60 days' THEN ii.harga_satuan * ii.jumlah ELSE 0 END) as "above_60_days",
+  SUM(CASE WHEN i.tanggal >= NOW() - INTERVAL '60 days' AND i.tanggal < NOW() - INTERVAL '30 days' THEN ii.harga_satuan * ii.jumlah ELSE 0 END) as "31_to_60_days",
+  SUM(CASE WHEN i.tanggal >= NOW() - INTERVAL '30 days' THEN ii.harga_satuan * ii.jumlah ELSE 0 END) as "0_to_30_days"
 FROM invoice i
 JOIN customer c ON i.customer_id = c.id
 JOIN invoice_item ii ON i.id = ii.invoice_id
@@ -188,7 +188,7 @@ WHERE i.status = 'paid'`,
     category: 'INVOICE',
     intentName: 'CUSTOMER_TOP_AR',
     exampleQuery: 'Customer dengan AR terbesar?',
-    sql: `SELECT c.nama, SUM(ii.harga * ii.jumlah * (1 + COALESCE(ii.ppn, 0))) as total_ar
+    sql: `SELECT c.nama, SUM(ii.harga_satuan * ii.jumlah * (1 + COALESCE(ii.ppn, 0))) as total_ar
 FROM invoice i
 JOIN customer c ON i.customer_id = c.id
 JOIN invoice_item ii ON i.id = ii.invoice_id
@@ -1237,7 +1237,7 @@ WHERE c.kode = $1`,
     category: 'CUSTOMER',
     intentName: 'CUSTOMER_REVENUE_YTD',
     exampleQuery: 'Revenue customer ABC year to date?',
-    sql: `SELECT c.nama, COALESCE(SUM(ii.harga * ii.jumlah), 0) as revenue_ytd
+    sql: `SELECT c.nama, COALESCE(SUM(ii.harga_satuan * ii.jumlah), 0) as revenue_ytd
 FROM customer c
 LEFT JOIN invoice i ON c.id = i.customer_id AND i.status != 'cancelled'
 LEFT JOIN invoice_item ii ON i.id = ii.invoice_id
@@ -1253,7 +1253,7 @@ GROUP BY c.nama`,
     exampleQuery: 'Customer ABC punya berapa invoice?',
     sql: `SELECT c.nama,
   COUNT(i.id) as total_invoice,
-  COALESCE(SUM(ii.harga * ii.jumlah), 0) as total_nilai
+  COALESCE(SUM(ii.harga_satuan * ii.jumlah), 0) as total_nilai
 FROM customer c
 LEFT JOIN invoice i ON c.id = i.customer_id AND i.is_active = true
 LEFT JOIN invoice_item ii ON i.id = ii.invoice_id
@@ -1267,7 +1267,7 @@ GROUP BY c.nama`,
     category: 'CUSTOMER',
     intentName: 'TOP_CUSTOMER_REVENUE',
     exampleQuery: 'Top 10 customer berdasarkan revenue?',
-    sql: `SELECT c.nama, COALESCE(SUM(ii.harga * ii.jumlah), 0) as revenue
+    sql: `SELECT c.nama, COALESCE(SUM(ii.harga_satuan * ii.jumlah), 0) as revenue
 FROM customer c
 JOIN invoice i ON c.id = i.customer_id AND i.status NOT IN ('cancelled', 'draft')
 JOIN invoice_item ii ON i.id = ii.invoice_id
@@ -1298,7 +1298,7 @@ ORDER BY last_order NULLS FIRST`,
     intentName: 'SALES_BY_MONTH',
     exampleQuery: 'Sales per bulan tahun ini?',
     sql: `SELECT DATE_TRUNC('month', i.tanggal)::date as bulan,
-  COALESCE(SUM(ii.harga * ii.jumlah), 0) as revenue
+  COALESCE(SUM(ii.harga_satuan * ii.jumlah), 0) as revenue
 FROM invoice i
 JOIN invoice_item ii ON i.id = ii.invoice_id
 WHERE EXTRACT(YEAR FROM i.tanggal) = EXTRACT(YEAR FROM NOW())
@@ -1314,7 +1314,7 @@ ORDER BY bulan`,
     intentName: 'SALES_BY_DAY_OF_WEEK',
     exampleQuery: 'Sales per hari dalam seminggu?',
     sql: `SELECT TO_CHAR(i.tanggal, 'Day') as hari,
-  COALESCE(SUM(ii.harga * ii.jumlah), 0) as revenue
+  COALESCE(SUM(ii.harga_satuan * ii.jumlah), 0) as revenue
 FROM invoice i
 JOIN invoice_item ii ON i.id = ii.invoice_id
 WHERE DATE_TRUNC('month', i.tanggal) = DATE_TRUNC('month', NOW())
@@ -1331,7 +1331,7 @@ ORDER BY EXTRACT(DOW FROM i.tanggal)`,
     exampleQuery: 'Produk terlaris bulan ini?',
     sql: `SELECT b.nama as barang_nama,
   COALESCE(SUM(ii.jumlah), 0) as total_terjual,
-  COALESCE(SUM(ii.jumlah * ii.harga), 0) as revenue
+  COALESCE(SUM(ii.jumlah * ii.harga_satuan), 0) as revenue
 FROM invoice_item ii
 JOIN barang b ON ii.barang_id = b.id
 JOIN invoice i ON ii.invoice_id = i.id
@@ -1372,7 +1372,7 @@ ORDER BY order_count DESC`,
     category: 'INVOICE',
     intentName: 'INVOICE_PAID_THIS_MONTH',
     exampleQuery: 'Invoice yang sudah dibayar bulan ini?',
-    sql: `SELECT i.nomor, i.tanggal, i.status, c.nama as customer_nama, SUM(ii.harga * ii.jumlah) as total
+    sql: `SELECT i.nomor, i.tanggal, i.status, c.nama as customer_nama, SUM(ii.harga_satuan * ii.jumlah) as total
 FROM invoice i JOIN customer c ON i.customer_id = c.id JOIN invoice_item ii ON i.id = ii.invoice_id
 WHERE i.status = 'paid' AND DATE_TRUNC('month', i.tanggal) = DATE_TRUNC('month', NOW())
 GROUP BY i.id, c.nama ORDER BY i.tanggal`,
@@ -1384,10 +1384,10 @@ GROUP BY i.id, c.nama ORDER BY i.tanggal`,
     category: 'INVOICE',
     intentName: 'AR_CUSTOMER_BALANCE',
     exampleQuery: 'Saldo piutang per customer?',
-    sql: `SELECT c.nama, COALESCE(SUM(ii.harga * ii.jumlah * (1 + COALESCE(ii.ppn, 0))), 0) as saldo_piutang
+    sql: `SELECT c.nama, COALESCE(SUM(ii.harga_satuan * ii.jumlah * (1 + COALESCE(ii.ppn, 0))), 0) as saldo_piutang
 FROM customer c LEFT JOIN invoice i ON c.id = i.customer_id AND i.status NOT IN ('paid', 'cancelled')
 LEFT JOIN invoice_item ii ON i.id = ii.invoice_id
-GROUP BY c.nama HAVING COALESCE(SUM(ii.harga * ii.jumlah * (1 + COALESCE(ii.ppn, 0))), 0) > 0
+GROUP BY c.nama HAVING COALESCE(SUM(ii.harga_satuan * ii.jumlah * (1 + COALESCE(ii.ppn, 0))), 0) > 0
 ORDER BY saldo_piutang DESC`,
     params: [],
     description: 'Saldo piutang per customer yang masih outstanding',
@@ -1397,7 +1397,7 @@ ORDER BY saldo_piutang DESC`,
     category: 'INVOICE',
     intentName: 'INVOICE_WITH_DISCOUNT',
     exampleQuery: 'Invoice yang memberikan diskon?',
-    sql: `SELECT i.nomor, i.tanggal, c.nama as customer_nama, ii.diskon, ii.harga, ii.jumlah
+    sql: `SELECT i.nomor, i.tanggal, c.nama as customer_nama, ii.diskon, ii.harga_satuan, ii.jumlah
 FROM invoice i JOIN customer c ON i.customer_id = c.id JOIN invoice_item ii ON i.id = ii.invoice_id
 WHERE ii.diskon > 0 ORDER BY ii.diskon DESC`,
     params: [],
@@ -1419,7 +1419,7 @@ WHERE i.status = 'cancelled' ORDER BY i.tanggal DESC`,
     category: 'INVOICE',
     intentName: 'INVOICE_PPN_TOTAL',
     exampleQuery: 'Total PPN dari semua invoice?',
-    sql: `SELECT COALESCE(SUM(ii.harga * ii.jumlah * COALESCE(ii.ppn, 0)), 0) as total_ppn
+    sql: `SELECT COALESCE(SUM(ii.harga_satuan * ii.jumlah * COALESCE(ii.ppn, 0)), 0) as total_ppn
 FROM invoice i JOIN invoice_item ii ON i.id = ii.invoice_id WHERE i.status != 'cancelled'`,
     params: [],
     description: 'Total PPN dari semua invoice yang tidak dibatalkan',
@@ -2044,7 +2044,7 @@ ORDER BY rata_hari_bayar LIMIT 10`,
     category: 'CUSTOMER',
     intentName: 'CUSTOMER_SALES_THIS_YEAR',
     exampleQuery: 'Penjualan per customer tahun ini?',
-    sql: `SELECT c.nama, COALESCE(SUM(ii.harga * ii.jumlah), 0) as total_penjualan
+    sql: `SELECT c.nama, COALESCE(SUM(ii.harga_satuan * ii.jumlah), 0) as total_penjualan
 FROM customer c LEFT JOIN invoice i ON c.id = i.customer_id AND i.status NOT IN ('cancelled', 'draft')
 AND EXTRACT(YEAR FROM i.tanggal) = EXTRACT(YEAR FROM NOW())
 LEFT JOIN invoice_item ii ON i.id = ii.invoice_id
@@ -2075,7 +2075,7 @@ GROUP BY c.nama ORDER BY total_penjualan DESC`,
     category: 'CUSTOMER',
     intentName: 'TOP_PRODUCT_BY_REVENUE',
     exampleQuery: 'Produk dengan revenue tertinggi?',
-    sql: `SELECT b.nama, COALESCE(SUM(ii.harga * ii.jumlah), 0) as total_revenue
+    sql: `SELECT b.nama, COALESCE(SUM(ii.harga_satuan * ii.jumlah), 0) as total_revenue
 FROM invoice_item ii JOIN barang b ON ii.barang_id = b.id
 JOIN invoice i ON ii.invoice_id = i.id WHERE i.status NOT IN ('cancelled')
 GROUP BY b.nama ORDER BY total_revenue DESC LIMIT 10`,
@@ -2087,7 +2087,7 @@ GROUP BY b.nama ORDER BY total_revenue DESC LIMIT 10`,
     category: 'CUSTOMER',
     intentName: 'SALES_TOTAL_THIS_YEAR',
     exampleQuery: 'Total penjualan tahun ini?',
-    sql: `SELECT COALESCE(SUM(ii.harga * ii.jumlah), 0) as total_penjualan
+    sql: `SELECT COALESCE(SUM(ii.harga_satuan * ii.jumlah), 0) as total_penjualan
 FROM invoice i JOIN invoice_item ii ON i.id = ii.invoice_id
 WHERE i.status NOT IN ('cancelled', 'draft') AND EXTRACT(YEAR FROM i.tanggal) = EXTRACT(YEAR FROM NOW())`,
     params: [],
@@ -2098,10 +2098,10 @@ WHERE i.status NOT IN ('cancelled', 'draft') AND EXTRACT(YEAR FROM i.tanggal) = 
     category: 'CUSTOMER',
     intentName: 'CUSTOMER_INVOICE_UNPAID',
     exampleQuery: 'Customer dengan invoice belum dibayar?',
-    sql: `SELECT c.nama, COUNT(i.id) as invoice_count, COALESCE(SUM(ii.harga * ii.jumlah * (1 + COALESCE(ii.ppn, 0))), 0) as total_belum_dibayar
+    sql: `SELECT c.nama, COUNT(i.id) as invoice_count, COALESCE(SUM(ii.harga_satuan * ii.jumlah * (1 + COALESCE(ii.ppn, 0))), 0) as total_belum_dibayar
 FROM customer c JOIN invoice i ON c.id = i.customer_id AND i.status != 'paid'
 JOIN invoice_item ii ON i.id = ii.invoice_id
-GROUP BY c.nama HAVING COALESCE(SUM(ii.harga * ii.jumlah * (1 + COALESCE(ii.ppn, 0))), 0) > 0
+GROUP BY c.nama HAVING COALESCE(SUM(ii.harga_satuan * ii.jumlah * (1 + COALESCE(ii.ppn, 0))), 0) > 0
 ORDER BY total_belum_dibayar DESC`,
     params: [],
     description: 'Customer dengan total invoice yang belum dibayar',
@@ -2415,7 +2415,7 @@ GROUP BY entity_type ORDER BY count DESC`,
     exampleQuery: 'Overview customer ABC?',
     sql: `SELECT c.nama, c.kontak, c.terms_of_payment,
   (SELECT COUNT(*) FROM invoice i WHERE i.customer_id = c.id AND i.is_active = true) as total_invoice,
-  (SELECT COALESCE(SUM(ii.harga * ii.jumlah), 0) FROM invoice i JOIN invoice_item ii ON i.id = ii.invoice_id WHERE i.customer_id = c.id) as total_revenue
+  (SELECT COALESCE(SUM(ii.harga_satuan * ii.jumlah), 0) FROM invoice i JOIN invoice_item ii ON i.id = ii.invoice_id WHERE i.customer_id = c.id) as total_revenue
 FROM customer c WHERE c.kode = $1`,
     params: ['kode_customer'],
     description: 'Overview lengkap customer: kontak, invoice count, total revenue',
@@ -2451,8 +2451,8 @@ FROM barang b LEFT JOIN stok s ON s.barang_id = b.id WHERE b.kode = $1 GROUP BY 
     intentName: 'DASHBOARD_KPI',
     exampleQuery: 'KPI dashboard?',
     sql: `SELECT
-  (SELECT COALESCE(SUM(ii.harga * ii.jumlah), 0) FROM invoice i JOIN invoice_item ii ON i.id = ii.invoice_id WHERE i.status NOT IN ('cancelled') AND DATE_TRUNC('month', i.tanggal) = DATE_TRUNC('month', NOW())) as revenue_bulan_ini,
-  (SELECT COALESCE(SUM(ii.harga * ii.jumlah * (1 + COALESCE(ii.ppn, 0))), 0) FROM invoice i JOIN invoice_item ii ON i.id = ii.invoice_id WHERE i.status NOT IN ('paid', 'cancelled')) as total_piutang,
+  (SELECT COALESCE(SUM(ii.harga_satuan * ii.jumlah), 0) FROM invoice i JOIN invoice_item ii ON i.id = ii.invoice_id WHERE i.status NOT IN ('cancelled') AND DATE_TRUNC('month', i.tanggal) = DATE_TRUNC('month', NOW())) as revenue_bulan_ini,
+  (SELECT COALESCE(SUM(ii.harga_satuan * ii.jumlah * (1 + COALESCE(ii.ppn, 0))), 0) FROM invoice i JOIN invoice_item ii ON i.id = ii.invoice_id WHERE i.status NOT IN ('paid', 'cancelled')) as total_piutang,
   (SELECT COUNT(*) FROM purchase_request pr WHERE pr.status = 'pending') as pr_pending,
   (SELECT COUNT(*) FROM quotation q WHERE q.status IN ('draft', 'sent')) as quotation_pending`,
     params: [],

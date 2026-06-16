@@ -9,7 +9,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
   const { data: fp, error } = await supabaseAdmin.from('faktur_pajak').select('*, invoice!invoice_id(nomor)').eq('id', id).single()
   if (error) return internalError(error)
   if (!fp) return notFound('Faktur Pajak tidak ditemukan')
-  const { data: items } = await supabaseAdmin.from('faktur_pajak_item').select('*, invoice_item!invoice_item_id(barang_id, harga)').eq('faktur_pajak_id', id)
+  const { data: items } = await supabaseAdmin.from('faktur_pajak_item').select('*, invoice_item!invoice_item_id(barang_id, harga_satuan)').eq('faktur_pajak_id', id)
   return NextResponse.json({ data: { ...fp, items: items ?? [] } })
 }
 
@@ -35,9 +35,9 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
   if (body.items) {
     await supabaseAdmin.from('faktur_pajak_item').delete().eq('faktur_pajak_id', id)
     const now = new Date().toISOString()
-    const items = body.items.map((item: { invoice_item_id: string; harga: number; dpp: number; ppn: number; pph?: number }) => ({
+    const items = body.items.map((item: { invoice_item_id: string; harga_satuan: number; dpp: number; ppn: number; pph?: number }) => ({
       faktur_pajak_id: id, invoice_item_id: item.invoice_item_id,
-      harga: item.harga, dpp: item.dpp, ppn: item.ppn, pph: item.pph ?? null,
+      harga_satuan: item.harga_satuan, dpp: item.dpp, ppn: item.ppn, pph: item.pph ?? null,
       created_at: now, updated_at: now,
     }))
     const { error: itemsError } = await supabaseAdmin.from('faktur_pajak_item').insert(items)

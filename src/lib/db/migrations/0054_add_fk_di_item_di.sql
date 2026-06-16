@@ -1,0 +1,3 @@
+ALTER TABLE di_item
+  ADD CONSTRAINT fk_di_item_di
+  FOREIGN KEY (di_id) REFERENCES di(id) ON DELETE CASCADE;

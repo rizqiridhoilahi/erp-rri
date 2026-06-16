@@ -96,11 +96,11 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
       const { data: items } = await supabaseAdmin
         .from('invoice_item')
-        .select('harga, jumlah, diskon, ppn, pph')
+        .select('harga_satuan, jumlah, diskon, ppn, pph')
         .eq('invoice_id', id)
 
       const total = (items ?? []).reduce((sum, item) => {
-        const subtotal = Number(item.harga) * item.jumlah - Number(item.diskon ?? 0)
+        const subtotal = Number(item.harga_satuan) * item.jumlah - Number(item.diskon ?? 0)
         const ppn = Number(item.ppn ?? 0)
         const pph = Number(item.pph ?? 0)
         return sum + subtotal + ppn - pph
@@ -141,7 +141,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     await supabaseAdmin.from('invoice_item').delete().eq('invoice_id', id)
     const now = new Date().toISOString()
     const items = body.items.map((item: { barang_id: string; harga: number; jumlah: number; diskon?: number; keterangan?: string; nama_barang?: string; kode_barang?: string; satuan?: string }, idx: number) => ({
-      invoice_id: id, barang_id: item.barang_id, harga: item.harga, jumlah: item.jumlah,
+      invoice_id: id, barang_id: item.barang_id, harga_satuan: item.harga, jumlah: item.jumlah,
       diskon: item.diskon ?? 0,
       nama_barang: item.nama_barang ?? null,
       kode_barang: item.kode_barang ?? null,

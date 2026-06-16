@@ -15,7 +15,7 @@ export async function GET(
   // --- 1. Invoice-based history (existing flow) ---
   const invoiceQuery = supabaseAdmin
     .from('invoice_item')
-    .select('invoice_id, harga, jumlah, diskon')
+    .select('invoice_id, harga_satuan, jumlah, diskon')
     .eq('barang_id', id)
     .order('created_at', { ascending: false })
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -23,7 +23,7 @@ export async function GET(
 
   if (iiErr) return internalError(iiErr)
 
-  const rawItems = (invoiceItems as Array<{ invoice_id: string; harga: string; jumlah: number; diskon: string | null }>) ?? []
+  const rawItems = (invoiceItems as Array<{ invoice_id: string; harga_satuan: string; jumlah: number; diskon: string | null }>) ?? []
 
   type InvoiceRow = {
     id: string
@@ -91,7 +91,7 @@ export async function GET(
         if (!inv || !inv.sales_order) return null
 
         const so = inv.sales_order
-        const hrg = Number(item.harga)
+        const hrg = Number(item.harga_satuan)
         const qty = item.jumlah
         const disc = Number(item.diskon ?? 0)
 

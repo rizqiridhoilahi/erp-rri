@@ -18,10 +18,10 @@ export default async function KwitansiPage() {
   const { data, error } = await supabase.from('kwitansi').select('*, invoice!invoice_id(nomor, customer!customer_id(nama, kode), sales_order!sales_order_id(nomor, di!fk_sales_order_di(nomor, nomor_di_customer), customer_po!customer_po_id(nomor, nomor_po_customer)))').order('created_at', { ascending: false })
 
   const invoiceIds = [...new Set((data ?? []).map(k => k.invoice_id))]
-  const { data: invItemsData } = invoiceIds.length > 0 ? await supabase.from('invoice_item').select('invoice_id, harga, jumlah, diskon').in('invoice_id', invoiceIds) : { data: [] }
+  const { data: invItemsData } = invoiceIds.length > 0 ? await supabase.from('invoice_item').select('invoice_id, harga_satuan, jumlah, diskon').in('invoice_id', invoiceIds) : { data: [] }
   const invoiceTotals: Record<string, number> = {}
   for (const item of invItemsData ?? []) {
-    invoiceTotals[item.invoice_id] = (invoiceTotals[item.invoice_id] || 0) + (item.harga * item.jumlah - (item.diskon ?? 0))
+    invoiceTotals[item.invoice_id] = (invoiceTotals[item.invoice_id] || 0) + (item.harga_satuan * item.jumlah - (item.diskon ?? 0))
   }
 
   const scheduleIds = [...new Set((data ?? []).map(k => (k as Record<string, unknown>).schedule_id).filter(Boolean))] as string[]

@@ -45,13 +45,13 @@ export async function GET(req: Request) {
   const invoiceIds = invoices?.map(inv => inv.id) ?? []
   const { data: items } = await supabaseAdmin
     .from('invoice_item')
-    .select('invoice_id, harga, jumlah, diskon')
+    .select('invoice_id, harga_satuan, jumlah, diskon')
     .in('invoice_id', invoiceIds)
 
   // Build a map of invoice_id -> total
   const totalMap: Record<string, number> = {}
   for (const item of items ?? []) {
-    const harga = Number(item.harga ?? 0)
+    const harga = Number(item.harga_satuan ?? 0)
     const jumlah = Number(item.jumlah ?? 1)
     const diskon = Number(item.diskon ?? 0)
     totalMap[item.invoice_id] = (totalMap[item.invoice_id] ?? 0) + (harga * jumlah) - diskon

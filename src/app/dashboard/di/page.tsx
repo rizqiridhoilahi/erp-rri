@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
 import { Plus, Pencil, Eye } from 'lucide-react'
 import { ExportButton } from "@/components/export-button"
+import { ItemsPopover } from "@/components/customer-po-items-popover"
 export const dynamic = 'force-dynamic'
 
 const s: Record<string, { label: string; v: 'secondary' | 'warning' | 'success' | 'outline' }> = {
@@ -12,7 +13,7 @@ const s: Record<string, { label: string; v: 'secondary' | 'warning' | 'success' 
 }
 
 export default async function DiPage() {
-  const { data, error } = await supabase.from('di').select('*, customer!customer_id(nama, kode), customer_pic!pic_customer_id(nama, no_hp)').order('created_at', { ascending: false })
+  const { data, error } = await supabase.from('di').select('*, customer!customer_id(nama, kode), customer_pic!pic_customer_id(nama, no_hp), di_item(id, nama_barang, satuan, jumlah, harga_satuan)').order('created_at', { ascending: false })
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -31,9 +32,11 @@ export default async function DiPage() {
         <TableHead>PIC</TableHead>
         <TableHead>Tanggal</TableHead>
         <TableHead>Status</TableHead>
+        <TableHead>Item Barang</TableHead>
+        <TableHead className="text-right">Total</TableHead>
         <TableHead className="text-right">Aksi</TableHead>
       </TableRow></TableHeader><TableBody>
-        {data.map((item: { id: string; nomor: string; nomor_di_customer: string | null; nomor_kontrak_customer: string | null; customer: { nama: string } | null; customer_pic: { nama: string } | null; tanggal: string; status: string }) => (
+        {data.map((item: { id: string; nomor: string; nomor_di_customer: string | null; nomor_kontrak_customer: string | null; customer: { nama: string; kode: string } | null; customer_pic: { nama: string } | null; tanggal: string; status: string; di_item: { id: string; nama_barang: string | null; satuan: string | null; jumlah: number; harga_satuan: number }[] }) => (
           <TableRow key={item.id}>
             <TableCell className="font-medium">{item.nomor}</TableCell>
             <TableCell>{item.nomor_di_customer ?? '-'}</TableCell>
@@ -42,6 +45,8 @@ export default async function DiPage() {
             <TableCell className="font-medium">{item.customer_pic?.nama ?? '-'}</TableCell>
             <TableCell className="font-medium">{new Date(item.tanggal).toLocaleDateString('id-ID')}</TableCell>
             <TableCell><Badge variant={s[item.status]?.v ?? 'outline'}>{s[item.status]?.label ?? item.status}</Badge></TableCell>
+            <TableCell><ItemsPopover items={(item.di_item ?? []).map((i: { id: string; nama_barang: string | null; satuan: string | null; jumlah: number; harga_satuan: number }) => ({ id: i.id, nama: i.nama_barang, satuan: i.satuan, jumlah: i.jumlah, harga_satuan: i.harga_satuan }))} /></TableCell>
+            <TableCell className="text-right font-medium text-primary">Rp {((item.di_item ?? []).reduce((sum: number, i: { jumlah: number; harga_satuan: number }) => sum + (i.jumlah || 0) * (i.harga_satuan || 0), 0)).toLocaleString('id-ID')}</TableCell>
             <TableCell className="text-right space-x-1"><Button variant="ghost" size="sm" asChild><Link href={`/dashboard/di/${item.id}`}><Eye className="h-4 w-4" /></Link></Button><Button variant="ghost" size="sm" asChild><Link href={`/dashboard/di/${item.id}/edit`}><Pencil className="h-4 w-4" /></Link></Button></TableCell>
           </TableRow>
         ))}

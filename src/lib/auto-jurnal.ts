@@ -15,7 +15,7 @@ export async function generateInvoiceJournal(invoiceId: string) {
     .eq('invoice_id', invoiceId)
   if (!items?.length) return { success: false, error: 'No items' }
 
-  const totalDpp = items.reduce((s, i) => s + (i.harga * i.jumlah - (i.diskon ?? 0)), 0)
+  const totalDpp = items.reduce((s, i) => s + (i.harga_satuan * i.jumlah - (i.diskon ?? 0)), 0)
   const totalPPN = items.reduce((s, i) => s + (i.ppn ?? 0), 0)
   const totalPPh = items.reduce((s, i) => s + (i.pph ?? 0), 0)
   const grandTotal = totalDpp + totalPPN - totalPPh
@@ -169,9 +169,9 @@ export async function generateReturPenjualanJournal(returId: string) {
       if (invoice) {
         const { data: invItems } = await supabaseAdmin
           .from('invoice_item')
-          .select('barang_id, harga')
+          .select('barang_id, harga_satuan')
           .eq('invoice_id', invoice.id)
-        const hargaMap = new Map((invItems ?? []).map(i => [i.barang_id, Number(i.harga)]))
+        const hargaMap = new Map((invItems ?? []).map(i => [i.barang_id, Number(i.harga_satuan)]))
         const { data: returItems } = await supabaseAdmin
           .from('retur_penjualan_item')
           .select('barang_id, jumlah')

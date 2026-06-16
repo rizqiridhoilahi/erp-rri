@@ -78,9 +78,9 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
   const { data: items } = await supabaseAdmin
     .from('invoice_item')
-    .select('harga, jumlah, diskon, ppn, pph')
+    .select('harga_satuan, jumlah, diskon, ppn, pph')
     .eq('invoice_id', id)
-  const totalDpp = (items ?? []).reduce((s: number, i: { harga: number; jumlah: number; diskon: number | null }) => s + (i.harga * i.jumlah - (i.diskon ?? 0)), 0)
+  const totalDpp = (items ?? []).reduce((s: number, i: { harga_satuan: number; jumlah: number; diskon: number | null }) => s + (i.harga_satuan * i.jumlah - (i.diskon ?? 0)), 0)
   const totalPPN = (items ?? []).reduce((s: number, i: { ppn: number | null }) => s + (i.ppn ?? 0), 0)
   const totalPPh = (items ?? []).reduce((s: number, i: { pph: number | null }) => s + (i.pph ?? 0), 0)
   const grandTotal = totalDpp + totalPPN - totalPPh

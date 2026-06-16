@@ -101,7 +101,7 @@ export default async function DashboardPage() {
     supabase.from('invoice').select('id').in('status', ['paid', 'sent']).gte('tanggal', lastMonthFirstDay).lte('tanggal', lastMonthLastDay),
     supabase.from('invoice').select('id, tanggal').in('status', ['paid', 'sent']).gte('tanggal', twelveMonthsAgo).order('tanggal', { ascending: true }),
     supabase.from('rfq_customer').select('*', { count: 'exact', head: true }).notIn('status', ['closed', 'Dibatalkan']),
-    supabase.from('invoice_item').select('invoice_id, barang_id, harga, jumlah, diskon'),
+    supabase.from('invoice_item').select('invoice_id, barang_id, harga_satuan, jumlah, diskon'),
     supabase.from('customer').select('id, nama'),
     supabase.from('kategori_barang').select('id, nama'),
     supabase.from('stok').select('barang_id, jumlah'),
@@ -113,10 +113,10 @@ export default async function DashboardPage() {
     supabase.from('invoice').select('id').eq('status', 'paid').gte('tanggal', firstDayOfYear),
   ])
 
-  const invData = (Array.isArray(invoiceItems.data) ? invoiceItems.data : []) as { invoice_id: string; barang_id: string; harga: number; jumlah: number; diskon?: number }[]
+  const invData = (Array.isArray(invoiceItems.data) ? invoiceItems.data : []) as { invoice_id: string; barang_id: string; harga_satuan: number; jumlah: number; diskon?: number }[]
   const invTotalsByInvoice: Record<string, number> = {}
   for (const it of invData) {
-    invTotalsByInvoice[it.invoice_id] = (invTotalsByInvoice[it.invoice_id] ?? 0) + (it.harga * it.jumlah - (it.diskon ?? 0))
+    invTotalsByInvoice[it.invoice_id] = (invTotalsByInvoice[it.invoice_id] ?? 0) + (it.harga_satuan * it.jumlah - (it.diskon ?? 0))
   }
 
   function revenueForIds(invoices: Array<{ id: string }>): number {
@@ -223,9 +223,9 @@ export default async function DashboardPage() {
   const revenueByKat: Record<string, number> = {}
   for (const inv of allInvData) {
     const items = (invoiceItems.data ?? []).filter((it: { invoice_id: string }) => it.invoice_id === inv.id)
-    for (const item of (Array.isArray(items) ? items : []) as Array<{ invoice_id: string; barang_id: string; harga: number; jumlah: number; diskon?: number }>) {
+    for (const item of (Array.isArray(items) ? items : []) as Array<{ invoice_id: string; barang_id: string; harga_satuan: number; jumlah: number; diskon?: number }>) {
       const katId = barangKategoriMap.get(item.barang_id) || ''
-      revenueByKat[katId] = (revenueByKat[katId] ?? 0) + (item.harga * item.jumlah - (item.diskon ?? 0))
+      revenueByKat[katId] = (revenueByKat[katId] ?? 0) + (item.harga_satuan * item.jumlah - (item.diskon ?? 0))
     }
   }
   const revenueMixData = Object.entries(revenueByKat)

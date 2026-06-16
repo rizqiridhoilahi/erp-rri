@@ -195,7 +195,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
             return {
               invoice_id: inv.id,
               barang_id: item.barang_id,
-              harga: item.harga_satuan,
+              harga_satuan: item.harga_satuan,
               jumlah: item.jumlah,
               nama_barang: item.nama_barang ?? null,
               kode_barang: item.kode_barang ?? null,

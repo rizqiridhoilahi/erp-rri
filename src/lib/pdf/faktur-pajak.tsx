@@ -31,7 +31,7 @@ interface FakturPajakItem {
   kode: string
   satuan: string
   jumlah: number
-  harga: number
+  hargaSatuan: number
   dpp: number
   ppn: number
   pph: number | null
@@ -115,7 +115,7 @@ export function FakturPajakPDF({ data }: { data: FakturPajakData }) {
               <View key={i} style={styles.tableRow}>
                 <Text style={[styles.tableCell, { flex: 2 }]}>{item.nama}</Text>
                 <Text style={[styles.tableCell, { flex: 0.4 }]}>{item.jumlah}</Text>
-                <Text style={[styles.tableCell, { flex: 1 }]}>{rupiah(item.harga)}</Text>
+                <Text style={[styles.tableCell, { flex: 1 }]}>{rupiah(item.hargaSatuan)}</Text>
                 <Text style={[styles.tableCell, { flex: 1 }]}>{rupiah(item.dpp)}</Text>
                 <Text style={[styles.tableCell, { flex: 0.4 }]}>{ppnRate}%</Text>
                 <Text style={[styles.tableCell, { flex: 1 }]}>{rupiah(item.ppn)}</Text>

@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
 import { Plus, Pencil, Eye } from 'lucide-react'
 import { ExportButton } from "@/components/export-button"
+import { ItemsPopover } from "@/components/customer-po-items-popover"
 export const dynamic = 'force-dynamic'
 
 const s: Record<string, { label: string; v: 'secondary' | 'warning' | 'success' | 'destructive' | 'outline' }> = {
@@ -15,7 +16,7 @@ const s: Record<string, { label: string; v: 'secondary' | 'warning' | 'success' 
 
 export default async function InvoicePage() {
   const { data, error } = await supabase.from('invoice')
-    .select('*, sales_order!sales_order_id(nomor, di!fk_sales_order_di(nomor, nomor_di_customer), customer_po!customer_po_id(nomor, nomor_po_customer), delivery_order!fk_delivery_order_sales_order(nomor)), customer!customer_id(nama)')
+    .select('*, sales_order!sales_order_id(nomor, di!fk_sales_order_di(nomor, nomor_di_customer), customer_po!customer_po_id(nomor, nomor_po_customer), delivery_order!fk_delivery_order_sales_order(nomor)), customer!customer_id(nama), invoice_item(id, nama_barang, satuan, jumlah, harga_satuan)')
     .order('created_at', { ascending: false })
   return (
     <div className="space-y-6">
@@ -40,6 +41,8 @@ export default async function InvoicePage() {
         <TableHead>Tgl</TableHead>
         <TableHead>TOP</TableHead>
         <TableHead>Status</TableHead>
+        <TableHead>Item Barang</TableHead>
+        <TableHead className="text-right">Total</TableHead>
         <TableHead className="text-right">Aksi</TableHead>
       </TableRow></TableHeader><TableBody>
         {data.map((item) => (
@@ -56,6 +59,8 @@ export default async function InvoicePage() {
             <TableCell className="font-medium">{new Date(item.tanggal).toLocaleDateString('id-ID')}</TableCell>
             <TableCell className="font-medium">{item.top}</TableCell>
             <TableCell><Badge variant={s[item.status]?.v ?? 'outline'}>{s[item.status]?.label ?? item.status}</Badge></TableCell>
+            <TableCell><ItemsPopover items={(item.invoice_item ?? []).map((i: { id: string; nama_barang: string | null; satuan: string | null; jumlah: number; harga_satuan: number }) => ({ id: i.id, nama: i.nama_barang, satuan: i.satuan, jumlah: i.jumlah, harga_satuan: i.harga_satuan }))} /></TableCell>
+            <TableCell className="text-right font-medium text-primary">Rp {((item.invoice_item ?? []).reduce((sum: number, i: { jumlah: number; harga_satuan: number }) => sum + (i.jumlah || 0) * (i.harga_satuan || 0), 0)).toLocaleString('id-ID')}</TableCell>
             <TableCell className="text-right space-x-1">
               <Button variant="ghost" size="sm" asChild><Link href={`/dashboard/invoice/${item.id}`}><Eye className="h-4 w-4" /></Link></Button>
               <Button variant="ghost" size="sm" asChild><Link href={`/dashboard/invoice/${item.id}/edit`}><Pencil className="h-4 w-4" /></Link></Button>

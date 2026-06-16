@@ -123,12 +123,12 @@ async function main() {
       // Create kwitansi items proportionally
       const { data: invItems } = await supabase
         .from('invoice_item')
-        .select('id, harga, jumlah, diskon')
+        .select('id, harga_satuan, jumlah, diskon')
         .eq('invoice_id', inv.id)
 
       if (invItems) {
         const kwtItems = invItems.map((item) => {
-          const subtotal = Number(item.harga) * Number(item.jumlah)
+          const subtotal = Number(item.harga_satuan) * Number(item.jumlah)
           const diskonAmount = (Number(item.diskon) || 0) > 0 ? subtotal * (Number(item.diskon) / 100) : 0
           const itemTotal = subtotal - diskonAmount
           return {

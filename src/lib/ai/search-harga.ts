@@ -121,7 +121,7 @@ export async function saveSearchResults(userId: string, query: string, results: 
   if (hErr || !history) throw new Error('Gagal menyimpan history')
 
   const resultRows = results.map(r => ({
-    ai_search_history_id: history.id, nama: r.nama, harga: r.harga,
+    ai_search_history_id: history.id, nama: r.nama, harga_satuan: r.harga,
     toko: r.toko, link: r.link, marketplace: r.marketplace, rating: r.rating,
   }))
   const { error: rErr } = await supabaseAdmin.from('ai_search_result').insert(resultRows)

@@ -24,7 +24,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
 
   const { data: items } = await supabaseAdmin
     .from('faktur_pajak_item')
-    .select('*, invoice_item!invoice_item_id(harga, barang_id, barang!barang_id(nama, kode, satuan))')
+    .select('*, invoice_item!invoice_item_id(harga_satuan, barang_id, barang!barang_id(nama, kode, satuan))')
     .eq('faktur_pajak_id', id)
 
   const { data: settings } = await supabaseAdmin
@@ -57,13 +57,13 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
     customerAlamat: customer?.customer?.alamat ?? '-',
     invoiceNomor: invoice?.nomor ?? '-',
     items: (items ?? []).map(i => {
-      const invItem = i.invoice_item as unknown as { harga: number; barang: { nama: string; kode: string; satuan: string } }
+      const invItem = i.invoice_item as unknown as { harga_satuan: number; barang: { nama: string; kode: string; satuan: string } }
       return {
         nama: invItem?.barang?.nama ?? '-',
         kode: invItem?.barang?.kode ?? '',
         satuan: invItem?.barang?.satuan ?? '',
         jumlah: 1,
-        harga: i.harga,
+        hargaSatuan: i.harga_satuan,
         dpp: i.dpp,
         ppn: i.ppn,
         pph: i.pph,

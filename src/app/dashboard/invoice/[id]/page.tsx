@@ -75,7 +75,7 @@ interface InvoiceItem {
   id: string
   invoice_id: string
   barang_id: string
-  harga: number
+  harga_satuan: number
   jumlah: number
   diskon: number
   nama_barang: string | null
@@ -363,7 +363,7 @@ export default function InvoiceDetailPage() {
   const currentIdx = paySteps.indexOf(inv.status)
   const isOverdue = inv.status === "overdue"
 
-  const total = items.reduce((s, i) => s + (i.harga * i.jumlah - (i.diskon ?? 0)), 0)
+  const total = items.reduce((s, i) => s + (i.harga_satuan * i.jumlah - (i.diskon ?? 0)), 0)
 
   return (
     <div className="space-y-6 overflow-x-hidden">
@@ -806,7 +806,7 @@ export default function InvoiceDetailPage() {
                   {items.map((item, i) => {
                   const brg = item.barang as { nama: string; kode: string; satuan: string } | null
                   const diskon = item.diskon ?? 0
-                  const dpp = item.harga * item.jumlah - diskon
+                  const dpp = item.harga_satuan * item.jumlah - diskon
                   return (
                     <TableRow key={item.id}>
                       <TableCell className="text-muted-foreground">{i + 1}</TableCell>
@@ -814,7 +814,7 @@ export default function InvoiceDetailPage() {
                         <div className="text-sm font-medium">{item.nama_barang ?? brg?.nama ?? "-"}</div>
                         <div className="text-xs text-muted-foreground">{item.kode_barang ?? brg?.kode} — {item.satuan ?? brg?.satuan}</div>
                       </TableCell>
-                      <TableCell className="text-right">{item.harga.toLocaleString("id-ID")}</TableCell>
+                      <TableCell className="text-right">{item.harga_satuan.toLocaleString("id-ID")}</TableCell>
                       <TableCell className="text-right">{item.jumlah}</TableCell>
                       <TableCell className="text-right">{diskon > 0 ? diskon.toLocaleString("id-ID") : "-"}</TableCell>
                       <TableCell className="text-right">{dpp.toLocaleString("id-ID")}</TableCell>

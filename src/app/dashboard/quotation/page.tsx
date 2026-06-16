@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
 import { Plus, Pencil, Download, Eye } from 'lucide-react'
 import { ExportButton } from "@/components/export-button"
+import { ItemsPopover } from "@/components/customer-po-items-popover"
 
 export const dynamic = 'force-dynamic'
 
@@ -19,7 +20,7 @@ const statusLabel: Record<string, { label: string; variant: 'secondary' | 'warni
 export default async function QuotationPage() {
   const { data: qtnData, error } = await supabase
     .from('quotation')
-    .select('*, customer!customer_id(nama, kode)')
+    .select('*, customer!customer_id(nama, kode), quotation_item!quotation_id(id, nama_barang, satuan, jumlah, harga_satuan, diskon, total_harga)')
     .order('created_at', { ascending: false })
 
   return (
@@ -57,9 +58,13 @@ export default async function QuotationPage() {
                 <TableHead>Customer</TableHead>
                 <TableHead>Tanggal</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead>Item Barang</TableHead>
+                <TableHead className="text-right">Total</TableHead>
                 <TableHead className="text-right">Aksi</TableHead>
               </TableRow></TableHeader><TableBody>
-              {qtnData.map((item) => (
+              {qtnData.map((item) => {
+                const qtItems = item.quotation_item ?? []
+                return (
                 <TableRow key={item.id}>
                   <TableCell className="font-medium">{item.nomor}</TableCell>
                   <TableCell className="font-medium">
@@ -74,6 +79,18 @@ export default async function QuotationPage() {
                     <Badge variant={statusLabel[item.status]?.variant ?? 'outline'}>
                       {statusLabel[item.status]?.label ?? item.status}
                     </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <ItemsPopover items={qtItems.map((i: { id: string; nama_barang: string | null; satuan: string | null; jumlah: number; harga_satuan: number | null }) => ({
+                      id: i.id,
+                      nama: i.nama_barang,
+                      satuan: i.satuan,
+                      jumlah: i.jumlah,
+                      harga_satuan: i.harga_satuan,
+                    }))} />
+                  </TableCell>
+                  <TableCell className="text-right font-medium text-primary">
+                    Rp {qtItems.reduce((sum: number, i: { jumlah: number; harga_satuan: number | null }) => sum + (Number(i.jumlah) || 0) * (Number(i.harga_satuan) || 0), 0).toLocaleString('id-ID')}
                   </TableCell>
                   <TableCell className="text-right space-x-1">
                     <Button variant="ghost" size="sm" asChild>
@@ -96,7 +113,7 @@ export default async function QuotationPage() {
                     </Button>
                   </TableCell>
                 </TableRow>
-              ))}
+              )})}
             </TableBody></Table>
         </div>
       )}

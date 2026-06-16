@@ -94,7 +94,7 @@ export async function POST(request: NextRequest) {
 
   const items = parsed.data.items.map((item, idx) => {
     return {
-      invoice_id: inv.id, barang_id: item.barang_id, harga: item.harga,
+      invoice_id: inv.id, barang_id: item.barang_id, harga_satuan: item.harga,
       jumlah: item.jumlah, diskon: item.diskon ?? 0,
       nama_barang: item.nama_barang ?? null,
       kode_barang: item.kode_barang ?? null,
@@ -104,7 +104,7 @@ export async function POST(request: NextRequest) {
       created_at: now, updated_at: now,
     }
   })
-  const { data: invItems, error: itemsError } = await supabaseAdmin.from('invoice_item').insert(items).select('id, harga, jumlah, diskon')
+  const { data: invItems, error: itemsError } = await supabaseAdmin.from('invoice_item').insert(items).select('id, harga_satuan, jumlah, diskon')
   if (itemsError) { await supabaseAdmin.from('invoice').delete().eq('id', inv.id); return internalError(itemsError) }
 
   // Generate payment schedule if customer has payment_term_id
@@ -118,7 +118,7 @@ export async function POST(request: NextRequest) {
       .order('urutan')
     if (termItems && termItems.length > 0) {
       const totalAmount = items.reduce((sum, item) => {
-        const subtotal = item.harga * item.jumlah
+        const subtotal = item.harga_satuan * item.jumlah
         const diskonAmount = (item.diskon ?? 0) > 0 ? subtotal * ((item.diskon ?? 0) / 100) : 0
         return sum + subtotal - diskonAmount
       }, 0)
@@ -161,7 +161,7 @@ export async function POST(request: NextRequest) {
           kwitansi_id: kwtTerm.id,
           invoice_item_id: invItem.id,
           jumlah: Math.round(
-            (Number(invItem.harga) * Number(invItem.jumlah) - (Number(invItem.diskon) || 0))
+            (Number(invItem.harga_satuan) * Number(invItem.jumlah) - (Number(invItem.diskon) || 0))
             * Number((term as Record<string, unknown>).persentase) / 100 * 100
           ) / 100,
           created_at: now,
@@ -189,7 +189,7 @@ export async function POST(request: NextRequest) {
       const kwtItems = (invItems ?? []).map((invItem) => ({
         kwitansi_id: kwt.id,
         invoice_item_id: invItem.id,
-        jumlah: (Number(invItem.harga) * Number(invItem.jumlah)) - (Number(invItem.diskon) || 0),
+        jumlah: (Number(invItem.harga_satuan) * Number(invItem.jumlah)) - (Number(invItem.diskon) || 0),
         created_at: now,
         updated_at: now,
       }))

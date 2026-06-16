@@ -63,8 +63,8 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
         .from('invoice').select('id').eq('sales_order_id', doDoc.sales_order_id).maybeSingle()
       if (invoice) {
         const { data: invItems } = await supabaseAdmin
-          .from('invoice_item').select('barang_id, harga').eq('invoice_id', invoice.id)
-        hargaMap = new Map((invItems ?? []).map(i => [i.barang_id, Number(i.harga)]))
+          .from('invoice_item').select('barang_id, harga_satuan').eq('invoice_id', invoice.id)
+        hargaMap = new Map((invItems ?? []).map(i => [i.barang_id, Number(i.harga_satuan)]))
       }
 
       // Fallback: SO items for any barang_id still missing (e.g. invoice not yet created)

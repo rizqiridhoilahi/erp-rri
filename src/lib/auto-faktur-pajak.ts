@@ -16,7 +16,7 @@ export async function generateFakturPajakFromInvoice(invoiceId: string, nomorFak
     .order('urutan', { ascending: true })
   if (!items?.length) return { success: false, error: 'No items' }
 
-  const totalDpp = items.reduce((s, i) => s + (i.harga * i.jumlah - (i.diskon ?? 0)), 0)
+  const totalDpp = items.reduce((s, i) => s + (i.harga_satuan * i.jumlah - (i.diskon ?? 0)), 0)
   const totalPPN = items.reduce((s, i) => s + (i.ppn ?? 0), 0)
   const totalPPh = items.reduce((s, i) => s + (i.pph ?? 0), 0)
 
@@ -42,11 +42,11 @@ export async function generateFakturPajakFromInvoice(invoiceId: string, nomorFak
   if (fpError) return { success: false, error: fpError.message }
 
   const fpItems = items.map(i => {
-    const dpp = i.harga * i.jumlah - (i.diskon ?? 0)
+    const dpp = i.harga_satuan * i.jumlah - (i.diskon ?? 0)
     return {
       faktur_pajak_id: fp.id,
       invoice_item_id: i.id,
-      harga: i.harga,
+      harga_satuan: i.harga_satuan,
       dpp,
       ppn: i.ppn ?? 0,
       pph: i.pph ?? null,

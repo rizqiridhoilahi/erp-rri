@@ -37,14 +37,14 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
     const invItemIds = kwtItems.map((ki: Record<string, unknown>) => ki.invoice_item_id)
     const { data: invItems } = await supabaseAdmin
       .from('invoice_item')
-      .select('id, barang_id, harga, barang!barang_id(nama, kode, satuan)')
+      .select('id, barang_id, harga_satuan, barang!barang_id(nama, kode, satuan)')
       .in('id', invItemIds)
     items = kwtItems.map((ki: Record<string, unknown>) => {
       const matched = (invItems ?? []).find((inv: Record<string, unknown>) => inv.id === ki.invoice_item_id)
       return {
         ...ki,
         invoice_item: matched
-          ? { barang_id: matched.barang_id, harga: matched.harga, barang: matched.barang }
+          ? { barang_id: matched.barang_id, harga_satuan: matched.harga_satuan, barang: matched.barang }
           : null,
       }
     })

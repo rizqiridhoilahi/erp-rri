@@ -56,12 +56,12 @@ async function fetchInvoiceItems(since: string, until: string, statuses: string[
   const { data: invIds } = await supabaseAdmin.from('invoice').select('id').in('status', statuses).gte('tanggal', since).lte('tanggal', until)
   const ids = (invIds ?? []).map(inv => inv.id)
   if (!ids.length) return []
-  const { data: items } = await supabaseAdmin.from('invoice_item').select('invoice_id, harga, jumlah, diskon, ppn, pph').in('invoice_id', ids)
+  const { data: items } = await supabaseAdmin.from('invoice_item').select('invoice_id, harga_satuan, jumlah, diskon, ppn, pph').in('invoice_id', ids)
   return items ?? []
 }
 
-function calcRev(items: Array<{ harga: number; jumlah: number; diskon?: number | null; ppn?: number | null; pph?: number | null }>): number {
-  return items.reduce((s, it) => s + it.harga * it.jumlah - (it.diskon ?? 0) + (it.ppn ?? 0) - (it.pph ?? 0), 0)
+function calcRev(items: Array<{ harga_satuan: number; jumlah: number; diskon?: number | null; ppn?: number | null; pph?: number | null }>): number {
+  return items.reduce((s, it) => s + it.harga_satuan * it.jumlah - (it.diskon ?? 0) + (it.ppn ?? 0) - (it.pph ?? 0), 0)
 }
 
 function calcCogs(items: Array<{ purchase_order: { status: string } | null; harga_satuan: number; jumlah: number }>): number {

@@ -64,9 +64,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       if (invoice) {
         const { data: invItems } = await supabaseAdmin
           .from('invoice_item')
-          .select('barang_id, harga')
+          .select('barang_id, harga_satuan')
           .eq('invoice_id', invoice.id)
-        hargaMap = new Map((invItems ?? []).map(i => [i.barang_id, Number(i.harga)]))
+        hargaMap = new Map((invItems ?? []).map(i => [i.barang_id, Number(i.harga_satuan)]))
       }
       if (hargaMap.size === 0 || items.some(item => !hargaMap.has(item.barang_id))) {
         const { data: soItems } = await supabaseAdmin

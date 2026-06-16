@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
 
   const { data, error } = await supabaseAdmin
     .from('rfq_customer')
-    .select('*, customer!customer_id(id, nama, kode)')
+    .select('*, customer!customer_id(id, nama, kode), rfq_customer_item!rfq_customer_id(id, nama_barang, jumlah, satuan)')
     .order('created_at', { ascending: false })
 
   if (error) return internalError(error)

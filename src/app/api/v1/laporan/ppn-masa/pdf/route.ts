@@ -50,7 +50,7 @@ async function fetchInvoiceItems(since: string, until: string, statuses: string[
   const { data: invIds } = await supabaseAdmin.from('invoice').select('id').in('status', statuses).gte('tanggal', since).lte('tanggal', until)
   const ids = (invIds ?? []).map(inv => inv.id)
   if (!ids.length) return []
-  const { data: items } = await supabaseAdmin.from('invoice_item').select('invoice_id, harga, jumlah, ppn').in('invoice_id', ids)
+  const { data: items } = await supabaseAdmin.from('invoice_item').select('invoice_id, harga_satuan, jumlah, ppn').in('invoice_id', ids)
   return items ?? []
 }
 

@@ -127,7 +127,7 @@ export default function EditKwitansiPage() {
                           <TableCell className="text-muted-foreground">{i + 1}</TableCell>
                           <TableCell className="font-medium">{nama}</TableCell>
                           <TableCell className="text-muted-foreground">{kode}</TableCell>
-                          <TableCell className="text-right">{item.invoice_item?.harga?.toLocaleString('id-ID') ?? '-'}</TableCell>
+                          <TableCell className="text-right">{item.invoice_item?.harga_satuan?.toLocaleString('id-ID') ?? '-'}</TableCell>
                           <TableCell className="text-right font-medium">{Number(item.jumlah).toLocaleString('id-ID')}</TableCell>
                         </TableRow>
                       )

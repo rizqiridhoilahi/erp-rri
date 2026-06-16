@@ -58,7 +58,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     }
   }
 
-  const grandTotal = displayItems.reduce((s, i) => s + (i.harga * i.jumlah - (i.diskon ?? 0)), 0)
+  const grandTotal = displayItems.reduce((s, i) => s + (i.harga_satuan * i.jumlah - (i.diskon ?? 0)), 0)
 
   // Multi-termin: handle ?term=N query param
   const termParam = request.nextUrl.searchParams.get('term')
@@ -145,7 +145,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       kode: (i as { kode_barang: string }).kode_barang ?? (i.barang as { kode: string })?.kode ?? '-',
       satuan: (i as { satuan: string }).satuan ?? (i.barang as { satuan: string })?.satuan ?? '',
       jumlah: i.jumlah,
-      hargaSatuan: i.harga,
+      hargaSatuan: i.harga_satuan,
       diskon: i.diskon ?? 0,
       urutan: (i as { urutan: number }).urutan,
     })),

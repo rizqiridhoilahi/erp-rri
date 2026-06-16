@@ -24,7 +24,7 @@ interface InvoiceItem {
   nama_barang: string | null
   kode_barang: string | null
   satuan: string | null
-  harga: number
+  harga_satuan: number
   jumlah: number
   diskon: number | null
 }
@@ -137,7 +137,7 @@ export default function EditInvoicePage() {
 
   const isDraft = inv.status === 'draft'
 
-  const total = inv.items.reduce((s, i) => s + (i.harga * i.jumlah - (i.diskon ?? 0)), 0)
+  const total = inv.items.reduce((s, i) => s + (i.harga_satuan * i.jumlah - (i.diskon ?? 0)), 0)
 
   return (
     <div className="max-w-3xl space-y-6">
@@ -236,7 +236,7 @@ export default function EditInvoicePage() {
                     {inv.items.map((item, i) => {
                       const brg = item.barang as { nama: string; kode: string; satuan: string } | null
                       const diskon = item.diskon ?? 0
-                      const dpp = item.harga * item.jumlah - diskon
+                      const dpp = item.harga_satuan * item.jumlah - diskon
                       return (
                         <TableRow key={item.id}>
                           <TableCell className="text-muted-foreground">{i + 1}</TableCell>
@@ -244,7 +244,7 @@ export default function EditInvoicePage() {
                             <div className="text-sm font-medium">{brg?.nama ?? '-'}</div>
                             <div className="text-xs text-muted-foreground">{brg?.kode} — {brg?.satuan}</div>
                           </TableCell>
-                          <TableCell className="text-right">{item.harga.toLocaleString('id-ID')}</TableCell>
+                          <TableCell className="text-right">{item.harga_satuan.toLocaleString('id-ID')}</TableCell>
                           <TableCell className="text-right">{item.jumlah}</TableCell>
                           <TableCell className="text-right">{diskon > 0 ? diskon.toLocaleString('id-ID') : '-'}</TableCell>
                           <TableCell className="text-right">{dpp.toLocaleString('id-ID')}</TableCell>

@@ -918,3 +918,27 @@ Customer retur barang
 |---|------|--------|------|
 | BD-1 | **API DELETE → soft delete** — ganti `supabase.from('barang').delete()` jadi `.update({ is_active: false })` + return 200 with data (bukan 204) | ⏳ Pending | `src/app/api/v1/master/barang/[id]/route.ts` |
 | BD-2 | **Frontend handleDelete** — tambah try/catch + toast.success/error + loading state via `isLoading` di dialog | ⏳ Pending | `src/app/dashboard/master/barang/page.tsx` |
+
+---
+
+## ✅ DONE — Database Column Consistency: Rename `harga` → `harga_satuan`
+
+**Goal:** Semua item table menggunakan nama kolom `harga_satuan` yang konsisten (bukan `harga`).
+
+### 🔴 Phase 1 — invoice_item (Core)
+
+| # | Task | Status | File |
+|---|------|--------|------|
+| IC-1 | **Migration 0056** — `ALTER TABLE invoice_item RENAME COLUMN harga TO harga_satuan` | ✅ Done | `0056_rename_invoice_item_harga_to_harga_satuan.sql` |
+| IC-2 | **Drizzle schema** — update `harga` → `hargaSatuan: numeric("harga_satuan", ...)` | ✅ Done | `invoice-item.ts` |
+| IC-3 | **39 file updates** — semua `.select()`, `.harga` property access, INSERT/UPDATE keys, type definitions, raw SQL `ii.harga`, Zod schemas | ✅ Done | 39 files across `src/` |
+
+### 🔴 Phase 2 — faktur_pajak_item + ai_search_result
+
+| # | Task | Status | File |
+|---|------|--------|------|
+| IC-4 | **Migration 0057** — `ALTER TABLE faktur_pajak_item RENAME COLUMN harga TO harga_satuan` | ✅ Done | `0057_rename_faktur_pajak_item_harga_to_harga_satuan.sql` |
+| IC-5 | **Migration 0058** — `ALTER TABLE ai_search_result RENAME COLUMN harga TO harga_satuan` | ✅ Done | `0058_rename_ai_search_result_harga_to_harga_satuan.sql` |
+| IC-6 | **Drizzle schema** — `faktur-pajak-item.ts` + `ai-search-result.ts` | ✅ Done | kedua schema files |
+| IC-7 | **faktur_pajak_item updates** — API routes, PDF route, auto-faktur-pajak, tambah page, PDF component | ✅ Done | 6 files |
+| IC-8 | **ai_search_result updates** — `search-harga.ts` INSERT key, GET API response field | ✅ Done | 2 files |

@@ -96,11 +96,11 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
   const { data: invoiceItems } = await supabaseAdmin
     .from('invoice_item')
-    .select('harga, jumlah, diskon')
+    .select('harga_satuan, jumlah, diskon')
     .eq('invoice_id', id)
 
   const totalAmount = (invoiceItems ?? []).reduce((sum, item) => {
-    const subtotal = item.harga * item.jumlah
+    const subtotal = item.harga_satuan * item.jumlah
     const diskonAmount = (item.diskon ?? 0) > 0 ? subtotal * ((item.diskon ?? 0) / 100) : 0
     return sum + subtotal - diskonAmount
   }, 0)
@@ -173,9 +173,9 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
           nama_barang: item.nama_barang,
           jumlah: item.jumlah * (term.persentase / 100),
           satuan: item.satuan,
-          harga: item.harga,
+          harga: item.harga_satuan,
           diskon: item.diskon ?? 0,
-          total: Math.round((item.harga * item.jumlah - (item.diskon ?? 0)) * (term.persentase / 100) * 100) / 100,
+          total: Math.round((item.harga_satuan * item.jumlah - (item.diskon ?? 0)) * (term.persentase / 100) * 100) / 100,
         }))
         await supabaseAdmin.from('kwitansi_item').insert(kwtItems)
       }

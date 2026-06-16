@@ -50,9 +50,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     if (invItemIds.length > 0) {
       const { data: invItems } = await supabaseAdmin
         .from('invoice_item')
-        .select('harga, jumlah, diskon')
+        .select('harga_satuan, jumlah, diskon')
         .in('id', invItemIds)
-      total = (invItems ?? []).reduce((sum, i) => sum + (i.harga * i.jumlah - (i.diskon ?? 0)), 0)
+      total = (invItems ?? []).reduce((sum, i) => sum + (i.harga_satuan * i.jumlah - (i.diskon ?? 0)), 0)
     }
   }
 

@@ -10,11 +10,19 @@ import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialo
 import { Plus, Pencil, Trash2, Eye, Loader2, FileText } from 'lucide-react'
 import { toast } from 'sonner'
 import { ExportButton } from "@/components/export-button"
+import { ItemsPopover } from "@/components/customer-po-items-popover"
 
 interface Customer {
   id: string
   nama: string
   kode: string
+}
+
+interface RfqItemSummary {
+  id: string
+  nama_barang: string | null
+  jumlah: number
+  satuan: string | null
 }
 
 interface RfqCustomer {
@@ -25,6 +33,7 @@ interface RfqCustomer {
   tanggal: string
   status: string
   customer: Customer | null
+  rfq_customer_item: RfqItemSummary[]
 }
 
 const statusLabel: Record<string, { label: string; variant: 'secondary' | 'warning' | 'success' | 'outline' | 'destructive' }> = {
@@ -93,6 +102,7 @@ export default function RfqCustomerPage() {
                 <TableHead>Customer</TableHead>
                 <TableHead>Tanggal</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead>Item Barang</TableHead>
                 <TableHead className="text-right">Aksi</TableHead>
               </TableRow>
             </TableHeader>
@@ -113,6 +123,14 @@ export default function RfqCustomerPage() {
                     <Badge variant={statusLabel[item.status]?.variant ?? 'outline'}>
                       {statusLabel[item.status]?.label ?? item.status}
                     </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <ItemsPopover items={(item.rfq_customer_item ?? []).map((i) => ({
+                      id: i.id,
+                      nama: i.nama_barang,
+                      satuan: i.satuan,
+                      jumlah: i.jumlah,
+                    }))} />
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-1">

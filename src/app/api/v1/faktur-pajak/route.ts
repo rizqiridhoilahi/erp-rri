@@ -7,7 +7,7 @@ import { generateDocumentNumber } from '@/lib/utils/document-number'
 
 const itemSchema = z.object({
   invoice_item_id: z.string().min(1),
-  harga: z.coerce.number().positive(),
+  harga_satuan: z.coerce.number().positive(),
   dpp: z.coerce.number().positive(),
   ppn: z.coerce.number().positive(),
   pph: z.coerce.number().optional(),
@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
 
   const items = parsed.data.items.map(item => ({
     faktur_pajak_id: fp.id, invoice_item_id: item.invoice_item_id,
-    harga: item.harga, dpp: item.dpp, ppn: item.ppn, pph: item.pph ?? null,
+    harga_satuan: item.harga_satuan, dpp: item.dpp, ppn: item.ppn, pph: item.pph ?? null,
     created_at: now, updated_at: now,
   }))
   const { error: itemsError } = await supabaseAdmin.from('faktur_pajak_item').insert(items)
