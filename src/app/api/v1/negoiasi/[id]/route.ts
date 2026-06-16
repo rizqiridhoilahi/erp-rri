@@ -192,6 +192,51 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       })
       .eq('id', data.quotation_id)
   } else if (body.status === 'rejected') {
+    const { data: negoItems } = await supabaseAdmin
+      .from('negoiasi_item')
+      .select('quotation_item_id, is_rejected')
+      .eq('negoiasi_id', id)
+      .eq('is_rejected', true)
+
+    for (const negoItem of negoItems ?? []) {
+      const { data: qtnItem } = await supabaseAdmin
+        .from('quotation_item')
+        .select('id, barang_id, nama_barang, satuan, image_url, harga_satuan')
+        .eq('id', negoItem.quotation_item_id)
+        .maybeSingle()
+
+      if (qtnItem) {
+        await supabaseAdmin
+          .from('quotation_item')
+          .update({ is_rejected: true, updated_at: now })
+          .eq('id', negoItem.quotation_item_id)
+
+        if (!qtnItem.barang_id && qtnItem.nama_barang) {
+          const newBarang = await createBarangFromRfqItem(
+            qtnItem.nama_barang,
+            qtnItem.satuan,
+            null,
+            qtnItem.image_url,
+            qtnItem.harga_satuan,
+            null,
+          )
+          await supabaseAdmin
+            .from('quotation_item')
+            .update({ barang_id: newBarang.id, updated_at: now })
+            .eq('id', negoItem.quotation_item_id)
+          await supabaseAdmin
+            .from('barang')
+            .update({ status_nego: 'rejected', updated_at: now })
+            .eq('id', newBarang.id)
+        } else if (qtnItem.barang_id) {
+          await supabaseAdmin
+            .from('barang')
+            .update({ status_nego: 'rejected', updated_at: now })
+            .eq('id', qtnItem.barang_id)
+        }
+      }
+    }
+
     await supabaseAdmin
       .from('quotation')
       .update({ status: 'rejected', updated_at: now })
