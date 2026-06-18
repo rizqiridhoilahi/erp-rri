@@ -36,7 +36,7 @@ const styles = StyleSheet.create({
   colon: { fontSize: 8, width: 8 },
   value: { fontSize: 8, fontWeight: 'bold' },
   dateText: { fontSize: 9 },
-  table: { width: '100%', ...BORDER, marginTop: 6 },
+  table: { width: '100%', borderTopWidth: 0.5, borderLeftWidth: 0.5, borderRightWidth: 0.5, borderColor: '#000', marginTop: 6 },
   tableHeader: { flexDirection: 'row', backgroundColor: '#f0f0f0', ...BORDER_BOTTOM },
   tableHeaderCell: { fontSize: 6.5, fontWeight: 'bold', padding: '2 1', textAlign: 'center', ...BORDER_RIGHT },
   tableHeaderCellLast: { fontSize: 6.5, fontWeight: 'bold', padding: '2 1', textAlign: 'center' },
@@ -51,18 +51,20 @@ const styles = StyleSheet.create({
   totalCell: { fontSize: 6.5, fontWeight: 'bold', padding: '2 1', ...BORDER_RIGHT },
   totalCellRight: { fontSize: 6.5, fontWeight: 'bold', padding: '2 1', textAlign: 'right', ...BORDER_RIGHT },
   totalCellLast: { fontSize: 6.5, fontWeight: 'bold', padding: '2 1', textAlign: 'right' },
-  marginSection: { marginTop: 8, borderTopWidth: 1, borderTopColor: '#000', paddingTop: 6 },
-  marginTitle: { fontSize: 8, fontWeight: 'bold', marginBottom: 3, color: '#374151' },
-  marginRow: { flexDirection: 'row', marginBottom: 1 },
-  marginLabel: { fontSize: 7.5, width: 100 },
-  marginValue: { fontSize: 7.5, fontWeight: 'bold', textAlign: 'right', flex: 1 },
-  marginDivider: { borderTopWidth: 0.5, borderTopColor: '#9CA3AF', marginVertical: 2 },
-  statusBadgeFull: { fontSize: 7.5, fontWeight: 'bold', color: '#16A34A' },
-  statusBadgeWarning: { fontSize: 7.5, fontWeight: 'bold', color: '#D97706' },
-  statusBadgeBelow: { fontSize: 7.5, fontWeight: 'bold', color: '#DC2626' },
+  marginSection: { marginTop: 12, paddingTop: 6 },
+  marginTitle: { fontSize: 11, fontWeight: 'bold', marginBottom: 6, color: '#000000' },
+  marginRow: { flexDirection: 'row', marginBottom: 3 },
+  marginLabel: { fontSize: 11, width: 250 },
+  marginValue: { fontSize: 11, fontWeight: 'bold', textAlign: 'right', flex: 1 },
+  marginDivider: { borderTopWidth: 0.5, borderTopColor: '#9CA3AF', marginVertical: 4 },
+  statusBadgeFull: { fontSize: 11, fontWeight: 'bold', color: '#16A34A' },
+  statusBadgeWarning: { fontSize: 11, fontWeight: 'bold', color: '#D97706' },
+  statusBadgeBelow: { fontSize: 11, fontWeight: 'bold', color: '#DC2626' },
   adviceSection: { marginTop: 4, padding: 4, backgroundColor: '#F9FAFB', ...BORDER, borderRadius: 2 },
   adviceText: { fontSize: 7, color: '#374151', lineHeight: 1.4 },
-  pageNum: { position: 'absolute', bottom: 22, right: 25, fontSize: 8, color: '#0000FF' },
+  pageNum: { position: 'absolute', bottom: 16, right: 10, fontSize: 7, color: '#0000FF' },
+  footer: { position: 'absolute', bottom: 14, left: 10, right: 10, borderTopWidth: 1, borderTopColor: '#000', paddingTop: 4, alignItems: 'center' },
+  footerText: { fontSize: 7, color: '#000' },
 })
 
 interface ApprovalItem {
@@ -198,7 +200,9 @@ export function ApprovalQuotationPDF({ data }: { data: ApprovalData }) {
 
   const durasiHari = 44
   const modalKerja = totals.beli + totalOverhead
-  const roiEstimasi = modalKerja > 0 ? (marginBersihTotal / modalKerja) * (365 / durasiHari) * 100 : 0
+  const roiPerSiklus = modalKerja > 0 ? (marginBersihTotal / modalKerja) * 100 : 0
+  const perputaranPerTahun = 365 / durasiHari
+  const roiEstimasi = roiPerSiklus * perputaranPerTahun
   const ruangNegosiasi = Math.max(0, ((1 + marginPct / 100) / (1 - tm) - 1) * 100)
 
   let statusLabel: string
@@ -233,8 +237,8 @@ export function ApprovalQuotationPDF({ data }: { data: ApprovalData }) {
     H(Text, { style: [styles.tableHeaderCell, W(20)] }, 'Pic'),
     H(Text, { style: [styles.tableHeaderCell, { flex: 1.2 }] }, 'Item'),
     H(Text, { style: [styles.tableHeaderCell, { flex: 0.7 }] }, 'Spec'),
-    H(Text, { style: [styles.tableHeaderCell, W(18)] }, 'Qty'),
-    H(Text, { style: [styles.tableHeaderCell, W(18)] }, 'UoM'),
+    H(Text, { style: [styles.tableHeaderCell, W(30)] }, 'Qty'),
+    H(Text, { style: [styles.tableHeaderCell, W(30)] }, 'UoM'),
     H(Text, { style: [styles.tableHeaderCell, W(45), { color: '#DC2626' }] }, 'Hrg Beli'),
     H(Text, { style: [styles.tableHeaderCell, W(45), { color: '#2563EB' }] }, 'Hrg Jual'),
     H(Text, { style: [styles.tableHeaderCell, W(45), { color: '#DC2626' }] }, 'Tot Beli'),
@@ -264,8 +268,8 @@ export function ApprovalQuotationPDF({ data }: { data: ApprovalData }) {
       ),
       H(Text, { style: [styles.tableCell, { flex: 1.2 }] }, nama),
       H(Text, { style: [styles.tableCell, { flex: 0.7 }] }, spec),
-      H(Text, { style: [styles.tableCellCenter, W(18)] }, String(item.jumlah)),
-      H(Text, { style: [styles.tableCellCenter, W(18)] }, item.satuan || '-'),
+      H(Text, { style: [styles.tableCellCenter, W(30)] }, String(item.jumlah)),
+      H(Text, { style: [styles.tableCellCenter, W(30)] }, item.satuan || '-'),
       H(Text, { style: [styles.tableCellRight, W(45), { color: '#DC2626' }] }, formatCurrency(item._hargaBeli)),
       H(Text, { style: [styles.tableCellRight, W(45), { color: '#2563EB' }] }, formatCurrency(item.harga_satuan)),
       H(Text, { style: [styles.tableCellRight, W(45), { color: '#DC2626' }] }, formatCurrency(item._totalBeli)),
@@ -285,8 +289,8 @@ export function ApprovalQuotationPDF({ data }: { data: ApprovalData }) {
     EMPTY(20),
     H(Text, { style: [styles.totalCell, { flex: 1.2 }] }, 'TOTAL'),
     H(Text, { style: [styles.totalCell, { flex: 0.7 }] }, ''),
-    EMPTY(18),
-    EMPTY(18),
+    EMPTY(30),
+    EMPTY(30),
     EMPTY(45),
     EMPTY(45),
     H(Text, { style: [styles.totalCellRight, W(45), { color: '#DC2626' }] }, formatCurrency(totals.beli)),
@@ -356,51 +360,80 @@ export function ApprovalQuotationPDF({ data }: { data: ApprovalData }) {
         totalRow,
       ),
 
-      H(View, { style: styles.marginSection },
+      H(View, { style: styles.marginSection, break: true },
         H(Text, { style: styles.marginTitle }, 'Estimasi Margin (Internal)'),
         H(View, { style: { flexDirection: 'row', marginBottom: 3 } },
-          H(Text, { style: { fontSize: 7, color: '#374151', marginRight: 8 } }, `Target: ${(tm * 100).toFixed(0)}%`),
-          H(Text, { style: { fontSize: 7, color: '#374151' } }, `Buffer: ${(nb * 100).toFixed(0)}%`),
+          H(Text, { style: { fontSize: 11, color: '#000000', marginRight: 8 } }, `Target: ${(tm * 100).toFixed(0)}%`),
+          H(Text, { style: { fontSize: 11, color: '#000000' } }, `Buffer: ${(nb * 100).toFixed(0)}%`),
         ),
         H(View, { style: styles.marginRow },
-          H(Text, { style: styles.marginLabel }, 'Total Harga Jual'),
+          H(Text, { style: [styles.marginLabel, { color: '#2563EB' }] }, 'Total Harga Jual'),
           H(Text, { style: [styles.marginValue, { color: '#2563EB' }] }, formatCurrency(totals.jual))
         ),
         H(View, { style: styles.marginRow },
-          H(Text, { style: styles.marginLabel }, 'Total Harga Beli'),
+          H(Text, { style: [styles.marginLabel, { color: '#DC2626' }] }, 'Total Harga Beli'),
           H(Text, { style: [styles.marginValue, { color: '#DC2626' }] }, formatCurrency(totals.beli))
         ),
         H(View, { style: styles.marginRow },
-          H(Text, { style: styles.marginLabel }, 'Margin Kotor'),
+          H(Text, { style: [styles.marginLabel, { color: '#D97706' }] }, 'Margin Kotor'),
           H(Text, { style: [styles.marginValue, { color: '#D97706' }] }, formatCurrency(totals.jual - totals.beli))
         ),
         H(View, { style: styles.marginRow },
-          H(Text, { style: styles.marginLabel }, 'Total Overhead'),
+          H(Text, { style: [styles.marginLabel, { color: '#6B7280' }] }, 'Total Overhead'),
           H(Text, { style: [styles.marginValue, { color: '#6B7280' }] }, formatCurrency(totalOverhead))
         ),
         H(View, { style: styles.marginDivider }),
         H(View, { style: styles.marginRow },
-          H(Text, { style: [styles.marginLabel, { fontWeight: 'bold' }] }, 'Margin Bersih'),
+          H(Text, { style: [styles.marginLabel, { fontWeight: 'bold', color: '#16A34A' }] }, 'Margin Bersih'),
           H(Text, { style: [styles.marginValue, { fontWeight: 'bold' }, marginColor(marginBersihTotal >= 0 ? '#16A34A' : '#DC2626')] },
             `${formatCurrency(marginBersihTotal)} (${marginPct.toFixed(1)}%)`
           )
         ),
-        H(View, { style: { flexDirection: 'row', marginTop: 2, alignItems: 'center' } },
-          H(Text, { style: { fontSize: 7.5, marginRight: 6 } }, 'Status Margin'),
-          H(Text, { style: statusColor }, `[${statusLabel}]`)
+
+        H(View, { style: styles.marginDivider }),
+        H(Text, { style: { fontSize: 11, fontWeight: 'bold', color: '#000000', marginTop: 2, marginBottom: 2 } },
+          `Perhitungan Return of Investment (${durasiHari} hari — 14 hari kirim + 30 hari TOP)`
+        ),
+        H(View, { style: styles.marginRow },
+          H(Text, { style: [styles.marginLabel, { color: '#000000' }] }, 'Modal Kerja (Total Beli + Overhead)'),
+          H(Text, { style: [styles.marginValue, { color: '#000000' }] }, formatCurrency(modalKerja))
+        ),
+        H(View, { style: styles.marginRow },
+          H(Text, { style: [styles.marginLabel, { color: '#000000' }] }, 'Margin Bersih'),
+          H(Text, { style: [styles.marginValue, { color: '#000000' }] }, formatCurrency(marginBersihTotal))
+        ),
+        H(View, { style: styles.marginRow },
+          H(Text, { style: [styles.marginLabel, { color: '#000000' }] }, 'ROI per Siklus'),
+          H(Text, { style: [styles.marginValue, { color: '#000000' }] }, roiPerSiklus.toFixed(1) + '%')
+        ),
+        H(View, { style: styles.marginRow },
+          H(Text, { style: [styles.marginLabel, { color: '#000000' }] }, 'Perputaran per Tahun (365/' + durasiHari + ')'),
+          H(Text, { style: [styles.marginValue, { color: '#000000' }] }, perputaranPerTahun.toFixed(1) + '×')
+        ),
+        H(View, { style: styles.marginRow },
+          H(Text, { style: [styles.marginLabel, { fontWeight: 'bold', color: '#000000' }] }, 'Estimasi ROI Tahunan'),
+          H(Text, { style: [styles.marginValue, { fontWeight: 'bold', color: '#000000' }] }, '~' + roiEstimasi.toFixed(0) + '%')
         ),
       ),
 
       H(View, { style: { ...BORDER, marginTop: 6, padding: 4, backgroundColor: '#F9FAFB' } },
-        H(Text, { style: { fontSize: 7.5, fontWeight: 'bold', color: '#374151', marginBottom: 2 } }, 'Analisis & Rekomendasi'),
-        H(Text, { style: { fontSize: 7, color: '#374151', lineHeight: 1.4 } }, statusAdvice),
+        H(View, { style: { flexDirection: 'row', alignItems: 'center', marginBottom: 3 } },
+          H(Text, { style: { fontSize: 11, marginRight: 6 } }, 'Status Margin'),
+          H(Text, { style: statusColor }, `[${statusLabel}]`)
+        ),
+        H(Text, { style: { fontSize: 11, fontWeight: 'bold', color: '#374151', marginBottom: 3 } }, 'Analisis & Rekomendasi'),
+        H(Text, { style: { fontSize: 11, color: '#374151', lineHeight: 1.5 } }, statusAdvice),
       ),
 
       data.keterangan ? H(View, { style: { marginTop: 6 } },
         H(Text, { style: { fontSize: 7, fontStyle: 'italic', color: '#555' } }, 'Keterangan: ' + data.keterangan)
       ) : null,
 
-      H(Text, { style: styles.pageNum }, 'Page 1')
+      H(View, { fixed: true, style: styles.footer },
+        H(Text, { style: styles.footerText }, c.company_alamat || 'Jerukwangi - Bangsri, Jepara'),
+        H(Text, { style: styles.footerText }, (c.company_no_hp || '+6281 2607 5500') + ', ' + (c.company_email || 'mazzjoeq@gmail.com'))
+      ),
+      H(Text, { fixed: true, style: styles.pageNum }, 'Page 1')
     )
   )
 }
