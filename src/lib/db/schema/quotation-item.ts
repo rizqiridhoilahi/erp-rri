@@ -10,6 +10,8 @@ export const quotationItem = pgTable("quotation_item", {
   imageUrl: text("image_url"),
   satuan: text("satuan"),
   hargaSatuan: real("harga_satuan").notNull(),
+  hargaBeli: real("harga_beli").default(0),
+  overheadPerUnit: real("overhead_per_unit").default(0),
   diskon: real("diskon").default(0),
   ppnPerItem: real("ppn_per_item"),
   jumlah: integer("jumlah").notNull(),

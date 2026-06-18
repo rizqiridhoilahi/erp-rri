@@ -17,6 +17,7 @@ const itemSchema = z.object({
   satuan: z.string().optional().nullable(),
   jumlah: z.coerce.number().int().positive(),
   harga_satuan: z.coerce.number().nonnegative(),
+  harga_beli: z.coerce.number().nonnegative().optional().nullable(),
   diskon: z.coerce.number().nonnegative().optional().nullable(),
   keterangan: z.string().optional().nullable(),
 })
@@ -33,6 +34,10 @@ const schema = z.object({
   masa_berlaku: z.string().optional().nullable(),
   ppn_rate: z.coerce.number().nonnegative().optional(),
   ppn_enabled: z.coerce.boolean().optional().default(false),
+  overhead_biaya: z.coerce.number().nonnegative().optional().default(0),
+  overhead_metode: z.enum(['quantity', 'price']).optional().default('quantity'),
+  target_margin: z.coerce.number().min(0).max(1).optional().default(0.15),
+  negotiation_buffer: z.coerce.number().min(0).max(1).optional().default(0.10),
   keterangan: z.string().optional().nullable(),
   items: z.array(itemSchema).min(1, 'Minimal 1 item'),
 })
@@ -48,6 +53,23 @@ export async function GET(request: NextRequest) {
 
   if (error) return internalError(error)
   return NextResponse.json({ data: data ?? [] })
+}
+
+function computeOverheadAllocation(
+  items: Array<{ jumlah: number; harga_satuan: number }>,
+  totalOverhead: number,
+  metode: string,
+): number[] {
+  if (totalOverhead <= 0) return items.map(() => 0)
+  if (metode === 'quantity') {
+    const totalQty = items.reduce((s, i) => s + i.jumlah, 0)
+    if (totalQty <= 0) return items.map(() => 0)
+    const perUnit = totalOverhead / totalQty
+    return items.map(i => perUnit)
+  }
+  const totalValue = items.reduce((s, i) => s + i.jumlah * i.harga_satuan, 0)
+  if (totalValue <= 0) return items.map(() => 0)
+  return items.map(i => (totalOverhead * (i.jumlah * i.harga_satuan)) / totalValue / i.jumlah)
 }
 
 function calcTanggalBerlaku(masaBerlaku: string, tanggal: Date): string | null {
@@ -91,6 +113,12 @@ export async function POST(request: NextRequest) {
   const ppnRate = parsed.data.ppn_rate ?? await getConfigNumber('ppn_rate', 0.11)
   const now = new Date().toISOString()
 
+  const overheadAlloc = computeOverheadAllocation(
+    parsed.data.items,
+    parsed.data.overhead_biaya ?? 0,
+    parsed.data.overhead_metode ?? 'quantity',
+  )
+
   const items = parsed.data.items.map((item, idx) => {
     const totalHarga = item.jumlah * item.harga_satuan
     return {
@@ -102,6 +130,8 @@ export async function POST(request: NextRequest) {
       satuan: item.satuan ?? null,
       jumlah: item.jumlah,
       harga_satuan: item.harga_satuan,
+      harga_beli: item.harga_beli ?? 0,
+      overhead_per_unit: overheadAlloc[idx],
       diskon: item.diskon ?? 0,
       total_harga: totalHarga,
       keterangan: item.keterangan ?? null,
@@ -140,9 +170,13 @@ export async function POST(request: NextRequest) {
       masa_berlaku: parsed.data.masa_berlaku ?? null,
       tanggal_berlaku_sampai: tanggalBerlakuSampai,
       status: 'draft',
-       ppn_rate: ppnRate,
+      ppn_rate: ppnRate,
       ppn_enabled: parsed.data.ppn_enabled,
       total_harga: totalHarga,
+      overhead_biaya: parsed.data.overhead_biaya ?? 0,
+      overhead_metode: parsed.data.overhead_metode ?? 'quantity',
+      target_margin: parsed.data.target_margin ?? 0.15,
+      negotiation_buffer: parsed.data.negotiation_buffer ?? 0.10,
       keterangan: parsed.data.keterangan ?? null,
       created_at: now,
       updated_at: now,

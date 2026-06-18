@@ -14,6 +14,7 @@ const itemSchema = z.object({
   satuan: z.string().optional().nullable(),
   jumlah: z.coerce.number().int().positive(),
   harga_satuan: z.coerce.number().nonnegative(),
+  harga_beli: z.coerce.number().nonnegative().optional().nullable(),
   diskon: z.coerce.number().nonnegative().optional().nullable(),
   keterangan: z.string().optional().nullable(),
 })
@@ -47,9 +48,30 @@ const schema = z.object({
   masa_berlaku: z.string().optional().nullable(),
   ppn_rate: z.coerce.number().nonnegative().optional(),
   ppn_enabled: z.coerce.boolean().optional(),
+  overhead_biaya: z.coerce.number().nonnegative().optional(),
+  overhead_metode: z.enum(['quantity', 'price']).optional(),
+  target_margin: z.coerce.number().min(0).max(1).optional(),
+  negotiation_buffer: z.coerce.number().min(0).max(1).optional(),
   keterangan: z.string().optional().nullable(),
   items: z.array(itemSchema).optional(),
 })
+
+function computeOverheadAllocation(
+  items: Array<{ jumlah: number; harga_satuan: number }>,
+  totalOverhead: number,
+  metode: string,
+): number[] {
+  if (totalOverhead <= 0) return items.map(() => 0)
+  if (metode === 'quantity') {
+    const totalQty = items.reduce((s, i) => s + i.jumlah, 0)
+    if (totalQty <= 0) return items.map(() => 0)
+    const perUnit = totalOverhead / totalQty
+    return items.map(i => perUnit)
+  }
+  const totalValue = items.reduce((s, i) => s + i.jumlah * i.harga_satuan, 0)
+  if (totalValue <= 0) return items.map(() => 0)
+  return items.map(i => (totalOverhead * (i.jumlah * i.harga_satuan)) / totalValue / i.jumlah)
+}
 
 function calcTanggalBerlaku(masaBerlaku: string, tanggal: Date): string | null {
   const map: Record<string, number> = {
@@ -142,7 +164,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
   const parsed = schema.safeParse(body)
   if (!parsed.success) return badRequest(parsed.error.issues.map(e => e.message).join(', '))
 
-  const { data: current } = await supabaseAdmin.from('quotation').select('status').eq('id', id).single()
+  const { data: current } = await supabaseAdmin.from('quotation').select('status, overhead_biaya, overhead_metode').eq('id', id).single()
   if (!current) return notFound('Quotation tidak ditemukan')
 
   if (parsed.data.status && !isValidTransition(current.status, parsed.data.status)) {
@@ -170,6 +192,10 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
   }
   if (parsed.data.ppn_rate !== undefined) updateData.ppn_rate = parsed.data.ppn_rate
   if (parsed.data.ppn_enabled !== undefined) updateData.ppn_enabled = parsed.data.ppn_enabled
+  if (parsed.data.overhead_biaya !== undefined) updateData.overhead_biaya = parsed.data.overhead_biaya
+  if (parsed.data.overhead_metode !== undefined) updateData.overhead_metode = parsed.data.overhead_metode
+  if (parsed.data.target_margin !== undefined) updateData.target_margin = parsed.data.target_margin
+  if (parsed.data.negotiation_buffer !== undefined) updateData.negotiation_buffer = parsed.data.negotiation_buffer
   if (parsed.data.keterangan !== undefined) updateData.keterangan = parsed.data.keterangan ?? null
 
   updateData.updated_at = new Date().toISOString()
@@ -184,13 +210,14 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       satuan: item.satuan ?? null,
       jumlah: item.jumlah,
       harga_satuan: item.harga_satuan,
+      harga_beli: item.harga_beli ?? 0,
       diskon: item.diskon ?? 0,
       keterangan: item.keterangan ?? null,
     })
 
     const { data: existingItems } = await supabaseAdmin
       .from('quotation_item')
-      .select('barang_id, specification, justification, image_url, nama_barang, satuan, jumlah, harga_satuan, diskon, keterangan')
+      .select('barang_id, specification, justification, image_url, nama_barang, satuan, jumlah, harga_satuan, harga_beli, diskon, keterangan')
       .eq('quotation_id', id)
       .order('urutan', { ascending: true })
 
@@ -198,9 +225,17 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     const existingNormalized = (existingItems ?? []).map(i => ({ ...i }))
 
     if (JSON.stringify(newItemsNormalized) !== JSON.stringify(existingNormalized)) {
+      const overheadBiaya = parsed.data.overhead_biaya ?? current.overhead_biaya ?? 0
+      const overheadMetode = parsed.data.overhead_metode ?? current.overhead_metode ?? 'quantity'
+      const overheadAlloc = computeOverheadAllocation(
+        newItemsNormalized,
+        overheadBiaya,
+        overheadMetode,
+      )
+
       const items = newItemsNormalized.map((item, idx) => {
         const totalHarga = item.jumlah * item.harga_satuan
-        return { ...item, quotation_id: id, total_harga: totalHarga, urutan: idx + 1 }
+        return { ...item, quotation_id: id, total_harga: totalHarga, overhead_per_unit: overheadAlloc[idx], urutan: idx + 1 }
       })
       const totalHarga = items.reduce((sum, i) => sum + (i.total_harga ?? 0), 0)
       updateData.total_harga = totalHarga
@@ -215,6 +250,30 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
       const { error: itemsError } = await supabaseAdmin.from('quotation_item').insert(dbItems)
       if (itemsError) return internalError(itemsError)
+    } else {
+      const overheadChanged =
+        (parsed.data.overhead_biaya !== undefined && parsed.data.overhead_biaya !== current.overhead_biaya) ||
+        (parsed.data.overhead_metode !== undefined && parsed.data.overhead_metode !== current.overhead_metode)
+      if (overheadChanged) {
+        const overheadAlloc = computeOverheadAllocation(
+          newItemsNormalized,
+          parsed.data.overhead_biaya ?? current.overhead_biaya ?? 0,
+          parsed.data.overhead_metode ?? current.overhead_metode ?? 'quantity',
+        )
+        const { data: itemIds } = await supabaseAdmin
+          .from('quotation_item')
+          .select('id')
+          .eq('quotation_id', id)
+          .order('urutan', { ascending: true })
+        if (itemIds) {
+          for (let i = 0; i < itemIds.length; i++) {
+            await supabaseAdmin
+              .from('quotation_item')
+              .update({ overhead_per_unit: overheadAlloc[i] })
+              .eq('id', itemIds[i].id)
+          }
+        }
+      }
     }
   }
 

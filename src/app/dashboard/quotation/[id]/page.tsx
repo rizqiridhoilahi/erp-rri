@@ -46,6 +46,8 @@ interface QuotationItem {
   image_url: string | null
   satuan: string | null
   harga_satuan: number
+  harga_beli: number | null
+  overhead_per_unit: number | null
   diskon: number
   ppn_per_item: number
   jumlah: number
@@ -73,6 +75,10 @@ interface Quotation {
   tanggal_berlaku_sampai: string | null
   ppn_rate: number
   ppn_enabled: boolean
+  overhead_biaya: number | null
+  overhead_metode: string | null
+  target_margin: number
+  negotiation_buffer: number
   total_harga: number | null
   keterangan: string | null
   is_active: boolean
@@ -91,6 +97,7 @@ export default function QuotationDetailPage() {
   const [loading, setLoading] = useState(true)
   const [previewLoading, setPreviewLoading] = useState(false)
   const [downloadLoading, setDownloadLoading] = useState(false)
+  const [approvalPdfLoading, setApprovalPdfLoading] = useState<'preview' | 'download' | null>(null)
   const [statusLoading, setStatusLoading] = useState(false)
   const [negoList, setNegoList] = useState<Array<{ id: string; nomor: string; status: string; tanggal: string; revision: number }>>([])
   const [negoLoading, setNegoLoading] = useState(true)
@@ -210,6 +217,49 @@ export default function QuotationDetailPage() {
     }
   }
 
+  const fetchApprovalPdfBlob = async () => {
+    if (!id) return null
+    const token = await getAuthToken()
+    const res = await fetch(`/api/v1/quotation/${id}/approval-pdf`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    })
+    if (!res.ok) throw new Error('Gagal memuat PDF approval')
+    return res.blob()
+  }
+
+  const handlePreviewApprovalPDF = async () => {
+    if (!id) return
+    setApprovalPdfLoading('preview')
+    try {
+      const blob = await fetchApprovalPdfBlob()
+      if (blob) window.open(URL.createObjectURL(blob), '_blank')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Gagal preview PDF')
+    } finally {
+      setApprovalPdfLoading(null)
+    }
+  }
+
+  const handleDownloadApprovalPDF = async () => {
+    if (!id) return
+    setApprovalPdfLoading('download')
+    try {
+      const blob = await fetchApprovalPdfBlob()
+      if (blob) {
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `APPROVAL-${data?.nomor ?? id}.pdf`
+        a.click()
+        URL.revokeObjectURL(url)
+      }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Gagal download PDF')
+    } finally {
+      setApprovalPdfLoading(null)
+    }
+  }
+
   const handleUpload = async (file: File) => {
     if (!id) return
     setUploading(true)
@@ -248,7 +298,7 @@ export default function QuotationDetailPage() {
   const grandTotal = subtotal - totalDiskon + totalPpn
 
   return (
-    <div className="mx-auto max-w-5xl px-4 sm:px-6 py-8 space-y-6 print:space-y-4">
+    <div className="mx-auto max-w-7xl px-4 sm:px-6 py-8 space-y-6 print:space-y-4">
       <PageHeader
         title="Detail Quotation"
         description={`${displayNomor} - ${data.customer?.nama || ""}`}
@@ -415,13 +465,28 @@ export default function QuotationDetailPage() {
                   <TableHead>Justification</TableHead>
                   <TableHead className="text-center">Qty</TableHead>
                   <TableHead>UoM</TableHead>
-                  <TableHead className="text-right">Price</TableHead>
-                  <TableHead className="text-right">Total Price</TableHead>
+                  <TableHead className="text-right">Harga Beli</TableHead>
+                  <TableHead className="text-right">Harga Jual</TableHead>
+                  <TableHead className="text-right">Total Harga Beli</TableHead>
+                  <TableHead className="text-right">Total Harga Jual</TableHead>
+                  <TableHead className="text-right">Margin Kotor (Rp)</TableHead>
+                  <TableHead className="text-right">Total Margin Kotor (Rp)</TableHead>
+                  <TableHead className="text-right">Margin Kotor (%)</TableHead>
+                  <TableHead className="text-right">Overhead</TableHead>
+                  <TableHead className="text-right">Margin Bersih (Rp)</TableHead>
+                  <TableHead className="text-right">Total Margin Bersih (Rp)</TableHead>
+                  <TableHead className="text-right">Margin Bersih (%)</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {data.items.map((item, i) => {
+                  {data.items.map((item, i) => {
                   const totalPrice = item.jumlah * item.harga_satuan
+                  const hargaBeli = item.harga_beli ?? 0
+                  const overheadPerUnit = item.overhead_per_unit ?? 0
+                  const marginKotor = item.harga_satuan - hargaBeli
+                  const marginBersih = marginKotor - overheadPerUnit
+                  const marginKotorPct = item.harga_satuan > 0 ? (marginKotor / item.harga_satuan) * 100 : 0
+                  const marginBersihPct = item.harga_satuan > 0 ? (marginBersih / item.harga_satuan) * 100 : 0
                   return (
                     <TableRow key={item.id}>
                       <TableCell className="text-muted-foreground">{i + 1}</TableCell>
@@ -439,8 +504,17 @@ export default function QuotationDetailPage() {
                       <TableCell className="text-xs text-muted-foreground max-w-xs truncate">{item.justification || item.barang?.justification || "-"}</TableCell>
                       <TableCell className="text-center">{item.jumlah}</TableCell>
                       <TableCell>{item.satuan || item.barang?.satuan || "-"}</TableCell>
+                      <TableCell className="text-right">{formatCurrency(hargaBeli)}</TableCell>
                       <TableCell className="text-right">{formatCurrency(item.harga_satuan)}</TableCell>
-                      <TableCell className="text-right font-medium">{formatCurrency(totalPrice)}</TableCell>
+                      <TableCell className="text-right text-muted-foreground">{formatCurrency(item.jumlah * hargaBeli)}</TableCell>
+                      <TableCell className="text-right">{formatCurrency(totalPrice)}</TableCell>
+                      <TableCell className={`text-right ${marginKotor >= 0 ? 'text-green-600' : 'text-red-600'}`}>{formatCurrency(marginKotor)}</TableCell>
+                      <TableCell className={`text-right ${marginKotor >= 0 ? 'text-green-600' : 'text-red-600'}`}>{formatCurrency(marginKotor * item.jumlah)}</TableCell>
+                      <TableCell className={`text-right ${marginKotor >= 0 ? 'text-green-600' : 'text-red-600'}`}>{marginKotorPct.toFixed(1)}%</TableCell>
+                      <TableCell className="text-right text-muted-foreground">{formatCurrency(overheadPerUnit)}</TableCell>
+                      <TableCell className={`text-right font-medium ${marginBersih >= 0 ? 'text-green-600' : 'text-red-600'}`}>{formatCurrency(marginBersih)}</TableCell>
+                      <TableCell className={`text-right font-medium ${marginBersih >= 0 ? 'text-green-600' : 'text-red-600'}`}>{formatCurrency(marginBersih * item.jumlah)}</TableCell>
+                      <TableCell className={`text-right font-medium ${marginBersih >= 0 ? 'text-green-600' : 'text-red-600'}`}>{marginBersihPct.toFixed(1)}%</TableCell>
                     </TableRow>
                   )
                 })}
@@ -452,6 +526,61 @@ export default function QuotationDetailPage() {
             {totalDiskon > 0 && <div className="flex justify-between text-sm text-muted-foreground"><span>Diskon</span><span>-{formatCurrency(totalDiskon)}</span></div>}
             {data.ppn_enabled && <div className="flex justify-between text-sm"><span>PPN ({(data.ppn_rate * 100).toFixed(0)}%)</span><span>{formatCurrency(totalPpn)}</span></div>}
             <div className="flex justify-between font-bold text-lg pt-2 border-t"><span>Grand Total</span><span>{formatCurrency(grandTotal)}</span></div>
+            {data.items.some(i => (i.harga_beli ?? 0) > 0 || (i.overhead_per_unit ?? 0) > 0) && (
+              <>
+                <div className="border-t border-dashed pt-3 mt-3 space-y-1">
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Estimasi Margin (Internal)</p>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-muted-foreground">Target: {(data.target_margin * 100).toFixed(0)}%</span>
+                      <span className="text-xs text-muted-foreground">Buffer: {(data.negotiation_buffer * 100).toFixed(0)}%</span>
+                    </div>
+                  </div>
+                  {(() => {
+                    const totalJual = data.items.reduce((s, i) => s + i.jumlah * i.harga_satuan, 0)
+                    const totalBeli = data.items.reduce((s, i) => s + i.jumlah * (i.harga_beli ?? 0), 0)
+                    const totalOverhead = data.items.reduce((s, i) => s + i.jumlah * (i.overhead_per_unit ?? 0), 0)
+                    const marginKotor = totalJual - totalBeli
+                    const marginBersih = marginKotor - totalOverhead
+                    const marginPct = totalJual > 0 ? (marginBersih / totalJual) * 100 : 0
+                    const { target_margin: tm, negotiation_buffer: nb } = data
+                    const targetWithBufferPct = (1 - (1 - tm) * (1 - nb)) * 100
+                    const marginStatus = marginPct >= targetWithBufferPct ? 'full' : marginPct >= tm * 100 ? 'on_target' : 'below'
+                    const statusIcon = marginStatus === 'full' ? '✅' : marginStatus === 'on_target' ? '⚠️' : '🔴'
+                    const statusLabel = marginStatus === 'full' ? 'Ada Buffer Negosiasi' : marginStatus === 'on_target' ? 'Sesuai Target' : 'Dibawah Target'
+                    const statusBadgeClass = marginStatus === 'full' ? 'bg-green-100 text-green-700 border-green-300' : marginStatus === 'on_target' ? 'bg-yellow-100 text-yellow-700 border-yellow-300' : 'bg-red-100 text-red-700 border-red-300'
+                    return (
+                      <>
+                        <div className="flex justify-between text-sm"><span>Total Harga Jual</span><span>{formatCurrency(totalJual)}</span></div>
+                        <div className="flex justify-between text-sm text-muted-foreground"><span>Total Harga Beli</span><span>{formatCurrency(totalBeli)}</span></div>
+                        <div className="flex justify-between text-sm"><span>Margin Kotor</span><span>{formatCurrency(marginKotor)}</span></div>
+                        <div className="flex justify-between text-sm text-muted-foreground"><span>Total Overhead</span><span>{formatCurrency(totalOverhead)}</span></div>
+                        <div className={`flex justify-between font-semibold text-sm pt-1 border-t ${marginBersih >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          <span>Margin Bersih</span>
+                          <span>{formatCurrency(marginBersih)} ({marginPct.toFixed(1)}%)</span>
+                        </div>
+                        <div className="flex justify-between text-xs pt-1">
+                          <span className="text-muted-foreground">Status Margin</span>
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full border text-xs font-medium ${statusBadgeClass}`}>
+                            {statusIcon} {statusLabel}
+                          </span>
+                        </div>
+                      </>
+                    )
+                  })()}
+                </div>
+              </>
+            )}
+          </div>
+          <div className="flex gap-2 pt-3 border-t mt-3">
+            <Button variant="outline" size="sm" onClick={handlePreviewApprovalPDF} disabled={approvalPdfLoading !== null}>
+              {approvalPdfLoading === 'preview' ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Eye className="h-4 w-4 mr-2" />}
+              Preview PDF Approval
+            </Button>
+            <Button variant="default" size="sm" onClick={handleDownloadApprovalPDF} disabled={approvalPdfLoading !== null}>
+              {approvalPdfLoading === 'download' ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Download className="h-4 w-4 mr-2" />}
+              Download PDF Approval
+            </Button>
           </div>
         </CardContent>
       </Card>

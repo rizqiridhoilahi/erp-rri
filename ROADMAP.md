@@ -990,3 +990,22 @@ Customer retur barang
 
 ### File baru:
 - `src/components/data-table.tsx`
+
+## 🟢 DONE — Quotation Margin / Overhead Cost Estimation
+
+| # | Task | Status | File |
+|---|------|--------|------|
+| QM-1 | **Migration** — `quotation.overhead_biaya`, `quotation.overhead_metode`, `quotation_item.harga_beli`, `quotation_item.overhead_per_unit` | ✅ Done | `0061_add_overhead_to_quotation.sql` |
+| QM-2 | **Drizzle Schema** — new fields on `quotation.ts` and `quotation-item.ts` | ✅ Done | `schema/quotation.ts`, `schema/quotation-item.ts` |
+| QM-3 | **API POST** — Zod + computeOverheadAllocation (per quantity) + save to DB | ✅ Done | `api/v1/quotation/route.ts` |
+| QM-4 | **API PUT** — Zod + computeOverheadAllocation + re-insert items with overhead | ✅ Done | `api/v1/quotation/[id]/route.ts` |
+| QM-5 | **Form Tambah** — `harga_beli` per item (5-col grid), overhead global card with live preview table | ✅ Done | `tambah/page.tsx` |
+| QM-6 | **Form Edit** — same as Tambah | ✅ Done | `[id]/edit/page.tsx` |
+| QM-7 | **Detail Page** — Harga Beli column in items table + margin summary (internal) with green/red indicators | ✅ Done | `[id]/page.tsx` |
+
+### Design Decisions
+- **Overhead alokasi**: 1 input global (`overhead_biaya`), metode `quantity` (rata per unit), otomatis dialokasikan ke tiap item
+- **Live preview**: tabel alokasi overhead muncul saat `overhead_biaya > 0`
+- **Harga beli**: manual input per item (tidak otomatis dari master barang)
+- **Margin**: hanya tampil di detail page (internal), tidak di PDF customer
+- **Auto-sales**: tidak diubah (margin/overhead internal, tidak di-propagate ke SO/DO/Invoice)

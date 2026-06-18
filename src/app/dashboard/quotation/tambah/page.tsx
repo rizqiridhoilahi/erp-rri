@@ -28,6 +28,7 @@ const itemSchema = z.object({
   satuan: z.string().min(1, 'Satuan harus diisi'),
   jumlah: z.coerce.number().int().positive('Jumlah harus > 0'),
   harga_satuan: z.coerce.number().nonnegative('Harga harus diisi'),
+  harga_beli: z.coerce.number().nonnegative().optional().default(0),
   diskon: z.coerce.number().nonnegative().optional(),
   keterangan: z.string().optional(),
 })
@@ -44,6 +45,10 @@ const qtnSchema = z.object({
   masa_berlaku: z.string().optional(),
   ppn_rate: z.coerce.number().nonnegative().default(0.11),
   ppn_enabled: z.boolean().default(false),
+  overhead_biaya: z.coerce.number().nonnegative().default(0),
+  overhead_metode: z.enum(['quantity', 'price']).default('quantity'),
+  target_margin: z.coerce.number().min(0).max(1).default(0.15),
+  negotiation_buffer: z.coerce.number().min(0).max(1).default(0.10),
   keterangan: z.string().optional(),
   items: z.array(itemSchema).min(1, 'Minimal 1 item'),
 })
@@ -89,6 +94,10 @@ export default function TambahQuotationPage() {
       lampiran: '',
       ppn_rate: 0.11,
       ppn_enabled: false,
+      overhead_biaya: 0,
+      overhead_metode: 'quantity',
+      target_margin: 0.15,
+      negotiation_buffer: 0.10,
       items: [{ barang_id: '', jumlah: 1, harga_satuan: 0, specification: '', justification: '', image_url: '', nama_barang: '', satuan: '' }],
     },
   })
@@ -348,7 +357,7 @@ export default function TambahQuotationPage() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-base">Item Penawaran</CardTitle>
-              <Button type="button" variant="outline" size="sm" onClick={() => append({ barang_id: '', jumlah: 1, harga_satuan: 0, specification: '', justification: '', image_url: '', nama_barang: '', satuan: '' })}>
+              <Button type="button" variant="outline" size="sm" onClick={() => append({ barang_id: '', jumlah: 1, harga_satuan: 0, harga_beli: 0, specification: '', justification: '', image_url: '', nama_barang: '', satuan: '' })}>
                 <Plus className="h-4 w-4 mr-1" />Tambah Item
               </Button>
             </CardHeader>
@@ -403,20 +412,164 @@ export default function TambahQuotationPage() {
                     <FormField control={control} name={`items.${index}.satuan`} render={({ field }) => (
                       <FormItem><FormLabel>UoM</FormLabel><FormControl><Input value={String(field.value ?? '')} onChange={field.onChange} onBlur={field.onBlur} /></FormControl><FormMessage /></FormItem>
                     )} />
-                    <FormField control={control} name={`items.${index}.harga_satuan`} render={({ field }) => (
-                      <FormItem><FormLabel>Price *</FormLabel><FormControl><Input type="number" min="0" step="1" value={String(field.value ?? '')} onChange={e => field.onChange(Number(e.target.value))} onBlur={field.onBlur} placeholder="0" /></FormControl><FormMessage /></FormItem>
+                    <FormField control={control} name={`items.${index}.harga_beli`} render={({ field }) => (
+                      <FormItem><FormLabel>Harga Beli *</FormLabel><FormControl><Input type="number" min="0" step="1" value={String(field.value ?? '')} onChange={e => field.onChange(Number(e.target.value))} onBlur={field.onBlur} placeholder="0" /></FormControl><FormMessage /></FormItem>
                     )} />
-                    <div className="space-y-2">
-                      <label className="text-xs font-medium">Total Price</label>
-                      <div className="h-10 flex items-center px-3 border rounded-md bg-muted/30 text-sm font-medium">
-                        Rp {((Number(watch(`items.${index}.jumlah`)) || 0) * (Number(watch(`items.${index}.harga_satuan`)) || 0)).toLocaleString('id-ID')}
-                      </div>
-                    </div>
+                    <FormField control={control} name={`items.${index}.harga_satuan`} render={({ field }) => (
+                      <FormItem><FormLabel>Harga Jual *</FormLabel><FormControl><Input type="number" min="0" step="1" value={String(field.value ?? '')} onChange={e => field.onChange(Number(e.target.value))} onBlur={field.onBlur} placeholder="0" /></FormControl><FormMessage /></FormItem>
+                    )} />
+                  </div>
+                  <div className="grid grid-cols-8 gap-3">
+                    {(() => {
+                      const qty = Number(watch(`items.${index}.jumlah`)) || 0
+                      const hargaBeli = Number(watch(`items.${index}.harga_beli`)) || 0
+                      const hargaJual = Number(watch(`items.${index}.harga_satuan`)) || 0
+                      const items = watch('items') || []
+                      const overheadBiaya = Number(watch('overhead_biaya')) || 0
+                      const metode = watch('overhead_metode') || 'quantity'
+                      const totalQty = items.reduce((s, i) => s + (Number(i.jumlah) || 0), 0)
+                      const totalValue = items.reduce((s, i) => s + (Number(i.jumlah) || 0) * (Number(i.harga_satuan) || 0), 0)
+                      const overheadPerUnit = overheadBiaya <= 0 ? 0
+                        : metode === 'quantity'
+                          ? (totalQty > 0 ? overheadBiaya / totalQty : 0)
+                          : (totalValue > 0 ? overheadBiaya * hargaJual / totalValue : 0)
+                      const marginKotor = hargaJual - hargaBeli
+                      const marginBersih = marginKotor - overheadPerUnit
+                      const marginKotorPct = hargaJual > 0 ? (marginKotor / hargaJual) * 100 : 0
+                      const marginBersihPct = hargaJual > 0 ? (marginBersih / hargaJual) * 100 : 0
+                      const targetMargin = Number(watch('target_margin')) || 0.15
+                      const buffer = Number(watch('negotiation_buffer')) || 0.10
+                      const targetWithBufferPct = (1 - (1 - targetMargin) * (1 - buffer)) * 100
+                      const marginStatus = marginBersihPct >= targetWithBufferPct ? 'full' : marginBersihPct >= targetMargin * 100 ? 'on_target' : 'below'
+                      const statusIcon = marginStatus === 'full' ? '✅' : marginStatus === 'on_target' ? '⚠️' : '🔴'
+                      const statusLabel = marginStatus === 'full' ? 'Ada Buffer' : marginStatus === 'on_target' ? 'Sesuai Target' : 'Dibawah Target'
+                      const statusColor = marginStatus === 'full' ? 'text-green-600 border-green-300 bg-green-50' : marginStatus === 'on_target' ? 'text-yellow-700 border-yellow-300 bg-yellow-50' : 'text-red-600 border-red-300 bg-red-50'
+                      return (
+                        <>
+                          <div className="space-y-2">
+                            <label className="text-xs font-medium text-muted-foreground">Total Harga Beli</label>
+                            <div className="h-10 flex items-center px-3 border rounded-md bg-muted/30 text-sm font-medium text-muted-foreground">
+                              Rp {(qty * hargaBeli).toLocaleString('id-ID')}
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-xs font-medium">Total Harga Jual</label>
+                            <div className="h-10 flex items-center px-3 border rounded-md bg-muted/30 text-sm font-medium">
+                              Rp {(qty * hargaJual).toLocaleString('id-ID')}
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-xs font-medium">Margin Kotor (Rp)</label>
+                            <div className={`h-10 flex items-center px-3 border rounded-md bg-muted/30 text-sm font-medium ${marginKotor >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                              Rp {marginKotor.toLocaleString('id-ID')}
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-xs font-medium">Margin Kotor (%)</label>
+                            <div className={`h-10 flex items-center px-3 border rounded-md bg-muted/30 text-sm font-medium ${marginKotor >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                              {marginKotorPct.toFixed(1)}%
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-xs font-medium text-muted-foreground">Overhead</label>
+                            <div className="h-10 flex items-center px-3 border rounded-md bg-muted/30 text-sm font-medium text-muted-foreground">
+                              Rp {overheadPerUnit.toLocaleString('id-ID')}
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-xs font-medium">Margin Bersih (Rp)</label>
+                            <div className={`h-10 flex items-center px-3 border rounded-md bg-muted/30 text-sm font-medium ${marginBersih >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                              Rp {marginBersih.toLocaleString('id-ID')}
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-xs font-medium">Margin Bersih (%)</label>
+                            <div className={`h-10 flex items-center px-3 border rounded-md bg-muted/30 text-sm font-medium ${marginBersih >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                              {marginBersihPct.toFixed(1)}%
+                            </div>
+                          </div>
+                          <div className={`flex items-center justify-center h-10 px-2 border rounded-md text-xs font-medium ${statusColor}`}>
+                            {statusIcon} {statusLabel}
+                          </div>
+                        </>
+                      )
+                    })()}
                   </div>
                 </div>
               ))}
             </CardContent>
           </Card>
+
+          {fields.length > 0 && (
+            <Card>
+              <CardHeader><CardTitle className="text-base">Biaya Overhead</CardTitle></CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-sm text-muted-foreground">Biaya operasional tambahan (pengiriman, dll) yang dialokasikan ke setiap item.</p>
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField control={control} name="overhead_biaya" render={({ field }) => (
+                    <FormItem><FormLabel>Total Overhead (Rp)</FormLabel><FormControl><Input type="number" min="0" step="1" value={String(field.value ?? '')} onChange={e => field.onChange(Number(e.target.value))} placeholder="0" /></FormControl><FormMessage /></FormItem>
+                  )} />
+                  <FormField control={control} name="overhead_metode" render={({ field }) => (
+                    <FormItem><FormLabel>Metode Alokasi</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl><SelectTrigger><SelectValue placeholder="Pilih metode" /></SelectTrigger></FormControl>
+                        <SelectContent>
+                          <SelectItem value="quantity">Per Quantity (rata per unit)</SelectItem>
+                          <SelectItem value="price">Per Harga Jual (proporsional)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
+                </div>
+                {(Number(watch('overhead_biaya')) || 0) > 0 && (
+                  <div className="overflow-x-auto">
+                    <p className="text-xs font-medium text-muted-foreground mb-2">Preview Alokasi Overhead</p>
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b text-left text-xs text-muted-foreground">
+                          <th className="py-1 pr-2">Item</th>
+                          <th className="py-1 px-2 text-right">Qty</th>
+                          <th className="py-1 px-2 text-right">Overhead/Unit</th>
+                          <th className="py-1 pl-2 text-right">Total Overhead</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {(() => {
+                          const items = watch('items') || []
+                          const overheadBiaya = Number(watch('overhead_biaya')) || 0
+                          const metode = watch('overhead_metode') || 'quantity'
+                          const totalQty = items.reduce((s, i) => s + (Number(i.jumlah) || 0), 0)
+                          const totalValue = items.reduce((s, i) => s + (Number(i.jumlah) || 0) * (Number(i.harga_satuan) || 0), 0)
+                          const perUnit = metode === 'quantity'
+                            ? (totalQty > 0 ? overheadBiaya / totalQty : 0)
+                            : (totalValue > 0 ? overheadBiaya / totalValue : 0)
+                          return items.map((item, i) => {
+                            const qty = Number(item.jumlah) || 0
+                            const val = qty * (Number(item.harga_satuan) || 0)
+                            const overheadUnit = metode === 'quantity' ? perUnit : (totalValue > 0 ? overheadBiaya * val / totalValue / qty : 0)
+                            const totalOverhead = qty * overheadUnit
+                            return (
+                              <tr key={i} className="border-b last:border-0">
+                                <td className="py-1 pr-2 font-medium">Item #{i + 1}</td>
+                                <td className="py-1 px-2 text-right">{qty}</td>
+                                <td className="py-1 px-2 text-right">Rp {overheadUnit.toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</td>
+                                <td className="py-1 pl-2 text-right">Rp {totalOverhead.toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</td>
+                              </tr>
+                            )
+                          })
+                        })()}
+                        <tr className="font-medium border-t">
+                          <td className="py-1 pr-2" colSpan={3}>Total</td>
+                          <td className="py-1 pl-2 text-right">Rp {(Number(watch('overhead_biaya')) || 0).toLocaleString('id-ID')}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
 
           <Card>
             <CardHeader><CardTitle className="text-base">Pengaturan</CardTitle></CardHeader>
