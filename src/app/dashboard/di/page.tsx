@@ -3,7 +3,7 @@ import { supabase } from '@/lib/db/client'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
-import { Plus, Pencil, Eye } from 'lucide-react'
+import { Plus, Pencil, Eye, FileText } from 'lucide-react'
 import { ExportButton } from "@/components/export-button"
 import { ItemsPopover } from "@/components/customer-po-items-popover"
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover"
@@ -64,7 +64,7 @@ export default async function DiPage() {
               {kontrak ? (
                 <Popover>
                   <PopoverTrigger asChild>
-                    <Button variant="outline" size="sm" className="h-auto min-h-0 py-0.5 px-2 text-xs font-normal truncate max-w-[160px]">{kontrak.nama}</Button>
+                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0"><FileText className="h-4 w-4" /><span className="sr-only">Detail Kontrak</span></Button>
                   </PopoverTrigger>
                   <PopoverContent className="max-w-xs p-3 text-sm break-words">
                     <p className="font-medium">{kontrak.nama}</p>
