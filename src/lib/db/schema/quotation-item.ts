@@ -8,6 +8,7 @@ export const quotationItem = pgTable("quotation_item", {
   specification: text("specification"),
   justification: text("justification"),
   imageUrl: text("image_url"),
+  linkProduk: text("link_produk"),
   satuan: text("satuan"),
   hargaSatuan: real("harga_satuan").notNull(),
   hargaBeli: real("harga_beli").default(0),

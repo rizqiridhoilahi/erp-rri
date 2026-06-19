@@ -15,6 +15,7 @@ const itemSchema = z.object({
   nama_barang: z.string().optional(),
   satuan: z.string().optional(),
   image_url: z.string().optional().nullable(),
+  link_produk: z.string().optional().nullable(),
   spesifikasi: z.string().optional().nullable(),
   create_barang: z.boolean().optional().default(false),
 })
@@ -99,6 +100,7 @@ export async function POST(request: NextRequest) {
         item.image_url ?? null,
         item.harga_satuan ?? null,
         item.spesifikasi ?? null,
+        item.link_produk ?? null,
       )
       barangId = newBarang.id
       if (item.nama_barang) createdBarangMap.set(item.nama_barang, barangId)

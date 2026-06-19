@@ -35,6 +35,7 @@ export async function createBarangFromRfqItem(
   image_url: string | null,
   harga_jual_default?: number | null,
   spesifikasi?: string | null,
+  link_produk?: string | null,
 ) {
   const trimmed = nama_barang.trim()
   if (trimmed) {
@@ -58,6 +59,7 @@ export async function createBarangFromRfqItem(
       satuan: satuan || 'pcs',
       image_url,
       spesifikasi: spesifikasi ?? null,
+      link_produk: link_produk ?? null,
       harga_jual_default: harga_jual_default ?? null,
       stok_minimum: 0,
       is_active: true,

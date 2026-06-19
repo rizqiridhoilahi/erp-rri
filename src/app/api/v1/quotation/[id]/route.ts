@@ -10,6 +10,7 @@ const itemSchema = z.object({
   specification: z.string().optional().nullable(),
   justification: z.string().optional().nullable(),
   image_url: z.string().optional().nullable(),
+  link_produk: z.string().optional().nullable(),
   nama_barang: z.string().optional().nullable(),
   satuan: z.string().optional().nullable(),
   jumlah: z.coerce.number().int().positive(),
@@ -206,6 +207,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       specification: item.specification ?? null,
       justification: item.justification ?? null,
       image_url: item.image_url ?? null,
+      link_produk: item.link_produk ?? null,
       nama_barang: item.nama_barang ?? null,
       satuan: item.satuan ?? null,
       jumlah: item.jumlah,
@@ -217,7 +219,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
     const { data: existingItems } = await supabaseAdmin
       .from('quotation_item')
-      .select('barang_id, specification, justification, image_url, nama_barang, satuan, jumlah, harga_satuan, harga_beli, diskon, keterangan')
+      .select('barang_id, specification, justification, image_url, link_produk, nama_barang, satuan, jumlah, harga_satuan, harga_beli, diskon, keterangan')
       .eq('quotation_id', id)
       .order('urutan', { ascending: true })
 

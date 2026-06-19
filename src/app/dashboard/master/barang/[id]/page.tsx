@@ -68,6 +68,7 @@ interface Barang {
   spesifikasi: string | null
   justification: string | null
   image_url: string | null
+  link_produk: string | null
   harga_beli_default: number | null
   harga_jual_default: number | null
   stok_minimum: number | null
@@ -221,6 +222,14 @@ export default function DetailBarangPage() {
             <div className="lg:col-span-3">
               <label className="block text-sm font-medium text-muted-foreground mb-1">Justification</label>
               <p className="text-sm font-medium">{data.justification || "-"}</p>
+            </div>
+            <div className="lg:col-span-3">
+              <label className="block text-sm font-medium text-muted-foreground mb-1">Link Produk</label>
+              <p className="text-sm font-medium">
+                {data.link_produk
+                  ? <a href={data.link_produk} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">{data.link_produk}</a>
+                  : "-"}
+              </p>
             </div>
             {data.image_url && (
               <div className="lg:col-span-3">

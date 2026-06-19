@@ -34,6 +34,7 @@ const barangSchema = z.object({
   spesifikasi: z.string().optional(),
   justification: z.string().optional(),
   image_url: z.string().optional(),
+  link_produk: z.string().optional(),
   barcode: z.string().optional(),
   harga_beli_default: z.coerce.number().nonnegative().optional(),
   harga_jual_default: z.coerce.number().nonnegative().optional(),
@@ -902,6 +903,21 @@ export default function TambahBarangPage() {
                         <FormLabel className="text-xs text-muted-foreground">Atau URL manual</FormLabel>
                         <FormControl>
                           <Input {...field} placeholder="https://..." className="text-xs" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <div className="space-y-3 mt-4">
+                  <FormField
+                    control={form.control}
+                    name="link_produk"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Link Produk</FormLabel>
+                        <FormControl>
+                          <Input {...field} placeholder="https://shopee..." className="text-xs" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>

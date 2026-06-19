@@ -32,6 +32,7 @@ interface Barang {
   nama: string
   kode: string
   image_url: string | null
+  link_produk: string | null
   kategori_barang: { nama: string }
   kontrak: { nomor_kontrak: string; nama: string; tanggal_mulai: string | null; tanggal_selesai: string | null }[]
   satuan: string | null
@@ -221,6 +222,11 @@ export default function BarangPage() {
         : <div className="h-10 w-10 rounded bg-muted flex items-center justify-center text-muted-foreground text-xs">-</div>
     },
     { header: "Kode", accessor: (item) => item.kode, sortKey: "kode" },
+    { header: "Link Produk", accessor: (item) =>
+      item.link_produk
+        ? <a href={item.link_produk} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-xs truncate block max-w-[150px]">{item.link_produk}</a>
+        : <span className="text-muted-foreground text-xs">-</span>
+    },
     { header: "Nama Barang", accessor: (item) => item.nama, sortKey: "nama" },
     { header: "Status Nego", accessor: (item) =>
       item.status_nego === 'rejected'

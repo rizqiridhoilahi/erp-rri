@@ -12,6 +12,7 @@ const schema = z.object({
   spesifikasi: z.string().optional(),
   justification: z.string().optional(),
   image_url: z.string().optional(),
+  link_produk: z.string().optional(),
   harga_beli_default: z.coerce.number().nonnegative().optional(),
   harga_jual_default: z.coerce.number().nonnegative().optional(),
   stok_minimum: z.coerce.number().nonnegative().optional(),

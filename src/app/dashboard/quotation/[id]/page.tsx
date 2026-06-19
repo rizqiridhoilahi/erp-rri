@@ -44,6 +44,7 @@ interface QuotationItem {
   specification: string | null
   justification: string | null
   image_url: string | null
+  link_produk: string | null
   satuan: string | null
   harga_satuan: number
   harga_beli: number | null
@@ -460,6 +461,7 @@ export default function QuotationDetailPage() {
                 <TableRow>
                   <TableHead className="w-20">#</TableHead>
                   <TableHead className="w-20">Picture</TableHead>
+                  <TableHead>Link Produk</TableHead>
                   <TableHead>Item</TableHead>
                   <TableHead>Specification</TableHead>
                   <TableHead>Justification</TableHead>
@@ -498,6 +500,13 @@ export default function QuotationDetailPage() {
                             <FileText className="h-4 w-4" />
                           </div>
                         )}
+                      </TableCell>
+                      <TableCell>
+                        {item.link_produk ? (
+                          <a href={item.link_produk} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-xs truncate block max-w-[150px]">
+                            {item.link_produk}
+                          </a>
+                        ) : "-"}
                       </TableCell>
                       <TableCell className="font-medium">{item.barang?.nama || item.nama_barang || "-"}</TableCell>
                       <TableCell className="text-xs text-muted-foreground max-w-xs truncate">{item.specification || item.barang?.spesifikasi || "-"}</TableCell>

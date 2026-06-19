@@ -24,6 +24,7 @@ const itemSchema = z.object({
   specification: z.string().optional(),
   justification: z.string().optional(),
   image_url: z.string().optional(),
+  link_produk: z.string().optional(),
   nama_barang: z.string().optional(),
   satuan: z.string().min(1, 'Satuan harus diisi'),
   jumlah: z.coerce.number().int().positive('Jumlah harus > 0'),
@@ -357,7 +358,7 @@ export default function TambahQuotationPage() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-base">Item Penawaran</CardTitle>
-              <Button type="button" variant="outline" size="sm" onClick={() => append({ barang_id: '', jumlah: 1, harga_satuan: 0, harga_beli: 0, specification: '', justification: '', image_url: '', nama_barang: '', satuan: '' })}>
+              <Button type="button" variant="outline" size="sm" onClick={() => append({ barang_id: '', jumlah: 1, harga_satuan: 0, harga_beli: 0, specification: '', justification: '', image_url: '', link_produk: '', nama_barang: '', satuan: '' })}>
                 <Plus className="h-4 w-4 mr-1" />Tambah Item
               </Button>
             </CardHeader>
@@ -401,6 +402,11 @@ export default function TambahQuotationPage() {
                     <FormField control={control} name={`items.${index}.image_url`} render={({ field }) => (
                       <FormItem><FormLabel>Image URL</FormLabel><FormControl><Input {...field} placeholder="https://..." /></FormControl>
                         {field.value && <img src={field.value} alt="" className="mt-1 h-12 w-12 object-contain rounded border" />}
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+                    <FormField control={control} name={`items.${index}.link_produk`} render={({ field }) => (
+                      <FormItem><FormLabel>Link Produk</FormLabel><FormControl><Input {...field} placeholder="https://shopee..." /></FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />

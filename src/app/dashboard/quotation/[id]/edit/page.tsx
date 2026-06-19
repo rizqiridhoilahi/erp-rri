@@ -22,6 +22,7 @@ const itemSchema = z.object({
   specification: z.string().optional(),
   justification: z.string().optional(),
   image_url: z.string().optional(),
+  link_produk: z.string().optional(),
   nama_barang: z.string().optional().nullable(),
   satuan: z.string().optional(),
   jumlah: z.coerce.number().int().positive(),
@@ -326,7 +327,7 @@ export default function EditQuotationPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="text-base">Item Penawaran</CardTitle>
-            <Button type="button" variant="outline" size="sm" onClick={() => append({ barang_id: '', jumlah: 1, harga_satuan: 0, harga_beli: 0, specification: '', justification: '', image_url: '', satuan: '' })}>
+            <Button type="button" variant="outline" size="sm" onClick={() => append({ barang_id: '', jumlah: 1, harga_satuan: 0, harga_beli: 0, specification: '', justification: '', image_url: '', link_produk: '', satuan: '' })}>
               <Plus className="h-4 w-4 mr-1" />Tambah Item
             </Button>
           </CardHeader>
@@ -375,6 +376,10 @@ export default function EditQuotationPage() {
                     {watch(`items.${index}.image_url`) && (
                       <img src={watch(`items.${index}.image_url`)} alt="" className="mt-1 h-12 w-12 object-contain rounded border" />
                     )}
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-medium">Link Produk</label>
+                    <Input {...register(`items.${index}.link_produk`)} placeholder="https://shopee..." />
                   </div>
                 </div>
                 <div className="grid grid-cols-4 gap-3">

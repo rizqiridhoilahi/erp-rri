@@ -113,7 +113,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
         const { data: qtnItem } = await supabaseAdmin
           .from('quotation_item')
-          .select('id, barang_id, nama_barang, satuan, image_url, harga_satuan')
+          .select('id, barang_id, nama_barang, satuan, image_url, harga_satuan, link_produk')
           .eq('id', negoItem.quotation_item_id)
           .maybeSingle()
 
@@ -126,6 +126,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
               qtnItem.image_url,
               qtnItem.harga_satuan,
               null,
+              qtnItem.link_produk,
             )
             await supabaseAdmin
               .from('quotation_item')
@@ -201,7 +202,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     for (const negoItem of negoItems ?? []) {
       const { data: qtnItem } = await supabaseAdmin
         .from('quotation_item')
-        .select('id, barang_id, nama_barang, satuan, image_url, harga_satuan')
+        .select('id, barang_id, nama_barang, satuan, image_url, harga_satuan, link_produk')
         .eq('id', negoItem.quotation_item_id)
         .maybeSingle()
 
@@ -219,6 +220,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
             qtnItem.image_url,
             qtnItem.harga_satuan,
             null,
+            qtnItem.link_produk,
           )
           await supabaseAdmin
             .from('quotation_item')

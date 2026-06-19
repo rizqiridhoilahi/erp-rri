@@ -18,6 +18,7 @@ export const barang = pgTable("barang", {
   barcode: text("barcode"),
   kontrakId: text("kontrak_id").references(() => kontrak.id, { onDelete: "cascade" }),
   isActive: boolean("is_active").notNull().default(true),
+  linkProduk: text("link_produk"),
   statusNego: text("status_nego"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
