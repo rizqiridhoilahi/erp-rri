@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type { ReactElement } from 'react'
-import { Document, Page, Text, View, Image, StyleSheet, Font } from '@react-pdf/renderer'
+import { Document, Page, Text, View, Image, StyleSheet, Font, Link } from '@react-pdf/renderer'
 
 Font.register({
   family: 'Arial',
@@ -71,12 +71,13 @@ interface ApprovalItem {
   nama_barang: string | null
   specification: string | null
   image_url: string | null
+  link_produk: string | null
   satuan: string | null
   jumlah: number
   harga_satuan: number
   harga_beli: number | null
   overhead_per_unit: number | null
-  barang?: { nama: string; kode: string; image_url: string | null } | null
+  barang?: { nama: string; kode: string; image_url: string | null; link_produk: string | null } | null
 }
 
 interface ApprovalCompany {
@@ -235,6 +236,7 @@ export function ApprovalQuotationPDF({ data }: { data: ApprovalData }) {
   const headerCells = [
     H(Text, { style: [styles.tableHeaderCell, W(14)] }, '#'),
     H(Text, { style: [styles.tableHeaderCell, W(20)] }, 'Pic'),
+    H(Text, { style: [styles.tableHeaderCell, W(15)] }, 'Link'),
     H(Text, { style: [styles.tableHeaderCell, { flex: 1.2 }] }, 'Item'),
     H(Text, { style: [styles.tableHeaderCell, { flex: 0.7 }] }, 'Spec'),
     H(Text, { style: [styles.tableHeaderCell, W(30)] }, 'Qty'),
@@ -266,6 +268,9 @@ export function ApprovalQuotationPDF({ data }: { data: ApprovalData }) {
           ? H(Image, { src: imgUrl, style: { width: 14, height: 14, objectFit: 'contain' } })
           : H(Text, { style: { fontSize: 5, textAlign: 'center' } }, '-')
       ),
+      H(Link, { src: (item.link_produk || item.barang?.link_produk) || '#', style: [styles.tableCellCenter, W(15), { textDecoration: 'none' }] },
+        (item.link_produk || item.barang?.link_produk) ? '🔗' : '-'
+      ),
       H(Text, { style: [styles.tableCell, { flex: 1.2 }] }, nama),
       H(Text, { style: [styles.tableCell, { flex: 0.7 }] }, spec),
       H(Text, { style: [styles.tableCellCenter, W(30)] }, String(item.jumlah)),
@@ -287,6 +292,7 @@ export function ApprovalQuotationPDF({ data }: { data: ApprovalData }) {
   const totalRow = H(View, { style: styles.totalRow },
     EMPTY(14),
     EMPTY(20),
+    EMPTY(15),
     H(Text, { style: [styles.totalCell, { flex: 1.2 }] }, 'TOTAL'),
     H(Text, { style: [styles.totalCell, { flex: 0.7 }] }, ''),
     EMPTY(30),

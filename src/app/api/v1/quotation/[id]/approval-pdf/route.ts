@@ -69,11 +69,11 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
   if (!rawItems || rawItems.length === 0) return notFound('Item quotation tidak ditemukan')
 
   const barangIds = [...new Set(rawItems.filter(i => i.barang_id).map(i => i.barang_id) ?? [])]
-  let barangMap = new Map<string, { nama: string; kode: string; image_url: string | null }>()
+  let barangMap = new Map<string, { nama: string; kode: string; image_url: string | null; link_produk: string | null }>()
   if (barangIds.length > 0) {
     const { data: barangList } = await supabaseAdmin
       .from('barang')
-      .select('id, nama, kode, image_url')
+      .select('id, nama, kode, image_url, link_produk')
       .in('id', barangIds)
     barangMap = new Map(barangList?.map(b => [b.id, b]) ?? [])
   }
@@ -97,12 +97,13 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
       nama_barang: i.nama_barang ?? null,
       specification: i.specification ?? null,
       image_url: i.image_url ?? null,
+      link_produk: i.link_produk ?? null,
       satuan: i.satuan ?? null,
       jumlah: i.jumlah,
       harga_satuan: i.harga_satuan,
       harga_beli: i.harga_beli ?? 0,
       overhead_per_unit: i.overhead_per_unit ?? 0,
-      barang: barang ? { nama: barang.nama, kode: barang.kode, image_url: barang.image_url } : null,
+      barang: barang ? { nama: barang.nama, kode: barang.kode, image_url: barang.image_url, link_produk: barang.link_produk } : null,
     }
   })
 
