@@ -16,6 +16,7 @@ import { ArrowLeft, FileText, Pencil, FileSpreadsheet, Wallet, Loader2, Send, Do
 import { InvoiceDetailSkeleton } from "@/components/ui/skeleton"
 import { InvoicePdfActions } from "@/components/invoice-pdf-actions"
 import { TandaTerimaPdfActions } from "@/components/tanda-terima-pdf-actions"
+import { SuratPernyataanNonPkpPdfActions } from "@/components/surat-pernyataan-non-pkp-pdf-actions"
 import { CompactFileUpload, type DocumentFile } from "@/components/compact-file-upload"
 import { toast } from "sonner"
 
@@ -747,6 +748,16 @@ export default function InvoiceDetailPage() {
           </CardContent>
         </Card>
       ) : null}
+
+      <Card>
+        <CardContent className="pt-6">
+          <h3 className="text-lg font-semibold mb-2">Surat Pernyataan Non-PKP</h3>
+          <p className="text-sm text-muted-foreground mb-3">
+            {(() => { const p = inv.nomor.split('-'); return `RRI-SP/NPKP-${p[2]}-${p[3]}-${p[4].slice(-4)}` })()}
+          </p>
+          <SuratPernyataanNonPkpPdfActions invId={id!} invoiceNomor={inv.nomor} />
+        </CardContent>
+      </Card>
 
       <Card>
         <CardContent className="pt-6">
