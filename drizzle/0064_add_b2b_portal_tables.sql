@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS barang_gambar (
 CREATE TABLE IF NOT EXISTS customer_profiles (
   id text PRIMARY KEY DEFAULT gen_random_uuid()::text,
   auth_user_id text,
-  customer_id text REFERENCES customers(id) ON DELETE SET NULL,
+  customer_id text REFERENCES customer(id) ON DELETE SET NULL,
   nama_perusahaan varchar(255) NOT NULL,
   penanggung_jawab_pic varchar(150) NOT NULL,
   no_whatsapp_pic varchar(20) NOT NULL,
