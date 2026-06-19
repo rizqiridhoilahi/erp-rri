@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>RRI Private B2B Marketplace | Catalog Index</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-header {
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #c5c4db;
+            border-radius: 10px;
+        }
+        .bento-card {
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .bento-card:hover {
+            transform: translateY(-4px);
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-dim": "#d8dadc",
+                        "on-surface-variant": "#454558",
+                        "on-surface": "#191c1e",
+                        "inverse-on-surface": "#eff1f3",
+                        "surface-bright": "#f7f9fb",
+                        "on-error": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "tertiary-fixed": "#d4e4fa",
+                        "surface-variant": "#e0e3e5",
+                        "surface-container": "#eceef0",
+                        "tertiary": "#283648",
+                        "on-primary-container": "#b3b7ff",
+                        "on-secondary-container": "#5b647b",
+                        "inverse-primary": "#bec2ff",
+                        "background": "#f7f9fb",
+                        "surface-container-high": "#e6e8ea",
+                        "on-tertiary-container": "#afbed3",
+                        "on-tertiary-fixed": "#0d1c2d",
+                        "secondary-container": "#d9e2fd",
+                        "tertiary-fixed-dim": "#b9c8de",
+                        "secondary-fixed": "#d9e2fd",
+                        "on-primary-fixed": "#00006e",
+                        "outline": "#757589",
+                        "primary-fixed-dim": "#bec2ff",
+                        "on-primary": "#ffffff",
+                        "surface-container-low": "#f2f4f6",
+                        "secondary": "#555e75",
+                        "tertiary-container": "#3f4d5f",
+                        "primary": "#0001bb",
+                        "on-secondary-fixed": "#121b2f",
+                        "on-secondary": "#ffffff",
+                        "on-secondary-fixed-variant": "#3d475c",
+                        "on-background": "#191c1e",
+                        "primary-fixed": "#e0e0ff",
+                        "inverse-surface": "#2d3133",
+                        "surface": "#f7f9fb",
+                        "surface-tint": "#343dff",
+                        "error-container": "#ffdad6",
+                        "on-primary-fixed-variant": "#0000ef",
+                        "outline-variant": "#c5c4db",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-highest": "#e0e3e5",
+                        "primary-container": "#0000ff",
+                        "on-error-container": "#93000a",
+                        "error": "#ba1a1a",
+                        "secondary-fixed-dim": "#bdc6e0",
+                        "on-tertiary-fixed-variant": "#39485a"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "stack-md": "16px",
+                        "stack-sm": "8px",
+                        "margin-desktop": "40px",
+                        "unit": "8px",
+                        "section-padding": "80px",
+                        "stack-lg": "32px",
+                        "gutter": "24px",
+                        "container-max": "1280px",
+                        "margin-mobile": "16px"
+                    },
+                    "fontFamily": {
+                        "headline-lg-mobile": ["Lexend"],
+                        "label-md": ["Inter"],
+                        "headline-md": ["Lexend"],
+                        "body-lg": ["Inter"],
+                        "caption": ["Inter"],
+                        "body-md": ["Inter"],
+                        "display-lg": ["Lexend"],
+                        "title-lg": ["Lexend"],
+                        "headline-lg": ["Lexend"]
+                    },
+                    "fontSize": {
+                        "headline-lg-mobile": ["28px", {"lineHeight": "1.2", "letterSpacing": "0.01em", "fontWeight": "700"}],
+                        "label-md": ["14px", {"lineHeight": "1.2", "letterSpacing": "0.05em", "fontWeight": "500"}],
+                        "headline-md": ["24px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                        "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                        "caption": ["12px", {"lineHeight": "1.4", "fontWeight": "400"}],
+                        "body-md": ["16px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                        "display-lg": ["48px", {"lineHeight": "1.1", "letterSpacing": "0.02em", "fontWeight": "700"}],
+                        "title-lg": ["20px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                        "headline-lg": ["32px", {"lineHeight": "1.2", "letterSpacing": "0.01em", "fontWeight": "700"}]
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-surface font-body-md text-on-surface custom-scrollbar">
+<!-- Top Navigation Bar -->
+<header class="fixed top-0 w-full z-50 flex items-center justify-between px-margin-desktop h-20 backdrop-blur-md bg-white/70 dark:bg-on-surface/40 border-b border-outline-variant shadow-sm">
+<div class="flex items-center gap-stack-lg">
+<span class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed">Industrial B2B</span>
+<nav class="hidden md:flex gap-stack-md ml-stack-lg">
+<a class="font-label-md text-label-md text-primary dark:text-inverse-primary border-b-2 border-primary py-2 transition-colors" href="#">Dashboard</a>
+<a class="font-label-md text-label-md text-on-surface-variant dark:text-on-tertiary-container hover:text-primary transition-colors py-2" href="#">Shipments</a>
+<a class="font-label-md text-label-md text-on-surface-variant dark:text-on-tertiary-container hover:text-primary transition-colors py-2" href="#">Inventory</a>
+<a class="font-label-md text-label-md text-on-surface-variant dark:text-on-tertiary-container hover:text-primary transition-colors py-2" href="#">Orders</a>
+</nav>
+</div>
+<div class="flex items-center gap-stack-md">
+<div class="hidden lg:flex items-center bg-surface-container-low px-4 py-2 rounded-full border border-outline-variant">
+<span class="material-symbols-outlined text-on-surface-variant mr-2">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-sm w-64" placeholder="Search catalog..." type="text"/>
+</div>
+<button class="material-symbols-outlined p-2 text-on-surface-variant hover:bg-surface-variant rounded-full transition-all">notifications</button>
+<button class="material-symbols-outlined p-2 text-on-surface-variant hover:bg-surface-variant rounded-full transition-all">settings</button>
+<button class="bg-primary-container text-on-primary-fixed-variant px-6 py-2 rounded-full font-label-md text-label-md font-bold shadow-sm hover:opacity-90 transition-transform active:scale-95">New RFQ</button>
+</div>
+</header>
+<div class="flex pt-20 min-h-screen">
+<!-- Sidebar Navigation (Supply Catalog) -->
+<aside class="fixed left-0 top-20 bottom-0 w-64 flex flex-col p-stack-md bg-surface-container-low dark:bg-surface-container-highest border-r border-outline-variant">
+<div class="mb-stack-lg px-2">
+<h2 class="font-title-lg text-title-lg text-on-surface">Supply Catalog</h2>
+<p class="text-xs text-on-surface-variant">Verified Suppliers Only</p>
+</div>
+<nav class="space-y-1 overflow-y-auto custom-scrollbar flex-1">
+<div class="group">
+<button class="w-full flex items-center justify-between p-3 text-primary font-bold bg-secondary-container rounded-lg transition-all" onclick="toggleAccordion('cat-cleaning')">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined">cleaning_services</span>
+<span class="font-label-md text-label-md">Cleaning Service</span>
+</div>
+<span class="material-symbols-outlined transition-transform duration-200" id="icon-cleaning">expand_more</span>
+</button>
+<div class="mt-1 ml-9 space-y-1" id="cat-cleaning">
+<a class="block p-2 text-sm text-on-surface-variant hover:bg-surface-variant rounded-md transition-colors" href="#">Industrial Detergent</a>
+<a class="block p-2 text-sm text-on-surface-variant hover:bg-surface-variant rounded-md transition-colors" href="#">Sanitation Equipment</a>
+<a class="block p-2 text-sm text-on-surface-variant hover:bg-surface-variant rounded-md transition-colors" href="#">Janitorial Kits</a>
+</div>
+</div>
+<div class="group">
+<button class="w-full flex items-center justify-between p-3 text-on-surface-variant hover:bg-surface-variant rounded-lg transition-all" onclick="toggleAccordion('cat-atk')">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined">edit_note</span>
+<span class="font-label-md text-label-md">ATK</span>
+</div>
+<span class="material-symbols-outlined transition-transform duration-200" id="icon-atk">expand_more</span>
+</button>
+<div class="hidden mt-1 ml-9 space-y-1" id="cat-atk">
+<a class="block p-2 text-sm text-on-surface-variant hover:bg-surface-variant rounded-md transition-colors" href="#">Paper Supplies</a>
+<a class="block p-2 text-sm text-on-surface-variant hover:bg-surface-variant rounded-md transition-colors" href="#">Filing Systems</a>
+</div>
+</div>
+<div class="group">
+<button class="w-full flex items-center justify-between p-3 text-on-surface-variant hover:bg-surface-variant rounded-lg transition-all" onclick="toggleAccordion('cat-ops')">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined">settings_suggest</span>
+<span class="font-label-md text-label-md">Alat Operasional</span>
+</div>
+<span class="material-symbols-outlined transition-transform duration-200" id="icon-ops">expand_more</span>
+</button>
+</div>
+</nav>
+<div class="mt-auto pt-stack-md border-t border-outline-variant">
+<button class="w-full flex items-center justify-center gap-2 bg-on-surface text-surface py-3 rounded-lg font-label-md text-label-md hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined">picture_as_pdf</span>
+                    Download PDF Price List
+                </button>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-64 flex-1 p-margin-desktop bg-white">
+<div class="max-w-container-max mx-auto">
+<div class="flex items-end justify-between mb-stack-lg border-b border-outline-variant pb-stack-md">
+<div>
+<h1 class="font-display-lg text-display-lg text-primary mb-2">Main Catalog Index</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant">RRI Private B2B Marketplace Premium Access</p>
+</div>
+<div class="flex gap-stack-sm mb-2">
+<button class="text-xs uppercase tracking-widest font-bold text-on-surface-variant border border-outline-variant px-4 py-1 rounded hover:bg-surface-variant transition-colors" id="toggleAuth" onclick="toggleAuthState()">Simulate Login</button>
+</div>
+</div>
+<!-- Product Grid (Minimalist 3-column) -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-stack-lg">
+<!-- Product Card 1 -->
+<div class="bento-card bg-white border border-outline-variant rounded-xl overflow-hidden group shadow-sm hover:shadow-md transition-all">
+<div class="aspect-square bg-surface-container relative overflow-hidden">
+<img alt="Industrial Cleaner" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="A clean, professional product photograph of high-grade industrial cleaning supplies arranged in a minimalist, bright studio setting. The lighting is crisp and cool, highlighting the metallic and translucent plastic textures of the containers. The background is a soft, out-of-focus white industrial laboratory space, conveying a sense of sterile efficiency and premium corporate quality. The overall aesthetic is aligned with a luxury B2B catalog, using a palette of whites, silvers, and deep navy blue accents." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBKplWwbGP8ucf-xDB_JFkrL4Eldj2swbhtKVplcR4oz5TsZjA2nZba_QZ0Z6yxYd50CbNLArQClG38pJPGWDVzW-MR7U_K5YRFGQdlfZj389tPk4-ppGhstY1yQ8cdlZUq48oCXPcqCnenq35YYy-A3Oxr0ur66VJFThQqQwd8snIxS1uCtqaUV3cuK96Izx_t63tqNhePYPl7_cxbSZzj_6zozBTtA4q0tF5MV_-azofbrkLMgBsaAGWv9PISsXGdE-HL8_e59x4u"/>
+</div>
+<div class="p-stack-md flex flex-col h-full">
+<div class="flex justify-between items-start mb-2">
+<span class="text-xs font-bold uppercase tracking-tighter text-on-surface-variant">Cleaning Service</span>
+<span class="auth-status-ready hidden flex items-center text-green-600 text-xs font-semibold">
+<span class="material-symbols-outlined text-[14px] mr-1" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                                    ✓ Ready Stock
+                                </span>
+</div>
+<h3 class="font-title-lg text-title-lg text-on-surface mb-4">Ultra-Sanitize Pro Industrial 20L</h3>
+<div class="mt-auto space-y-stack-md">
+<!-- Unlogged State -->
+<div class="auth-status-unlogged block space-y-3">
+<div class="bg-primary/5 border border-primary/20 p-3 rounded-lg flex items-start gap-2">
+<span class="material-symbols-outlined text-primary text-[18px]">lock</span>
+<p class="text-xs text-primary font-medium">🔒 Akses spesifikasi &amp; inquiry terkunci. Silakan login mitra.</p>
+</div>
+<button class="w-full py-2 border border-primary text-primary rounded-lg font-label-md text-label-md hover:bg-primary/5 transition-colors">Login untuk Detail</button>
+</div>
+<!-- Logged State -->
+<div class="auth-status-logged hidden">
+<button class="w-full py-3 bg-primary text-white rounded-lg font-label-md text-label-md font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform">
+<span class="material-symbols-outlined">add</span>
+                                        ➕ Tambah ke Daftar SPH
+                                    </button>
+</div>
+</div>
+</div>
+</div>
+<!-- Product Card 2 -->
+<div class="bento-card bg-white border border-outline-variant rounded-xl overflow-hidden group shadow-sm hover:shadow-md transition-all">
+<div class="aspect-square bg-surface-container relative overflow-hidden">
+<img alt="Stationery Kit" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="A curated collection of premium office stationery, including leather-bound notebooks and high-quality pens, laid out in a precise flat-lay composition on a white marble surface. The lighting is bright and airy, with soft shadows that emphasize the luxurious textures of the paper and leather. The design is minimalist and sophisticated, mirroring an elite B2B marketplace's catalog style. Cool tones and sharp focus create an atmosphere of professional excellence and high-level corporate organization." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBqCdjtsN6EzshcetCEnBPhg0yc5rfciqCk18FAZisCzjdbySIIT7fyfkZbpe0LWsosP28-7bV4GruH_nkxoV-sPenUoiOeE54LICwVXEQ2EBK3IcsIRnjamEjFa4Dp9nL_kiQrT3fMnmLWytn8-sJ7brSDhpfoL66wJosSCJ3nf8mzLPBr5mMefs06y2aipz3ZO5FoLx2awEhti-LbK3PmjRJIbBh2oQKmd8ZRxaovmVK_Af1-4NPYojkiM1J8SmjhxrKQFQuDfVWb"/>
+</div>
+<div class="p-stack-md flex flex-col h-full">
+<div class="flex justify-between items-start mb-2">
+<span class="text-xs font-bold uppercase tracking-tighter text-on-surface-variant">ATK</span>
+<span class="auth-status-ready hidden flex items-center text-green-600 text-xs font-semibold">
+<span class="material-symbols-outlined text-[14px] mr-1" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                                    ✓ Ready Stock
+                                </span>
+</div>
+<h3 class="font-title-lg text-title-lg text-on-surface mb-4">Elite Corporate Stationery Bundle</h3>
+<div class="mt-auto space-y-stack-md">
+<div class="auth-status-unlogged block space-y-3">
+<div class="bg-primary/5 border border-primary/20 p-3 rounded-lg flex items-start gap-2">
+<span class="material-symbols-outlined text-primary text-[18px]">lock</span>
+<p class="text-xs text-primary font-medium">🔒 Akses spesifikasi &amp; inquiry terkunci. Silakan login mitra.</p>
+</div>
+<button class="w-full py-2 border border-primary text-primary rounded-lg font-label-md text-label-md hover:bg-primary/5 transition-colors">Login untuk Detail</button>
+</div>
+<div class="auth-status-logged hidden">
+<button class="w-full py-3 bg-primary text-white rounded-lg font-label-md text-label-md font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform">
+<span class="material-symbols-outlined">add</span>
+                                        ➕ Tambah ke Daftar SPH
+                                    </button>
+</div>
+</div>
+</div>
+</div>
+<!-- Product Card 3 -->
+<div class="bento-card bg-white border border-outline-variant rounded-xl overflow-hidden group shadow-sm hover:shadow-md transition-all">
+<div class="aspect-square bg-surface-container relative overflow-hidden">
+<img alt="Tool Kit" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="Professional grade maintenance tools and equipment neatly organized in a modular storage system, photographed in a high-tech warehouse setting. The lighting is dramatic yet clear, utilizing a mixture of bright overhead LEDs and subtle blue ambient glows. The style is ultra-modern and corporate, emphasizing structural integrity and high-performance engineering. Every detail of the tools, from the matte black finishes to the brushed steel, is rendered with absolute clarity for a premium B2B catalog aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA4ZTZczl7PV9h2Fk2rhOe1rY7RtvcaeCPqq87Fg2Asu4rkFkXiZUdOAMQttSsPh6wugcUsjZQY0-FhS6cnHu4FbPbd8vCKveUDQfzpCmqtC_e9TVGXaJWBwh6PNFASW7IQRDwcvUmq4Y9gFK9p35D7jOxtuX8j9aUqh6G78h8U03vQsXxevVjthHYW1ZaxyQEXkiB0aPW83W13EERncHYxD9sOdjK_XdWstmwNiDnFJQjxxv7J8PyXqdCAvQ8apiC9xPkEbVqVeP6Q"/>
+</div>
+<div class="p-stack-md flex flex-col h-full">
+<div class="flex justify-between items-start mb-2">
+<span class="text-xs font-bold uppercase tracking-tighter text-on-surface-variant">Alat Operasional</span>
+<span class="auth-status-ready hidden flex items-center text-green-600 text-xs font-semibold">
+<span class="material-symbols-outlined text-[14px] mr-1" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                                    ✓ Ready Stock
+                                </span>
+</div>
+<h3 class="font-title-lg text-title-lg text-on-surface mb-4">Modular Warehouse Maintenance Kit</h3>
+<div class="mt-auto space-y-stack-md">
+<div class="auth-status-unlogged block space-y-3">
+<div class="bg-primary/5 border border-primary/20 p-3 rounded-lg flex items-start gap-2">
+<span class="material-symbols-outlined text-primary text-[18px]">lock</span>
+<p class="text-xs text-primary font-medium">🔒 Akses spesifikasi &amp; inquiry terkunci. Silakan login mitra.</p>
+</div>
+<button class="w-full py-2 border border-primary text-primary rounded-lg font-label-md text-label-md hover:bg-primary/5 transition-colors">Login untuk Detail</button>
+</div>
+<div class="auth-status-logged hidden">
+<button class="w-full py-3 bg-primary text-white rounded-lg font-label-md text-label-md font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform">
+<span class="material-symbols-outlined">add</span>
+                                        ➕ Tambah ke Daftar SPH
+                                    </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- Footer -->
+<footer class="w-full py-stack-lg px-margin-desktop flex flex-col md:flex-row justify-between items-center bg-surface-dim dark:bg-on-surface border-t border-outline-variant mt-20">
+<span class="font-label-md text-label-md uppercase tracking-widest text-on-surface">© 2024 Industrial Supply Logistics. Elite Corporate Tier.</span>
+<div class="flex gap-stack-lg mt-4 md:mt-0">
+<a class="font-caption text-caption text-on-surface-variant hover:text-primary transition-colors" href="#">Privacy Policy</a>
+<a class="font-caption text-caption text-on-surface-variant hover:text-primary transition-colors" href="#">Terms of Service</a>
+<a class="font-caption text-caption text-on-surface-variant hover:text-primary transition-colors" href="#">Compliance</a>
+<a class="font-caption text-caption text-on-surface-variant hover:text-primary transition-colors" href="#">Support</a>
+</div>
+</footer>
+<script>
+        function toggleAccordion(id) {
+            const el = document.getElementById(id);
+            const icon = document.getElementById('icon-' + id.split('-')[1]);
+            if (el.classList.contains('hidden')) {
+                el.classList.remove('hidden');
+                icon.style.transform = 'rotate(180deg)';
+            } else {
+                el.classList.add('hidden');
+                icon.style.transform = 'rotate(0deg)';
+            }
+        }
+
+        let isLoggedIn = false;
+        function toggleAuthState() {
+            isLoggedIn = !isLoggedIn;
+            const unloggedElements = document.querySelectorAll('.auth-status-unlogged');
+            const loggedElements = document.querySelectorAll('.auth-status-logged');
+            const readyElements = document.querySelectorAll('.auth-status-ready');
+            
+            unloggedElements.forEach(el => {
+                el.style.display = isLoggedIn ? 'none' : 'block';
+            });
+            loggedElements.forEach(el => {
+                el.style.display = isLoggedIn ? 'block' : 'none';
+            });
+            readyElements.forEach(el => {
+                el.style.display = isLoggedIn ? 'flex' : 'none';
+            });
+
+            const btn = document.getElementById('toggleAuth');
+            btn.innerText = isLoggedIn ? 'Simulate Logout' : 'Simulate Login';
+        }
+    </script>
+</body></html>

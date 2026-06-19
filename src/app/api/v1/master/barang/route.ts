@@ -18,6 +18,9 @@ const schema = z.object({
   stok_minimum: z.coerce.number().nonnegative().default(0),
   barcode: z.string().optional(),
   is_active: z.boolean().default(true),
+  is_published_to_catalog: z.boolean().default(false).optional(),
+  deskripsi_katalog: z.string().optional(),
+  spesifikasi_teknis: z.any().optional(),
 })
 
 export async function GET(request: NextRequest) {

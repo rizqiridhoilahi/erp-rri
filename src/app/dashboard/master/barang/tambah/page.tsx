@@ -40,6 +40,9 @@ const barangSchema = z.object({
   harga_jual_default: z.coerce.number().nonnegative().optional(),
   stok_minimum: z.coerce.number().nonnegative().default(0),
   is_active: z.boolean().default(true),
+  is_published_to_catalog: z.boolean().default(false).optional(),
+  deskripsi_katalog: z.string().optional(),
+  spesifikasi_teknis: z.any().optional(),
 });
 type BarangFormValues = z.input<typeof barangSchema>;
 
@@ -318,8 +321,12 @@ export default function TambahBarangPage() {
       toast.success('Barang berhasil ditambahkan!', { id: toastId });
       form.reset();
       const newId = res.data?.id
-      if (newId) await uploadImageAndUpdate(newId)
-      setTimeout(() => router.push('/dashboard/master/barang'), 1500);
+      if (newId) {
+        await uploadImageAndUpdate(newId)
+        setTimeout(() => router.push(`/dashboard/master/barang/${newId}/edit`), 1500);
+      } else {
+        setTimeout(() => router.push('/dashboard/master/barang'), 1500);
+      }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Terjadi kesalahan', { id: toastId });
     } finally {
@@ -985,6 +992,63 @@ export default function TambahBarangPage() {
                     </FormItem>
                   )}
                 />
+                <Card className="border border-[#0000ff]/20 bg-[#0000ff]/5">
+                  <CardContent className="pt-4 space-y-4">
+                    <h3 className="text-sm font-semibold text-[#0000ff]">Publikasi Katalog</h3>
+                    <FormField
+                      control={form.control}
+                      name="is_published_to_catalog"
+                      render={({ field }) => (
+                        <FormItem>
+                          <div className="flex items-center gap-2">
+                            <FormControl>
+                              <Checkbox checked={field.value ?? false} onCheckedChange={field.onChange} />
+                            </FormControl>
+                            <FormLabel className="mb-0 text-sm">Tampilkan di Katalog Publik (pt-rri.com)</FormLabel>
+                          </div>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="deskripsi_katalog"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm">Deskripsi Katalog</FormLabel>
+                          <FormControl>
+                            <Textarea {...field} value={field.value ?? ''} rows={3} placeholder="Deskripsi produk untuk katalog publik" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="spesifikasi_teknis"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm">Spesifikasi Teknis (JSON)</FormLabel>
+                          <FormControl>
+                            <Textarea
+                              {...field}
+                              value={field.value ? (typeof field.value === 'string' ? field.value : JSON.stringify(field.value, null, 2)) : ''}
+                              onChange={(e) => {
+                                const val = e.target.value
+                                if (!val) { field.onChange(undefined); return }
+                                try { field.onChange(JSON.parse(val)) } catch { field.onChange(val) }
+                              }}
+                              rows={4}
+                              placeholder='{"kapasitas": "1000 ton/jam", "tekanan": "10 bar"}'
+                              className="font-mono text-xs"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </CardContent>
+                </Card>
                 <div data-tour="btn-simpan">
                 <FormActions loading={loading} onCancel={() => confirmLeave(() => router.push('/dashboard/master/barang'))} />
                 </div>

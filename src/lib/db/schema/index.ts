@@ -98,6 +98,9 @@ import { emailLog } from "./email-log";
 import { emailTemplates } from "./email-templates";
 import { emailAttachments } from "./email-attachments";
 import { kontrakItemNotApprove } from "./kontrak-item-not-approve";
+import { barangGambar } from "./barang-gambar";
+import { customerProfiles } from "./customer-profiles";
+import { customerInquiryCart } from "./customer-inquiry-cart";
 
 export {
   users,
@@ -199,4 +202,7 @@ export {
   emailTemplates,
   emailAttachments,
   kontrakItemNotApprove,
+  barangGambar,
+  customerProfiles,
+  customerInquiryCart,
 };

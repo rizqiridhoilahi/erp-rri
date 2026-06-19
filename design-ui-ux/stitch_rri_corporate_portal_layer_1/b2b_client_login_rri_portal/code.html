@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ProcurePro Elite | Corporate Login</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800&amp;family=Inter:wght@300;400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface-container-low": "#f2f4f6",
+                      "secondary-fixed": "#d9e2fd",
+                      "surface-variant": "#e0e3e5",
+                      "tertiary": "#283648",
+                      "secondary-container": "#d9e2fd",
+                      "on-secondary": "#ffffff",
+                      "surface-container": "#eceef0",
+                      "primary": "#0001bb",
+                      "surface-bright": "#f7f9fb",
+                      "outline-variant": "#c5c4db",
+                      "surface-tint": "#343dff",
+                      "secondary": "#555e75",
+                      "inverse-primary": "#bec2ff",
+                      "on-secondary-fixed": "#121b2f",
+                      "background": "#f7f9fb",
+                      "surface-container-lowest": "#ffffff",
+                      "on-surface": "#191c1e",
+                      "surface-container-highest": "#e0e3e5",
+                      "on-primary": "#ffffff",
+                      "surface-dim": "#d8dadc",
+                      "tertiary-fixed-dim": "#b9c8de",
+                      "on-secondary-fixed-variant": "#3d475c",
+                      "on-tertiary-fixed": "#0d1c2d",
+                      "on-tertiary": "#ffffff",
+                      "surface-container-high": "#e6e8ea",
+                      "error": "#ba1a1a",
+                      "on-tertiary-fixed-variant": "#39485a",
+                      "primary-fixed-dim": "#bec2ff",
+                      "on-primary-fixed-variant": "#0000ef",
+                      "on-error-container": "#93000a",
+                      "secondary-fixed-dim": "#bdc6e0",
+                      "on-error": "#ffffff",
+                      "on-primary-fixed": "#00006e",
+                      "primary-fixed": "#e0e0ff",
+                      "on-tertiary-container": "#afbed3",
+                      "on-background": "#191c1e",
+                      "surface": "#f7f9fb",
+                      "on-secondary-container": "#5b647b",
+                      "inverse-on-surface": "#eff1f3",
+                      "outline": "#757589",
+                      "error-container": "#ffdad6",
+                      "on-primary-container": "#b3b7ff",
+                      "on-surface-variant": "#454558",
+                      "tertiary-fixed": "#d4e4fa",
+                      "inverse-surface": "#2d3133",
+                      "primary-container": "#0000ff",
+                      "tertiary-container": "#3f4d5f"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "margin-desktop": "40px",
+                      "container-max": "1280px",
+                      "unit": "8px",
+                      "stack-md": "16px",
+                      "gutter": "24px",
+                      "stack-lg": "32px",
+                      "section-padding": "80px",
+                      "margin-mobile": "16px",
+                      "stack-sm": "8px"
+              },
+              "fontFamily": {
+                      "headline-md": ["Lexend"],
+                      "display-lg": ["Lexend"],
+                      "body-lg": ["Inter"],
+                      "title-lg": ["Lexend"],
+                      "headline-lg-mobile": ["Lexend"],
+                      "body-md": ["Inter"],
+                      "headline-lg": ["Lexend"],
+                      "caption": ["Inter"],
+                      "label-md": ["Inter"]
+              },
+              "fontSize": {
+                      "headline-md": ["24px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                      "display-lg": ["48px", {"lineHeight": "1.1", "letterSpacing": "0.02em", "fontWeight": "700"}],
+                      "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                      "title-lg": ["20px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                      "headline-lg-mobile": ["28px", {"lineHeight": "1.2", "letterSpacing": "0.01em", "fontWeight": "700"}],
+                      "body-md": ["16px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                      "headline-lg": ["32px", {"lineHeight": "1.2", "letterSpacing": "0.01em", "fontWeight": "700"}],
+                      "caption": ["12px", {"lineHeight": "1.4", "fontWeight": "400"}],
+                      "label-md": ["14px", {"lineHeight": "1.2", "letterSpacing": "0.05em", "fontWeight": "500"}]
+              }
+            },
+          },
+        }
+    </script>
+<style>body {
+    background-color: #f7f9fb;
+    overflow-x: hidden
+    }
+.glass-panel {
+    backdrop-filter: blur(16px);
+    background: rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(197, 196, 219, 0.3)
+    }
+.dark-glass {
+    backdrop-filter: blur(20px);
+    background: rgba(11, 21, 40, 0.4);
+    border: 1px solid rgba(0, 1, 187, 0.2)
+    }
+.electric-glow {
+    box-shadow: 0 0 20px rgba(0, 1, 187, 0.4)
+    }
+.animated-line {
+    width: 4px;
+    background: linear-gradient(to bottom, transparent, #0001bb, transparent);
+    animation: moveLine 4s infinite ease-in-out
+    }
+@keyframes moveLine {
+    0% {
+        transform: translateY(-100%);
+        } 100% {
+        transform: translateY(100vh);
+        }
+    }
+.industrial-bg {
+    background-color: #0B1528;
+    background-image: linear-gradient(rgba(11, 21, 40, 0.8), rgba(11, 21, 40, 0.9)), url(https://lh3.googleusercontent.com/aida-public/AB6AXuBzBe34ObUIkAeuTfJFHq9K73CiujQ41GJfuTvPJSpixsUwGav058a6TOLKkRQKGIhzW7QZLBidwHnLxGnGt84uXgkKEfDq4VX_9aryNlRGp0OvDLY5FpxWZpBzcfzIxZ1GAYWAnO15f00CqV0i7lhyr5CUuOq726cVXsOfG936jWPg4vkG8tMdNWzG8pqa8kADbP0X0oKKbdCHPkKBgCxBFghZFafsdEQISiWZqGOS0iCSCr2PV1BtMvets9nNGQWaxnPJyoynVDAH);
+    background-size: cover;
+    background-position: center;
+    background-blend-mode: multiply
+    }</style>
+</head>
+<body class="antialiased text-on-surface">
+<main class="min-h-screen w-full flex flex-col md:flex-row overflow-hidden">
+<!-- Left Panel: Brand Aesthetic & Imagery -->
+<section class="relative w-full md:w-1/2 industrial-bg flex flex-col justify-center items-center px-12 md:px-24 overflow-hidden order-2 md:order-1" data-alt="A cinematic aerial silhouette of a massive industrial energy refinery at twilight. The scene is dominated by deep sovereign navy tones with high-contrast shadows. A glowing, sharp electric blue laser line cuts vertically through the composition, adding a high-tech corporate energy feel. The lighting is moody and elite, emphasizing structural integrity and massive scale in a modern B2B context.">
+<!-- Animated Electric Line -->
+<div class="absolute right-12 top-0 h-full w-[2px] bg-primary/20 overflow-hidden">
+<div class="animated-line h-40"></div>
+</div>
+<div class="z-10 max-w-xl">
+<!-- Brand Lockup -->
+<div class="mb-12">
+<span class="font-headline-md text-headline-md font-bold text-on-primary">ProcurePro <span class="text-primary-container">Elite</span></span>
+</div>
+<!-- Quote Block -->
+<div class="space-y-6">
+<h1 class="font-display-lg text-display-lg text-white leading-tight">
+                        Mitra Strategis <br/>
+<span class="text-primary-container">Pengadaan Energi</span> <br/>
+                        Nasional.
+                    </h1>
+<div class="w-24 h-1 bg-primary-container rounded-full electric-glow"></div>
+<p class="font-body-lg text-body-lg text-white/60 max-w-md">
+                        Empowering national energy transitions through precision procurement and elite industrial logistics.
+                    </p>
+</div>
+</div>
+<!-- Floating Glass Status Badge (Micro-interaction hint) -->
+<div class="absolute bottom-12 left-12 dark-glass px-6 py-4 rounded-xl flex items-center space-x-4">
+<div class="w-3 h-3 rounded-full bg-primary-container animate-pulse shadow-[0_0_8px_rgba(0,1,187,0.8)]"></div>
+<span class="font-label-md text-label-md text-white/80 tracking-widest">SYSTEMS ONLINE: SECURE ACCESS</span>
+</div>
+</section>
+<!-- Right Panel: Login Form -->
+<section class="w-full md:w-1/2 bg-surface-container-lowest flex flex-col justify-center items-center p-8 md:p-24 order-1 md:order-2">
+<div class="w-full max-w-md">
+<!-- Form Header -->
+<header class="mb-10">
+<h2 class="font-headline-lg text-headline-lg text-tertiary mb-2">Corporate Login</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Access your procurement dashboard and active requisitions.</p>
+</header>
+<!-- Login Form -->
+<form class="space-y-6" id="loginForm" onsubmit="return false;">
+<!-- Email Field -->
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-secondary uppercase tracking-wider" for="email">Corporate Email</label>
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors">mail</span>
+<input class="w-full pl-12 pr-4 py-4 bg-surface-bright border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all font-body-md text-body-md outline-none" id="email" name="email" placeholder="name@company.com" required="" type="email"/>
+</div>
+</div>
+<!-- Password Field -->
+<div class="space-y-2">
+<div class="flex justify-between items-center">
+<label class="font-label-md text-label-md text-secondary uppercase tracking-wider" for="password">Password</label>
+<a class="font-label-md text-label-md text-primary hover:underline transition-all" href="#">Lupa Password?</a>
+</div>
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors">lock</span>
+<input class="w-full pl-12 pr-4 py-4 bg-surface-bright border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all font-body-md text-body-md outline-none" id="password" name="password" placeholder="••••••••" required="" type="password"/>
+<button class="absolute right-4 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface-variant transition-colors" onclick="togglePassword()" type="button">
+<span class="material-symbols-outlined" id="eyeIcon">visibility</span>
+</button>
+</div>
+</div>
+<!-- Remember Me -->
+<div class="flex items-center space-x-3">
+<input class="w-5 h-5 rounded border-outline-variant text-primary focus:ring-primary" id="remember" type="checkbox"/>
+<label class="font-body-md text-body-md text-on-surface-variant cursor-pointer" for="remember">Remember this device</label>
+</div>
+<!-- Submit Button -->
+<button class="w-full bg-primary hover:bg-primary/90 text-white font-headline-md text-headline-md py-4 rounded-lg shadow-lg active:scale-95 transition-all flex justify-center items-center group" type="submit">
+<span>Sign In to Hub</span>
+<span class="material-symbols-outlined ml-2 group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</button>
+</form>
+<!-- Footer Support -->
+<footer class="mt-12 pt-8 border-t border-outline-variant/30 flex flex-col sm:flex-row items-center justify-between gap-4">
+<p class="font-caption text-caption text-secondary">
+                        © 2024 ProcurePro Global. Secure Infrastructure.
+                    </p>
+<div class="flex items-center space-x-6">
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-primary flex items-center" href="#">
+<span class="material-symbols-outlined text-sm mr-1">help</span>
+                            Support
+                        </a>
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-primary flex items-center" href="#">
+<span class="material-symbols-outlined text-sm mr-1">language</span>
+                            ID / EN
+                        </a>
+</div>
+</footer>
+</div>
+</section>
+</main>
+<!-- Micro-interaction Scripts -->
+<script>
+        function togglePassword() {
+            const pwd = document.getElementById('password');
+            const icon = document.getElementById('eyeIcon');
+            if (pwd.type === 'password') {
+                pwd.type = 'text';
+                icon.textContent = 'visibility_off';
+            } else {
+                pwd.type = 'password';
+                icon.textContent = 'visibility';
+            }
+        }
+
+        // Form Focus Visual Effects
+        const inputs = document.querySelectorAll('input');
+        inputs.forEach(input => {
+            input.addEventListener('focus', () => {
+                input.parentElement.parentElement.classList.add('scale-[1.01]');
+                input.parentElement.parentElement.style.transition = 'all 0.2s ease-out';
+            });
+            input.addEventListener('blur', () => {
+                input.parentElement.parentElement.classList.remove('scale-[1.01]');
+            });
+        });
+
+        // Simple button loading state simulation
+        const loginBtn = document.querySelector('button[type="submit"]');
+        loginBtn.addEventListener('click', (e) => {
+            const originalHtml = loginBtn.innerHTML;
+            loginBtn.disabled = true;
+            loginBtn.innerHTML = `
+                <div class="flex items-center space-x-2">
+                    <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span>Authenticating...</span>
+                </div>
+            `;
+            setTimeout(() => {
+                loginBtn.innerHTML = originalHtml;
+                loginBtn.disabled = false;
+            }, 1500);
+        });
+    </script>
+</body></html>

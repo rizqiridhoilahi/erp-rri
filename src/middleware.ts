@@ -4,6 +4,14 @@ import { checkRateLimit } from '@/lib/utils/rate-limit'
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
+  const host = request.headers.get('host') ?? ''
+
+  // Host detection: pt-rri.com → rewrite to public-pages/
+  if (host === 'pt-rri.com' || host === 'www.pt-rri.com') {
+    const url = new URL('/public-pages' + pathname, request.url)
+    url.search = request.nextUrl.search
+    return NextResponse.rewrite(url)
+  }
 
   if (pathname === '/') {
     return NextResponse.redirect(new URL('/login', request.url))

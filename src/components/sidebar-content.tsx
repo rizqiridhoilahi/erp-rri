@@ -49,6 +49,7 @@ const menuItems: MenuItem[] = [
     { href: '/dashboard/dokumen', label: 'Manajemen Dokumen', icon: Archive },
     { href: '/dashboard/master/supplier', label: 'Supplier', icon: Building2 },
     { href: '/dashboard/master/customer', label: 'Customer', icon: Users },
+    { href: '/dashboard/master/customer-profiles', label: 'Registrasi Customer', icon: UserCircle },
     { href: '/dashboard/master/pic-customer', label: 'PIC Customer', icon: UserCircle },
     { href: '/dashboard/master/payment-term', label: 'Payment Term', icon: FileText },
     { href: '/dashboard/master/coa', label: 'Chart of Accounts', icon: BookOpen, disabled: true },

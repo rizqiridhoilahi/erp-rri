@@ -1,0 +1,334 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Sovereign Marketplace | Status States</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&amp;family=Inter:wght@300;400;500;600&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-variant": "#e0e3e5",
+                    "surface-container-low": "#f2f4f6",
+                    "surface-bright": "#f7f9fb",
+                    "surface-tint": "#343dff",
+                    "surface": "#f7f9fb",
+                    "on-secondary-fixed-variant": "#3d475c",
+                    "surface-container-high": "#e6e8ea",
+                    "on-tertiary": "#ffffff",
+                    "tertiary-container": "#3f4d5f",
+                    "outline": "#757589",
+                    "on-error-container": "#93000a",
+                    "on-primary-container": "#b3b7ff",
+                    "inverse-on-surface": "#eff1f3",
+                    "tertiary-fixed": "#d4e4fa",
+                    "primary-fixed-dim": "#bec2ff",
+                    "secondary-container": "#d9e2fd",
+                    "on-primary": "#ffffff",
+                    "on-error": "#ffffff",
+                    "secondary-fixed": "#d9e2fd",
+                    "on-tertiary-fixed": "#0d1c2d",
+                    "error": "#ba1a1a",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-container-highest": "#e0e3e5",
+                    "tertiary": "#283648",
+                    "on-surface-variant": "#454558",
+                    "tertiary-fixed-dim": "#b9c8de",
+                    "on-tertiary-container": "#afbed3",
+                    "secondary": "#555e75",
+                    "inverse-surface": "#2d3133",
+                    "surface-container": "#eceef0",
+                    "background": "#f7f9fb",
+                    "primary-container": "#0000ff",
+                    "primary-fixed": "#e0e0ff",
+                    "on-surface": "#191c1e",
+                    "on-tertiary-fixed-variant": "#39485a",
+                    "secondary-fixed-dim": "#bdc6e0",
+                    "inverse-primary": "#bec2ff",
+                    "error-container": "#ffdad6",
+                    "on-primary-fixed-variant": "#0000ef",
+                    "on-secondary-fixed": "#121b2f",
+                    "on-secondary-container": "#5b647b",
+                    "on-secondary": "#ffffff",
+                    "on-primary-fixed": "#00006e",
+                    "primary": "#0001bb",
+                    "on-background": "#191c1e",
+                    "outline-variant": "#c5c4db",
+                    "surface-dim": "#d8dadc"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "container-max": "1280px",
+                    "gutter": "24px",
+                    "stack-lg": "32px",
+                    "stack-sm": "8px",
+                    "unit": "8px",
+                    "stack-md": "16px",
+                    "margin-mobile": "16px",
+                    "margin-desktop": "40px",
+                    "section-padding": "80px"
+            },
+            "fontFamily": {
+                    "display-lg": ["Lexend"],
+                    "caption": ["Inter"],
+                    "headline-md": ["Lexend"],
+                    "headline-lg": ["Lexend"],
+                    "title-lg": ["Lexend"],
+                    "body-md": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "headline-lg-mobile": ["Lexend"],
+                    "label-md": ["Inter"]
+            },
+            "fontSize": {
+                    "display-lg": ["48px", {"lineHeight": "1.1", "letterSpacing": "0.02em", "fontWeight": "700"}],
+                    "caption": ["12px", {"lineHeight": "1.4", "fontWeight": "400"}],
+                    "headline-md": ["24px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                    "headline-lg": ["32px", {"lineHeight": "1.2", "letterSpacing": "0.01em", "fontWeight": "700"}],
+                    "title-lg": ["20px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                    "body-md": ["16px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                    "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                    "headline-lg-mobile": ["28px", {"lineHeight": "1.2", "letterSpacing": "0.01em", "fontWeight": "700"}],
+                    "label-md": ["14px", {"lineHeight": "1.2", "letterSpacing": "0.05em", "fontWeight": "500"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #F8FAFC; /* Light Ice Gray */
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid #E2E8F0; /* Platinum Slate */
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .shimmer {
+            background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+        }
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+    </style>
+</head>
+<body class="font-body-md text-on-surface">
+<!-- TopNavBar -->
+<header class="fixed top-0 w-full z-50 flex justify-between items-center px-margin-desktop h-20 max-w-container-max mx-auto bg-surface/70 backdrop-blur-md border-b border-outline-variant/30 shadow-sm shadow-on-secondary-fixed/5">
+<div class="flex items-center gap-8">
+<span class="font-display-lg text-title-lg font-bold text-primary">Sovereign Marketplace</span>
+<nav class="hidden md:flex gap-6">
+<a class="font-body-md text-on-surface-variant hover:text-primary transition-colors" href="#">Inventory</a>
+<a class="font-body-md text-on-surface-variant hover:text-primary transition-colors" href="#">Orders</a>
+<a class="font-body-md text-on-surface-variant hover:text-primary transition-colors" href="#">Analytics</a>
+<a class="font-body-md text-on-surface-variant hover:text-primary transition-colors" href="#">Suppliers</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative hidden lg:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="pl-10 pr-4 py-2 bg-surface-container-low border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary-container focus:border-primary-container outline-none transition-all w-64" placeholder="Search resources..." type="text">
+</div>
+<button class="p-2 hover:bg-surface-container-low rounded-full transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant">notifications</span>
+</button>
+<button class="p-2 hover:bg-surface-container-low rounded-full transition-colors relative">
+<span class="material-symbols-outlined text-on-surface-variant">shopping_cart</span>
+<span class="absolute top-1 right-1 w-2 h-2 bg-primary-container rounded-full"></span>
+</button>
+<img alt="Corporate Executive Profile" class="w-10 h-10 rounded-full border-2 border-primary-fixed-dim object-cover" data-alt="A professional headshot of a corporate executive with a confident expression, wearing a tailored navy suit. The lighting is bright and clean, typical of a high-end office environment with a soft blurred architectural background, maintaining a luxury B2B corporate aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBovdkftSCFomBVKZ8f26WMq78-Hc_9vYtcCXoeSk2L0AF1CcUufEbRShcV540aIPNL0AdtGKwENGKla5MolZEup4V3BjH7WDwRd3oGcbLfG_nfn0V41t7dYGeEMAVrSfAtL0A4JxVjt0755L7_hdPY1iOsZF26ZIMjU-3opexbzyXyRl-ZaRIDkGOh_1JEaTYl1m8Ezn2LxAGG4yxUg-EtorNe9P3PmMemdf8cl-nvj5l1R2BYpmrHIIT-pgBJX4hn-E8JPxCAmmtL">
+</div>
+</header>
+<main class="mt-32 pb-section-padding px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto space-y-section-padding">
+<!-- Section 1: No Items Found -->
+<section class="flex flex-col items-center justify-center py-20 bg-white rounded-xl glass-card text-center py-stack-lg">
+<div class="w-24 h-24 mb-stack-lg flex items-center justify-center bg-primary/5 rounded-full border border-primary/10">
+<span class="material-symbols-outlined text-primary text-[48px]" style="font-variation-settings: 'wght' 200;">search_off</span>
+</div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface mb-stack-sm text-on-primary-fixed">Hasil pencarian tidak ditemukan</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-md">Coba gunakan kata kunci lain atau periksa filter pencarian Anda untuk menemukan produk yang sesuai dengan katalog RRI.</p>
+<div class="mt-stack-lg flex gap-4">
+<button class="px-6 py-3 bg-primary text-white font-display-lg text-label-md font-bold rounded-lg hover:shadow-lg hover:shadow-primary/20 transition-all active:scale-95">Reset Filter</button>
+<button class="px-6 py-3 border border-outline-variant text-primary font-display-lg text-label-md font-bold rounded-lg hover:bg-surface-container-low transition-all">Hubungi Support</button>
+</div>
+</section>
+<!-- Section 2: Inquiry Basket is Empty -->
+<section class="grid grid-cols-1 lg:grid-cols-2 gap-gutter items-center py-20">
+<div class="relative flex justify-center lg:justify-start order-2 lg:order-1">
+<div class="w-full max-w-md aspect-square bg-white rounded-3xl glass-card flex items-center justify-center relative overflow-hidden">
+<div class="absolute inset-0 bg-primary/5 pattern-dots"></div>
+<div class="z-10 flex flex-col items-center">
+<span class="material-symbols-outlined text-primary text-[120px] mb-4 opacity-20" style="font-variation-settings: 'wght' 100;">package_2</span>
+<div class="w-32 h-2 bg-primary/10 rounded-full mb-2"></div>
+<div class="w-24 h-2 bg-primary/5 rounded-full"></div>
+</div>
+</div>
+</div>
+<div class="space-y-stack-lg order-1 lg:order-2">
+<span class="px-3 py-1 bg-primary-fixed text-on-primary-fixed text-caption font-bold rounded-full uppercase tracking-wider">Status Keranjang</span>
+<h2 class="font-display-lg text-display-lg text-on-surface leading-tight text-on-primary-fixed">Keranjang Inquiry Anda masih kosong.</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant">Tambahkan item dari katalog Sovereign Marketplace untuk memulai permintaan penawaran harga atau konsultasi pengadaan barang logistik Anda hari ini.</p>
+<button class="inline-flex items-center gap-3 px-8 py-4 bg-primary-container text-white font-display-lg text-title-lg font-bold rounded-xl hover:shadow-xl hover:shadow-primary-container/30 transition-all group hover:bg-primary">
+                    Eksplorasi Katalog Produk
+                    <span class="material-symbols-outlined transition-transform group-hover:translate-x-1">arrow_forward</span>
+</button>
+</div>
+</section>
+<!-- Section 3: Skeleton Loading Grid -->
+<section class="space-y-stack-lg">
+<div class="flex justify-between items-end border-b border-outline-variant/30 pb-4">
+<div>
+<h3 class="font-headline-lg text-headline-lg text-on-surface text-on-primary-fixed">Katalog Produk</h3>
+<p class="text-on-surface-variant">Memuat daftar inventaris premium...</p>
+</div>
+<div class="flex gap-2">
+<div class="w-10 h-10 rounded-lg shimmer opacity-20"></div>
+<div class="w-10 h-10 rounded-lg shimmer opacity-20"></div>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter">
+<!-- Card 1 -->
+<div class="bg-white rounded-xl glass-card p-4 space-y-4">
+<div class="w-full aspect-video rounded-lg shimmer opacity-20"></div>
+<div class="space-y-2">
+<div class="h-6 w-3/4 rounded shimmer opacity-20"></div>
+<div class="h-4 w-1/2 rounded shimmer opacity-20"></div>
+</div>
+<div class="flex justify-between items-center pt-4">
+<div class="h-8 w-24 rounded-lg shimmer opacity-20"></div>
+<div class="h-8 w-8 rounded-full shimmer opacity-20"></div>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="bg-white rounded-xl glass-card p-4 space-y-4">
+<div class="w-full aspect-video rounded-lg shimmer opacity-20"></div>
+<div class="space-y-2">
+<div class="h-6 w-3/4 rounded shimmer opacity-20"></div>
+<div class="h-4 w-1/2 rounded shimmer opacity-20"></div>
+</div>
+<div class="flex justify-between items-center pt-4">
+<div class="h-8 w-24 rounded-lg shimmer opacity-20"></div>
+<div class="h-8 w-8 rounded-full shimmer opacity-20"></div>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="bg-white rounded-xl glass-card p-4 space-y-4">
+<div class="w-full aspect-video rounded-lg shimmer opacity-20"></div>
+<div class="space-y-2">
+<div class="h-6 w-3/4 rounded shimmer opacity-20"></div>
+<div class="h-4 w-1/2 rounded shimmer opacity-20"></div>
+</div>
+<div class="flex justify-between items-center pt-4">
+<div class="h-8 w-24 rounded-lg shimmer opacity-20"></div>
+<div class="h-8 w-8 rounded-full shimmer opacity-20"></div>
+</div>
+</div>
+</div>
+</section>
+<!-- Section 4: Data Table Skeleton -->
+<section class="space-y-stack-lg">
+<h3 class="font-headline-lg text-headline-lg text-on-surface text-on-primary-fixed">Dokumen Inquiry Terakhir</h3>
+<div class="bg-white rounded-xl border border-outline-variant/30 overflow-hidden border-outline-variant/20">
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead class="bg-surface-container-low border-b border-outline-variant/30 bg-surface-container">
+<tr>
+<th class="px-6 py-4 font-label-md text-on-surface-variant uppercase tracking-wider">ID Dokumen</th>
+<th class="px-6 py-4 font-label-md text-on-surface-variant uppercase tracking-wider">Vendor</th>
+<th class="px-6 py-4 font-label-md text-on-surface-variant uppercase tracking-wider">Status</th>
+<th class="px-6 py-4 font-label-md text-on-surface-variant uppercase tracking-wider">Tanggal</th>
+<th class="px-6 py-4"></th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/20">
+<!-- Skeleton Row 1 -->
+<tr>
+<td class="px-6 py-4"><div class="h-4 w-24 rounded shimmer opacity-20"></div></td>
+<td class="px-6 py-4"><div class="h-4 w-32 rounded shimmer opacity-20"></div></td>
+<td class="px-6 py-4"><div class="h-6 w-20 rounded-full shimmer opacity-20"></div></td>
+<td class="px-6 py-4"><div class="h-4 w-28 rounded shimmer opacity-20"></div></td>
+<td class="px-6 py-4 flex justify-end"><div class="h-8 w-8 rounded shimmer opacity-20"></div></td>
+</tr>
+<!-- Skeleton Row 2 -->
+<tr>
+<td class="px-6 py-4"><div class="h-4 w-20 rounded shimmer opacity-20"></div></td>
+<td class="px-6 py-4"><div class="h-4 w-40 rounded shimmer opacity-20"></div></td>
+<td class="px-6 py-4"><div class="h-6 w-20 rounded-full shimmer opacity-20"></div></td>
+<td class="px-6 py-4"><div class="h-4 w-28 rounded shimmer opacity-20"></div></td>
+<td class="px-6 py-4 flex justify-end"><div class="h-8 w-8 rounded shimmer opacity-20"></div></td>
+</tr>
+<!-- Skeleton Row 3 -->
+<tr>
+<td class="px-6 py-4"><div class="h-4 w-28 rounded shimmer opacity-20"></div></td>
+<td class="px-6 py-4"><div class="h-4 w-24 rounded shimmer opacity-20"></div></td>
+<td class="px-6 py-4"><div class="h-6 w-20 rounded-full shimmer opacity-20"></div></td>
+<td class="px-6 py-4"><div class="h-4 w-28 rounded shimmer opacity-20"></div></td>
+<td class="px-6 py-4 flex justify-end"><div class="h-8 w-8 rounded shimmer opacity-20"></div></td>
+</tr>
+<!-- Skeleton Row 4 -->
+<tr>
+<td class="px-6 py-4"><div class="h-4 w-22 rounded shimmer opacity-20"></div></td>
+<td class="px-6 py-4"><div class="h-4 w-36 rounded shimmer opacity-20"></div></td>
+<td class="px-6 py-4"><div class="h-6 w-20 rounded-full shimmer opacity-20"></div></td>
+<td class="px-6 py-4"><div class="h-4 w-28 rounded shimmer opacity-20"></div></td>
+<td class="px-6 py-4 flex justify-end"><div class="h-8 w-8 rounded shimmer opacity-20"></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="w-full py-stack-lg px-margin-desktop flex flex-col md:flex-row justify-between items-center max-w-container-max mx-auto border-t border-outline-variant/20 bg-surface-container-lowest">
+<div class="flex flex-col items-center md:items-start gap-2 mb-stack-md md:mb-0">
+<span class="font-display-lg text-title-lg text-on-surface font-bold">Sovereign B2B</span>
+<p class="font-caption text-caption text-on-surface-variant">© 2024 Sovereign B2B Marketplace. All Rights Reserved.</p>
+</div>
+<div class="flex flex-wrap justify-center gap-6">
+<a class="font-caption text-caption text-on-surface-variant hover:text-primary transition-colors" href="#">Terms of Service</a>
+<a class="font-caption text-caption text-on-surface-variant hover:text-primary transition-colors" href="#">Privacy Policy</a>
+<a class="font-caption text-caption text-on-surface-variant hover:text-primary transition-colors" href="#">Contact Support</a>
+<a class="font-caption text-caption text-on-surface-variant hover:text-primary transition-colors" href="#">Global Compliance</a>
+</div>
+</footer>
+<!-- SideNavBar (Mobile Bottom) -->
+<div class="md:hidden fixed bottom-0 left-0 w-full bg-surface-container-highest border-t border-outline-variant/30 px-margin-mobile py-2 z-50 flex justify-between">
+<button class="flex flex-col items-center gap-1 text-primary">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-[10px] font-bold">Dash</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined">inventory_2</span>
+<span class="text-[10px]">Stock</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined">request_quote</span>
+<span class="text-[10px]">Inquiry</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined">handshake</span>
+<span class="text-[10px]">Vendors</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-[10px]">Apps</span>
+</button>
+</div>
+
+
+</body></html>

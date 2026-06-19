@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>PO &amp; Invoice Tracking | Sovereign Supply</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800&amp;family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-primary": "#ffffff",
+                    "surface": "#f7f9fb",
+                    "outline-variant": "#c5c4db",
+                    "on-tertiary-fixed": "#0d1c2d",
+                    "on-secondary-fixed": "#121b2f",
+                    "tertiary-fixed-dim": "#b9c8de",
+                    "surface-container-highest": "#e0e3e5",
+                    "error": "#ba1a1a",
+                    "on-secondary-fixed-variant": "#3d475c",
+                    "surface-dim": "#d8dadc",
+                    "primary-fixed": "#e0e0ff",
+                    "on-tertiary-fixed-variant": "#39485a",
+                    "inverse-surface": "#2d3133",
+                    "error-container": "#ffdad6",
+                    "on-primary-container": "#b3b7ff",
+                    "on-error-container": "#93000a",
+                    "primary": "#0001bb",
+                    "surface-bright": "#f7f9fb",
+                    "on-background": "#191c1e",
+                    "background": "#f7f9fb",
+                    "secondary-fixed-dim": "#bdc6e0",
+                    "on-error": "#ffffff",
+                    "tertiary": "#283648",
+                    "tertiary-container": "#3f4d5f",
+                    "inverse-on-surface": "#eff1f3",
+                    "on-tertiary": "#ffffff",
+                    "surface-variant": "#e0e3e5",
+                    "surface-container": "#eceef0",
+                    "on-surface": "#191c1e",
+                    "inverse-primary": "#bec2ff",
+                    "on-surface-variant": "#454558",
+                    "secondary-fixed": "#d9e2fd",
+                    "surface-container-high": "#e6e8ea",
+                    "on-secondary": "#ffffff",
+                    "on-primary-fixed-variant": "#0000ef",
+                    "surface-container-lowest": "#ffffff",
+                    "secondary": "#555e75",
+                    "tertiary-fixed": "#d4e4fa",
+                    "surface-tint": "#343dff",
+                    "secondary-container": "#d9e2fd",
+                    "surface-container-low": "#f2f4f6",
+                    "primary-fixed-dim": "#bec2ff",
+                    "primary-container": "#0000ff",
+                    "outline": "#757589",
+                    "on-tertiary-container": "#afbed3",
+                    "on-primary-fixed": "#00006e",
+                    "on-secondary-container": "#5b647b",
+                    "platinum-slate": "#E2E8F0"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "margin-desktop": "40px",
+                    "gutter": "24px",
+                    "stack-lg": "32px",
+                    "unit": "8px",
+                    "stack-sm": "8px",
+                    "container-max": "1280px",
+                    "stack-md": "16px",
+                    "margin-mobile": "16px",
+                    "section-padding": "80px"
+            },
+            "fontFamily": {
+                    "headline-lg": ["Lexend"],
+                    "body-lg": ["Inter"],
+                    "headline-md": ["Lexend"],
+                    "caption": ["Inter"],
+                    "headline-lg-mobile": ["Lexend"],
+                    "title-lg": ["Lexend"],
+                    "display-lg": ["Lexend"],
+                    "label-md": ["Inter"],
+                    "body-md": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-lg": ["32px", {"lineHeight": "1.2", "letterSpacing": "0.01em", "fontWeight": "700"}],
+                    "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                    "headline-md": ["24px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                    "caption": ["12px", {"lineHeight": "1.4", "fontWeight": "400"}],
+                    "headline-lg-mobile": ["28px", {"lineHeight": "1.2", "letterSpacing": "0.01em", "fontWeight": "700"}],
+                    "title-lg": ["20px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                    "display-lg": ["48px", {"lineHeight": "1.1", "letterSpacing": "0.02em", "fontWeight": "700"}],
+                    "label-md": ["14px", {"lineHeight": "1.2", "letterSpacing": "0.05em", "fontWeight": "500"}],
+                    "body-md": ["16px", {"lineHeight": "1.5", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        .deep-navy-glass {
+            background: rgba(13, 28, 45, 0.9);
+            backdrop-filter: blur(20px);
+        }
+        .table-container::-webkit-scrollbar {
+            height: 8px;
+        }
+        .table-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        .table-container::-webkit-scrollbar-thumb {
+            background: #c5c4db;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="bg-surface font-body-md text-on-surface">
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-0 h-full w-64 bg-tertiary dark:bg-on-tertiary-fixed backdrop-blur-lg border-r border-outline-variant/20 shadow-xl shadow-on-secondary-fixed/10 flex flex-col py-stack-lg px-stack-md z-50">
+<div class="mb-stack-lg px-2">
+<div class="flex items-center gap-3 mb-1">
+<div class="w-10 h-10 rounded-lg bg-primary flex items-center justify-center text-white">
+<span class="material-symbols-outlined">business_center</span>
+</div>
+<div>
+<h1 class="font-headline-md text-headline-md text-on-tertiary-fixed-variant leading-none">Sovereign B2B</h1>
+<p class="text-[10px] uppercase tracking-widest text-tertiary-fixed-dim font-bold opacity-60">Elite Industrial Supply</p>
+</div>
+</div>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 text-tertiary-fixed-dim hover:text-on-primary transition-all rounded-lg hover:bg-tertiary-container/50" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-md text-label-md">Overview</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 bg-primary text-on-primary rounded-lg font-semibold transition-transform duration-300 scale-102" href="#">
+<span class="material-symbols-outlined">description</span>
+<span class="font-label-md text-label-md">Documents</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-tertiary-fixed-dim hover:text-on-primary transition-all rounded-lg hover:bg-tertiary-container/50" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+<span class="font-label-md text-label-md">Inventory</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-tertiary-fixed-dim hover:text-on-primary transition-all rounded-lg hover:bg-tertiary-container/50" href="#">
+<span class="material-symbols-outlined">shopping_cart</span>
+<span class="font-label-md text-label-md">Procurement</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-tertiary-fixed-dim hover:text-on-primary transition-all rounded-lg hover:bg-tertiary-container/50" href="#">
+<span class="material-symbols-outlined">business_center</span>
+<span class="font-label-md text-label-md">Suppliers</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-tertiary-fixed-dim hover:text-on-primary transition-all rounded-lg hover:bg-tertiary-container/50" href="#">
+<span class="material-symbols-outlined">contact_support</span>
+<span class="font-label-md text-label-md">Support</span>
+</a>
+</nav>
+<div class="mt-auto pt-6 border-t border-outline-variant/10 space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 text-tertiary-fixed-dim hover:text-on-primary transition-all rounded-lg hover:bg-tertiary-container/50" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-error-container hover:text-white transition-all rounded-lg hover:bg-error/20" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span class="font-label-md text-label-md">Log Out</span>
+</a>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="ml-64 min-h-screen">
+<!-- TopAppBar -->
+<header class="fixed top-0 right-0 left-64 h-16 bg-surface/70 backdrop-blur-md flex items-center justify-between px-margin-desktop z-40 border-b border-outline-variant/30 shadow-sm shadow-on-secondary-fixed/5">
+<div class="flex items-center gap-8">
+<h2 class="font-headline-md text-headline-md font-bold text-on-surface">PO &amp; Invoice Tracking</h2>
+<nav class="hidden md:flex items-center gap-6">
+<a class="text-primary border-b-2 border-primary font-medium py-1" href="#">Dashboard</a>
+<a class="text-on-secondary-fixed-variant hover:text-primary transition-colors py-1" href="#">Analytics</a>
+<a class="text-on-secondary-fixed-variant hover:text-primary transition-colors py-1" href="#">Reports</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative hidden lg:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="pl-10 pr-4 py-2 bg-surface-container rounded-full border-none focus:ring-2 focus:ring-primary/20 text-label-md w-64" placeholder="Search tracking ID..." type="text"/>
+</div>
+<div class="flex items-center gap-2">
+<button class="p-2 hover:bg-surface-container-high/50 rounded-full transition-all active:scale-95">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 hover:bg-surface-container-high/50 rounded-full transition-all active:scale-95">
+<span class="material-symbols-outlined">settings</span>
+</button>
+</div>
+<div class="h-8 w-[1px] bg-outline-variant/30 mx-2"></div>
+<div class="flex items-center gap-3">
+<img alt="User avatar" class="w-9 h-9 rounded-full object-cover border border-outline-variant/50" data-alt="A professional corporate headshot of a senior logistics manager in a modern office environment. The lighting is bright and high-key, emphasizing a clean and elite professional look with soft blue-toned shadows. The subject is wearing a crisp white shirt and a navy blazer, representing authority and reliability in a B2B supply chain context." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDl2B6LfjYcgJEmOJRF-3Rdem45fpBEgj0EtccaG_hYTFH3jdrVjXVTj8PLZLFB593H2BxfGIx4A6ExQ96O67xyraFOsZtaRFKzngpYjQBZ4_9M6dPIc_JRmCd-s-_7Ru16SjUralY9oExfStHIMN6RR7dc3a5iQGcjT7IyOTZdYEhN355d0J_HeX6tanekfgjpwJm4-3tsRFnqula23GRbVAJum1wREH8OmZFyD2W0pusflB5Bb8H_nuwPmq0HtgEBco1g6DnXf0_S"/>
+<button class="bg-primary text-on-primary font-bold px-6 py-2 rounded-lg text-label-md hover:shadow-lg hover:shadow-primary/20 transition-all active:scale-95">Create Order</button>
+</div>
+</div>
+</header>
+<!-- Canvas -->
+<div class="pt-24 pb-12 px-margin-desktop max-w-container-max mx-auto">
+<!-- Summary Bento Grid -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-gutter mb-stack-lg">
+<div class="glass-panel p-stack-md rounded-xl border border-platinum-slate shadow-sm">
+<p class="text-caption text-on-secondary-fixed-variant mb-1">Total Outstanding</p>
+<h3 class="font-headline-lg text-headline-lg text-on-surface">$1,284,000.00</h3>
+<div class="flex items-center gap-1 text-primary mt-2">
+<span class="material-symbols-outlined text-[16px]">trending_up</span>
+<span class="text-caption font-semibold">12% from last month</span>
+</div>
+</div>
+<div class="glass-panel p-stack-md rounded-xl border border-platinum-slate shadow-sm">
+<p class="text-caption text-on-secondary-fixed-variant mb-1">In Transit (DO)</p>
+<h3 class="font-headline-lg text-headline-lg text-on-surface">42 Units</h3>
+<div class="flex items-center gap-1 text-primary mt-2">
+<span class="material-symbols-outlined text-[16px]">local_shipping</span>
+<span class="text-caption font-semibold">Next arrival: 2h 14m</span>
+</div>
+</div>
+<div class="glass-panel p-stack-md rounded-xl border border-platinum-slate shadow-sm">
+<p class="text-caption text-on-secondary-fixed-variant mb-1">Overdue Aging</p>
+<h3 class="font-headline-lg text-headline-lg text-error">8 Invoices</h3>
+<div class="flex items-center gap-1 text-error mt-2">
+<span class="material-symbols-outlined text-[16px]">warning</span>
+<span class="text-caption font-semibold">Action Required</span>
+</div>
+</div>
+<div class="glass-panel p-stack-md rounded-xl border border-platinum-slate shadow-sm">
+<p class="text-caption text-on-secondary-fixed-variant mb-1">Avg. Payment Cycle</p>
+<h3 class="font-headline-lg text-headline-lg text-on-surface">14.2 Days</h3>
+<div class="flex items-center gap-1 text-on-secondary-fixed-variant mt-2 opacity-60">
+<span class="material-symbols-outlined text-[16px]">history</span>
+<span class="text-caption font-semibold">Last 90 days average</span>
+</div>
+</div>
+</div>
+<!-- Tabulated Interface Section -->
+<div class="bg-white rounded-xl border border-platinum-slate overflow-hidden shadow-xl shadow-on-secondary-fixed/5">
+<!-- Filters & Tabs -->
+<div class="p-stack-md border-b border-platinum-slate flex flex-wrap items-center justify-between gap-4">
+<div class="flex bg-surface-container p-1 rounded-lg">
+<button class="px-6 py-2 bg-white shadow-sm rounded-md text-label-md font-semibold text-primary">All Transactions</button>
+<button class="px-6 py-2 text-label-md font-medium text-on-secondary-fixed-variant hover:text-primary transition-colors">Pending DO</button>
+<button class="px-6 py-2 text-label-md font-medium text-on-secondary-fixed-variant hover:text-primary transition-colors">Unpaid Invoices</button>
+</div>
+<div class="flex items-center gap-3">
+<button class="flex items-center gap-2 px-4 py-2 border border-platinum-slate rounded-lg text-label-md hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-primary">filter_list</span>
+                            Filter
+                        </button>
+<button class="flex items-center gap-2 px-4 py-2 border border-platinum-slate rounded-lg text-label-md hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-primary">download</span>
+                            Export CSV
+                        </button>
+</div>
+</div>
+<!-- Main Data Table -->
+<div class="table-container overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead class="bg-surface-container-low border-b border-platinum-slate">
+<tr>
+<th class="px-6 py-4 font-label-md text-label-md text-on-secondary-fixed-variant uppercase tracking-wider">PO Number</th>
+<th class="px-6 py-4 font-label-md text-label-md text-on-secondary-fixed-variant uppercase tracking-wider">Invoice ID</th>
+<th class="px-6 py-4 font-label-md text-label-md text-on-secondary-fixed-variant uppercase tracking-wider">DO Status</th>
+<th class="px-6 py-4 font-label-md text-label-md text-on-secondary-fixed-variant uppercase tracking-wider">Invoice Amount</th>
+<th class="px-6 py-4 font-label-md text-label-md text-on-secondary-fixed-variant uppercase tracking-wider">Due Date (Jatuh Tempo)</th>
+<th class="px-6 py-4 font-label-md text-label-md text-on-secondary-fixed-variant uppercase tracking-wider">Aging</th>
+<th class="px-6 py-4 font-label-md text-label-md text-on-secondary-fixed-variant uppercase tracking-wider">Action</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-platinum-slate">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container-low/30 transition-colors group">
+<td class="px-6 py-5 font-medium text-primary cursor-pointer hover:underline">#PO-2024-0891</td>
+<td class="px-6 py-5 text-on-surface">INV-SS-9902</td>
+<td class="px-6 py-5">
+<span class="flex items-center gap-2 text-primary font-semibold">
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+                                        In Transit
+                                    </span>
+</td>
+<td class="px-6 py-5 font-headline-md text-title-lg">$42,500.00</td>
+<td class="px-6 py-5 text-on-secondary-fixed-variant">Oct 12, 2024</td>
+<td class="px-6 py-5">
+<div class="flex items-center gap-2">
+<div class="w-16 bg-surface-container-highest h-1.5 rounded-full overflow-hidden">
+<div class="bg-primary h-full w-[45%]"></div>
+</div>
+<span class="text-caption font-bold text-on-surface">14 Days</span>
+</div>
+</td>
+<td class="px-6 py-5">
+<button class="text-primary hover:text-primary-container font-semibold text-label-md">Track DO</button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-container-low/30 transition-colors group">
+<td class="px-6 py-5 font-medium text-primary cursor-pointer hover:underline">#PO-2024-0888</td>
+<td class="px-6 py-5 text-on-surface">INV-SS-9871</td>
+<td class="px-6 py-5">
+<span class="flex items-center gap-2 text-on-secondary-fixed-variant">
+<span class="material-symbols-outlined text-[18px] text-primary" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                                        Delivered
+                                    </span>
+</td>
+<td class="px-6 py-5 font-headline-md text-title-lg">$128,000.00</td>
+<td class="px-6 py-5 text-on-secondary-fixed-variant">Sep 28, 2024</td>
+<td class="px-6 py-5">
+<span class="px-3 py-1 bg-error/10 text-error rounded-full text-caption font-bold">Overdue: 3d</span>
+</td>
+<td class="px-6 py-5">
+<button class="text-primary hover:text-primary-container font-semibold text-label-md">Pay Now</button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container-low/30 transition-colors group">
+<td class="px-6 py-5 font-medium text-primary cursor-pointer hover:underline">#PO-2024-0912</td>
+<td class="px-6 py-5 text-on-surface">INV-SS-9950</td>
+<td class="px-6 py-5">
+<span class="flex items-center gap-2 text-primary font-semibold">
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+                                        In Transit
+                                    </span>
+</td>
+<td class="px-6 py-5 font-headline-md text-title-lg">$12,450.00</td>
+<td class="px-6 py-5 text-on-secondary-fixed-variant">Oct 24, 2024</td>
+<td class="px-6 py-5">
+<div class="flex items-center gap-2">
+<div class="w-16 bg-surface-container-highest h-1.5 rounded-full overflow-hidden">
+<div class="bg-primary h-full w-[10%]"></div>
+</div>
+<span class="text-caption font-bold text-on-surface">26 Days</span>
+</div>
+</td>
+<td class="px-6 py-5">
+<button class="text-primary hover:text-primary-container font-semibold text-label-md">Track DO</button>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-surface-container-low/30 transition-colors group">
+<td class="px-6 py-5 font-medium text-primary cursor-pointer hover:underline">#PO-2024-0850</td>
+<td class="px-6 py-5 text-on-surface">INV-SS-9722</td>
+<td class="px-6 py-5">
+<span class="flex items-center gap-2 text-on-secondary-fixed-variant">
+<span class="material-symbols-outlined text-[18px] text-primary" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                                        Delivered
+                                    </span>
+</td>
+<td class="px-6 py-5 font-headline-md text-title-lg">$9,200.00</td>
+<td class="px-6 py-5 text-on-secondary-fixed-variant">Oct 01, 2024</td>
+<td class="px-6 py-5">
+<span class="px-3 py-1 bg-surface-container-highest text-on-secondary-fixed-variant rounded-full text-caption font-bold">Paid</span>
+</td>
+<td class="px-6 py-5">
+<button class="text-on-secondary-fixed-variant opacity-40 font-semibold text-label-md cursor-not-allowed">Archived</button>
+</td>
+</tr>
+<!-- Row 5 -->
+<tr class="hover:bg-surface-container-low/30 transition-colors group">
+<td class="px-6 py-5 font-medium text-primary cursor-pointer hover:underline">#PO-2024-0945</td>
+<td class="px-6 py-5 text-on-surface">-- Pending --</td>
+<td class="px-6 py-5">
+<span class="flex items-center gap-2 text-on-secondary-fixed-variant italic">
+                                        Processing Order
+                                    </span>
+</td>
+<td class="px-6 py-5 font-headline-md text-title-lg">$55,700.00</td>
+<td class="px-6 py-5 text-on-secondary-fixed-variant">--</td>
+<td class="px-6 py-5">
+<span class="text-caption font-bold text-on-secondary-fixed-variant opacity-30">N/A</span>
+</td>
+<td class="px-6 py-5">
+<button class="text-primary hover:text-primary-container font-semibold text-label-md">View Details</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination Footer -->
+<div class="px-6 py-4 bg-surface-container-low border-t border-platinum-slate flex items-center justify-between">
+<p class="text-caption text-on-secondary-fixed-variant">Showing 1 to 5 of 124 transactions</p>
+<div class="flex items-center gap-2">
+<button class="p-2 border border-platinum-slate rounded-lg hover:bg-white transition-all disabled:opacity-30" disabled="">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<button class="w-8 h-8 flex items-center justify-center bg-primary text-white rounded-lg text-label-md font-bold">1</button>
+<button class="w-8 h-8 flex items-center justify-center hover:bg-white rounded-lg text-label-md">2</button>
+<button class="w-8 h-8 flex items-center justify-center hover:bg-white rounded-lg text-label-md">3</button>
+<span class="px-1">...</span>
+<button class="w-8 h-8 flex items-center justify-center hover:bg-white rounded-lg text-label-md">25</button>
+<button class="p-2 border border-platinum-slate rounded-lg hover:bg-white transition-all">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Contextual Insights Section -->
+<div class="mt-stack-lg grid grid-cols-1 md:grid-cols-2 gap-gutter">
+<div class="relative overflow-hidden rounded-xl border border-platinum-slate h-64 group">
+<img alt="Logistics view" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" data-alt="A wide-angle, cinematic view of a futuristic logistics warehouse with automated sorting systems and soft glowing blue indicator lights. The scene uses a deep sovereign navy palette for the industrial structures, contrasting with pristine white floor reflections. The lighting is elite and professional, creating an atmosphere of technological precision and supply chain mastery." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA48mqJCXC_MP1kkpjXVga65KbVtAPxOy8kgoyjJIjK0dvuR6U_zawzRHeho5gbEFdbgbT14IbVJa-EDIHqGgC3eGp2rCNWeCb9uQFq_7yfXLKoHfYar9DYhdEd4M89-_rTED3LzawFPTT5qhbRpr27qPZ6lDCvzuOByFSX7xp_VgmA-DkehCsGMr02YMIfNeW-U5lS4dnW087WdC2FBGISAfALiu2Pm88rjzRB5Z9s232tx8q1M5KoYxMAPhW6l_SywmzAkfpFyaF6"/>
+<div class="absolute inset-0 deep-navy-glass opacity-60"></div>
+<div class="absolute inset-0 p-stack-lg flex flex-col justify-end">
+<h4 class="text-white font-headline-md text-headline-md mb-2">Live Fleet Tracking</h4>
+<p class="text-tertiary-fixed-dim text-body-md max-w-sm">Monitor real-time Delivery Order progress across regional hubs using our GPS-integrated supply portal.</p>
+<button class="mt-4 w-fit bg-primary text-on-primary px-6 py-2 rounded-lg font-bold text-label-md">Open Hub Map</button>
+</div>
+</div>
+<div class="bg-tertiary-fixed rounded-xl border border-platinum-slate p-stack-lg flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between mb-4">
+<span class="bg-primary/10 text-primary px-3 py-1 rounded-full text-caption font-bold">Account Alert</span>
+<span class="text-caption text-on-tertiary-fixed-variant">Updated 5m ago</span>
+</div>
+<h4 class="text-on-tertiary-fixed font-headline-md text-headline-md mb-2">Upcoming Payment Threshold</h4>
+<p class="text-on-tertiary-fixed-variant text-body-md">Your account reaches its $1.5M credit limit in approximately 48 hours based on current PO volume. Consider early reconciliation.</p>
+</div>
+<div class="flex items-center gap-4 mt-6">
+<button class="bg-on-tertiary-fixed text-white px-6 py-2 rounded-lg font-bold text-label-md">Manage Credit</button>
+<button class="text-on-tertiary-fixed font-bold text-label-md border-b-2 border-on-tertiary-fixed">Contact Manager</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Micro-interaction Script -->
+<script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Tab switching logic (aesthetic only for demo)
+            const tabButtons = document.querySelectorAll('.flex.bg-surface-container button');
+            tabButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    tabButtons.forEach(b => {
+                        b.classList.remove('bg-white', 'shadow-sm', 'text-primary');
+                        b.classList.add('text-on-secondary-fixed-variant');
+                    });
+                    btn.classList.add('bg-white', 'shadow-sm', 'text-primary');
+                    btn.classList.remove('text-on-secondary-fixed-variant');
+                });
+            });
+
+            // Interactive row hover effect refinement
+            const rows = document.querySelectorAll('tbody tr');
+            rows.forEach(row => {
+                row.addEventListener('mouseenter', () => {
+                    row.querySelector('.font-headline-md')?.classList.add('text-primary');
+                });
+                row.addEventListener('mouseleave', () => {
+                    row.querySelector('.font-headline-md')?.classList.remove('text-primary');
+                });
+            });
+        });
+    </script>
+</body></html>

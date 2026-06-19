@@ -136,6 +136,37 @@
   animation: mesh-shift 20s ease-in-out infinite;
 }
 
+.glass-card {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(197, 196, 219, 0.3);
+}
+
+.navy-glass {
+  background: rgba(11, 21, 40, 0.3);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.hero-glow {
+  box-shadow: 0 0 40px 10px rgba(0, 1, 187, 0.3);
+}
+
+.text-glow-blue {
+  text-shadow: 0 0 15px rgba(52, 61, 255, 0.6);
+}
+
+@keyframes scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-scroll {
+  display: flex;
+  width: max-content;
+  animation: scroll 30s linear infinite;
+}
+
 @media print {
   body { background: white; color: black; }
   @page { margin: 20mm; }

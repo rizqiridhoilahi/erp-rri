@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SPH / RFQ History | Sovereign Supply</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800&amp;family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-primary": "#ffffff",
+                    "surface": "#f7f9fb",
+                    "outline-variant": "#c5c4db",
+                    "on-tertiary-fixed": "#0d1c2d",
+                    "on-secondary-fixed": "#121b2f",
+                    "tertiary-fixed-dim": "#b9c8de",
+                    "surface-container-highest": "#e0e3e5",
+                    "error": "#ba1a1a",
+                    "on-secondary-fixed-variant": "#3d475c",
+                    "surface-dim": "#d8dadc",
+                    "primary-fixed": "#e0e0ff",
+                    "on-tertiary-fixed-variant": "#39485a",
+                    "inverse-surface": "#2d3133",
+                    "error-container": "#ffdad6",
+                    "on-primary-container": "#b3b7ff",
+                    "on-error-container": "#93000a",
+                    "primary": "#0001bb",
+                    "surface-bright": "#f7f9fb",
+                    "on-background": "#191c1e",
+                    "background": "#f7f9fb",
+                    "secondary-fixed-dim": "#bdc6e0",
+                    "on-error": "#ffffff",
+                    "tertiary": "#283648",
+                    "tertiary-container": "#3f4d5f",
+                    "inverse-on-surface": "#eff1f3",
+                    "on-tertiary": "#ffffff",
+                    "surface-variant": "#e0e3e5",
+                    "surface-container": "#eceef0",
+                    "on-surface": "#191c1e",
+                    "inverse-primary": "#bec2ff",
+                    "on-surface-variant": "#454558",
+                    "secondary-fixed": "#d9e2fd",
+                    "surface-container-high": "#e6e8ea",
+                    "on-secondary": "#ffffff",
+                    "on-primary-fixed-variant": "#0000ef",
+                    "surface-container-lowest": "#ffffff",
+                    "secondary": "#555e75",
+                    "tertiary-fixed": "#d4e4fa",
+                    "surface-tint": "#343dff",
+                    "secondary-container": "#d9e2fd",
+                    "surface-container-low": "#f2f4f6",
+                    "primary-fixed-dim": "#bec2ff",
+                    "primary-container": "#0000ff",
+                    "outline": "#757589",
+                    "on-tertiary-container": "#afbed3",
+                    "on-primary-fixed": "#00006e",
+                    "on-secondary-container": "#5b647b"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "margin-desktop": "40px",
+                    "gutter": "24px",
+                    "stack-lg": "32px",
+                    "unit": "8px",
+                    "stack-sm": "8px",
+                    "container-max": "1280px",
+                    "stack-md": "16px",
+                    "margin-mobile": "16px",
+                    "section-padding": "80px"
+            },
+            "fontFamily": {
+                    "headline-lg": ["Lexend"],
+                    "body-lg": ["Inter"],
+                    "headline-md": ["Lexend"],
+                    "caption": ["Inter"],
+                    "headline-lg-mobile": ["Lexend"],
+                    "title-lg": ["Lexend"],
+                    "display-lg": ["Lexend"],
+                    "label-md": ["Inter"],
+                    "body-md": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-lg": ["32px", {"lineHeight": "1.2", "letterSpacing": "0.01em", "fontWeight": "700"}],
+                    "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                    "headline-md": ["24px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                    "caption": ["12px", {"lineHeight": "1.4", "fontWeight": "400"}],
+                    "headline-lg-mobile": ["28px", {"lineHeight": "1.2", "letterSpacing": "0.01em", "fontWeight": "700"}],
+                    "title-lg": ["20px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                    "display-lg": ["48px", {"lineHeight": "1.1", "letterSpacing": "0.02em", "fontWeight": "700"}],
+                    "label-md": ["14px", {"lineHeight": "1.2", "letterSpacing": "0.05em", "fontWeight": "500"}],
+                    "body-md": ["16px", {"lineHeight": "1.5", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid #c5c4db; /* Platinum Slate */
+        }
+        .deep-navy-text {
+            color: #0d1c2d;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .active-nav-indicator {
+            position: relative;
+        }
+        .active-nav-indicator::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 25%;
+            height: 50%;
+            width: 4px;
+            background-color: #0000ff;
+            border-radius: 0 4px 4px 0;
+        }
+    </style>
+</head>
+<body class="bg-surface font-body-md text-on-surface">
+<!-- SideNavBar (Shared Component Identity) -->
+<aside class="fixed left-0 top-0 h-full w-64 bg-tertiary dark:bg-on-tertiary-fixed backdrop-blur-lg border-r border-outline-variant/20 shadow-xl shadow-on-secondary-fixed/10 flex flex-col py-stack-lg px-stack-md z-50">
+<div class="mb-10 px-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-primary flex items-center justify-center text-on-primary">
+<span class="material-symbols-outlined" data-icon="business_center">business_center</span>
+</div>
+<div>
+<h1 class="font-headline-md text-headline-md text-on-tertiary-fixed-variant leading-none">Sovereign B2B</h1>
+<p class="text-[10px] uppercase tracking-widest text-tertiary-fixed-dim mt-1">Elite Industrial Supply</p>
+</div>
+</div>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 text-tertiary-fixed-dim hover:text-on-primary transition-all rounded-lg group" href="#">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform" data-icon="dashboard">dashboard</span>
+<span class="font-label-md text-label-md">Overview</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-tertiary-fixed-dim hover:text-on-primary transition-all rounded-lg group" href="#">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform" data-icon="inventory_2">inventory_2</span>
+<span class="font-label-md text-label-md">Inventory</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 bg-primary text-on-primary rounded-lg font-semibold active-nav-indicator shadow-lg shadow-primary/20" href="#">
+<span class="material-symbols-outlined" data-icon="description">description</span>
+<span class="font-label-md text-label-md">Documents</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-tertiary-fixed-dim hover:text-on-primary transition-all rounded-lg group" href="#">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform" data-icon="shopping_cart">shopping_cart</span>
+<span class="font-label-md text-label-md">Procurement</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-tertiary-fixed-dim hover:text-on-primary transition-all rounded-lg group" href="#">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform" data-icon="business_center">business_center</span>
+<span class="font-label-md text-label-md">Suppliers</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-tertiary-fixed-dim hover:text-on-primary transition-all rounded-lg group" href="#">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform" data-icon="contact_support">contact_support</span>
+<span class="font-label-md text-label-md">Support</span>
+</a>
+</nav>
+<div class="pt-6 border-t border-outline-variant/10 mt-auto space-y-1">
+<button class="w-full bg-primary-container text-on-primary-fixed-variant py-3 px-4 rounded-xl font-bold flex items-center justify-center gap-2 hover:opacity-90 transition-all active:scale-95 mb-4">
+<span class="material-symbols-outlined" data-icon="add">add</span>
+                New Request
+            </button>
+<a class="flex items-center gap-3 px-4 py-2 text-tertiary-fixed-dim hover:text-on-primary transition-all rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2 text-tertiary-fixed-dim hover:text-on-primary transition-all rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+<span class="font-label-md text-label-md">Log Out</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-64 min-h-screen">
+<!-- TopAppBar (Shared Component Identity) -->
+<header class="sticky top-0 h-16 bg-surface/70 backdrop-blur-md border-b border-outline-variant/30 flex items-center justify-between px-margin-desktop z-40">
+<div class="flex items-center gap-4 flex-1">
+<div class="relative w-full max-w-md">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline" data-icon="search">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-surface-container-low border border-outline-variant/50 rounded-full text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all" placeholder="Search RFQ history, documents, or projects..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 hover:bg-surface-container-high rounded-full transition-colors relative">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="notifications">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<button class="p-2 hover:bg-surface-container-high rounded-full transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="settings">settings</span>
+</button>
+<div class="h-8 w-[1px] bg-outline-variant/30 mx-2"></div>
+<div class="flex items-center gap-3 cursor-pointer hover:bg-surface-container-high p-1 pr-3 rounded-full transition-colors">
+<img alt="User Avatar" class="w-8 h-8 rounded-full object-cover" data-alt="A professional headshot of a corporate executive in a crisp navy blue suit. The man has a confident, approachable expression and is positioned against a clean, softly lit office background. High-key professional photography with shallow depth of field and premium lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBKL-UH3YX4qZsv9wqojhDh--9-Pfc5C_IfGuMcn96ZG_ZZeVbXlgWfuhhafhPr6fcHzZFLBg-fkDbo2TnpH1sBW65As6M65o98AWu5OLG8Z0TRvJWvmmriPJmEzzFEbRlinzOMXFanOn_Ciouk3Wsh7t1y07vJc6vOm4ix0aXevqtjj1a_8rQskSbNpV7gszkVGR-ewT5YbQSThqpy07uRE3gsBozz_WFGmvZPFZ0cy-1XWSNl5v4otIj44a7lSCxzwITB-srK7F8G"/>
+<span class="font-label-md text-label-md text-on-surface font-semibold">Budi Santoso</span>
+</div>
+</div>
+</header>
+<!-- Canvas -->
+<div class="px-margin-desktop py-stack-lg max-w-container-max mx-auto">
+<!-- Page Header -->
+<div class="flex flex-col md:flex-row md:items-end justify-between mb-stack-lg gap-4">
+<div>
+<nav class="flex items-center gap-2 text-caption text-on-secondary-fixed-variant mb-2">
+<a class="hover:text-primary" href="#">Dashboard</a>
+<span class="material-symbols-outlined text-[14px]" data-icon="chevron_right">chevron_right</span>
+<span class="text-primary font-medium">Documents</span>
+</nav>
+<h2 class="font-headline-lg text-headline-lg deep-navy-text tracking-tight">SPH / RFQ History</h2>
+<p class="text-on-surface-variant mt-1">Manage and track your official Quotation Proposals and RFQ submissions.</p>
+</div>
+<div class="flex items-center gap-3">
+<button class="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-outline-variant hover:bg-surface-container-high transition-all font-label-md text-label-md text-on-surface">
+<span class="material-symbols-outlined text-[20px]" data-icon="filter_list">filter_list</span>
+                        Filter
+                    </button>
+<button class="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-outline-variant hover:bg-surface-container-high transition-all font-label-md text-label-md text-on-surface">
+<span class="material-symbols-outlined text-[20px]" data-icon="file_download">file_download</span>
+                        Export CSV
+                    </button>
+</div>
+</div>
+<!-- Stats Overview (Asymmetric Layout) -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-gutter mb-stack-lg">
+<div class="md:col-span-1 glass-card p-6 rounded-xl shadow-sm border-l-4 border-l-primary flex flex-col justify-between">
+<span class="text-caption text-on-secondary-fixed-variant uppercase tracking-wider font-semibold">Total Requests</span>
+<div class="mt-4 flex items-baseline gap-2">
+<span class="font-display-lg text-headline-lg deep-navy-text">42</span>
+<span class="text-caption text-success font-medium">+12% vs last month</span>
+</div>
+</div>
+<div class="md:col-span-1 glass-card p-6 rounded-xl shadow-sm border-l-4 border-l-success flex flex-col justify-between">
+<span class="text-caption text-on-secondary-fixed-variant uppercase tracking-wider font-semibold">Approved SPH</span>
+<div class="mt-4 flex items-baseline gap-2">
+<span class="font-display-lg text-headline-lg deep-navy-text">28</span>
+</div>
+</div>
+<div class="md:col-span-2 relative overflow-hidden glass-card p-6 rounded-xl shadow-sm bg-[#0000ff]/5">
+<div class="relative z-10">
+<span class="text-caption text-on-secondary-fixed-variant uppercase tracking-wider font-semibold">Active Procurements</span>
+<div class="mt-4 flex flex-wrap gap-2">
+<span class="px-3 py-1 bg-white/60 border border-outline-variant rounded-full text-xs font-medium">#RFQ-2024-001 (Processing)</span>
+<span class="px-3 py-1 bg-white/60 border border-outline-variant rounded-full text-xs font-medium">#RFQ-2023-982 (Revision Needed)</span>
+<span class="px-3 py-1 bg-white/60 border border-outline-variant rounded-full text-xs font-medium">+3 more</span>
+</div>
+</div>
+<div class="absolute -right-8 -bottom-8 opacity-5">
+<span class="material-symbols-outlined text-[160px]" data-icon="description">description</span>
+</div>
+</div>
+</div>
+<!-- Data Table Section -->
+<div class="glass-card rounded-xl shadow-xl shadow-on-secondary-fixed/5 overflow-hidden border border-outline-variant/30">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low border-b border-outline-variant/50">
+<th class="px-6 py-4 font-label-md text-label-md deep-navy-text uppercase tracking-wider">RFQ ID</th>
+<th class="px-6 py-4 font-label-md text-label-md deep-navy-text uppercase tracking-wider">Date</th>
+<th class="px-6 py-4 font-label-md text-label-md deep-navy-text uppercase tracking-wider">Subject (Project Name)</th>
+<th class="px-6 py-4 font-label-md text-label-md deep-navy-text uppercase tracking-wider text-center">Status</th>
+<th class="px-6 py-4 font-label-md text-label-md deep-navy-text uppercase tracking-wider text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/20">
+<!-- Row 1: Approved -->
+<tr class="hover:bg-surface-container/50 transition-colors group">
+<td class="px-6 py-5 font-semibold text-primary">#RFQ-2024-042</td>
+<td class="px-6 py-5 text-on-surface-variant font-medium">Oct 12, 2024</td>
+<td class="px-6 py-5">
+<div class="font-semibold deep-navy-text">Pembangunan Warehouse Phase II</div>
+<div class="text-caption text-on-surface-variant">Logistics &amp; Infrastructure</div>
+</td>
+<td class="px-6 py-5 text-center">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-success/10 text-success text-xs font-bold uppercase tracking-tight border border-success/20">
+<span class="w-1.5 h-1.5 rounded-full bg-success animate-pulse"></span>
+                                        Approved
+                                    </span>
+</td>
+<td class="px-6 py-5 text-right">
+<button class="bg-[#0000FF] hover:bg-[#0000CC] text-white px-5 py-2.5 rounded-lg font-bold text-sm shadow-lg shadow-[#0000FF]/20 flex items-center gap-2 ml-auto transition-all active:scale-95">
+<span class="material-symbols-outlined text-[18px]" data-icon="download">download</span>
+                                        📥 Unduh SPH Resmi (PDF)
+                                    </button>
+</td>
+</tr>
+<!-- Row 2: Pending -->
+<tr class="hover:bg-surface-container/50 transition-colors">
+<td class="px-6 py-5 font-semibold text-primary">#RFQ-2024-041</td>
+<td class="px-6 py-5 text-on-surface-variant font-medium">Oct 10, 2024</td>
+<td class="px-6 py-5">
+<div class="font-semibold deep-navy-text">Pengadaan Genset Industrial 500kVA</div>
+<div class="text-caption text-on-surface-variant">Electrical Services</div>
+</td>
+<td class="px-6 py-5 text-center">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-secondary-container text-secondary text-xs font-bold uppercase tracking-tight border border-secondary/20">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+                                        Pending
+                                    </span>
+</td>
+<td class="px-6 py-5 text-right">
+<button class="p-2 rounded-full hover:bg-surface-container-highest transition-colors text-on-surface-variant" title="View Details">
+<span class="material-symbols-outlined" data-icon="visibility">visibility</span>
+</button>
+</td>
+</tr>
+<!-- Row 3: Revised -->
+<tr class="hover:bg-surface-container/50 transition-colors">
+<td class="px-6 py-5 font-semibold text-primary">#RFQ-2024-039</td>
+<td class="px-6 py-5 text-on-surface-variant font-medium">Oct 05, 2024</td>
+<td class="px-6 py-5">
+<div class="font-semibold deep-navy-text">Maintenance Lift Office Tower A</div>
+<div class="text-caption text-on-surface-variant">Building Management</div>
+</td>
+<td class="px-6 py-5 text-center">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-error-container text-error text-xs font-bold uppercase tracking-tight border border-error/20">
+<span class="w-1.5 h-1.5 rounded-full bg-error"></span>
+                                        Revised
+                                    </span>
+</td>
+<td class="px-6 py-5 text-right">
+<button class="text-primary font-semibold text-sm hover:underline flex items-center justify-end gap-1 ml-auto">
+                                        Check Revision
+                                        <span class="material-symbols-outlined text-[16px]" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</td>
+</tr>
+<!-- Row 4: Approved -->
+<tr class="hover:bg-surface-container/50 transition-colors group">
+<td class="px-6 py-5 font-semibold text-primary">#RFQ-2024-035</td>
+<td class="px-6 py-5 text-on-surface-variant font-medium">Sep 28, 2024</td>
+<td class="px-6 py-5">
+<div class="font-semibold deep-navy-text">Supply Safety Equipment (PPE)</div>
+<div class="text-caption text-on-surface-variant">Safety &amp; Compliance</div>
+</td>
+<td class="px-6 py-5 text-center">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-success/10 text-success text-xs font-bold uppercase tracking-tight border border-success/20">
+<span class="w-1.5 h-1.5 rounded-full bg-success"></span>
+                                        Approved
+                                    </span>
+</td>
+<td class="px-6 py-5 text-right">
+<button class="bg-[#0000FF] hover:bg-[#0000CC] text-white px-5 py-2.5 rounded-lg font-bold text-sm shadow-lg shadow-[#0000FF]/20 flex items-center gap-2 ml-auto transition-all active:scale-95">
+<span class="material-symbols-outlined text-[18px]" data-icon="download">download</span>
+                                        📥 Unduh SPH Resmi (PDF)
+                                    </button>
+</td>
+</tr>
+<!-- Row 5: Approved -->
+<tr class="hover:bg-surface-container/50 transition-colors group">
+<td class="px-6 py-5 font-semibold text-primary">#RFQ-2024-032</td>
+<td class="px-6 py-5 text-on-surface-variant font-medium">Sep 15, 2024</td>
+<td class="px-6 py-5">
+<div class="font-semibold deep-navy-text">Refurbishment Office Floor 12</div>
+<div class="text-caption text-on-surface-variant">General Renovation</div>
+</td>
+<td class="px-6 py-5 text-center">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-success/10 text-success text-xs font-bold uppercase tracking-tight border border-success/20">
+<span class="w-1.5 h-1.5 rounded-full bg-success"></span>
+                                        Approved
+                                    </span>
+</td>
+<td class="px-6 py-5 text-right">
+<button class="bg-[#0000FF] hover:bg-[#0000CC] text-white px-5 py-2.5 rounded-lg font-bold text-sm shadow-lg shadow-[#0000FF]/20 flex items-center gap-2 ml-auto transition-all active:scale-95">
+<span class="material-symbols-outlined text-[18px]" data-icon="download">download</span>
+                                        📥 Unduh SPH Resmi (PDF)
+                                    </button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination -->
+<div class="px-6 py-4 bg-surface-container-low border-t border-outline-variant/30 flex items-center justify-between">
+<span class="text-caption text-on-surface-variant">Showing 1 to 5 of 42 entries</span>
+<div class="flex items-center gap-2">
+<button class="p-2 rounded-lg border border-outline-variant hover:bg-surface-container-high transition-colors disabled:opacity-50" disabled="">
+<span class="material-symbols-outlined text-[18px]" data-icon="chevron_left">chevron_left</span>
+</button>
+<button class="w-10 h-10 rounded-lg bg-primary text-on-primary font-bold text-sm">1</button>
+<button class="w-10 h-10 rounded-lg hover:bg-surface-container-high transition-colors font-bold text-sm text-on-surface">2</button>
+<button class="w-10 h-10 rounded-lg hover:bg-surface-container-high transition-colors font-bold text-sm text-on-surface">3</button>
+<span class="px-2">...</span>
+<button class="w-10 h-10 rounded-lg hover:bg-surface-container-high transition-colors font-bold text-sm text-on-surface">9</button>
+<button class="p-2 rounded-lg border border-outline-variant hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-[18px]" data-icon="chevron_right">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Supporting Info -->
+<div class="mt-stack-lg grid grid-cols-1 md:grid-cols-2 gap-gutter">
+<div class="glass-card p-6 rounded-xl relative overflow-hidden group">
+<div class="relative z-10">
+<h4 class="font-headline-md text-title-lg deep-navy-text mb-2">Need Assistance?</h4>
+<p class="text-on-surface-variant text-sm mb-4">Our dedicated account managers are available to discuss your quotations and provide technical clarifications for your RFQs.</p>
+<a class="text-primary font-bold flex items-center gap-2 group-hover:gap-3 transition-all" href="#">
+                            Contact Support
+                            <span class="material-symbols-outlined" data-icon="arrow_right_alt">arrow_right_alt</span>
+</a>
+</div>
+<div class="absolute right-0 top-0 w-32 h-32 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+</div>
+<div class="glass-card p-6 rounded-xl border-dashed border-2">
+<div class="flex items-start gap-4">
+<div class="p-3 bg-surface-container-highest rounded-lg">
+<span class="material-symbols-outlined text-primary" data-icon="info">info</span>
+</div>
+<div>
+<h4 class="font-headline-md text-title-lg deep-navy-text mb-1">Doc Validity Notice</h4>
+<p class="text-on-surface-variant text-sm">Standard SPH documents are valid for 14 working days from the date of issuance. Please ensure procurement is initiated within this window.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- FAB for Quick Actions (Shared Component Concept) -->
+<button class="fixed bottom-8 right-8 w-14 h-14 bg-primary text-on-primary rounded-full shadow-2xl shadow-primary/40 flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-50 group">
+<span class="material-symbols-outlined group-hover:rotate-90 transition-transform duration-300" data-icon="add">add</span>
+<div class="absolute right-16 bg-on-tertiary-fixed text-white px-4 py-2 rounded-lg text-sm font-bold opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+            New RFQ Request
+        </div>
+</button>
+<script>
+        // Micro-interaction for table rows
+        document.querySelectorAll('tbody tr').forEach(row => {
+            row.addEventListener('mouseenter', () => {
+                row.style.cursor = 'pointer';
+            });
+        });
+
+        // Search highlight mock
+        const searchInput = document.querySelector('input[type="text"]');
+        searchInput.addEventListener('input', (e) => {
+            const val = e.target.value.toLowerCase();
+            document.querySelectorAll('tbody tr').forEach(row => {
+                const text = row.innerText.toLowerCase();
+                row.style.display = text.includes(val) ? '' : 'none';
+            });
+        });
+    </script>
+</body></html>

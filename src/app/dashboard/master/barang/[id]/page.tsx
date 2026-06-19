@@ -58,6 +58,13 @@ interface NegoHistoryItem {
   is_rejected: boolean
 }
 
+interface BarangImage {
+  id: string
+  url: string
+  urutan: number
+  is_primary: boolean
+}
+
 interface Barang {
   id: string
   nama: string
@@ -73,6 +80,9 @@ interface Barang {
   harga_jual_default: number | null
   stok_minimum: number | null
   is_active: boolean
+  is_published_to_catalog: boolean | null
+  deskripsi_katalog: string | null
+  spesifikasi_teknis: Record<string, unknown> | null
   created_at: string
   kontrak: { nomor_kontrak: string; nama: string; tanggal_mulai: string | null; tanggal_selesai: string | null }[]
 }
@@ -88,6 +98,8 @@ export default function DetailBarangPage() {
   const [historyLoading, setHistoryLoading] = useState(true)
   const [negoHistory, setNegoHistory] = useState<NegoHistoryItem[]>([])
   const [negoHistoryLoading, setNegoHistoryLoading] = useState(true)
+  const [gambar, setGambar] = useState<BarangImage[]>([])
+  const [gambarLoading, setGambarLoading] = useState(true)
 
   useEffect(() => {
     if (!id) return
@@ -108,6 +120,9 @@ export default function DetailBarangPage() {
           harga_jual_default,
           stok_minimum,
           is_active,
+          is_published_to_catalog,
+          deskripsi_katalog,
+          spesifikasi_teknis,
           created_at
         `)
         .eq("id", id)
@@ -126,6 +141,14 @@ export default function DetailBarangPage() {
         if (k) kontraks.push(k)
       }
 
+      const { data: gambarData } = await supabase
+        .from('barang_gambar')
+        .select('id, url, urutan, is_primary')
+        .eq('barang_id', id)
+        .order('urutan', { ascending: true })
+
+      setGambar(gambarData ?? [])
+      setGambarLoading(false)
       setData({ ...result, kontrak: kontraks } as Barang)
       setLoading(false)
     })()
@@ -231,14 +254,30 @@ export default function DetailBarangPage() {
                   : "-"}
               </p>
             </div>
-            {data.image_url && (
-              <div className="lg:col-span-3">
-                <label className="block text-sm font-medium text-muted-foreground mb-1">Image</label>
-                <ImageLightbox src={data.image_url} alt={data.nama}>
-                  <img src={data.image_url} alt={data.nama} className="h-32 w-32 object-contain rounded border" />
-                </ImageLightbox>
-              </div>
-            )}
+            <div className="lg:col-span-3">
+              <label className="block text-sm font-medium text-muted-foreground mb-2">Galeri Foto</label>
+              {gambarLoading ? (
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span className="text-xs">Memuat...</span>
+                </div>
+              ) : gambar.length > 0 ? (
+                <div className="flex flex-wrap gap-2">
+                  {gambar.map((g) => (
+                    <div key={g.id} className="relative">
+                      <ImageLightbox src={g.url} alt={data.nama}>
+                        <img src={g.url} alt={data.nama} className="h-20 w-20 object-contain rounded border cursor-pointer hover:opacity-80 transition-opacity" />
+                      </ImageLightbox>
+                      {g.is_primary && (
+                        <span className="absolute -top-1 -right-1 bg-[#0000ff] text-white text-[10px] rounded-full px-1 leading-tight">★</span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">Tidak ada gambar</p>
+              )}
+            </div>
             <div>
               <label className="block text-sm font-medium text-muted-foreground mb-1">Harga Beli Default</label>
               <p className="text-sm font-medium">{formatCurrency(data.harga_beli_default)}</p>
@@ -270,6 +309,32 @@ export default function DetailBarangPage() {
                 </div>
               )
             })()}
+            {data.is_published_to_catalog && (
+              <div className="lg:col-span-3 border-t pt-4 mt-2">
+                <label className="block text-sm font-medium text-muted-foreground mb-2">Info Katalog Publik</label>
+                <div className="space-y-3">
+                  {data.deskripsi_katalog && (
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Deskripsi Katalog</p>
+                      <p className="text-sm">{data.deskripsi_katalog}</p>
+                    </div>
+                  )}
+                  {data.spesifikasi_teknis && (
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Spesifikasi Teknis</p>
+                      <pre className="text-xs bg-muted p-3 rounded-md overflow-x-auto">
+                        {JSON.stringify(data.spesifikasi_teknis, null, 2)}
+                      </pre>
+                    </div>
+                  )}
+                  <div>
+                    <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-[#0000ff]/10 text-[#0000ff]">
+                      Ditampilkan di Katalog Publik
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
             <div>
               <label className="block text-sm font-medium text-muted-foreground mb-1">Status</label>
               <p className="text-sm">{statusBadge(data.is_active)}</p>

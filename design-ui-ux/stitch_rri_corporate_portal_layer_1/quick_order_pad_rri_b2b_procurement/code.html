@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Quick Order Pad | RRI Procurement</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&family=Inter:wght@400;500;600&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Lexend:wght@100..900&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary-fixed-variant": "#39485a",
+                        "on-tertiary-fixed": "#0d1c2d",
+                        "tertiary-fixed-dim": "#b9c8de",
+                        "on-surface": "#191c1e",
+                        "on-tertiary": "#ffffff",
+                        "on-primary-fixed": "#00006e",
+                        "surface-tint": "#343dff",
+                        "surface-container-lowest": "#ffffff",
+                        "tertiary-container": "#3f4d5f",
+                        "surface-dim": "#d8dadc",
+                        "error": "#ba1a1a",
+                        "on-background": "#191c1e",
+                        "on-error": "#ffffff",
+                        "surface-variant": "#e0e3e5",
+                        "on-error-container": "#93000a",
+                        "on-tertiary-container": "#afbed3",
+                        "on-surface-variant": "#454558",
+                        "background": "#f7f9fb",
+                        "primary-container": "#0000ff",
+                        "on-secondary-container": "#5b647b",
+                        "on-secondary": "#ffffff",
+                        "tertiary-fixed": "#d4e4fa",
+                        "surface-container-low": "#f2f4f6",
+                        "inverse-primary": "#bec2ff",
+                        "surface": "#f7f9fb",
+                        "on-secondary-fixed-variant": "#3d475c",
+                        "outline": "#757589",
+                        "secondary-fixed": "#d9e2fd",
+                        "secondary-container": "#d9e2fd",
+                        "primary-fixed": "#e0e0ff",
+                        "inverse-on-surface": "#eff1f3",
+                        "primary": "#0001bb",
+                        "on-primary-fixed-variant": "#0000ef",
+                        "surface-container-high": "#e6e8ea",
+                        "on-secondary-fixed": "#121b2f",
+                        "surface-container": "#eceef0",
+                        "on-primary-container": "#b3b7ff",
+                        "secondary": "#555e75",
+                        "error-container": "#ffdad6",
+                        "tertiary": "#283648",
+                        "surface-bright": "#f7f9fb",
+                        "inverse-surface": "#2d3133",
+                        "surface-container-highest": "#e0e3e5",
+                        "on-primary": "#ffffff",
+                        "outline-variant": "#c5c4db",
+                        "secondary-fixed-dim": "#bdc6e0",
+                        "primary-fixed-dim": "#bec2ff",
+                        "accent-slate": "#E2E8F0"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "stack-sm": "8px",
+                        "container-max": "1280px",
+                        "margin-desktop": "40px",
+                        "unit": "8px",
+                        "stack-md": "16px",
+                        "section-padding": "80px",
+                        "stack-lg": "32px",
+                        "margin-mobile": "16px",
+                        "gutter": "24px"
+                    },
+                    "fontFamily": {
+                        "display-lg": ["Lexend"],
+                        "headline-md": ["Lexend"],
+                        "title-lg": ["Lexend"],
+                        "headline-lg-mobile": ["Lexend"],
+                        "body-md": ["Inter"],
+                        "label-md": ["Inter"],
+                        "headline-lg": ["Lexend"],
+                        "caption": ["Inter"],
+                        "body-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "display-lg": ["48px", {"lineHeight": "1.1", "letterSpacing": "0.02em", "fontWeight": "700"}],
+                        "headline-md": ["24px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                        "title-lg": ["20px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                        "headline-lg-mobile": ["28px", {"lineHeight": "1.2", "letterSpacing": "0.01em", "fontWeight": "700"}],
+                        "body-md": ["16px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                        "label-md": ["14px", {"lineHeight": "1.2", "letterSpacing": "0.05em", "fontWeight": "500"}],
+                        "headline-lg": ["32px", {"lineHeight": "1.2", "letterSpacing": "0.01em", "fontWeight": "700"}],
+                        "caption": ["12px", {"lineHeight": "1.4", "fontWeight": "400"}],
+                        "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-header {
+            background: rgba(13, 28, 45, 0.7);
+            backdrop-filter: blur(12px);
+        }
+        .custom-dashed {
+            background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='12' ry='12' stroke='%230000FFFF' stroke-width='2' stroke-dasharray='12%2c 12' stroke-dashoffset='0' stroke-linecap='square'/%3e%3c/svg%3e");
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md min-h-screen">
+<!-- TopNavBar -->
+<nav class="fixed top-0 w-full z-50 flex justify-between items-center px-margin-desktop h-20 glass-header max-w-container-max mx-auto left-0 right-0">
+<div class="flex items-center gap-stack-lg">
+<span class="font-display-lg text-title-lg font-bold text-on-tertiary">RRI</span>
+<div class="hidden md:flex gap-gutter items-center">
+<a class="font-display-lg text-title-lg text-on-tertiary dark:text-on-tertiary-container hover:text-primary-container transition-colors duration-200" href="#">Dashboard</a>
+<a class="font-display-lg text-title-lg text-on-tertiary dark:text-on-tertiary-container hover:text-primary-container transition-colors duration-200" href="#">Catalog</a>
+<a class="font-display-lg text-title-lg text-primary border-b-2 border-primary pb-1" href="#">Quick Order</a>
+<a class="font-display-lg text-title-lg text-on-tertiary dark:text-on-tertiary-container hover:text-primary-container transition-colors duration-200" href="#">Inquiry</a>
+</div>
+</div>
+<div class="flex items-center gap-stack-md">
+<button class="p-2 text-on-tertiary hover:bg-white/10 rounded-full transition-all">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="p-2 text-on-tertiary hover:bg-white/10 rounded-full transition-all">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+<div class="h-10 w-10 rounded-full bg-tertiary-fixed overflow-hidden border-2 border-primary-container">
+<img alt="User Profile" data-alt="A professional headshot of a corporate executive in a modern office setting. The lighting is crisp and natural, highlighting a clean-cut appearance. The background features blurred glass partitions and soft architectural lines, maintaining a high-authority B2B aesthetic with a professional and dependable mood." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDQJ9VmEf5FXYwEtOCzPtW9Wl6Ngq6Ly7QGSFL6T36U3JdyXbnuiUnj1p18FGRPrBaeYmoBZVxjPb7QHeYuOfD-hzw5uBunEAKR8xWYR1m1GznZGlouDRpC9a1Wye0LOLWJC8zhYeFmeix_EW7ODV6fWvNZtTM7XOXFZDsceZPbWHayzrIoXQyBlFwuqn8X0OL1ISMAyavb8OOUMhBLbxiDQANGf--smOklS6B_yYNXca8w5AYVKrlQUc7tibuF34wyOhqLz95Qptif"/>
+</div>
+</div>
+</nav>
+<main class="pt-32 pb-section-padding px-margin-desktop max-w-container-max mx-auto">
+<!-- Header Section -->
+<header class="mb-stack-lg">
+<h1 class="font-headline-lg text-headline-lg text-on-tertiary-fixed mb-2">Quick Order Pad</h1>
+<p class="text-body-lg text-secondary max-w-2xl">Streamline your procurement process with our bulk upload and high-speed entry tools. Designed for elite logistical efficiency.</p>
+</header>
+<!-- Top Section: Bulk Excel Requisition -->
+<section class="mb-stack-lg">
+<div class="bg-surface-container-lowest rounded-xl p-stack-lg shadow-sm shadow-on-secondary-fixed/5 border border-outline-variant">
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-stack-md">
+<h2 class="font-headline-md text-headline-md text-on-tertiary-fixed">Bulk Excel Requisition</h2>
+<a class="text-primary-container font-medium flex items-center gap-2 hover:underline transition-all" href="#">
+<span class="material-symbols-outlined text-sm" data-icon="download">download</span>
+                        Unduh Template Excel
+                    </a>
+</div>
+<div class="custom-dashed h-48 rounded-xl flex flex-col items-center justify-center cursor-pointer transition-all hover:bg-primary-fixed/10 group" id="drop-zone">
+<span class="material-symbols-outlined text-4xl text-primary-container mb-2 group-hover:scale-110 transition-transform" data-icon="upload_file">upload_file</span>
+<p class="font-title-lg text-title-lg text-on-tertiary-fixed mb-1">Drag & Drop Excel File</p>
+<p class="text-caption text-secondary">or <span class="text-primary-container font-bold">Browse File</span> from your computer</p>
+<input accept=".xlsx, .xls" class="hidden" id="file-input" type="file"/>
+</div>
+</div>
+</section>
+<!-- Bottom Section: Fast Entry Matrix -->
+<section>
+<div class="bg-surface-container-lowest rounded-xl shadow-sm shadow-on-secondary-fixed/5 border border-outline-variant overflow-hidden">
+<div class="p-stack-md bg-on-tertiary-fixed flex justify-between items-center">
+<h2 class="font-headline-md text-headline-md text-on-tertiary">Fast Entry Matrix</h2>
+<span class="text-tertiary-fixed text-caption px-3 py-1 bg-tertiary-container rounded-full">Royal Tech Precision</span>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full border-collapse">
+<thead>
+<tr class="bg-surface-container-low border-b border-outline-variant">
+<th class="text-left p-stack-md font-label-md text-label-md text-secondary uppercase tracking-wider w-1/4">SKU Code</th>
+<th class="text-left p-stack-md font-label-md text-label-md text-secondary uppercase tracking-wider w-1/2">Product Name</th>
+<th class="text-left p-stack-md font-label-md text-label-md text-secondary uppercase tracking-wider w-1/6">Quantity</th>
+<th class="w-12"></th>
+</tr>
+</thead>
+<tbody id="matrix-body">
+<!-- Row 1 -->
+<tr class="border-b border-outline-variant group hover:bg-surface-bright transition-colors">
+<td class="p-stack-md">
+<input class="w-full bg-white border border-accent-slate rounded-lg p-2 focus:ring-2 focus:ring-primary-container focus:border-primary-container outline-none transition-all placeholder:text-outline" placeholder="Enter SKU..." type="text"/>
+</td>
+<td class="p-stack-md">
+<input class="w-full bg-surface-container-low border border-accent-slate rounded-lg p-2 text-secondary italic cursor-not-allowed" placeholder="Auto-filled from SKU" readonly="" type="text"/>
+</td>
+<td class="p-stack-md">
+<input class="w-full bg-white border border-accent-slate rounded-lg p-2 focus:ring-2 focus:ring-primary-container focus:border-primary-container outline-none transition-all" placeholder="0" type="number"/>
+</td>
+<td class="p-stack-md">
+<button class="text-error opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined" data-icon="delete">delete</span>
+</button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="border-b border-outline-variant group hover:bg-surface-bright transition-colors">
+<td class="p-stack-md">
+<input class="w-full bg-white border border-accent-slate rounded-lg p-2 focus:ring-2 focus:ring-primary-container focus:border-primary-container outline-none transition-all placeholder:text-outline" placeholder="Enter SKU..." type="text"/>
+</td>
+<td class="p-stack-md">
+<input class="w-full bg-surface-container-low border border-accent-slate rounded-lg p-2 text-secondary italic cursor-not-allowed" placeholder="Auto-filled from SKU" readonly="" type="text"/>
+</td>
+<td class="p-stack-md">
+<input class="w-full bg-white border border-accent-slate rounded-lg p-2 focus:ring-2 focus:ring-primary-container focus:border-primary-container outline-none transition-all" placeholder="0" type="number"/>
+</td>
+<td class="p-stack-md">
+<button class="text-error opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined" data-icon="delete">delete</span>
+</button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="border-b border-outline-variant group hover:bg-surface-bright transition-colors">
+<td class="p-stack-md">
+<input class="w-full bg-white border border-accent-slate rounded-lg p-2 focus:ring-2 focus:ring-primary-container focus:border-primary-container outline-none transition-all placeholder:text-outline" placeholder="Enter SKU..." type="text"/>
+</td>
+<td class="p-stack-md">
+<input class="w-full bg-surface-container-low border border-accent-slate rounded-lg p-2 text-secondary italic cursor-not-allowed" placeholder="Auto-filled from SKU" readonly="" type="text"/>
+</td>
+<td class="p-stack-md">
+<input class="w-full bg-white border border-accent-slate rounded-lg p-2 focus:ring-2 focus:ring-primary-container focus:border-primary-container outline-none transition-all" placeholder="0" type="number"/>
+</td>
+<td class="p-stack-md">
+<button class="text-error opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined" data-icon="delete">delete</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="p-stack-md border-t border-outline-variant bg-surface-container-low/50 flex flex-col md:flex-row justify-between items-center gap-stack-md">
+<button class="flex items-center gap-2 text-primary-container font-bold hover:scale-105 transition-transform active:opacity-80" id="add-row">
+<span class="material-symbols-outlined" data-icon="add_circle">add_circle</span>
+                        Tambah Baris Baru
+                    </button>
+<div class="flex items-center gap-stack-md">
+<button class="px-stack-lg py-2 border border-accent-slate text-on-tertiary-fixed rounded-lg hover:bg-surface-variant transition-colors">Clear All</button>
+<button class="px-stack-lg py-2 bg-primary-container text-white font-bold rounded-lg shadow-lg shadow-primary-container/20 hover:scale-105 transition-all active:scale-95">
+                            Add all to Inquiry
+                        </button>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-surface-container-lowest border-t border-outline-variant py-stack-lg">
+<div class="w-full flex flex-col md:flex-row justify-between items-center px-margin-desktop max-w-container-max mx-auto gap-stack-md">
+<div class="flex items-center gap-stack-md">
+<span class="font-display-lg text-label-md font-bold text-on-surface uppercase">RRI</span>
+<span class="text-secondary text-caption">© 2024 PT. Rizki Ridho Ilahi. All rights reserved.</span>
+</div>
+<div class="flex gap-stack-lg">
+<a class="text-secondary text-caption hover:text-primary transition-colors" href="#">Terms of Service</a>
+<a class="text-secondary text-caption hover:text-primary transition-colors" href="#">Privacy Policy</a>
+<a class="text-secondary text-caption hover:text-primary transition-colors" href="#">Legal Information</a>
+</div>
+</div>
+</footer>
+<script>
+        // Drop zone interaction
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('file-input');
+
+        dropZone.addEventListener('click', () => fileInput.click());
+        
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('bg-primary-fixed/20');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('bg-primary-fixed/20');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('bg-primary-fixed/20');
+            const files = e.dataTransfer.files;
+            if (files.length) {
+                alert(`Preparing to process: ${files[0].name}`);
+            }
+        });
+
+        // Add Row Functionality
+        const addRowBtn = document.getElementById('add-row');
+        const matrixBody = document.getElementById('matrix-body');
+
+        addRowBtn.addEventListener('click', () => {
+            const newRow = document.createElement('tr');
+            newRow.className = 'border-b border-outline-variant group hover:bg-surface-bright transition-colors';
+            newRow.innerHTML = `
+                <td class="p-stack-md">
+                    <input type="text" placeholder="Enter SKU..." class="w-full bg-white border border-accent-slate rounded-lg p-2 focus:ring-2 focus:ring-primary-container focus:border-primary-container outline-none transition-all placeholder:text-outline">
+                </td>
+                <td class="p-stack-md">
+                    <input type="text" placeholder="Auto-filled from SKU" readonly class="w-full bg-surface-container-low border border-accent-slate rounded-lg p-2 text-secondary italic cursor-not-allowed">
+                </td>
+                <td class="p-stack-md">
+                    <input type="number" placeholder="0" class="w-full bg-white border border-accent-slate rounded-lg p-2 focus:ring-2 focus:ring-primary-container focus:border-primary-container outline-none transition-all">
+                </td>
+                <td class="p-stack-md">
+                    <button class="text-error opacity-0 group-hover:opacity-100 transition-opacity remove-row">
+                        <span class="material-symbols-outlined" data-icon="delete">delete</span>
+                    </button>
+                </td>
+            `;
+            matrixBody.appendChild(newRow);
+            
+            // Re-attach delete listeners
+            newRow.querySelector('.remove-row').addEventListener('click', function() {
+                this.closest('tr').remove();
+            });
+        });
+
+        // Initial delete row button setup
+        document.querySelectorAll('.remove-row').forEach(btn => {
+            btn.addEventListener('click', function() {
+                this.closest('tr').remove();
+            });
+        });
+    </script>
+</body></html>

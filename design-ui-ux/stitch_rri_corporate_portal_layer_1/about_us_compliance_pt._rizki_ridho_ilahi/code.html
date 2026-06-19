@@ -1,0 +1,343 @@
+<!DOCTYPE html><html class="scroll-smooth" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Tentang Kami | RRI - Rizki Ridho Ilahi</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800&amp;family=Inter:wght@300;400;500;600&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-surface": "#191c1e",
+                      "on-primary": "#ffffff",
+                      "tertiary-fixed-dim": "#b9c8de",
+                      "on-tertiary-container": "#afbed3",
+                      "primary-container": "#0000ff",
+                      "inverse-on-surface": "#eff1f3",
+                      "secondary": "#555e75",
+                      "inverse-primary": "#bec2ff",
+                      "on-surface-variant": "#454558",
+                      "on-secondary-fixed-variant": "#3d475c",
+                      "on-error": "#ffffff",
+                      "error-container": "#ffdad6",
+                      "surface-container-lowest": "#ffffff",
+                      "primary": "#0001bb",
+                      "on-background": "#191c1e",
+                      "surface-container-low": "#f2f4f6",
+                      "outline-variant": "#c5c4db",
+                      "on-tertiary-fixed": "#0d1c2d",
+                      "tertiary-fixed": "#d4e4fa",
+                      "on-primary-fixed-variant": "#0000ef",
+                      "primary-fixed-dim": "#bec2ff",
+                      "on-tertiary-fixed-variant": "#39485a",
+                      "on-secondary": "#ffffff",
+                      "surface-bright": "#f7f9fb",
+                      "on-error-container": "#93000a",
+                      "secondary-container": "#d9e2fd",
+                      "outline": "#757589",
+                      "surface-dim": "#d8dadc",
+                      "surface": "#f7f9fb",
+                      "on-secondary-container": "#5b647b",
+                      "surface-container-high": "#e6e8ea",
+                      "surface-variant": "#e0e3e5",
+                      "inverse-surface": "#2d3133",
+                      "background": "#f7f9fb",
+                      "primary-fixed": "#e0e0ff",
+                      "surface-container": "#eceef0",
+                      "secondary-fixed": "#d9e2fd",
+                      "surface-container-highest": "#e0e3e5",
+                      "tertiary": "#283648",
+                      "surface-tint": "#343dff",
+                      "error": "#ba1a1a",
+                      "on-primary-fixed": "#00006e",
+                      "tertiary-container": "#3f4d5f",
+                      "on-secondary-fixed": "#121b2f",
+                      "secondary-fixed-dim": "#bdc6e0",
+                      "on-primary-container": "#b3b7ff",
+                      "on-tertiary": "#ffffff"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "section-padding": "80px",
+                      "margin-mobile": "16px",
+                      "margin-desktop": "40px",
+                      "stack-lg": "32px",
+                      "stack-md": "16px",
+                      "gutter": "24px",
+                      "container-max": "1280px",
+                      "unit": "8px",
+                      "stack-sm": "8px"
+              },
+              "fontFamily": {
+                      "caption": ["Inter"],
+                      "label-md": ["Inter"],
+                      "headline-lg-mobile": ["Lexend"],
+                      "display-lg": ["Lexend"],
+                      "headline-md": ["Lexend"],
+                      "title-lg": ["Lexend"],
+                      "body-lg": ["Inter"],
+                      "body-md": ["Inter"],
+                      "headline-lg": ["Lexend"]
+              },
+              "fontSize": {
+                      "caption": ["12px", {"lineHeight": "1.4", "fontWeight": "400"}],
+                      "label-md": ["14px", {"lineHeight": "1.2", "letterSpacing": "0.05em", "fontWeight": "500"}],
+                      "headline-lg-mobile": ["28px", {"lineHeight": "1.2", "letterSpacing": "0.01em", "fontWeight": "700"}],
+                      "display-lg": ["48px", {"lineHeight": "1.1", "letterSpacing": "0.02em", "fontWeight": "700"}],
+                      "headline-md": ["24px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                      "title-lg": ["20px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                      "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                      "body-md": ["16px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                      "headline-lg": ["32px", {"lineHeight": "1.2", "letterSpacing": "0.01em", "fontWeight": "700"}]
+              }
+            },
+          },
+        }
+    </script>
+<style>
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(197, 196, 219, 0.3);
+        }
+        .navy-glass {
+            background: rgba(40, 54, 72, 0.4);
+            backdrop-filter: blur(10px);
+        }
+        .premium-shadow {
+            box-shadow: 0 10px 30px -5px rgba(11, 21, 40, 0.08);
+        }
+        @keyframes electric-pulse {
+            0%, 100% { text-shadow: 0 0 4px rgba(52, 61, 255, 0.4); }
+            50% { text-shadow: 0 0 12px rgba(52, 61, 255, 0.8); }
+        }
+        .logo-pulse {
+            animation: electric-pulse 2s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md overflow-x-hidden">
+<!-- TopNavBar Shell -->
+<nav class="bg-white border-b border-outline-variant/30 fixed w-full top-0 z-50"><div class="flex justify-between items-center max-w-container-max mx-auto px-margin-desktop h-20"><div class="flex items-center gap-4"><span class="text-title-lg font-headline-lg font-bold tracking-tight text-[#0B1528] logo-pulse">RRI</span></div><div class="hidden md:flex items-center gap-10"><a class="font-medium text-label-md font-label-md hover:text-[#343DFF] transition-colors duration-300 text-[#0B1528]" href="#">Solutions</a><a class="font-medium text-label-md font-label-md hover:text-[#343DFF] transition-colors duration-300 text-[#0B1528]" href="#">Logistics</a><a class="font-medium text-label-md font-label-md hover:text-[#343DFF] transition-colors duration-300 text-[#0B1528]" href="#">Industries</a><a class="text-[#0B1528] border-b-2 border-[#343DFF] pb-1 font-semibold text-label-md font-label-md" href="#">About Us</a><a class="font-medium text-label-md font-label-md hover:text-[#343DFF] transition-colors duration-300 text-[#0B1528]" href="#">Contact</a></div><div class="flex items-center gap-6"><button class="material-symbols-outlined text-[#0B1528] hover:text-[#343DFF] scale-95 transition-all">search</button><button class="bg-[#0000FF] text-white px-6 py-2.5 rounded-lg font-label-md text-label-md hover:bg-[#0000FF]/90 transition-all active:scale-95 shadow-lg">Get a Quote</button></div></div></nav>
+<main>
+<!-- Hero Section -->
+<section class="relative min-h-[614px] flex items-center overflow-hidden bg-[#0B1528]">
+<div class="absolute inset-0 z-0">
+<img alt="Corporate Headquarters" class="w-full h-full object-cover opacity-30 grayscale contrast-125" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDzWveJtSQAyvCbASQbOt-8FBq-IdTzasgxy0sncbLFdLN1tU-quzHMzhuaGxNuPxAJZcuFHt7OHiHMe13OLJJd4g9_nEdFUJ_QnVKYU-bhtZId5w_L_T3A-Z2lLrnmMR7reDfU7-TJaJCIGkdOtVP-4gMZSL96r_t1wf5RabRWsDWkJclrrhE5RVGh3SGfmXTBBCJ5tSic1LgY4RKqPIiZPWwyVv8Kd_SwkeLJb5STRpQAapTbxLRhcNpqhmpcPuvrklIGC06yyHt0">
+<div class="absolute inset-0 bg-gradient-to-r from-[#0B1528] via-[#0B1528]/80 to-transparent"></div>
+</div>
+<div class="relative z-10 max-w-container-max mx-auto px-margin-desktop py-section-padding mt-20">
+<div class="max-w-2xl">
+<span class="inline-block text-[#343DFF] font-label-md text-label-md tracking-widest mb-4 uppercase">Established 2024</span>
+<h1 class="text-display-lg font-display-lg text-white mb-6 leading-tight">Setting New Standards in Professional Supply Chains.</h1>
+<p class="text-body-lg font-body-lg text-white/70 max-w-xl">PT. Rizki Ridho Ilahi (RRI) is a leading B2B general supplier dedicated to providing world-class logistics and industrial solutions with uncompromising integrity.</p>
+</div>
+</div>
+</section>
+<!-- Company Story -->
+<section class="py-section-padding bg-surface" id="company-story">
+<div class="max-w-container-max mx-auto px-margin-desktop">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter items-center">
+<div class="lg:col-span-5 space-y-stack-md">
+<h2 class="text-headline-lg font-headline-lg text-primary">The RRI Narrative</h2>
+<div class="w-20 h-1.5 bg-primary-container rounded-full"></div>
+<p class="text-body-md font-body-md text-on-surface-variant leading-relaxed pt-4">
+                        Founded on the principles of reliability and excellence, RRI began with a simple mission: to bridge the gap between global industrial demands and local supply chain complexities. Today, we stand as a beacon of "Royal Tech" precision, serving enterprises across Southeast Asia with a focus on high-authority logistics and strategic sourcing.
+                    </p>
+<p class="text-body-md font-body-md text-on-surface-variant leading-relaxed">
+                        Our journey is defined by a commitment to the "Luxury Corporate" aesthetic—not just in how we present ourselves, but in the white-glove service we provide to every partner. We believe that professional supply chains are the backbone of a thriving economy, and we treat every contract as a covenant of trust.
+                    </p>
+</div>
+<div class="lg:col-span-7 grid grid-cols-2 gap-4">
+<div class="space-y-4 pt-12">
+<div class="rounded-xl overflow-hidden shadow-2xl">
+<img alt="Logistics Coordination" class="w-full aspect-[4/5] object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBsYaO461mrK4p9CI4yaYSocYU7HSQlm8YQzWiJwA3ond0iPfJqcqLyhOl0bZ8qDxLBHrxV3WdMGLnPmzDslKcumcn54Qvnuiee_B_dBXICDV9sryupCnl5BeirEjy_AdlRrSptTT0eYUqAkpCvYwl4XgMLJXZEieXNFwgf4nSRxPSFwX_xxlBGkyPn_uXpyly6Fn23qkHOlmJ7oBRiTPnT4WgkqVMbS0dc2mnji2rPbtXZGCJt84ok755dY5gKWjfioWtXL67nQN7H">
+</div>
+</div>
+<div class="space-y-4">
+<div class="rounded-xl overflow-hidden shadow-2xl">
+<img alt="Professional Team" class="w-full aspect-[4/5] object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCqLp0z3SEvrMI5Bwi1OxggGGdhg6r1qTgoxQkzieboln4H9SqEHt9b7ZvdLdb-OzGq3BKlqP9epm1wO7W3shtTdSIexGiwXPDBxkl7ScQ1FayDsCdE_Jsy-vTqEWszhCuHxAX8bA9dLEn16-8KK5VTbLCQa-TCfHnc_ThFzovDI3AWF_xPnbjXCnbEy0Nh4ihBQ0NZieousF9hQzkPNPKBl9GqnmiJJlziC73oNVR_o2F7OmB3ClgsT4BtgLhR1fThs-FG-jOYuoi1">
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Mission & Vision -->
+<section class="py-section-padding bg-[#0B1528] text-white">
+<div class="max-w-container-max mx-auto px-margin-desktop">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-20">
+<div class="space-y-stack-md border-l-4 border-[#343DFF] pl-10">
+<h3 class="text-headline-md font-headline-md text-white">Our Vision</h3>
+<p class="text-body-lg font-body-lg italic opacity-90 leading-relaxed">
+                        "To be the premier global anchor for industrial excellence, redefining the synergy between technology and logistics to empower the leaders of tomorrow."
+                    </p>
+</div>
+<div class="space-y-stack-md border-l-4 border-[#343DFF] pl-10">
+<h3 class="text-headline-md font-headline-md text-white">Our Mission</h3>
+<ul class="space-y-4 text-body-md font-body-md opacity-80">
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-[#343DFF] mt-1">check_circle</span>
+                            Delivering high-precision supply solutions that exceed industrial standards.
+                        </li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-[#343DFF] mt-1">check_circle</span>
+                            Fostering a culture of transparency and elite professionalism in every transaction.
+                        </li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-[#343DFF] mt-1">check_circle</span>
+                            Implementing sustainable and compliant logistics frameworks for a resilient future.
+                        </li>
+</ul>
+</div>
+</div>
+</div>
+</section>
+<!-- Legal Compliance -->
+<section class="py-section-padding bg-surface-container-low" id="compliance">
+<div class="max-w-container-max mx-auto px-margin-desktop">
+<div class="text-center mb-16">
+<h2 class="text-headline-lg font-headline-lg text-on-surface mb-4">Legal Compliance &amp; Governance</h2>
+<p class="text-body-md font-body-md text-on-surface-variant max-w-2xl mx-auto">
+                    Operating at the highest levels of corporate accountability, RRI adheres to strict international compliance standards and ethical protocols.
+                </p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
+<!-- Column 1 -->
+<div class="glass-card p-10 rounded-2xl premium-shadow border-t-4 border-primary transition-transform hover:-translate-y-2 duration-300">
+<div class="mb-6 flex justify-between items-center">
+<span class="material-symbols-outlined text-4xl text-primary" style="font-variation-settings: 'FILL' 1;">gavel</span>
+<span class="text-caption font-caption bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full">Verified</span>
+</div>
+<h4 class="text-title-lg font-title-lg text-on-surface mb-4">Company Legalities</h4>
+<div class="space-y-4 text-label-md font-label-md text-on-surface-variant">
+<div class="flex justify-between border-b border-outline-variant/30 pb-2">
+<span class="">Business Registration</span>
+<span class="text-primary font-bold">NIB #932...</span>
+</div>
+<div class="flex justify-between border-b border-outline-variant/30 pb-2">
+<span class="">Tax Identification</span>
+<span class="text-primary font-bold">NPWP #21...</span>
+</div>
+<div class="flex justify-between border-b border-outline-variant/30 pb-2">
+<span class="">Deed of Establishment</span>
+<span class="text-primary font-bold">Certified</span>
+</div>
+</div>
+</div>
+<!-- Column 2 -->
+<div class="glass-card p-10 rounded-2xl premium-shadow border-t-4 border-primary transition-transform hover:-translate-y-2 duration-300">
+<div class="mb-6 flex justify-between items-center">
+<span class="material-symbols-outlined text-4xl text-primary" style="font-variation-settings: 'FILL' 1;">engineering</span>
+<span class="text-caption font-caption bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full">ISO Certified</span>
+</div>
+<h4 class="text-title-lg font-title-lg text-on-surface mb-4">K3 Certifications</h4>
+<p class="text-body-md font-body-md text-on-surface-variant mb-6">
+                        Safety is our operational baseline. We maintain rigorous Occupational Health and Safety (K3) standards across all logistics hubs.
+                    </p>
+<div class="flex flex-wrap gap-2">
+<span class="bg-surface-container-high px-4 py-1.5 rounded text-caption font-caption">ISO 45001</span>
+<span class="bg-surface-container-high px-4 py-1.5 rounded text-caption font-caption">SMK3 Platinum</span>
+<span class="bg-surface-container-high px-4 py-1.5 rounded text-caption font-caption">HSE Excellence</span>
+</div>
+</div>
+<!-- Column 3 -->
+<div class="glass-card p-10 rounded-2xl premium-shadow border-t-4 border-primary transition-transform hover:-translate-y-2 duration-300">
+<div class="mb-6 flex justify-between items-center">
+<span class="material-symbols-outlined text-4xl text-primary" style="font-variation-settings: 'FILL' 1;">verified_user</span>
+<span class="text-caption font-caption bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full">Ethical</span>
+</div>
+<h4 class="text-title-lg font-title-lg text-on-surface mb-4">Anti-Bribery Policy</h4>
+<p class="text-body-md font-body-md text-on-surface-variant mb-6">
+                        Zero tolerance for corruption. Our ABMS (Anti-Bribery Management System) ensures clean business throughout our entire supply network.
+                    </p>
+<button class="flex items-center gap-2 text-primary font-label-md text-label-md hover:underline">
+                        Read Governance Charter
+                        <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Atmospheric Quote -->
+<section class="py-24 relative overflow-hidden bg-background">
+<div class="max-w-container-max mx-auto px-margin-desktop relative z-10 text-center">
+<blockquote class="text-headline-lg-mobile md:text-headline-lg font-headline-lg text-tertiary max-w-4xl mx-auto leading-tight italic">
+                "Transparency is not a requirement; it is our identity. At RRI, we believe trust is the most valuable commodity in any logistics chain."
+            </blockquote>
+<p class="mt-8 text-label-md font-label-md text-primary tracking-widest uppercase">— Management Board, PT. Rizki Ridho Ilahi</p>
+</div>
+</section>
+</main>
+<!-- Footer Shell -->
+<footer class="bg-[#0B1528] text-white/60 py-16 border-t border-white/10">
+<div class="max-w-container-max mx-auto px-margin-desktop">
+<div class="grid grid-cols-1 md:grid-cols-12 gap-12 mb-16">
+<div class="md:col-span-4 space-y-6">
+<span class="text-2xl font-bold text-white logo-pulse">RRI</span>
+<p class="text-sm leading-relaxed max-w-xs">
+                    Your Elite Partner in Global Supply &amp; Logistics Excellence. Redefining industrial synergy through technology and integrity.
+                </p>
+</div>
+<div class="md:col-span-8 grid grid-cols-2 md:grid-cols-3 gap-8">
+<div>
+<h4 class="text-white font-semibold mb-4">Company</h4>
+<ul class="space-y-2 text-sm">
+<li class=""><a class="hover:text-white transition-colors" href="#">Solutions</a></li>
+<li class=""><a class="hover:text-white transition-colors" href="#">Logistics</a></li>
+<li class=""><a class="hover:text-white transition-colors" href="#">Industries</a></li>
+<li class=""><a class="text-white font-medium" href="#">About Us</a></li>
+</ul>
+</div>
+<div>
+<h4 class="text-white font-semibold mb-4">Governance</h4>
+<ul class="space-y-2 text-sm">
+<li class=""><a class="hover:text-white transition-colors" href="#">Privacy Policy</a></li>
+<li class=""><a class="hover:text-white transition-colors" href="#">Terms of Service</a></li>
+<li class=""><a class="hover:text-white transition-colors" href="#">Compliance</a></li>
+<li class=""><a class="hover:text-white transition-colors" href="#">Safety (K3)</a></li>
+</ul>
+</div>
+<div class="col-span-2 md:col-span-1">
+<h4 class="text-white font-semibold mb-4">Contact</h4>
+<ul class="space-y-2 text-sm">
+<li class=""><a class="hover:text-white transition-colors" href="#">Support Center</a></li>
+<li class=""><a class="hover:text-white transition-colors" href="#">Global Inquiry</a></li>
+</ul>
+</div>
+</div>
+</div>
+<div class="pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4">
+<p class="text-xs">© 2024 PT. Rizki Ridho Ilahi (RRI). All rights reserved.</p>
+<div class="flex gap-6">
+<span class="material-symbols-outlined text-sm cursor-pointer hover:text-white transition-all">language</span>
+<span class="material-symbols-outlined text-sm cursor-pointer hover:text-white transition-all">shield</span>
+<span class="material-symbols-outlined text-sm cursor-pointer hover:text-white transition-all">hub</span>
+</div>
+</div>
+</div>
+</footer>
+<script>
+    // Micro-interaction for compliance cards
+    document.querySelectorAll('.glass-card').forEach(card => {
+        card.addEventListener('mouseenter', () => {
+            card.style.transform = 'translateY(-10px)';
+        });
+        card.addEventListener('mouseleave', () => {
+            card.style.transform = 'translateY(0)';
+        });
+    });
+</script>
+
+
+
+
+</body></html>

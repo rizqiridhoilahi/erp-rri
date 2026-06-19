@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Inquiry Basket | RRI - Requisition Review</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-tertiary-fixed-variant": "#39485a",
+                    "on-tertiary-fixed": "#0d1c2d",
+                    "tertiary-fixed-dim": "#b9c8de",
+                    "on-surface": "#191c1e",
+                    "on-tertiary": "#ffffff",
+                    "on-primary-fixed": "#00006e",
+                    "surface-tint": "#343dff",
+                    "surface-container-lowest": "#ffffff",
+                    "tertiary-container": "#3f4d5f",
+                    "surface-dim": "#d8dadc",
+                    "error": "#ba1a1a",
+                    "on-background": "#191c1e",
+                    "on-error": "#ffffff",
+                    "surface-variant": "#e0e3e5",
+                    "on-error-container": "#93000a",
+                    "on-tertiary-container": "#afbed3",
+                    "on-surface-variant": "#454558",
+                    "background": "#f7f9fb",
+                    "primary-container": "#0000ff",
+                    "on-secondary-container": "#5b647b",
+                    "on-secondary": "#ffffff",
+                    "tertiary-fixed": "#d4e4fa",
+                    "surface-container-low": "#f2f4f6",
+                    "inverse-primary": "#bec2ff",
+                    "surface": "#f7f9fb",
+                    "on-secondary-fixed-variant": "#3d475c",
+                    "outline": "#757589",
+                    "secondary-fixed": "#d9e2fd",
+                    "secondary-container": "#d9e2fd",
+                    "primary-fixed": "#e0e0ff",
+                    "inverse-on-surface": "#eff1f3",
+                    "primary": "#0001bb",
+                    "on-primary-fixed-variant": "#0000ef",
+                    "surface-container-high": "#e6e8ea",
+                    "on-secondary-fixed": "#121b2f",
+                    "surface-container": "#eceef0",
+                    "on-primary-container": "#b3b7ff",
+                    "secondary": "#555e75",
+                    "error-container": "#ffdad6",
+                    "tertiary": "#283648",
+                    "surface-bright": "#f7f9fb",
+                    "inverse-surface": "#2d3133",
+                    "surface-container-highest": "#e0e3e5",
+                    "on-primary": "#ffffff",
+                    "outline-variant": "#c5c4db",
+                    "secondary-fixed-dim": "#bdc6e0",
+                    "primary-fixed-dim": "#bec2ff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "stack-sm": "8px",
+                    "container-max": "1280px",
+                    "margin-desktop": "40px",
+                    "unit": "8px",
+                    "stack-md": "16px",
+                    "section-padding": "80px",
+                    "stack-lg": "32px",
+                    "margin-mobile": "16px",
+                    "gutter": "24px"
+            },
+            "fontFamily": {
+                    "display-lg": ["Lexend"],
+                    "headline-md": ["Lexend"],
+                    "title-lg": ["Lexend"],
+                    "headline-lg-mobile": ["Lexend"],
+                    "body-md": ["Inter"],
+                    "label-md": ["Inter"],
+                    "headline-lg": ["Lexend"],
+                    "caption": ["Inter"],
+                    "body-lg": ["Inter"]
+            },
+            "fontSize": {
+                    "display-lg": ["48px", {"lineHeight": "1.1", "letterSpacing": "0.02em", "fontWeight": "700"}],
+                    "headline-md": ["24px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                    "title-lg": ["20px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                    "headline-lg-mobile": ["28px", {"lineHeight": "1.2", "letterSpacing": "0.01em", "fontWeight": "700"}],
+                    "body-md": ["16px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                    "label-md": ["14px", {"lineHeight": "1.2", "letterSpacing": "0.05em", "fontWeight": "500"}],
+                    "headline-lg": ["32px", {"lineHeight": "1.2", "letterSpacing": "0.01em", "fontWeight": "700"}],
+                    "caption": ["12px", {"lineHeight": "1.4", "fontWeight": "400"}],
+                    "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            line-height: 1;
+            vertical-align: middle;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid #e0e3e5;
+        }
+        .shadow-luxury {
+            box-shadow: 0 10px 40px -10px rgba(11, 21, 40, 0.08);
+        }
+        .thumb-shadow {
+            box-shadow: 0 4px 12px rgba(11, 21, 40, 0.05);
+        }
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #0000ff;
+            box-shadow: 0 0 0 4px rgba(0, 0, 255, 0.05);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex flex-col">
+<!-- TopNavBar -->
+<nav class="fixed top-0 w-full z-50 flex justify-between items-center px-margin-desktop max-w-container-max mx-auto h-20 bg-on-tertiary-fixed-variant/70 backdrop-blur-md transition-all shadow-sm shadow-on-secondary-fixed/5">
+<div class="flex items-center gap-stack-lg">
+<span class="font-display-lg text-title-lg font-bold text-on-tertiary">RRI</span>
+<div class="hidden md:flex items-center gap-6">
+<a class="font-label-md text-on-tertiary dark:text-on-tertiary-container hover:text-primary-container transition-colors duration-200" href="#">Dashboard</a>
+<a class="font-label-md text-on-tertiary dark:text-on-tertiary-container hover:text-primary-container transition-colors duration-200" href="#">Catalog</a>
+<a class="font-label-md text-on-tertiary dark:text-on-tertiary-container hover:text-primary-container transition-colors duration-200" href="#">Quick Order</a>
+<a class="font-label-md text-primary border-b-2 border-primary pb-1" href="#">Inquiry</a>
+</div>
+</div>
+<div class="flex items-center gap-stack-md">
+<div class="relative hidden sm:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-tertiary/60">search</span>
+<input class="bg-on-tertiary/10 border-none rounded-full pl-10 pr-4 py-2 text-on-tertiary placeholder:text-on-tertiary/50 focus:ring-1 focus:ring-primary-container w-64" placeholder="Search components..." type="text"/>
+</div>
+<button class="text-on-tertiary hover:text-primary-container"><span class="material-symbols-outlined">notifications</span></button>
+<button class="text-on-tertiary hover:text-primary-container"><span class="material-symbols-outlined">settings</span></button>
+<div class="w-10 h-10 rounded-full bg-surface-container overflow-hidden border border-on-tertiary/20">
+<img alt="User Profile" class="w-full h-full object-cover" data-alt="A professional headshot of a corporate executive in a crisp navy blue suit, set against a clean, minimalist architectural background. The lighting is soft and directional, emphasizing competence and professional elegance within a high-end B2B environment. The image is polished, reflecting a Royal Tech aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCnqbAtS0WRRF4z164ra0hyjnpepb9YP19GzuXeA9I06QL3yyAFmKOtVwLqAVyVdWdq_Tli_Bd2jmJKuOZQvSPCzOu9G4sdM1HcyVkope1Ib7IF_2l0Ss_BW2jiPedb4VPnowze-tVOokxEt5j0Can_HraFWYVScmBZdedWtfn_R1ykPy_jIYAadcY4lw20CqsPyLu-KQwC2678QsaBeZ3r6i9Bja5yRD49D9evtjHnwV0b5-cHEa7fWZqAF5eWQK21vEl-ukTpZCcv"/>
+</div>
+</div>
+</nav>
+<!-- Main Content Canvas -->
+<main class="flex-grow pt-32 pb-section-padding px-margin-desktop max-w-container-max mx-auto w-full">
+<header class="mb-stack-lg">
+<h1 class="font-display-lg text-headline-lg text-on-tertiary-fixed mb-2">Inquiry Basket</h1>
+<p class="text-on-surface-variant font-body-md">Review and finalize your technical requisition before requesting a formal SPH.</p>
+</header>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter items-start">
+<!-- Left Column: Inquiry Items & Logistics -->
+<div class="lg:col-span-8 space-y-gutter">
+<!-- Requisition Review Table -->
+<section class="glass-panel rounded-xl overflow-hidden shadow-luxury">
+<div class="px-stack-lg py-stack-md border-b border-outline-variant bg-surface-container-lowest">
+<h2 class="font-headline-md text-title-lg text-on-tertiary-fixed">Requisition Review</h2>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead class="bg-surface-container-low/50">
+<tr>
+<th class="px-stack-lg py-4 font-label-md text-on-tertiary-fixed-variant uppercase tracking-wider">Item Details</th>
+<th class="px-stack-md py-4 font-label-md text-on-tertiary-fixed-variant uppercase tracking-wider">SKU</th>
+<th class="px-stack-md py-4 font-label-md text-on-tertiary-fixed-variant uppercase tracking-wider text-center">Quantity</th>
+<th class="px-stack-md py-4 font-label-md text-on-tertiary-fixed-variant uppercase tracking-wider">Specific Notes</th>
+<th class="px-stack-lg py-4 font-label-md text-on-tertiary-fixed-variant text-right"></th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant">
+<!-- Item 1 -->
+<tr class="group hover:bg-surface-container-low/30 transition-colors">
+<td class="px-stack-lg py-6">
+<div class="flex items-center gap-4">
+<div class="w-20 h-20 rounded-lg overflow-hidden border border-outline-variant thumb-shadow bg-white flex-shrink-0">
+<img class="w-full h-full object-cover" data-alt="A high-precision industrial server component with metallic casing and gold-plated connectors, photographed in a macro style with soft, diffused studio lighting on a clean platinum-colored surface. The aesthetic is ultra-modern, professional, and reflects high-end industrial engineering." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD1Yr-Bh_5CBIHZcFQf_TqyOWPkkQCKgA-_FNX9up4yUlG88z49SdO89mGlfUeumDvZ5oBcX7MzEHlH7LFIy_8oU63VxHzPtkHeyY8ROBOe5kwhF2FKY52z-Jcnp3wqsU0mSrm2Yi0r5r0lpuBsDGfbmErZpaYK9_Ha33x6Nm9X7C_RGKkw2t4_2KhFjRSCi5MbZ_zAeLKW9gJrmY2d7nJM8l0kxro_nTXwUUb7FKcfOvAPUaPHJ8fxtykYH7RZObpZ4KbsPt4E6o2y"/>
+</div>
+<div>
+<p class="font-title-lg text-body-md font-bold text-on-surface">Precision Sensor Node X-9</p>
+<p class="text-caption text-on-surface-variant">Industrial Automation Grade</p>
+</div>
+</div>
+</td>
+<td class="px-stack-md py-6 font-body-md text-secondary">RRI-AS-09122</td>
+<td class="px-stack-md py-6">
+<div class="flex items-center justify-center">
+<div class="flex items-center border border-outline-variant rounded-lg bg-white">
+<button class="p-2 hover:bg-surface-container transition-colors text-on-surface"><span class="material-symbols-outlined text-sm">remove</span></button>
+<input class="w-12 text-center border-none focus:ring-0 font-label-md text-on-surface p-0" type="number" value="12"/>
+<button class="p-2 hover:bg-surface-container transition-colors text-on-surface"><span class="material-symbols-outlined text-sm">add</span></button>
+</div>
+</div>
+</td>
+<td class="px-stack-md py-6">
+<textarea class="w-full h-12 bg-white border border-outline-variant rounded-lg p-2 text-caption focus:h-24 transition-all duration-300 resize-none" placeholder="Add spec notes..."></textarea>
+</td>
+<td class="px-stack-lg py-6 text-right">
+<button class="text-error opacity-0 group-hover:opacity-100 transition-opacity hover:underline font-label-md flex items-center justify-end gap-1">
+<span class="material-symbols-outlined text-base">delete</span> Remove
+                                        </button>
+</td>
+</tr>
+<!-- Item 2 -->
+<tr class="group hover:bg-surface-container-low/30 transition-colors">
+<td class="px-stack-lg py-6">
+<div class="flex items-center gap-4">
+<div class="w-20 h-20 rounded-lg overflow-hidden border border-outline-variant thumb-shadow bg-white flex-shrink-0">
+<img class="w-full h-full object-cover" data-alt="A sleek, professional-grade workstation laptop on a clean, light-filled desk with a minimalist background. The laptop's magnesium chassis has a metallic sheen, and the lighting is airy and bright, emphasizing a premium corporate productivity environment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC5YRV7Wxretec1W4l5yVAg1YnssMVcsPfA3ScQA12-lVd-bm1zb8XUOxmScj5mHvUbxBih7tJHsDbyJ_4h1wN8ZDCYqxzkOgJf5VsODz6mehIkt_W9cBZYJzABFiBPEBYGn0Pipf_QFuOs4Gp1crhC-50rf7ZeTU_ipmolX6trz3d8ZRdhofOI6xevux3Mo5T_4aAXQ9oWHCaoPtz9StAS9l-77lW0zsacIkfkaMTDUjPCvi4nyJAhxuIC1KkE7IdZwM1lZw_4p9gJ"/>
+</div>
+<div>
+<p class="font-title-lg text-body-md font-bold text-on-surface">Core Workstation Pro v4</p>
+<p class="text-caption text-on-surface-variant">Processing Unit - Tier 1</p>
+</div>
+</div>
+</td>
+<td class="px-stack-md py-6 font-body-md text-secondary">RRI-HW-44510</td>
+<td class="px-stack-md py-6">
+<div class="flex items-center justify-center">
+<div class="flex items-center border border-outline-variant rounded-lg bg-white">
+<button class="p-2 hover:bg-surface-container transition-colors text-on-surface"><span class="material-symbols-outlined text-sm">remove</span></button>
+<input class="w-12 text-center border-none focus:ring-0 font-label-md text-on-surface p-0" type="number" value="5"/>
+<button class="p-2 hover:bg-surface-container transition-colors text-on-surface"><span class="material-symbols-outlined text-sm">add</span></button>
+</div>
+</div>
+</td>
+<td class="px-stack-md py-6">
+<textarea class="w-full h-12 bg-white border border-outline-variant rounded-lg p-2 text-caption focus:h-24 transition-all duration-300 resize-none" placeholder="Custom BIOS requested..."></textarea>
+</td>
+<td class="px-stack-lg py-6 text-right">
+<button class="text-error opacity-0 group-hover:opacity-100 transition-opacity hover:underline font-label-md flex items-center justify-end gap-1">
+<span class="material-symbols-outlined text-base">delete</span> Remove
+                                        </button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<!-- Project Logistics Details -->
+<section class="glass-panel rounded-xl shadow-luxury overflow-hidden">
+<div class="px-stack-lg py-stack-md border-b border-outline-variant bg-surface-container-lowest">
+<h2 class="font-headline-md text-title-lg text-on-tertiary-fixed">Project Logistics Details</h2>
+</div>
+<div class="p-stack-lg grid grid-cols-1 md:grid-cols-2 gap-stack-lg">
+<div class="space-y-4">
+<div>
+<label class="block font-label-md text-on-tertiary-fixed-variant mb-2">Shipping Destination</label>
+<input class="w-full bg-white border border-outline-variant rounded-lg px-4 py-3 font-body-md" placeholder="Regional Distribution Hub" type="text"/>
+</div>
+<div>
+<label class="block font-label-md text-on-tertiary-fixed-variant mb-2">Project Site Location</label>
+<input class="w-full bg-white border border-outline-variant rounded-lg px-4 py-3 font-body-md" placeholder="JKT-01 Data Center Complex" type="text"/>
+</div>
+</div>
+<div class="space-y-4">
+<div>
+<label class="block font-label-md text-on-tertiary-fixed-variant mb-2">PIC Contact Name</label>
+<input class="w-full bg-white border border-outline-variant rounded-lg px-4 py-3 font-body-md" placeholder="Ahmad Ridwan" type="text"/>
+</div>
+<div>
+<label class="block font-label-md text-on-tertiary-fixed-variant mb-2">Phone Information</label>
+<div class="flex">
+<span class="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-outline-variant bg-surface-container-low text-secondary font-label-md">+62</span>
+<input class="w-full bg-white border border-outline-variant rounded-r-lg px-4 py-3 font-body-md" placeholder="812-xxxx-xxxx" type="tel"/>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+<!-- Right Column: Summary Sidebar -->
+<aside class="lg:col-span-4 sticky top-24">
+<div class="glass-panel rounded-xl shadow-luxury p-stack-lg space-y-stack-lg">
+<h3 class="font-headline-md text-title-lg text-on-tertiary-fixed border-b border-outline-variant pb-4">Requisition Summary</h3>
+<div class="space-y-4">
+<div class="flex justify-between items-center">
+<span class="text-secondary font-body-md">Total Items</span>
+<span class="font-bold text-on-surface">17 Units</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-secondary font-body-md">Line Categories</span>
+<span class="font-bold text-on-surface">02 Groups</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-secondary font-body-md">Weight Estimate</span>
+<span class="font-bold text-on-surface">~42.5 kg</span>
+</div>
+<div class="flex justify-between items-center border-t border-outline-variant pt-4">
+<span class="text-secondary font-body-md">Inquiry Status</span>
+<span class="bg-primary-fixed text-on-primary-fixed px-3 py-1 rounded-full text-caption font-bold uppercase tracking-wide">Draft Review</span>
+</div>
+</div>
+<div class="bg-surface-container-low p-4 rounded-lg flex gap-3">
+<span class="material-symbols-outlined text-primary">info</span>
+<p class="text-caption text-on-secondary-fixed-variant leading-relaxed">
+                            SPH (Surat Penawaran Harga) will be generated within 24 hours after submission. Our technical team may contact your PIC for specification clarification.
+                        </p>
+</div>
+<button class="w-full bg-[#0000FF] hover:bg-[#0B1528] active:scale-[0.98] transition-all duration-300 text-white font-display-lg text-label-md py-5 px-6 rounded-lg shadow-lg flex items-center justify-center gap-3">
+<span>Kirim Permintaan Surat Penawaran Harga (SPH) Resmi</span>
+<span class="material-symbols-outlined">send</span>
+</button>
+<button class="w-full border border-outline-variant hover:bg-surface-container transition-colors text-on-tertiary-fixed font-label-md py-4 rounded-lg flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-lg">save</span>
+                        Save Draft for Later
+                    </button>
+</div>
+<!-- Small helper section -->
+<div class="mt-stack-lg flex flex-col items-center gap-4 text-center">
+<p class="text-caption text-on-surface-variant max-w-[280px]">Need technical assistance with your configuration?</p>
+<a class="text-primary font-bold font-label-md hover:underline flex items-center gap-2" href="#">
+<span class="material-symbols-outlined text-base">support_agent</span>
+                        Speak with a Consultant
+                    </a>
+</div>
+</aside>
+</div>
+</main>
+<!-- Footer -->
+<footer class="mt-auto w-full border-t border-outline-variant dark:border-on-tertiary-fixed-variant bg-surface-container-lowest dark:bg-on-tertiary-fixed py-stack-lg">
+<div class="max-w-container-max mx-auto px-margin-desktop flex flex-col md:flex-row justify-between items-center gap-6">
+<div class="flex flex-col items-center md:items-start gap-2">
+<span class="font-display-lg text-label-md font-bold text-on-surface dark:text-on-tertiary">RRI</span>
+<p class="font-body-md text-caption text-secondary dark:text-secondary-fixed-dim">© 2024 PT. Rizki Ridho Ilahi. All rights reserved.</p>
+</div>
+<div class="flex items-center gap-8">
+<a class="font-body-md text-caption text-secondary dark:text-on-secondary-fixed-variant hover:text-primary transition-colors" href="#">Terms of Service</a>
+<a class="font-body-md text-caption text-secondary dark:text-on-secondary-fixed-variant hover:text-primary transition-colors" href="#">Privacy Policy</a>
+<a class="font-body-md text-caption text-secondary dark:text-on-secondary-fixed-variant hover:text-primary transition-colors" href="#">Legal Information</a>
+</div>
+</div>
+</footer>
+<script>
+        // Simple micro-interaction for scroll effects on navbar
+        window.addEventListener('scroll', () => {
+            const nav = document.querySelector('nav');
+            if (window.scrollY > 20) {
+                nav.classList.add('h-16', 'shadow-md');
+                nav.classList.remove('h-20', 'shadow-sm');
+            } else {
+                nav.classList.add('h-20', 'shadow-sm');
+                nav.classList.remove('h-16', 'shadow-md');
+            }
+        });
+
+        // Add some subtle parallax or hover effects via JS if needed
+        document.querySelectorAll('.glass-panel').forEach(card => {
+            card.addEventListener('mousemove', (e) => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                card.style.setProperty('--mouse-x', `${x}px`);
+                card.style.setProperty('--mouse-y', `${y}px`);
+            });
+        });
+    </script>
+</body></html>

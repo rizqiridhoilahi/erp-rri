@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm"
-import { pgTable, text, timestamp, integer, boolean, real } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, integer, boolean, real, jsonb } from "drizzle-orm/pg-core";
 import { kategoriBarang } from "./kategori-barang";
 import { kontrak } from "./kontrak";
 
@@ -20,6 +20,9 @@ export const barang = pgTable("barang", {
   isActive: boolean("is_active").notNull().default(true),
   linkProduk: text("link_produk"),
   statusNego: text("status_nego"),
+  isPublishedToCatalog: boolean("is_published_to_catalog").default(false),
+  deskripsiKatalog: text("deskripsi_katalog"),
+  spesifikasiTeknis: jsonb("spesifikasi_teknis"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });

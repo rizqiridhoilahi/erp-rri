@@ -1,0 +1,281 @@
+<!DOCTYPE html><html class="light" lang="en" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Services &amp; Solutions | PT. Rizki Ridho Ilahi (RRI)</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-surface": "#191c1e",
+                      "on-primary": "#ffffff",
+                      "tertiary-fixed-dim": "#b9c8de",
+                      "on-tertiary-container": "#afbed3",
+                      "primary-container": "#0000ff",
+                      "inverse-on-surface": "#eff1f3",
+                      "secondary": "#555e75",
+                      "inverse-primary": "#bec2ff",
+                      "on-surface-variant": "#454558",
+                      "on-secondary-fixed-variant": "#3d475c",
+                      "on-error": "#ffffff",
+                      "error-container": "#ffdad6",
+                      "surface-container-lowest": "#ffffff",
+                      "primary": "#0001bb",
+                      "on-background": "#191c1e",
+                      "surface-container-low": "#f2f4f6",
+                      "outline-variant": "#c5c4db",
+                      "on-tertiary-fixed": "#0d1c2d",
+                      "tertiary-fixed": "#d4e4fa",
+                      "on-primary-fixed-variant": "#0000ef",
+                      "primary-fixed-dim": "#bec2ff",
+                      "on-tertiary-fixed-variant": "#39485a",
+                      "on-secondary": "#ffffff",
+                      "surface-bright": "#f7f9fb",
+                      "on-error-container": "#93000a",
+                      "secondary-container": "#d9e2fd",
+                      "outline": "#757589",
+                      "surface-dim": "#d8dadc",
+                      "surface": "#f7f9fb",
+                      "on-secondary-container": "#5b647b",
+                      "surface-container-high": "#e6e8ea",
+                      "surface-variant": "#e0e3e5",
+                      "inverse-surface": "#2d3133",
+                      "background": "#f7f9fb",
+                      "primary-fixed": "#e0e0ff",
+                      "surface-container": "#eceef0",
+                      "secondary-fixed": "#d9e2fd",
+                      "surface-container-highest": "#e0e3e5",
+                      "tertiary": "#283648",
+                      "surface-tint": "#343dff",
+                      "error": "#ba1a1a",
+                      "on-primary-fixed": "#00006e",
+                      "tertiary-container": "#3f4d5f",
+                      "on-secondary-fixed": "#121b2f",
+                      "secondary-fixed-dim": "#bdc6e0",
+                      "on-primary-container": "#b3b7ff",
+                      "on-tertiary": "#ffffff"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "section-padding": "80px",
+                      "margin-mobile": "16px",
+                      "margin-desktop": "40px",
+                      "stack-lg": "32px",
+                      "stack-md": "16px",
+                      "gutter": "24px",
+                      "container-max": "1280px",
+                      "unit": "8px",
+                      "stack-sm": "8px"
+              },
+              "fontFamily": {
+                      "caption": ["Inter"],
+                      "label-md": ["Inter"],
+                      "headline-lg-mobile": ["Lexend"],
+                      "display-lg": ["Lexend"],
+                      "headline-md": ["Lexend"],
+                      "title-lg": ["Lexend"],
+                      "body-lg": ["Inter"],
+                      "body-md": ["Inter"],
+                      "headline-lg": ["Lexend"]
+              },
+              "fontSize": {
+                      "caption": ["12px", {"lineHeight": "1.4", "fontWeight": "400"}],
+                      "label-md": ["14px", {"lineHeight": "1.2", "letterSpacing": "0.05em", "fontWeight": "500"}],
+                      "headline-lg-mobile": ["28px", {"lineHeight": "1.2", "letterSpacing": "0.01em", "fontWeight": "700"}],
+                      "display-lg": ["48px", {"lineHeight": "1.1", "letterSpacing": "0.02em", "fontWeight": "700"}],
+                      "headline-md": ["24px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                      "title-lg": ["20px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                      "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                      "body-md": ["16px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                      "headline-lg": ["32px", {"lineHeight": "1.2", "letterSpacing": "0.01em", "fontWeight": "700"}]
+              }
+            },
+          },
+        }
+    </script>
+<style>
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(197, 196, 219, 0.3);
+        }
+        .active-tab-indicator {
+            height: 2px;
+            background: #0000ff;
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+        .hero-gradient {
+            background: linear-gradient(135deg, #0B1528 0%, #0001bb 100%);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes pulse-blue {
+            0% { text-shadow: 0 0 0px rgba(52, 61, 255, 0); }
+            50% { text-shadow: 0 0 15px rgba(52, 61, 255, 0.8); }
+            100% { text-shadow: 0 0 0px rgba(52, 61, 255, 0); }
+        }
+        .logo-pulse {
+            animation: pulse-blue 3s infinite ease-in-out;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md overflow-x-hidden">
+<!-- TopNavBar -->
+<header class="fixed top-0 left-0 right-0 z-50 bg-white border-b border-outline-variant/30 shadow-sm">
+<nav class="flex justify-between items-center max-w-container-max mx-auto px-margin-desktop h-20">
+<div class="text-title-lg font-headline-lg font-bold tracking-tight text-[#0B1528] logo-pulse flex items-center gap-unit">
+<span class="w-3 h-3 bg-[#0000FF] rounded-full animate-pulse"></span>RRI
+</div>
+<div class="hidden md:flex items-center gap-stack-lg">
+<a class="text-[#0B1528] hover:text-[#0000FF] font-medium text-label-md font-label-md transition-colors duration-300" href="#">Solutions</a>
+<a class="text-[#0000FF] border-b-2 border-[#0000FF] py-1 font-semibold text-label-md font-label-md transition-colors duration-300" href="#">Logistics</a>
+<a class="text-[#0B1528] hover:text-[#0000FF] font-medium text-label-md font-label-md transition-colors duration-300" href="#">Industries</a>
+<a class="text-[#0B1528] hover:text-[#0000FF] font-medium text-label-md font-label-md transition-colors duration-300" href="#">About Us</a>
+<a class="text-[#0B1528] hover:text-[#0000FF] font-medium text-label-md font-label-md transition-colors duration-300" href="#">Contact</a>
+</div>
+<button class="bg-[#0000FF] text-white px-6 py-2.5 rounded-lg font-label-md text-label-md hover:bg-[#0000bb] active:scale-95 transition-all shadow-md">Get a Quote</button>
+</nav>
+</header>
+<main class="mt-20">
+<!-- Hero Section -->
+<section class="relative h-[614px] flex items-center justify-center overflow-hidden hero-gradient"><div class="absolute inset-0 z-0 bg-[#0B1528]"><div class="absolute inset-0 opacity-40 bg-[radial-gradient(circle_at_50%_50%,#343DFF_0%,transparent_50%)]"></div><div class="absolute inset-0 bg-gradient-to-b from-transparent to-[#0B1528]/60"></div></div><div class="relative z-10 text-center px-margin-mobile max-w-4xl"><span class="inline-block text-[#343DFF] font-label-md text-label-md tracking-[0.2em] mb-6 uppercase">Industrial Excellence</span><h1 class="font-display-lg text-display-lg md:text-5xl text-white mb-stack-md leading-tight tracking-tight">Elite Supply &amp; Industrial Solutions</h1><p class="font-body-lg text-body-lg text-white/70 max-w-2xl mx-auto">Providing structural integrity and premium B2B services through technological precision and dependable global logistics.</p></div></section>
+<!-- Interactive Tabs Section -->
+<section class="py-section-padding px-margin-desktop max-w-container-max mx-auto">
+<div class="flex flex-col gap-stack-lg">
+<!-- Tab Navigation -->
+<div class="border-b border-outline-variant/30 overflow-x-auto">
+<div class="flex gap-stack-lg min-w-max" id="tabs-container"><button class="tab-btn relative pb-stack-md text-title-lg font-headline-md text-primary transition-all hover:text-primary" data-active="true" onclick="switchTab(event, 'cleaning')">Industrial Cleaning<div class="active-tab-indicator bg-[#343DFF] h-1 rounded-full"></div></button><button class="tab-btn relative pb-stack-md text-title-lg font-headline-md text-on-surface-variant hover:text-primary transition-all" onclick="switchTab(event, 'supply')">Bulk Supply Contracts<div class="active-tab-indicator opacity-0 bg-[#343DFF] h-1 rounded-full"></div></button><button class="tab-btn relative pb-stack-md text-title-lg font-headline-md text-on-surface-variant hover:text-primary transition-all" onclick="switchTab(event, 'procurement')">Custom Procurement<div class="active-tab-indicator opacity-0 bg-[#343DFF] h-1 rounded-full"></div></button></div>
+</div>
+<!-- Tab 1: Industrial Cleaning -->
+<div class="tab-content active" id="cleaning"><div class="flex flex-col gap-stack-lg"><div class="grid grid-cols-1 md:grid-cols-12 gap-gutter items-center"><div class="md:col-span-7 flex flex-col gap-stack-md"><h2 class="font-headline-lg text-headline-lg text-tertiary">High-Precision Industrial Maintenance</h2><p class="font-body-lg text-body-lg text-on-surface-variant leading-relaxed">Our specialized industrial cleaning services leverage high-authority protocols and elite-grade equipment. We ensure operational continuity through meticulous attention to detail in high-stakes environments.</p></div><div class="md:col-span-5 relative aspect-square rounded-2xl overflow-hidden shadow-xl"><img class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB3QUup5LRN4i2zbTrr4TnBC-kBOzjEfW1D6KoolrBKtpIYBreOuZeHrOV2PnS19aOLTL4I7tRBWv1acHds_SGRCxFs-i6KJuSLekD3HDBmgYi9uRqLy0_zZ66OZq5zXCTOvvSdMoxSL5qfGCFMmbaJFKLLCuiF9hKy0XgndlPzJVCrrT5rDY1vMBQaF2Tj_TjpDW2ErbvC7JhzdyFx7Y78RK7Nlgrmizo0oo64Au3k7tRnwPpjd17Nikeu38d93E5KmN9bXp2gf1qY"></div></div><div class="grid grid-cols-1 md:grid-cols-3 gap-gutter mt-stack-lg"><div class="group glass-card rounded-xl overflow-hidden hover:shadow-2xl transition-all duration-500"><div class="h-48 overflow-hidden"><img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAUH2tjnDEOkeAEVEtNuOA_u55TJg6U1jBM7vPTADa4J7EpaNmN29YfO_savxVVoTxOzePzknOgREgN8cCR0rzMhlNt47NVOMe5fj5fZOPTPtAbkp3s026EWBEdmWr96V7JUH4--JDxQrmUO3tiDiDDbOEoGuaM5-6Cs8WhMPiESCOxoMNQugsyxfm7XWReFFhi87VKAmWw8iq-XmtsFS0kpPKckoqKfBiKl18nOrkv0V2Pvsi--7ZTmJvlMlIYR4Tsy2d2Els4bKhA"></div><div class="p-6 space-y-4"><h4 class="text-title-lg font-bold">Machine Deep Cleaning</h4><p class="text-body-md text-on-surface-variant">Non-abrasive maintenance for heavy machinery using aerospace-grade protocols.</p><div class="pt-4 flex items-center justify-between border-t border-outline-variant/30"><span class="flex items-center gap-2 text-primary font-semibold"><span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">lock</span>Login for Inquiry</span></div></div></div><div class="group glass-card rounded-xl overflow-hidden hover:shadow-2xl transition-all duration-500"><div class="h-48 overflow-hidden"><img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBs2gQP0oZp29Ev5OaNwL77HXyZIrGuM7v_6SSbk5644FFlxxZ7Zkavdzsc6fMFd-Ub_RVUb3Ug5TOZgihvVB_AotctdXpvcV_UAE9sbMugo19ASFT_SjVsnhErJUplRB25ApInnzy-f3vF1qHkUV7H2qoQrUvqd6qxVpfeP_Zw_MCmQ_faQ6xli9CLouOo1gUnY8y-JmnCFCTti7hS-qaKh2BhRDGG2m7fmNzSWWlq8HEkNeXsaOpYKIPIlPv1Nr_lQX4Gh1JimgaU"></div><div class="p-6 space-y-4"><h4 class="text-title-lg font-bold">Bio-Safety Protocols</h4><p class="text-body-md text-on-surface-variant">Certified hazardous material removal and disposal for high-stakes environments.</p><div class="pt-4 flex items-center justify-between border-t border-outline-variant/30"><span class="flex items-center gap-2 text-primary font-semibold"><span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">lock</span>Login for Inquiry</span></div></div></div><div class="group glass-card rounded-xl overflow-hidden hover:shadow-2xl transition-all duration-500"><div class="h-48 overflow-hidden"><img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCEdeMz4zRNXG53wy0YMU0FrXxckf9gMN8tzep8a9lCIz43qtId-1A1pzlU8odkfnvaLEN2HCaMWo3hR3K4GcfnTe5hWBS4xLTK0mlfSAnq7qfYDf-p5-zCYyw-c4LjQsqQML_9kIChLH_SWCsx-sr9D5vf0qW495Qi_RAg3MYIO-dImbSsMa_QCFP_zecHjorD-zzuWEMiiX_wYGDrcYiJpoD4leh9bHXPdRAEHs5afj5oAU9-dvUYlervP9z7hzB_yeYN4bn9MOqF"></div><div class="p-6 space-y-4"><h4 class="text-title-lg font-bold">Facility Sterilization</h4><p class="text-body-md text-on-surface-variant">Large-scale industrial maintenance and sterilization for global logistics hubs.</p><div class="pt-4 flex items-center justify-between border-t border-outline-variant/30"><span class="flex items-center gap-2 text-primary font-semibold"><span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">lock</span>Login for Inquiry</span></div></div></div></div></div></div>
+<!-- Tab 2: Bulk Supply -->
+<div class="tab-content" id="supply">
+<div class="grid grid-cols-1 md:grid-cols-12 gap-gutter items-center">
+<div class="md:col-span-5 relative aspect-[4/5] rounded-2xl overflow-hidden shadow-xl">
+<img class="w-full h-full object-cover" data-alt="A massive cargo ship docked at a modern, high-tech industrial port during the golden hour. The sky is a clear navy blue transitioning to soft orange. The scene conveys efficient global logistics and bulk supply chain management, featuring rows of colorful containers and massive cranes under a crisp, professional atmosphere." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAsIMmjd3mW0pXjwewYXAdtMJ8sPSffrmI4vMrTfGt425nlVkhbNn2Nf52_VCn--BEahAnoyVKFZW5pamCXZA_te1DPlpv9dnRSfAB7LJrmysng9vuvjVanWQichAXrzDtMj_ex2f_PHL-VjjNFVNS6hnzrlZUN6FKHhjv4mzBLISChzNl1091qXzCiB5nnxWPWuSyJlqNyQtsq78VeyaNwO0TGsOroco5N15V8cqwyaDCzXH_FZdtobNcXPAGgFHDo64vsIGIepAiG">
+</div>
+<div class="md:col-span-7 flex flex-col gap-stack-md pl-0 md:pl-stack-lg">
+<h2 class="font-headline-lg text-headline-lg text-tertiary">Strategic Logistics &amp; Bulk Contracts</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant leading-relaxed">RRI provides scalable supply chain solutions for corporate giants. From raw materials to finished components, our logistics network ensures just-in-time delivery with zero compromise on quality.</p>
+<ul class="flex flex-col gap-stack-md mt-stack-md">
+<li class="flex items-center gap-stack-md p-stack-sm border-l-4 border-primary bg-surface-container-low">
+<span class="material-symbols-outlined text-primary">local_shipping</span>
+<span class="font-label-md text-label-md text-tertiary">Intermodal Transportation Fleet</span>
+</li>
+<li class="flex items-center gap-stack-md p-stack-sm border-l-4 border-primary bg-surface-container-low">
+<span class="material-symbols-outlined text-primary">inventory_2</span>
+<span class="font-label-md text-label-md text-tertiary">Smart Warehousing &amp; Inventory Control</span>
+</li>
+<li class="flex items-center gap-stack-md p-stack-sm border-l-4 border-primary bg-surface-container-low">
+<span class="material-symbols-outlined text-primary">verified_user</span>
+<span class="font-label-md text-label-md text-tertiary">Tier-1 Supplier Quality Assurance</span>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<!-- Tab 3: Custom Procurement -->
+<div class="tab-content" id="procurement">
+<div class="glass-card p-section-padding rounded-3xl relative overflow-hidden">
+<div class="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+<div class="relative z-10 max-w-3xl mx-auto text-center flex flex-col gap-stack-md">
+<span class="inline-block mx-auto px-4 py-1 bg-primary text-on-primary text-caption font-caption rounded-full">Bespoke B2B Strategy</span>
+<h2 class="font-headline-lg text-headline-lg text-tertiary">Custom Procurement Architectures</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant">We design tailored procurement frameworks for complex industrial needs. Our experts analyze your operational footprint to provide a "luxury corporate" sourcing experience that maximizes ROI and minimizes risk.</p>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-stack-lg mt-stack-lg">
+<div class="flex flex-col gap-stack-sm">
+<div class="w-12 h-12 rounded-lg bg-tertiary flex items-center justify-center mx-auto mb-2">
+<span class="material-symbols-outlined text-on-primary">analytics</span>
+</div>
+<h4 class="font-title-lg text-title-lg text-tertiary">Analysis</h4>
+<p class="text-caption font-caption">Deep audit of existing supply chains.</p>
+</div>
+<div class="flex flex-col gap-stack-sm">
+<div class="w-12 h-12 rounded-lg bg-tertiary flex items-center justify-center mx-auto mb-2">
+<span class="material-symbols-outlined text-on-primary">handshake</span>
+</div>
+<h4 class="font-title-lg text-title-lg text-tertiary">Sourcing</h4>
+<p class="text-caption font-caption">Global network of vetted partners.</p>
+</div>
+<div class="flex flex-col gap-stack-sm">
+<div class="w-12 h-12 rounded-lg bg-tertiary flex items-center justify-center mx-auto mb-2">
+<span class="material-symbols-outlined text-on-primary">monitoring</span>
+</div>
+<h4 class="font-title-lg text-title-lg text-tertiary">Optimization</h4>
+<p class="text-caption font-caption">Ongoing performance monitoring.</p>
+</div>
+</div>
+<button class="mt-stack-lg mx-auto bg-primary text-on-primary px-8 py-3 rounded-full font-headline-md text-headline-md hover:bg-on-primary-fixed-variant transition-all shadow-lg">Start Consultation</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Service Stats (Bento Style) -->
+<section class="bg-surface-container-low py-section-padding"><div class="max-w-container-max mx-auto px-margin-desktop"><div class="grid grid-cols-1 md:grid-cols-4 gap-gutter"><div class="md:col-span-2 bg-white/50 backdrop-blur-md p-stack-lg rounded-2xl flex flex-col justify-between h-64 border-l-8 border-[#343DFF] shadow-sm"><span class="material-symbols-outlined text-[#343DFF] text-5xl" style="font-variation-settings: 'FILL' 1;">verified</span><div><h3 class="font-display-lg text-display-lg text-tertiary">99.8%</h3><p class="font-body-md text-body-md text-on-surface-variant">Operational Reliability Index</p></div></div><div class="bg-white/50 backdrop-blur-md p-stack-lg rounded-2xl flex flex-col justify-center text-center gap-stack-sm shadow-sm"><span class="material-symbols-outlined text-[#343DFF] text-4xl mx-auto">groups</span><h3 class="font-headline-lg text-headline-lg text-primary">500+</h3><p class="font-label-md text-label-md text-tertiary">Global Clients</p></div><div class="bg-white/50 backdrop-blur-md p-stack-lg rounded-2xl flex flex-col justify-center text-center gap-stack-sm shadow-sm"><span class="material-symbols-outlined text-[#343DFF] text-4xl mx-auto">hub</span><h3 class="font-headline-lg text-headline-lg text-primary">15</h3><p class="font-label-md text-label-md text-tertiary">Strategic Hubs</p></div></div></div></section>
+<!-- CTA Section -->
+<section class="py-24 px-margin-desktop text-center relative overflow-hidden bg-[#0B1528]"><div class="absolute inset-0 opacity-10 pointer-events-none"><svg height="100%" width="100%" xmlns="http://www.w3.org/2000/svg"><defs><pattern height="40" id="grid" patternUnits="userSpaceOnUse" width="40"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="white" stroke-width="1"></path></pattern></defs><rect fill="url(#grid)" height="100%" width="100%"></rect></svg></div><div class="max-w-3xl mx-auto flex flex-col gap-stack-md relative z-10"><h2 class="font-headline-lg text-headline-lg text-white">Ready to Upgrade Your Operations?</h2><p class="font-body-lg text-body-lg text-white/70">Connect with our regional directors for a comprehensive service proposal tailored to your industrial ecosystem.</p><div class="flex flex-wrap justify-center gap-stack-md mt-stack-md"><button class="bg-[#0001BB] text-white px-10 py-4 rounded-lg font-bold hover:bg-[#343DFF] transition-all shadow-xl shadow-[#0001BB]/20">Request a Proposal</button><button class="border border-white/20 text-white px-10 py-4 rounded-lg font-bold hover:bg-white/10 transition-all backdrop-blur-sm">Download Brochure</button></div></div></section>
+</main>
+<!-- Footer -->
+<footer class="bg-[#0B1528] text-white/60 py-16 border-t border-white/10"><div class="max-w-container-max mx-auto px-margin-desktop"><div class="grid grid-cols-1 md:grid-cols-12 gap-12 mb-16"><div class="md:col-span-4 space-y-6"><span class="text-2xl font-bold text-white logo-pulse">RRI</span><p class="text-sm leading-relaxed max-w-xs">Your Elite Partner in Global Supply &amp; Logistics Excellence. Redefining industrial synergy through technology and integrity.</p></div><div class="md:col-span-8 grid grid-cols-2 md:grid-cols-3 gap-8"><div><h4 class="text-white font-semibold mb-4">Company</h4><ul class="space-y-2 text-sm"><li class=""><a class="hover:text-white transition-colors" href="#">Solutions</a></li><li class=""><a class="hover:text-white transition-colors" href="#">Logistics</a></li><li class=""><a class="hover:text-white transition-colors" href="#">Industries</a></li><li class=""><a class="text-white font-medium" href="#">About Us</a></li></ul></div><div><h4 class="text-white font-semibold mb-4">Governance</h4><ul class="space-y-2 text-sm"><li class=""><a class="hover:text-white transition-colors" href="#">Privacy Policy</a></li><li class=""><a class="hover:text-white transition-colors" href="#">Terms of Service</a></li><li class=""><a class="hover:text-white transition-colors" href="#">Compliance</a></li><li class=""><a class="hover:text-white transition-colors" href="#">Safety (K3)</a></li></ul></div><div class="col-span-2 md:col-span-1"><h4 class="text-white font-semibold mb-4">Contact</h4><ul class="space-y-2 text-sm"><li class=""><a class="hover:text-white transition-colors" href="#">Support Center</a></li><li class=""><a class="hover:text-white transition-colors" href="#">Global Inquiry</a></li></ul></div></div></div><div class="pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4"><p class="text-xs">© 2024 PT. Rizki Ridho Ilahi (RRI). All rights reserved.</p><div class="flex gap-6"><span class="material-symbols-outlined text-sm cursor-pointer hover:text-white transition-all">language</span><span class="material-symbols-outlined text-sm cursor-pointer hover:text-white transition-all">shield</span><span class="material-symbols-outlined text-sm cursor-pointer hover:text-white transition-all">hub</span></div></div></div></footer>
+<script>
+    function switchTab(event, tabId) {
+        // Hide all tab contents
+        const contents = document.querySelectorAll('.tab-content');
+        contents.forEach(content => content.classList.remove('active'));
+
+        // Deactivate all buttons
+        const buttons = document.querySelectorAll('.tab-btn');
+        buttons.forEach(btn => {
+            btn.classList.remove('text-primary');
+            btn.classList.add('text-outline');
+            btn.querySelector('.active-tab-indicator').classList.add('opacity-0');
+        });
+
+        // Activate target content
+        document.getElementById(tabId).classList.add('active');
+
+        // Activate clicked button
+        const clickedBtn = event.currentTarget;
+        clickedBtn.classList.remove('text-outline');
+        clickedBtn.classList.add('text-primary');
+        clickedBtn.querySelector('.active-tab-indicator').classList.remove('opacity-0');
+    }
+
+    // Add subtle parallax to hero
+    window.addEventListener('scroll', () => {
+        const scrolled = window.pageYOffset;
+        const hero = document.querySelector('.hero-gradient');
+        if (hero) {
+            hero.style.backgroundPositionY = scrolled * 0.5 + 'px';
+        }
+    });
+</script>
+
+
+</body></html>

@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Return Claim Center | Sovereign Supply</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&amp;family=Inter:wght@300;400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-primary": "#ffffff",
+                    "surface": "#f7f9fb",
+                    "outline-variant": "#c5c4db",
+                    "on-tertiary-fixed": "#0d1c2d",
+                    "on-secondary-fixed": "#121b2f",
+                    "tertiary-fixed-dim": "#b9c8de",
+                    "surface-container-highest": "#e0e3e5",
+                    "error": "#ba1a1a",
+                    "on-secondary-fixed-variant": "#3d475c",
+                    "surface-dim": "#d8dadc",
+                    "primary-fixed": "#e0e0ff",
+                    "on-tertiary-fixed-variant": "#39485a",
+                    "inverse-surface": "#2d3133",
+                    "error-container": "#ffdad6",
+                    "on-primary-container": "#b3b7ff",
+                    "on-error-container": "#93000a",
+                    "primary": "#0001bb",
+                    "surface-bright": "#f7f9fb",
+                    "on-background": "#191c1e",
+                    "background": "#f7f9fb",
+                    "secondary-fixed-dim": "#bdc6e0",
+                    "on-error": "#ffffff",
+                    "tertiary": "#283648",
+                    "tertiary-container": "#3f4d5f",
+                    "inverse-on-surface": "#eff1f3",
+                    "on-tertiary": "#ffffff",
+                    "surface-variant": "#e0e3e5",
+                    "surface-container": "#eceef0",
+                    "on-surface": "#191c1e",
+                    "inverse-primary": "#bec2ff",
+                    "on-surface-variant": "#454558",
+                    "secondary-fixed": "#d9e2fd",
+                    "surface-container-high": "#e6e8ea",
+                    "on-secondary": "#ffffff",
+                    "on-primary-fixed-variant": "#0000ef",
+                    "surface-container-lowest": "#ffffff",
+                    "secondary": "#555e75",
+                    "tertiary-fixed": "#d4e4fa",
+                    "surface-tint": "#343dff",
+                    "secondary-container": "#d9e2fd",
+                    "surface-container-low": "#f2f4f6",
+                    "primary-fixed-dim": "#bec2ff",
+                    "primary-container": "#0000ff",
+                    "outline": "#757589",
+                    "on-tertiary-container": "#afbed3",
+                    "on-primary-fixed": "#00006e",
+                    "on-secondary-container": "#5b647b"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "margin-desktop": "40px",
+                    "gutter": "24px",
+                    "stack-lg": "32px",
+                    "unit": "8px",
+                    "stack-sm": "8px",
+                    "container-max": "1280px",
+                    "stack-md": "16px",
+                    "margin-mobile": "16px",
+                    "section-padding": "80px"
+            },
+            "fontFamily": {
+                    "headline-lg": ["Lexend"],
+                    "body-lg": ["Inter"],
+                    "headline-md": ["Lexend"],
+                    "caption": ["Inter"],
+                    "headline-lg-mobile": ["Lexend"],
+                    "title-lg": ["Lexend"],
+                    "display-lg": ["Lexend"],
+                    "label-md": ["Inter"],
+                    "body-md": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-lg": ["32px", {"lineHeight": "1.2", "letterSpacing": "0.01em", "fontWeight": "700"}],
+                    "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                    "headline-md": ["24px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                    "caption": ["12px", {"lineHeight": "1.4", "fontWeight": "400"}],
+                    "headline-lg-mobile": ["28px", {"lineHeight": "1.2", "letterSpacing": "0.01em", "fontWeight": "700"}],
+                    "title-lg": ["20px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                    "display-lg": ["48px", {"lineHeight": "1.1", "letterSpacing": "0.02em", "fontWeight": "700"}],
+                    "label-md": ["14px", {"lineHeight": "1.2", "letterSpacing": "0.05em", "fontWeight": "500"}],
+                    "body-md": ["16px", {"lineHeight": "1.5", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { background-color: #f7f9fb; }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(197, 196, 219, 0.3);
+        }
+        .step-active::before {
+            content: '';
+            position: absolute;
+            left: 11px;
+            top: 24px;
+            bottom: -24px;
+            width: 2px;
+            background-color: #0000ff;
+        }
+        .step-inactive::before {
+            content: '';
+            position: absolute;
+            left: 11px;
+            top: 24px;
+            bottom: -24px;
+            width: 2px;
+            background-color: #c5c4db;
+        }
+        .step-last::before {
+            display: none;
+        }
+    </style>
+</head>
+<body class="font-body-md text-on-background antialiased">
+<!-- Sidebar Navigation -->
+<aside class="fixed left-0 top-0 h-full w-64 bg-tertiary dark:bg-on-tertiary-fixed backdrop-blur-lg flex flex-col h-full py-stack-lg px-stack-md border-r border-outline-variant/20 shadow-xl shadow-on-secondary-fixed/10 z-50">
+<div class="mb-stack-lg px-2">
+<h1 class="font-headline-md text-headline-md text-on-tertiary-fixed-variant">Sovereign B2B</h1>
+<p class="font-label-md text-label-md text-tertiary-fixed-dim uppercase tracking-widest mt-1">Elite Industrial Supply</p>
+</div>
+<nav class="flex-1 space-y-2">
+<a class="flex items-center gap-3 px-4 py-3 text-tertiary-fixed-dim hover:text-on-primary transition-all font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+                Overview
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-tertiary-fixed-dim hover:text-on-primary transition-all font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+                Inventory
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-tertiary-fixed-dim hover:text-on-primary transition-all font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">shopping_cart</span>
+                Procurement
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-tertiary-fixed-dim hover:text-on-primary transition-all font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">description</span>
+                Documents
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 bg-primary text-on-primary rounded-lg font-semibold transition-all font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">assignment_return</span>
+                Returns
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-tertiary-fixed-dim hover:text-on-primary transition-all font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">business_center</span>
+                Suppliers
+            </a>
+</nav>
+<div class="mt-auto border-t border-outline-variant/10 pt-stack-md space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 text-tertiary-fixed-dim hover:text-on-primary transition-all font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">settings</span>
+                Settings
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-tertiary-fixed-dim hover:text-on-primary transition-all font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">logout</span>
+                Log Out
+            </a>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="ml-64 min-h-screen">
+<!-- Top App Bar (Header) -->
+<header class="fixed top-0 right-0 left-64 h-16 flex items-center justify-between px-margin-desktop z-40 bg-surface/70 backdrop-blur-md border-b border-outline-variant/30 shadow-sm shadow-on-secondary-fixed/5">
+<div class="flex items-center gap-4">
+<h2 class="font-headline-md text-headline-md tracking-tight text-on-surface">Return Claim Center</h2>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-on-secondary-fixed-variant cursor-pointer">notifications</span>
+<span class="material-symbols-outlined text-on-secondary-fixed-variant cursor-pointer">settings</span>
+</div>
+<div class="h-8 w-8 rounded-full bg-primary-fixed overflow-hidden border border-outline-variant">
+<img alt="User profile avatar" class="w-full h-full object-cover" data-alt="A professional headshot of a corporate executive in a crisp navy suit, set against a blurred modern architectural background. The lighting is soft and professional, capturing a high-authority B2B atmosphere with a clean and sophisticated aesthetic, matching the sovereign navy and elite corporate brand identity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAoojzpO9AN7RlYwry27RszEfSQ2_EEosbRqjQ4Efz5HMgJm0Rhig1ezLmf3FTjWjFRiN2QXoBEs2cKcfCsIJpE36jsfUb_3DDKt04ZdH3DOLwg3jMSswX1Hzwt_wkBECU6rAmSCzJxRYI9IPBEFB0Sk4436XKexfEM3FQepvI4zURstLknjdhwemGUeq-ehWrOWyc51QWOuBaxoFZ0ZKNJ6MXc52alPyxWHd7n7_Bn3vRN9dSBwWGbZaNOd0CyvpXqcUihVaH7NsGZ"/>
+</div>
+</div>
+</header>
+<!-- Content Canvas -->
+<div class="pt-24 pb-section-padding px-margin-desktop max-w-container-max mx-auto">
+<div class="grid grid-cols-12 gap-gutter">
+<!-- Left Column: Form & Selection -->
+<div class="col-span-12 lg:col-span-8 space-y-gutter">
+<!-- Search & Selection Form -->
+<div class="glass-card p-stack-lg rounded-xl shadow-sm">
+<h3 class="font-title-lg text-title-lg mb-stack-md text-on-surface">Find Transaction</h3>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-stack-md">
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface-variant">Reference Type</label>
+<select class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg p-3 font-body-md focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none">
+<option>Invoice Number</option>
+<option>Delivery Order (DO)</option>
+</select>
+</div>
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface-variant">Number</label>
+<div class="relative">
+<input class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg p-3 pr-10 font-body-md focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none" placeholder="e.g. INV-2024-001" type="text"/>
+<span class="material-symbols-outlined absolute right-3 top-3 text-outline">search</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Product Selection Table -->
+<div class="glass-card overflow-hidden rounded-xl shadow-sm">
+<div class="p-stack-lg border-b border-outline-variant/30 flex justify-between items-center">
+<h3 class="font-title-lg text-title-lg text-on-surface">Select Items for Return</h3>
+<span class="text-caption font-caption text-secondary">3 Items Found</span>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead class="bg-surface-container-low font-label-md text-label-md text-on-surface-variant">
+<tr>
+<th class="p-stack-md w-12"><input class="rounded border-outline-variant text-primary focus:ring-primary" type="checkbox"/></th>
+<th class="p-stack-md">Product Detail</th>
+<th class="p-stack-md">Original Qty</th>
+<th class="p-stack-md">Return Qty</th>
+<th class="p-stack-md">Reason</th>
+</tr>
+</thead>
+<tbody class="font-body-md text-on-surface">
+<tr class="border-b border-outline-variant/10 hover:bg-surface-container-low/30 transition-colors">
+<td class="p-stack-md"><input class="rounded border-outline-variant text-primary focus:ring-primary" type="checkbox"/></td>
+<td class="p-stack-md flex items-center gap-3">
+<div class="w-12 h-12 bg-surface-container rounded border border-outline-variant/30 flex items-center justify-center">
+<span class="material-symbols-outlined text-outline">precision_manufacturing</span>
+</div>
+<div>
+<div class="font-semibold">Titanium Core Drill Bit 12mm</div>
+<div class="text-caption font-caption text-secondary">SKU: IND-9921-A</div>
+</div>
+</td>
+<td class="p-stack-md">50 Units</td>
+<td class="p-stack-md">
+<input class="w-20 bg-surface-container-lowest border border-outline-variant rounded-lg p-2 text-center" max="50" min="1" type="number" value="1"/>
+</td>
+<td class="p-stack-md">
+<select class="bg-surface-container-lowest border border-outline-variant rounded-lg p-2 text-sm outline-none focus:border-primary">
+<option>Defective</option>
+<option>Incorrect Item</option>
+<option>Damaged Packaging</option>
+</select>
+</td>
+</tr>
+<tr class="border-b border-outline-variant/10 hover:bg-surface-container-low/30 transition-colors">
+<td class="p-stack-md"><input checked="" class="rounded border-outline-variant text-primary focus:ring-primary" type="checkbox"/></td>
+<td class="p-stack-md flex items-center gap-3">
+<div class="w-12 h-12 bg-surface-container rounded border border-outline-variant/30 flex items-center justify-center">
+<span class="material-symbols-outlined text-outline">settings_suggest</span>
+</div>
+<div>
+<div class="font-semibold">Hydraulic Pressure Valve - High Flow</div>
+<div class="text-caption font-caption text-secondary">SKU: HYD-4402-B</div>
+</div>
+</td>
+<td class="p-stack-md">12 Units</td>
+<td class="p-stack-md">
+<input class="w-20 bg-surface-container-lowest border border-outline-variant rounded-lg p-2 text-center" max="12" min="1" type="number" value="2"/>
+</td>
+<td class="p-stack-md">
+<select class="bg-surface-container-lowest border border-outline-variant rounded-lg p-2 text-sm outline-none focus:border-primary">
+<option selected="">Incorrect Item</option>
+<option>Defective</option>
+<option>Damaged Packaging</option>
+</select>
+</td>
+</tr>
+<tr class="border-b border-outline-variant/10 hover:bg-surface-container-low/30 transition-colors">
+<td class="p-stack-md"><input class="rounded border-outline-variant text-primary focus:ring-primary" type="checkbox"/></td>
+<td class="p-stack-md flex items-center gap-3">
+<div class="w-12 h-12 bg-surface-container rounded border border-outline-variant/30 flex items-center justify-center">
+<span class="material-symbols-outlined text-outline">construction</span>
+</div>
+<div>
+<div class="font-semibold">Industrial Grade Safety Goggles</div>
+<div class="text-caption font-caption text-secondary">SKU: SAF-1020-X</div>
+</div>
+</td>
+<td class="p-stack-md">100 Units</td>
+<td class="p-stack-md">
+<input class="w-20 bg-surface-container-lowest border border-outline-variant rounded-lg p-2 text-center" max="100" min="1" type="number" value="1"/>
+</td>
+<td class="p-stack-md">
+<select class="bg-surface-container-lowest border border-outline-variant rounded-lg p-2 text-sm outline-none focus:border-primary">
+<option>Damaged Packaging</option>
+<option>Defective</option>
+<option>Incorrect Item</option>
+</select>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Photo Upload Section -->
+<div class="glass-card p-stack-lg rounded-xl shadow-sm border-2 border-dashed border-[#0000FF] bg-primary/5">
+<div class="flex flex-col items-center justify-center py-stack-lg text-center cursor-pointer group">
+<div class="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-primary text-3xl">cloud_upload</span>
+</div>
+<h4 class="font-title-lg text-title-lg text-primary mb-1">Upload Product Evidence</h4>
+<p class="text-body-md text-on-surface-variant max-w-md">Drag and drop photos showing the defect or damage here, or <span class="text-primary font-bold underline">browse files</span></p>
+<p class="text-caption font-caption text-outline mt-3">Supported formats: JPG, PNG, PDF (Max 10MB per file)</p>
+</div>
+</div>
+<div class="flex justify-end pt-4">
+<button class="bg-primary hover:bg-primary/90 text-on-primary font-lexend font-bold px-10 py-4 rounded-lg shadow-lg active:scale-95 transition-all text-label-md tracking-wider flex items-center gap-2">
+                            SUBMIT CLAIM REQUEST
+                            <span class="material-symbols-outlined text-base">send</span>
+</button>
+</div>
+</div>
+<!-- Right Column: Timeline/Stepper -->
+<div class="col-span-12 lg:col-span-4 space-y-gutter">
+<div class="glass-card p-stack-lg rounded-xl shadow-sm sticky top-24">
+<h3 class="font-title-lg text-title-lg mb-8 text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">timeline</span>
+                            Return Progress
+                        </h3>
+<div class="relative space-y-12 pl-2">
+<!-- Step 1 -->
+<div class="relative flex items-start gap-6 step-active">
+<div class="z-10 w-6 h-6 rounded-full bg-primary flex items-center justify-center border-4 border-primary-fixed shadow-md">
+<span class="material-symbols-outlined text-white text-[12px]" style="font-variation-settings: 'FILL' 1;">check</span>
+</div>
+<div class="flex flex-col -mt-1">
+<span class="font-title-lg text-title-lg text-primary">Requested</span>
+<span class="text-caption font-caption text-on-surface-variant mt-1">Claim submitted on Oct 12, 2023</span>
+<div class="mt-3 bg-surface-container p-3 rounded-lg text-body-md italic text-on-secondary-fixed-variant">
+                                        "Waiting for initial technical triage."
+                                    </div>
+</div>
+</div>
+<!-- Step 2 -->
+<div class="relative flex items-start gap-6 step-active">
+<div class="z-10 w-6 h-6 rounded-full bg-primary flex items-center justify-center border-4 border-primary-fixed shadow-md">
+<span class="material-symbols-outlined text-white text-[12px]" style="font-variation-settings: 'FILL' 1;">pending</span>
+</div>
+<div class="flex flex-col -mt-1">
+<span class="font-title-lg text-title-lg text-primary">Verified</span>
+<span class="text-caption font-caption text-on-surface-variant mt-1">Status: Processing Verification</span>
+<div class="mt-3 flex items-center gap-3">
+<div class="h-2 flex-1 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-primary w-[65%]"></div>
+</div>
+<span class="text-caption font-bold text-primary">65%</span>
+</div>
+</div>
+</div>
+<!-- Step 3 -->
+<div class="relative flex items-start gap-6 step-inactive">
+<div class="z-10 w-6 h-6 rounded-full bg-outline-variant flex items-center justify-center border-4 border-surface shadow-sm">
+<span class="material-symbols-outlined text-white text-[12px]">local_shipping</span>
+</div>
+<div class="flex flex-col -mt-1 opacity-60">
+<span class="font-title-lg text-title-lg text-on-surface">Pickup</span>
+<span class="text-caption font-caption text-on-surface-variant mt-1">Pending verification approval</span>
+</div>
+</div>
+<!-- Step 4 -->
+<div class="relative flex items-start gap-6 step-last">
+<div class="z-10 w-6 h-6 rounded-full bg-outline-variant flex items-center justify-center border-4 border-surface shadow-sm">
+<span class="material-symbols-outlined text-white text-[12px]">done_all</span>
+</div>
+<div class="flex flex-col -mt-1 opacity-40">
+<span class="font-title-lg text-title-lg text-on-surface">Resolved</span>
+<span class="text-caption font-caption text-on-surface-variant mt-1">Completion estimate: 3-5 days</span>
+</div>
+</div>
+</div>
+<div class="mt-12 p-stack-md rounded-xl bg-on-tertiary-fixed text-white flex items-center gap-4">
+<div class="p-2 bg-primary/20 rounded-lg">
+<span class="material-symbols-outlined text-primary-fixed">support_agent</span>
+</div>
+<div>
+<p class="text-caption font-semibold">Need Assistance?</p>
+<p class="text-caption text-tertiary-fixed-dim">Dedicated concierge available</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Contextual Info Cards -->
+<section class="mt-section-padding grid grid-cols-1 md:grid-cols-3 gap-gutter">
+<div class="glass-card p-stack-lg rounded-xl border-l-4 border-primary">
+<h5 class="font-title-lg text-title-lg mb-2">Return Policy</h5>
+<p class="text-body-md text-on-secondary-fixed-variant">Items must be returned in original packaging unless defect reported is structural.</p>
+</div>
+<div class="glass-card p-stack-lg rounded-xl border-l-4 border-primary">
+<h5 class="font-title-lg text-title-lg mb-2">Instant Credits</h5>
+<p class="text-body-md text-on-secondary-fixed-variant">Verified Premier Partners receive instant account credit upon 'Verified' status.</p>
+</div>
+<div class="glass-card p-stack-lg rounded-xl border-l-4 border-primary">
+<h5 class="font-title-lg text-title-lg mb-2">Free Logistics</h5>
+<p class="text-body-md text-on-secondary-fixed-variant">Sovereign Supply covers all freight costs for validated warranty claims.</p>
+</div>
+</section>
+</div>
+</main>
+<!-- Success Modal Interaction Script -->
+<script>
+        // Micro-interactions for table and form
+        document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+            checkbox.addEventListener('change', (e) => {
+                const row = e.target.closest('tr');
+                if (row) {
+                    if (e.target.checked) {
+                        row.classList.add('bg-primary/5');
+                    } else {
+                        row.classList.remove('bg-primary/5');
+                    }
+                }
+            });
+        });
+
+        // Simple Drag and Drop visual feedback
+        const dropZone = document.querySelector('.border-dashed');
+        if (dropZone) {
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropZone.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    dropZone.classList.add('bg-primary/10', 'scale-[1.01]');
+                }, false);
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    dropZone.classList.remove('bg-primary/10', 'scale-[1.01]');
+                }, false);
+            });
+        }
+    </script>
+</body></html>

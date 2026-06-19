@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Industrial B2B | Product Detail</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700;800&family=Inter:wght@400;500;600&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Lexend:wght@100..900&display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid #c5c4db;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f2f4f6;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #757589;
+            border-radius: 10px;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface-dim": "#d8dadc",
+                      "on-surface-variant": "#454558",
+                      "on-surface": "#191c1e",
+                      "inverse-on-surface": "#eff1f3",
+                      "surface-bright": "#f7f9fb",
+                      "on-error": "#ffffff",
+                      "surface-container-lowest": "#ffffff",
+                      "tertiary-fixed": "#d4e4fa",
+                      "surface-variant": "#e0e3e5",
+                      "surface-container": "#eceef0",
+                      "tertiary": "#283648",
+                      "on-primary-container": "#b3b7ff",
+                      "on-secondary-container": "#5b647b",
+                      "inverse-primary": "#bec2ff",
+                      "background": "#f7f9fb",
+                      "surface-container-high": "#e6e8ea",
+                      "on-tertiary-container": "#afbed3",
+                      "on-tertiary-fixed": "#0d1c2d",
+                      "secondary-container": "#d9e2fd",
+                      "tertiary-fixed-dim": "#b9c8de",
+                      "secondary-fixed": "#d9e2fd",
+                      "on-primary-fixed": "#00006e",
+                      "outline": "#757589",
+                      "primary-fixed-dim": "#bec2ff",
+                      "on-primary": "#ffffff",
+                      "surface-container-low": "#f2f4f6",
+                      "secondary": "#555e75",
+                      "tertiary-container": "#3f4d5f",
+                      "primary": "#0001bb",
+                      "on-secondary-fixed": "#121b2f",
+                      "on-secondary": "#ffffff",
+                      "on-secondary-fixed-variant": "#3d475c",
+                      "on-background": "#191c1e",
+                      "primary-fixed": "#e0e0ff",
+                      "inverse-surface": "#2d3133",
+                      "surface": "#f7f9fb",
+                      "surface-tint": "#343dff",
+                      "error-container": "#ffdad6",
+                      "on-primary-fixed-variant": "#0000ef",
+                      "outline-variant": "#c5c4db",
+                      "on-tertiary": "#ffffff",
+                      "surface-container-highest": "#e0e3e5",
+                      "primary-container": "#0000ff",
+                      "on-error-container": "#93000a",
+                      "error": "#ba1a1a",
+                      "secondary-fixed-dim": "#bdc6e0",
+                      "on-tertiary-fixed-variant": "#39485a"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "stack-md": "16px",
+                      "stack-sm": "8px",
+                      "margin-desktop": "40px",
+                      "unit": "8px",
+                      "section-padding": "80px",
+                      "stack-lg": "32px",
+                      "gutter": "24px",
+                      "container-max": "1280px",
+                      "margin-mobile": "16px"
+              },
+              "fontFamily": {
+                      "headline-lg-mobile": ["Lexend"],
+                      "label-md": ["Inter"],
+                      "headline-md": ["Lexend"],
+                      "body-lg": ["Inter"],
+                      "caption": ["Inter"],
+                      "body-md": ["Inter"],
+                      "display-lg": ["Lexend"],
+                      "title-lg": ["Lexend"],
+                      "headline-lg": ["Lexend"]
+              },
+              "fontSize": {
+                      "headline-lg-mobile": ["28px", {"lineHeight": "1.2", "letterSpacing": "0.01em", "fontWeight": "700"}],
+                      "label-md": ["14px", {"lineHeight": "1.2", "letterSpacing": "0.05em", "fontWeight": "500"}],
+                      "headline-md": ["24px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                      "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                      "caption": ["12px", {"lineHeight": "1.4", "fontWeight": "400"}],
+                      "body-md": ["16px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                      "display-lg": ["48px", {"lineHeight": "1.1", "letterSpacing": "0.02em", "fontWeight": "700"}],
+                      "title-lg": ["20px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                      "headline-lg": ["32px", {"lineHeight": "1.2", "letterSpacing": "0.01em", "fontWeight": "700"}]
+              }
+            },
+          },
+        }
+    </script>
+</head>
+<body class="bg-surface text-on-surface font-body-md selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopNavBar -->
+<header class="fixed top-0 w-full z-50 flex items-center justify-between px-margin-desktop h-20 bg-white/70 dark:bg-on-surface/40 backdrop-blur-md border-b border-outline-variant shadow-sm">
+<div class="flex items-center gap-stack-lg">
+<span class="font-headline-md text-headline-md font-bold text-primary">Industrial B2B</span>
+<nav class="hidden md:flex gap-stack-md">
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors" href="#">Dashboard</a>
+<a class="font-label-md text-label-md text-primary border-b-2 border-primary" href="#">Inventory</a>
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors" href="#">Shipments</a>
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors" href="#">Orders</a>
+</nav>
+</div>
+<div class="flex items-center gap-stack-md">
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors">notifications</button>
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors">settings</button>
+<button class="bg-primary text-on-primary px-stack-md py-2 rounded-lg font-label-md text-label-md shadow-sm hover:scale-95 transition-transform active:opacity-80">New RFQ</button>
+</div>
+</header>
+<main class="pt-20 min-h-screen">
+<div class="max-w-[1280px] mx-auto px-margin-desktop py-stack-lg">
+<!-- Breadcrumbs -->
+<nav class="flex items-center gap-2 mb-stack-lg text-on-surface-variant font-caption text-caption">
+<a class="hover:text-primary" href="#">Catalog</a>
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+<a class="hover:text-primary" href="#">Chemical Supplies</a>
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+<span class="text-on-surface font-medium">Titan-X Industrial Degreaser</span>
+</nav>
+<div class="flex flex-col md:flex-row gap-gutter">
+<!-- Left: Image Gallery (50%) -->
+<div class="w-full md:w-1/2 flex flex-col gap-stack-md">
+<div class="aspect-square w-full rounded-xl overflow-hidden bg-white border border-outline-variant group cursor-zoom-in">
+<img alt="Titan-X Industrial Degreaser High-Res" class="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105" data-alt="A professional product photograph of a large silver industrial chemical drum and a professional spray bottle against a clean white background. The lighting is bright and clinical, emphasizing the metallic textures and the high-tech corporate aesthetic. Subtle reflections on the floor suggest a polished laboratory or warehouse environment. The overall mood is dependable, high-authority, and technologically advanced for a B2B audience." id="main-image" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD7MXflNhmvojf_9sl1_5sDQKeuUfUhSgnrpIQcrGCBhB3uyu63AQVt1-wWHmWFqIRXwGWAFCe1gN9b50x--PXtwKDUWO38nC2bmOojsxpBRbJLmmwnDvMdvNqnokVTpcZasGFRT7dZuvDIDXjxJdROZTrhu--G4wnL4fVdymryDVzQovd6M1aSbt4wTdQLlwbuHoDtW2B0hRdgc6y8jrRqVaNB-XSFH6t89504SacehqxhWkINyA5lTe721vWZM55aU0c7g1KyDcI2"/>
+</div>
+<div class="grid grid-cols-4 gap-stack-sm">
+<button class="aspect-square rounded-lg border-2 border-primary overflow-hidden hover:opacity-80 transition-opacity bg-white" onclick="changeImage(this.src)">
+<img alt="Thumbnail 1" class="w-full h-full object-cover" data-alt="Close up detail of a high-pressure industrial spray nozzle made of polished steel. The image is crisp with soft bokeh background, highlighting the precision engineering. Bright daylight lighting in a professional facility. Part of a luxury corporate industrial branding set." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDbnPjIeQfMNvSom8cmFu0--QTr55YEJlqp5eI7DKKVRT5lnH_-pYu-0m8L7ta3l8SPI2w7QacYH33LwBdrwlJKwB54MVm2nWtO3TF1e6PeDWSG34D-IKst8riMLdLhzVdKvwExi8GmeIzFXklJvFeiIn3pqfMDqhvyIVdj24TKCGZFbNv_GojMpB_oe8ybnmkMaBndgdtyhgRge7aoI9Bxqi-Z2IHU-35L8qoYAG4SeEJ2b5BDTGlSW41uE0tOn8gH3mui_FlBl68b"/>
+</button>
+<button class="aspect-square rounded-lg border border-outline-variant overflow-hidden hover:border-primary transition-all bg-white" onclick="changeImage(this.src)">
+<img alt="Thumbnail 2" class="w-full h-full object-cover" data-alt="A macro shot of industrial cleaning liquid being poured into a beaker, showing clear turquoise fluid with tiny air bubbles. The lighting is high-key white, reflecting off the glass surfaces to create a sense of purity and chemical precision. Modern corporate lab setting with soft focus machinery in the background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBL-u6Ve-q48h5CC9XpbcrFov8I9ezd1K_9q6CROvTBBVskpnINfukG55OIF48qTO4m1wsRKaioc_IXbFg8pzVqQ7aqgsk1S7P74TD3ZHCIYseV35sp40U8T74MV6IpeCVYN_z2ObX_f8Mv4wBsK0AKideh0Au_z1Y9qQ3aFicJ8YWY08LhDN4_IQ8evkbu_N7iSVlls1AoSpgE2xnKsqlPtAYy5oM4EU3LtRXKpbLdRSAvmaPaXJQtVW-5ERdMXyLLoEdM-catCuBf"/>
+</button>
+<button class="aspect-square rounded-lg border border-outline-variant overflow-hidden hover:border-primary transition-all bg-white" onclick="changeImage(this.src)">
+<img alt="Thumbnail 3" class="w-full h-full object-cover" data-alt="A technician in a high-visibility vest and protective gloves applying an industrial cleaning solution to heavy machinery. The factory environment is clean, well-lit, and organized, representing elite corporate standards. The focus is on the effective cleaning action on a metallic surface." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCnVilNObqQnBpT8mtadM8Vc4igGY1ME4xlU6ISzCXK8nSIecgBysnnJA4-16gsnXYz2lw9hW5_KpxYmulYxdMRqC4xRjIPx5mWLXhzqdbQ9LGG5rqme8TaynSYgNtpiSsIaHhA40O8p6iCJ2Vt_8h8ZVFALwMkEY3F3j0J6yII1ibntyoyMPqok1VJJjHaMIPJsU42ctp4vqNAraH4mn8lQi5scPD2lvnOis2dlKKJ8Fo1LdSXTHHesMY__utpX036GiKKt7C-Paa3"/>
+</button>
+<button class="aspect-square rounded-lg border border-outline-variant overflow-hidden hover:border-primary transition-all bg-white flex items-center justify-center bg-surface-container-low" onclick="changeImage(this.src)">
+<span class="material-symbols-outlined text-primary">play_circle</span>
+</button>
+</div>
+</div>
+<!-- Right: Product Info (50%) -->
+<div class="w-full md:w-1/2 flex flex-col">
+<span class="font-label-md text-label-md text-primary-container bg-primary text-white px-3 py-1 rounded-full w-fit mb-stack-sm tracking-wider uppercase">Industrial Cleaning</span>
+<h1 class="font-headline-lg text-headline-lg text-on-surface mb-1">Titan-X Multi-Surface Industrial Degreaser</h1>
+<p class="font-label-md text-label-md text-on-surface-variant mb-stack-lg">SKU: RRI-CLN-004</p>
+<div class="h-[1px] w-full bg-outline-variant mb-stack-lg"></div>
+<div class="flex flex-col gap-stack-md mb-stack-lg">
+<h3 class="font-title-lg text-title-lg text-on-surface">Description</h3>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+                            Engineered for high-intensity manufacturing environments, the Titan-X solution penetrates heavy carbon deposits and synthetic lubricants. This non-corrosive formula is optimized for aerospace and automotive hardware, ensuring structural integrity while maintaining a pristine finish.
+                        </p>
+</div>
+<!-- Specs Table -->
+<div class="mb-stack-lg">
+<h3 class="font-title-lg text-title-lg text-on-surface mb-stack-md">Technical Specifications</h3>
+<div class="border border-outline-variant rounded-xl overflow-hidden">
+<table class="w-full text-left border-collapse">
+<tbody><tr class="border-b border-outline-variant bg-surface-container-low">
+<th class="p-stack-md font-label-md text-label-md text-on-surface-variant w-1/3">Property</th>
+<th class="p-stack-md font-label-md text-label-md text-on-surface">Value</th>
+</tr>
+<tr class="border-b border-outline-variant">
+<td class="p-stack-md font-label-md text-label-md text-on-surface-variant">Volume</td>
+<td class="p-stack-md font-body-md text-body-md">20 Liters / 5.28 Gallons</td>
+</tr>
+<tr class="border-b border-outline-variant">
+<td class="p-stack-md font-label-md text-label-md text-on-surface-variant">Weight</td>
+<td class="p-stack-md font-body-md text-body-md">22.4 kg (Gross)</td>
+</tr>
+<tr class="border-b border-outline-variant">
+<td class="p-stack-md font-label-md text-label-md text-on-surface-variant">Certification</td>
+<td class="p-stack-md font-body-md text-body-md">ISO 9001, REACH Compliant</td>
+</tr>
+<tr>
+<td class="p-stack-md font-label-md text-label-md text-on-surface-variant">pH Level</td>
+<td class="p-stack-md font-body-md text-body-md">11.5 (Alkaline Concentrate)</td>
+</tr>
+</tbody></table>
+</div>
+</div>
+<!-- Action Button -->
+<div class="mt-auto pt-stack-lg border-t border-outline-variant">
+<div class="flex items-center gap-stack-md mb-stack-md">
+<div class="flex items-center border border-outline-variant rounded-lg">
+<button class="p-2 px-4 hover:bg-surface-variant transition-colors" onclick="decrement()">-</button>
+<input class="w-16 text-center border-none focus:ring-0 bg-transparent font-title-lg" id="qty" readonly="" type="number" value="1"/>
+<button class="p-2 px-4 hover:bg-surface-variant transition-colors" onclick="increment()">+</button>
+</div>
+<span class="text-caption font-caption text-on-surface-variant italic">Bulk ordering available for containers > 10 units.</span>
+</div>
+<button class="w-full py-5 bg-[#0000FF] text-white font-headline-md text-headline-md rounded-xl shadow-lg hover:shadow-primary-container/20 hover:scale-[0.99] active:scale-95 transition-all flex items-center justify-center gap-stack-sm">
+<span class="material-symbols-outlined">shopping_cart_checkout</span>
+                            + Tambahkan ke Keranjang Inquiry
+                        </button>
+</div>
+</div>
+</div>
+<!-- Bento Grid Section: Key Features -->
+<section class="mt-section-padding">
+<h2 class="font-headline-lg text-headline-lg text-on-surface mb-stack-lg">Superior Engineering Features</h2>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
+<div class="glass-card p-stack-lg rounded-2xl flex flex-col gap-stack-md">
+<div class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">eco</span>
+</div>
+<h4 class="font-title-lg text-title-lg">Biodegradable Formula</h4>
+<p class="text-on-surface-variant font-body-md">Complies with environmental safety protocols while delivering industrial-strength cleaning power.</p>
+</div>
+<div class="glass-card p-stack-lg rounded-2xl flex flex-col gap-stack-md">
+<div class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">verified_user</span>
+</div>
+<h4 class="font-title-lg text-title-lg">Certified Safety</h4>
+<p class="text-on-surface-variant font-body-md">Verified for use in high-precision aerospace hangars and automotive production lines.</p>
+</div>
+<div class="glass-card p-stack-lg rounded-2xl flex flex-col gap-stack-md">
+<div class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">bolt</span>
+</div>
+<h4 class="font-title-lg text-title-lg">Rapid Action</h4>
+<p class="text-on-surface-variant font-body-md">Reduces cleaning downtime by 40% compared to standard industrial solvents.</p>
+</div>
+</div>
+</section>
+</div>
+</main>
+<!-- Footer -->
+<footer class="w-full py-stack-lg px-margin-desktop flex flex-col md:flex-row justify-between items-center bg-surface-dim border-t border-outline-variant mt-section-padding">
+<div class="flex flex-col gap-stack-sm items-center md:items-start mb-stack-md md:mb-0">
+<span class="font-label-md text-label-md uppercase tracking-widest text-secondary">INDUSTRIAL LOGISTICS</span>
+<p class="font-caption text-caption text-on-surface-variant">© 2024 Industrial Supply Logistics. Elite Corporate Tier.</p>
+</div>
+<div class="flex gap-stack-lg">
+<a class="font-caption text-caption text-on-surface-variant hover:text-primary transition-colors" href="#">Privacy Policy</a>
+<a class="font-caption text-caption text-on-surface-variant hover:text-primary transition-colors" href="#">Terms of Service</a>
+<a class="font-caption text-caption text-on-surface-variant hover:text-primary transition-colors" href="#">Compliance</a>
+<a class="font-caption text-caption text-on-surface-variant hover:text-primary transition-colors" href="#">Support</a>
+</div>
+</footer>
+<script>
+        function changeImage(src) {
+            document.getElementById('main-image').src = src;
+            // Update active state of thumbnails
+            const thumbnails = document.querySelectorAll('.grid-cols-4 button');
+            thumbnails.forEach(btn => {
+                const img = btn.querySelector('img');
+                if (img && img.src === src) {
+                    btn.classList.add('border-primary');
+                    btn.classList.remove('border-outline-variant');
+                } else if (img) {
+                    btn.classList.remove('border-primary');
+                    btn.classList.add('border-outline-variant');
+                }
+            });
+        }
+
+        function increment() {
+            const input = document.getElementById('qty');
+            input.value = parseInt(input.value) + 1;
+        }
+
+        function decrement() {
+            const input = document.getElementById('qty');
+            if (parseInt(input.value) > 1) {
+                input.value = parseInt(input.value) - 1;
+            }
+        }
+    </script>
+</body></html>

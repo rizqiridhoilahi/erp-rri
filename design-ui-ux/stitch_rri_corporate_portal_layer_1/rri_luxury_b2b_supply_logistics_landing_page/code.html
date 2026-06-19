@@ -1,0 +1,430 @@
+<!DOCTYPE html><html class="scroll-smooth" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>PT. Rizki Ridho Ilahi (RRI) | Strategic B2B Supply &amp; Logistics</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-surface": "#191c1e",
+                        "on-primary": "#ffffff",
+                        "tertiary-fixed-dim": "#b9c8de",
+                        "on-tertiary-container": "#afbed3",
+                        "primary-container": "#0000ff",
+                        "inverse-on-surface": "#eff1f3",
+                        "secondary": "#555e75",
+                        "inverse-primary": "#bec2ff",
+                        "on-surface-variant": "#454558",
+                        "on-secondary-fixed-variant": "#3d475c",
+                        "on-error": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "surface-container-lowest": "#ffffff",
+                        "primary": "#0001bb",
+                        "on-background": "#191c1e",
+                        "surface-container-low": "#f2f4f6",
+                        "outline-variant": "#c5c4db",
+                        "on-tertiary-fixed": "#0d1c2d",
+                        "tertiary-fixed": "#d4e4fa",
+                        "on-primary-fixed-variant": "#0000ef",
+                        "primary-fixed-dim": "#bec2ff",
+                        "on-tertiary-fixed-variant": "#39485a",
+                        "on-secondary": "#ffffff",
+                        "surface-bright": "#f7f9fb",
+                        "on-error-container": "#93000a",
+                        "secondary-container": "#d9e2fd",
+                        "outline": "#757589",
+                        "surface-dim": "#d8dadc",
+                        "surface": "#f7f9fb",
+                        "on-secondary-container": "#5b647b",
+                        "surface-container-high": "#e6e8ea",
+                        "surface-variant": "#e0e3e5",
+                        "inverse-surface": "#2d3133",
+                        "background": "#f7f9fb",
+                        "primary-fixed": "#e0e0ff",
+                        "surface-container": "#eceef0",
+                        "secondary-fixed": "#d9e2fd",
+                        "surface-container-highest": "#e0e3e5",
+                        "tertiary": "#283648",
+                        "surface-tint": "#343dff",
+                        "error": "#ba1a1a",
+                        "on-primary-fixed": "#00006e",
+                        "tertiary-container": "#3f4d5f",
+                        "on-secondary-fixed": "#121b2f",
+                        "secondary-fixed-dim": "#bdc6e0",
+                        "on-primary-container": "#b3b7ff",
+                        "on-tertiary": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "section-padding": "80px",
+                        "margin-mobile": "16px",
+                        "margin-desktop": "40px",
+                        "stack-lg": "32px",
+                        "stack-md": "16px",
+                        "gutter": "24px",
+                        "container-max": "1280px",
+                        "unit": "8px",
+                        "stack-sm": "8px"
+                    },
+                    "fontFamily": {
+                        "caption": ["Inter"],
+                        "label-md": ["Inter"],
+                        "headline-lg-mobile": ["Lexend"],
+                        "display-lg": ["Lexend"],
+                        "headline-md": ["Lexend"],
+                        "title-lg": ["Lexend"],
+                        "body-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-lg": ["Lexend"]
+                    },
+                    "fontSize": {
+                        "caption": ["12px", {"lineHeight": "1.4", "fontWeight": "400"}],
+                        "label-md": ["14px", {"lineHeight": "1.2", "letterSpacing": "0.05em", "fontWeight": "500"}],
+                        "headline-lg-mobile": ["28px", {"lineHeight": "1.2", "letterSpacing": "0.01em", "fontWeight": "700"}],
+                        "display-lg": ["48px", {"lineHeight": "1.1", "letterSpacing": "0.02em", "fontWeight": "700"}],
+                        "headline-md": ["24px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                        "title-lg": ["20px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                        "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                        "body-md": ["16px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                        "headline-lg": ["32px", {"lineHeight": "1.2", "letterSpacing": "0.01em", "fontWeight": "700"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(197, 196, 219, 0.3);
+        }
+        .navy-glass {
+            background: rgba(11, 21, 40, 0.3);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        @keyframes scroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+        .animate-scroll {
+            display: flex;
+            width: max-content;
+            animation: scroll 30s linear infinite;
+        }
+        .hero-glow {
+            box-shadow: 0 0 40px 10px rgba(0, 1, 187, 0.3);
+        }
+        .text-glow-blue {
+            text-shadow: 0 0 15px rgba(52, 61, 255, 0.6);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md overflow-x-hidden">
+<!-- TopNavBar -->
+<header class="fixed top-0 left-0 right-0 z-50 bg-white border-b border-outline-variant/20">
+<nav class="flex justify-between items-center max-w-container-max mx-auto px-margin-desktop h-20">
+<div class="flex items-center gap-stack-md">
+<span class="text-title-lg font-headline-lg font-bold tracking-tight text-[#0B1528]">RRI</span>
+<div class="flex h-2 w-2 rounded-full bg-[#0000ff] animate-pulse"></div>
+</div>
+<div class="hidden md:flex items-center gap-8">
+<a class="text-[#0B1528] border-b-2 border-[#0000ff] pb-1 font-semibold text-label-md font-label-md transition-colors duration-300" href="#">Solutions</a>
+<a class="font-medium text-[#0B1528] hover:text-[#0000ff] transition-colors duration-300 text-label-md font-label-md" href="#">Logistics</a>
+<a class="font-medium text-[#0B1528] hover:text-[#0000ff] transition-colors duration-300 text-label-md font-label-md" href="#">Industries</a>
+<a class="font-medium text-[#0B1528] hover:text-[#0000ff] transition-colors duration-300 text-label-md font-label-md" href="#">About Us</a>
+<a class="font-medium text-[#0B1528] hover:text-[#0000ff] transition-colors duration-300 text-label-md font-label-md" href="#">Contact</a>
+</div>
+<div class="flex items-center gap-4">
+<button class="bg-[#0000ff] text-white px-6 py-2.5 rounded-lg font-bold hover:opacity-90 transition-all">Get a Quote</button>
+<div class="md:hidden flex items-center">
+<span class="material-symbols-outlined text-[#0B1528]">menu</span>
+</div>
+</div>
+</nav>
+</header>
+<main>
+<!-- Hero Section -->
+<section class="relative h-[921px] flex items-center overflow-hidden bg-[#0B1528]">
+<!-- Industrial Image Background Placeholder -->
+<div class="absolute inset-0 z-0">
+<img class="w-full h-full object-cover opacity-30" data-alt="A cinematic, low-angle wide shot of a massive industrial shipping port at dusk, featuring towering cranes and rows of containers under a Deep Sovereign Navy sky. The lighting is moody and elite, with sharp Pure Electric Blue glowing highlights emanating from terminal structures and logistics gear, creating a sophisticated and technologically advanced B2B atmosphere." src="https://www.gstatic.com/labs-code/stitch/stitch-placeholder-300x300.svg">
+<div class="absolute inset-0 bg-gradient-to-r from-[#0B1528] via-transparent to-[#0B1528]/40"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-[#0B1528] to-transparent"></div>
+</div>
+<div class="relative z-10 max-w-container-max mx-auto px-margin-desktop w-full">
+<div class="max-w-3xl space-y-stack-lg">
+<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#343dff]/20 border border-[#343dff]/30 backdrop-blur-sm">
+<span class="flex h-2 w-2 rounded-full bg-[#343dff] animate-pulse"></span>
+<span class="text-[#bec2ff] text-caption font-caption tracking-widest uppercase">Global Supply Integrity</span>
+</div>
+<h1 class="text-display-lg font-display-lg text-white leading-tight">
+                    Your <span class="text-[#343dff] text-glow-blue">Premium Strategic Partner</span> in B2B Supply &amp; Logistics
+                </h1>
+<p class="text-body-lg font-body-lg text-tertiary-fixed-dim max-w-xl">
+                    PT. Rizki Ridho Ilahi (RRI) delivers engineering precision and luxury logistics management for global industrial leaders.
+                </p>
+<div class="flex flex-wrap gap-stack-md pt-4">
+<button class="px-8 py-4 bg-[#0001bb] text-white font-bold rounded-lg shadow-xl shadow-primary/20 hover:translate-y-[-2px] transition-all">
+                        Start Partnership
+                    </button>
+<button class="px-8 py-4 border border-outline-variant/30 text-white font-bold rounded-lg bg-white/5 backdrop-blur-md hover:bg-white/10 transition-all">
+                        View Solutions
+                    </button>
+</div>
+</div>
+</div>
+</section>
+<!-- Stats Counter -->
+<section class="relative z-20 -mt-16 max-w-container-max mx-auto px-margin-desktop">
+<div class="grid grid-cols-2 md:grid-cols-4 gap-gutter bg-white/95 backdrop-blur-xl border border-outline-variant/30 rounded-xl p-stack-lg shadow-2xl shadow-on-surface/5">
+<div class="flex flex-col items-center text-center space-y-2 border-r border-outline-variant/20 last:border-0">
+<span class="text-primary text-headline-lg font-headline-lg" data-count="500">32+</span>
+<span class="text-on-surface-variant text-label-md font-label-md uppercase tracking-wider">Projects Completed</span>
+</div>
+<div class="flex flex-col items-center text-center space-y-2 md:border-r border-outline-variant/20">
+<span class="text-primary text-headline-lg font-headline-lg" data-count="50">3+</span>
+<span class="text-on-surface-variant text-label-md font-label-md uppercase tracking-wider">Major Clients</span>
+</div>
+<div class="flex flex-col items-center text-center space-y-2 border-r border-outline-variant/20 last:border-0">
+<span class="text-primary text-headline-lg font-headline-lg" data-count="15">0+</span>
+<span class="text-on-surface-variant text-label-md font-label-md uppercase tracking-wider">Years Excellence</span>
+</div>
+<div class="flex flex-col items-center text-center space-y-2">
+<span class="text-primary text-headline-lg font-headline-lg" data-count="24">1/7</span>
+<span class="text-on-surface-variant text-label-md font-label-md uppercase tracking-wider">Global Support</span>
+</div>
+</div>
+</section>
+<!-- Client Logo Banner -->
+<section class="py-12 bg-surface-container-low overflow-hidden mt-8">
+<div class="animate-scroll opacity-40 hover:opacity-70 transition-opacity">
+<div class="flex items-center gap-24 px-12">
+<span class="text-headline-md font-headline-md text-secondary select-none">INDUSTRIAL-TECH</span>
+<span class="text-headline-md font-headline-md text-secondary select-none">GLOBAL-LOGS</span>
+<span class="text-headline-md font-headline-md text-secondary select-none">PRECISION-MFR</span>
+<span class="text-headline-md font-headline-md text-secondary select-none">STEEL-WORKS</span>
+<span class="text-headline-md font-headline-md text-secondary select-none">ENERGY-CORP</span>
+<span class="text-headline-md font-headline-md text-secondary select-none">AERO-SUPPLY</span>
+</div>
+<div class="flex items-center gap-24 px-12">
+<span class="text-headline-md font-headline-md text-secondary select-none">INDUSTRIAL-TECH</span>
+<span class="text-headline-md font-headline-md text-secondary select-none">GLOBAL-LOGS</span>
+<span class="text-headline-md font-headline-md text-secondary select-none">PRECISION-MFR</span>
+<span class="text-headline-md font-headline-md text-secondary select-none">STEEL-WORKS</span>
+<span class="text-headline-md font-headline-md text-secondary select-none">ENERGY-CORP</span>
+<span class="text-headline-md font-headline-md text-secondary select-none">AERO-SUPPLY</span>
+</div>
+</div>
+</section>
+<!-- Product Sneak Peek -->
+<section class="py-section-padding bg-white">
+<div class="max-w-container-max mx-auto px-margin-desktop">
+<div class="flex flex-col md:flex-row justify-between items-end gap-stack-md mb-16">
+<div class="max-w-2xl">
+<span class="text-primary font-bold text-label-md font-label-md tracking-widest uppercase mb-4 block">Product Showcase</span>
+<h2 class="text-headline-lg font-headline-lg text-on-surface">Curated Premium Supply Categories</h2>
+</div>
+<button class="group flex items-center gap-2 text-primary font-bold hover:gap-4 transition-all">
+                    Explore Full Catalog
+                    <span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
+<!-- Product 1 -->
+<div class="group relative bg-surface-container-low rounded-xl overflow-hidden hover:shadow-2xl transition-all duration-500">
+<div class="h-64 overflow-hidden">
+<img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" data-alt="Close-up photograph of high-precision industrial turbine components made of polished chrome and steel. The lighting is clean and professional, using high-key studio lights with subtle Pure Electric Blue reflections to emphasize quality and luxury manufacturing in a modern corporate style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAUH2tjnDEOkeAEVEtNuOA_u55TJg6U1jBM7vPTADa4J7EpaNmN29YfO_savxVVoTxOzePzknOgREgN8cCR0rzMhlNt47NVOMe5fj5fZOPTPtAbkp3s026EWBEdmWr96V7JUH4--JDxQrmUO3tiDiDDbOEoGuaM5-6Cs8WhMPiESCOxoMNQugsyxfm7XWReFFhi87VKAmWw8iq-XmtsFS0kpPKckoqKfBiKl18nOrkv0V2Pvsi--7ZTmJvlMlIYR4Tsy2d2Els4bKhA">
+</div>
+<div class="p-8 space-y-4">
+<div class="flex justify-between items-start">
+<h3 class="text-title-lg font-headline-lg">Industrial Turbine Parts</h3>
+<span class="bg-primary/10 text-primary px-3 py-1 rounded text-caption font-bold">Aerospace Grade</span>
+</div>
+<p class="text-body-md font-body-md text-on-surface-variant">High-tolerance components for heavy-duty power generation and propulsion systems.</p>
+<div class="pt-4 flex items-center justify-between border-t border-outline-variant/20">
+<span class="flex items-center gap-2 text-primary font-semibold">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">lock</span>
+                                Login for Inquiry
+                            </span>
+<button class="p-2 rounded-full border border-outline hover:bg-primary hover:text-white transition-colors">
+<span class="material-symbols-outlined">add</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Product 2 -->
+<div class="group relative bg-surface-container-low rounded-xl overflow-hidden hover:shadow-2xl transition-all duration-500">
+<div class="h-64 overflow-hidden">
+<img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" data-alt="A sleek laboratory setting showing premium industrial chemical cleaning agents in high-grade translucent containers. The aesthetic is ultra-clean and clinical, featuring cool Ice Gray backgrounds and Electric Blue liquid highlights that suggest purity, safety, and advanced B2B chemical engineering solutions." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBs2gQP0oZp29Ev5OaNwL77HXyZIrGuM7v_6SSbk5644FFlxxZ7Zkavdzsc6fMFd-Ub_RVUb3Ug5TOZgihvVB_AotctdXpvcV_UAE9sbMugo19ASFT_SjVsnhErJUplRB25ApInnzy-f3vF1qHkUV7H2qoQrUvqd6qxVpfeP_Zw_MCmQ_faQ6xli9CLouOo1gUnY8y-JmnCFCTti7hS-qaKh2BhRDGG2m7fmNzSWWlq8HEkNeXsaOpYKIPIlPv1Nr_lQX4Gh1JimgaU">
+</div>
+<div class="p-8 space-y-4">
+<div class="flex justify-between items-start">
+<h3 class="text-title-lg font-headline-lg">Chemical Cleaning Solutions</h3>
+<span class="bg-primary/10 text-primary px-3 py-1 rounded text-caption font-bold">Eco-Certified</span>
+</div>
+<p class="text-body-md font-body-md text-on-surface-variant">Specialized non-corrosive agents for large-scale industrial maintenance and sterilization.</p>
+<div class="pt-4 flex items-center justify-between border-t border-outline-variant/20">
+<span class="flex items-center gap-2 text-primary font-semibold">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">lock</span>
+                                Login for Inquiry
+                            </span>
+<button class="p-2 rounded-full border border-outline hover:bg-primary hover:text-white transition-colors">
+<span class="material-symbols-outlined">add</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Product 3 -->
+<div class="group relative bg-surface-container-low rounded-xl overflow-hidden hover:shadow-2xl transition-all duration-500">
+<div class="h-64 overflow-hidden">
+<img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" data-alt="Modern logistics equipment including heavy-duty pallets and automated transport gear in a clean, vast warehouse environment. The style is professional and elite, with deep shadows and sharp focus on the high-end mechanical details. Lighting is expansive white-space style with Electric Blue laser-like accents." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCEdeMz4zRNXG53wy0YMU0FrXxckf9gMN8tzep8a9lCIz43qtId-1A1pzlU8odkfnvaLEN2HCaMWo3hR3K4GcfnTe5hWBS4xLTK0mlfSAnq7qfYDf-p5-zCYyw-c4LjQsqQML_9kIChLH_SWCsx-sr9D5vf0qW495Qi_RAg3MYIO-dImbSsMa_QCFP_zecHjorD-zzuWEMiiX_wYGDrcYiJpoD4leh9bHXPdRAEHs5afj5oAU9-dvUYlervP9z7hzB_yeYN4bn9MOqF">
+</div>
+<div class="p-8 space-y-4">
+<div class="flex justify-between items-start">
+<h3 class="text-title-lg font-headline-lg">Bulk Logistics Gear</h3>
+<span class="bg-primary/10 text-primary px-3 py-1 rounded text-caption font-bold">Global Standard</span>
+</div>
+<p class="text-body-md font-body-md text-on-surface-variant">Comprehensive transport and storage hardware for international supply chain operations.</p>
+<div class="pt-4 flex items-center justify-between border-t border-outline-variant/20">
+<span class="flex items-center gap-2 text-primary font-semibold">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">lock</span>
+                                Login for Inquiry
+                            </span>
+<button class="p-2 rounded-full border border-outline hover:bg-primary hover:text-white transition-colors">
+<span class="material-symbols-outlined">add</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Value Proposition Section -->
+<section class="py-section-padding bg-surface-container">
+<div class="max-w-container-max mx-auto px-margin-desktop grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
+<div class="space-y-stack-lg">
+<h2 class="text-headline-lg font-headline-lg text-on-surface">Integrated Excellence Across Every Sector</h2>
+<div class="space-y-stack-md">
+<div class="flex gap-4 p-4 rounded-lg bg-white shadow-sm border border-outline-variant/30">
+<span class="material-symbols-outlined text-primary text-3xl">verified</span>
+<div>
+<h4 class="font-bold text-title-lg">Quality Assurance</h4>
+<p class="text-on-surface-variant text-body-md">Strict compliance with international ISO standards for every product in our catalog.</p>
+</div>
+</div>
+<div class="flex gap-4 p-4 rounded-lg bg-white shadow-sm border border-outline-variant/30">
+<span class="material-symbols-outlined text-primary text-3xl">local_shipping</span>
+<div>
+<h4 class="font-bold text-title-lg">Global Reach</h4>
+<p class="text-on-surface-variant text-body-md">Optimized supply chain routes ensuring timely delivery to 150+ countries worldwide.</p>
+</div>
+</div>
+<div class="flex gap-4 p-4 rounded-lg bg-white shadow-sm border border-outline-variant/30">
+<span class="material-symbols-outlined text-primary text-3xl">precision_manufacturing</span>
+<div>
+<h4 class="font-bold text-title-lg">Technical Support</h4>
+<p class="text-on-surface-variant text-body-md">On-ground engineering teams available for consultation and maintenance support.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="relative">
+<div class="absolute -top-4 -left-4 w-24 h-24 bg-primary/10 rounded-full blur-3xl"></div>
+<img class="rounded-2xl shadow-2xl relative z-10" data-alt="A top-down view of two professional business consultants in a high-end corporate office, reviewing complex industrial blue-prints and logistics charts. The scene is bright, modern, and elite, with a palette of crisp whites, Platinum Slates, and Pure Electric Blue accents. The mood is collaborative, intelligent, and authoritative." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAQ1jd3CDOsImOeIOi_huLvT8EKG_5nBVcOwhZ4yZ4Cjhatu19Jkh-4egmPQJJreh-MtrdnkpUOWvG6a3eRbzPQdK6cYKBnJruIfYN7E5nfKxQlUWh5SHQFnQnyIb9PFXHmuxEDDoR6krHZHHLZQAhYmDFm8kAqc77KtqRvV3SHTPQywc3kM4mCzccFnBltoKgiTsNYQUc6jiITW1AYdV-YO5E9cAhD0b-s0yqfj5CyNkGW35-PImLNcoUT56tNZlrrjqOF8R7ngfj7">
+<div class="absolute -bottom-8 -right-8 glass-card p-6 rounded-xl shadow-lg z-20 max-w-[200px]">
+<p class="text-caption font-bold text-primary italic mb-2">"RRI transformed our procurement efficiency by 40% in the first quarter."</p>
+<p class="text-caption font-medium">— Global Ops Director</p>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-tertiary dark:bg-on-tertiary-fixed full-width relative border-t border-outline-variant/20">
+<div class="w-full py-section-padding px-margin-desktop max-w-container-max mx-auto flex flex-col gap-stack-lg">
+<div class="flex flex-col md:flex-row justify-between items-start gap-stack-lg">
+<div class="space-y-4 max-w-sm">
+<span class="text-headline-md font-headline-md text-on-primary">RRI</span>
+<p class="text-tertiary-fixed-dim/70 text-body-md">Providing strategic depth and execution excellence in industrial supply chain management across the archipelago and beyond.</p>
+</div>
+<div class="grid grid-cols-2 md:grid-cols-3 gap-16">
+<div class="flex flex-col gap-4">
+<span class="text-white font-bold uppercase tracking-widest text-caption">Solutions</span>
+<a class="text-tertiary-fixed-dim/70 hover:text-on-primary transition-colors text-body-md" href="#">Manufacturing</a>
+<a class="text-tertiary-fixed-dim/70 hover:text-on-primary transition-colors text-body-md" href="#">Energy &amp; Power</a>
+<a class="text-tertiary-fixed-dim/70 hover:text-on-primary transition-colors text-body-md" href="#">Heavy Equipment</a>
+</div>
+<div class="flex flex-col gap-4">
+<span class="text-white font-bold uppercase tracking-widest text-caption">Legal</span>
+<a class="text-tertiary-fixed-dim/70 hover:text-on-primary transition-colors text-body-md" href="#">Privacy Policy</a>
+<a class="text-tertiary-fixed-dim/70 hover:text-on-primary transition-colors text-body-md" href="#">Terms of Service</a>
+<a class="text-tertiary-fixed-dim/70 hover:text-on-primary transition-colors text-body-md" href="#">Global Compliance</a>
+</div>
+<div class="hidden md:flex flex-col gap-4">
+<span class="text-white font-bold uppercase tracking-widest text-caption">Support</span>
+<a class="text-tertiary-fixed-dim/70 hover:text-on-primary transition-colors text-body-md" href="#">Support Center</a>
+<a class="text-tertiary-fixed-dim/70 hover:text-on-primary transition-colors text-body-md" href="#">Direct Contact</a>
+<a class="text-tertiary-fixed-dim/70 hover:text-on-primary transition-colors text-body-md" href="#">Regional Offices</a>
+</div>
+</div>
+</div>
+<div class="pt-8 border-t border-outline-variant/10 flex flex-col md:flex-row justify-between items-center gap-4">
+<p class="text-caption font-caption text-tertiary-fixed-dim/70">© 2024 PT. Rizki Ridho Ilahi (RRI). All rights reserved.</p>
+<div class="flex gap-6">
+<a class="text-tertiary-fixed-dim/70 hover:text-on-primary opacity-80 hover:opacity-100 transition-all" href="#"><span class="material-symbols-outlined">language</span></a>
+<a class="text-tertiary-fixed-dim/70 hover:text-on-primary opacity-80 hover:opacity-100 transition-all" href="#"><span class="material-symbols-outlined">public</span></a>
+</div>
+</div>
+</div>
+</footer>
+<script>
+    // Simple Intersection Observer for Stats Counter
+    const observerOptions = {
+        threshold: 0.1
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const counters = entry.target.querySelectorAll('[data-count]');
+                counters.forEach(counter => {
+                    const target = parseInt(counter.getAttribute('data-count'));
+                    let count = 0;
+                    const duration = 2000;
+                    const increment = target / (duration / 16);
+                    
+                    const updateCount = () => {
+                        if (count < target) {
+                            count += increment;
+                            counter.textContent = Math.floor(count) + (counter.textContent.includes('+') ? '+' : (counter.textContent.includes('/') ? '/7' : ''));
+                            requestAnimationFrame(updateCount);
+                        } else {
+                            counter.textContent = target + (counter.textContent.includes('+') ? '+' : (counter.textContent.includes('/') ? '/7' : ''));
+                        }
+                    };
+                    updateCount();
+                });
+                observer.unobserve(entry.target);
+            }
+        });
+    }, observerOptions);
+
+    const statsSection = document.querySelector('section.relative.z-20');
+    if (statsSection) observer.observe(statsSection);
+</script>
+
+
+
+
+</body></html>
