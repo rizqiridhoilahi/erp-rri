@@ -21,7 +21,44 @@ export default async function QuotationPage() {
   const { data: qtnData, error } = await supabase
     .from('quotation')
     .select('*, customer!customer_id(nama, kode), quotation_item!quotation_id(id, nama_barang, satuan, jumlah, harga_satuan, diskon, total_harga)')
-    .order('created_at', { ascending: false })
+    .order('tanggal', { ascending: false })
+
+  const rfqIds = (qtnData ?? []).map(q => q.rfq_id).filter(Boolean)
+  const picIds = (qtnData ?? []).map(q => q.pic_customer_id).filter(Boolean)
+
+  const rfqMap: Record<string, string | null> = {}
+  if (rfqIds.length > 0) {
+    const { data: rfqData } = await supabase
+      .from('rfq_customer')
+      .select('id, nomor_rfq_customer')
+      .in('id', rfqIds)
+    if (rfqData) {
+      for (const rfq of rfqData) {
+        rfqMap[rfq.id] = rfq.nomor_rfq_customer
+      }
+    }
+  }
+
+  const picMap: Record<string, string> = {}
+  if (picIds.length > 0) {
+    const { data: picData } = await supabase
+      .from('customer_pic')
+      .select('id, nama')
+      .in('id', picIds)
+    if (picData) {
+      for (const pic of picData) {
+        picMap[pic.id] = pic.nama
+      }
+    }
+  }
+
+  const statusPriority: Record<string, number> = { draft: 1, sent: 2, approved: 3, rejected: 4, closed: 5 }
+  ;(qtnData ?? []).sort((a, b) => {
+    const pa = statusPriority[a.status] ?? 99
+    const pb = statusPriority[b.status] ?? 99
+    if (pa !== pb) return pa - pb
+    return new Date(b.tanggal).getTime() - new Date(a.tanggal).getTime()
+  })
 
   return (
     <div className="space-y-6">
@@ -55,7 +92,9 @@ export default async function QuotationPage() {
           <Table>
             <TableHeader><TableRow>
                 <TableHead>Nomor</TableHead>
+                <TableHead>No. Ref RFQ</TableHead>
                 <TableHead>Customer</TableHead>
+                <TableHead>PIC</TableHead>
                 <TableHead>Tanggal</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Item Barang</TableHead>
@@ -68,9 +107,15 @@ export default async function QuotationPage() {
                 <TableRow key={item.id}>
                   <TableCell className="font-medium">{item.nomor}</TableCell>
                   <TableCell className="font-medium">
+                    {rfqMap[item.rfq_id] ?? '-'}
+                  </TableCell>
+                  <TableCell className="font-medium">
                     <span className="text-muted-foreground text-xs">{item.customer?.kode}</span>
                     <br />
                     {item.customer?.nama}
+                  </TableCell>
+                  <TableCell className="font-medium">
+                    {picMap[item.pic_customer_id] ?? '-'}
                   </TableCell>
                   <TableCell className="font-medium">
                     {new Date(item.tanggal).toLocaleDateString('id-ID')}

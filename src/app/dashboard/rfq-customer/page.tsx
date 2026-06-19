@@ -33,6 +33,7 @@ interface RfqCustomer {
   tanggal: string
   status: string
   customer: Customer | null
+  customer_pic: { id: string; nama: string } | null
   rfq_customer_item: RfqItemSummary[]
 }
 
@@ -100,6 +101,7 @@ export default function RfqCustomerPage() {
                 <TableHead>Nomor</TableHead>
                 <TableHead>Nomor RFQ Customer</TableHead>
                 <TableHead>Customer</TableHead>
+                <TableHead>PIC</TableHead>
                 <TableHead>Tanggal</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Item Barang</TableHead>
@@ -116,6 +118,7 @@ export default function RfqCustomerPage() {
                     <br />
                     {item.customer?.nama}
                   </TableCell>
+                  <TableCell>{item.customer_pic?.nama ?? '-'}</TableCell>
                   <TableCell className="font-medium">
                     {new Date(item.tanggal).toLocaleDateString('id-ID')}
                   </TableCell>

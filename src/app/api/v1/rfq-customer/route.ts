@@ -41,10 +41,38 @@ export async function GET(request: NextRequest) {
   const { data, error } = await supabaseAdmin
     .from('rfq_customer')
     .select('*, customer!customer_id(id, nama, kode), rfq_customer_item!rfq_customer_id(id, nama_barang, jumlah, satuan)')
-    .order('created_at', { ascending: false })
+    .order('tanggal', { ascending: false })
 
   if (error) return internalError(error)
-  return NextResponse.json({ data: data ?? [] })
+
+  const statusPriority: Record<string, number> = { draft: 1, sent: 2, responded: 3, closed: 4, Dibatalkan: 5 }
+  ;(data ?? []).sort((a, b) => {
+    const pa = statusPriority[a.status] ?? 99
+    const pb = statusPriority[b.status] ?? 99
+    if (pa !== pb) return pa - pb
+    return new Date(b.tanggal).getTime() - new Date(a.tanggal).getTime()
+  })
+
+  const picIds = (data ?? []).map(r => r.pic_customer_id).filter(Boolean) as string[]
+  const picMap: Record<string, { id: string; nama: string }> = {}
+  if (picIds.length > 0) {
+    const { data: pics } = await supabaseAdmin
+      .from('customer_pic')
+      .select('id, nama')
+      .in('id', picIds)
+    if (pics) {
+      for (const pic of pics) {
+        picMap[pic.id] = pic
+      }
+    }
+  }
+
+  const result = (data ?? []).map(r => ({
+    ...r,
+    customer_pic: r.pic_customer_id ? picMap[r.pic_customer_id] ?? null : null,
+  }))
+
+  return NextResponse.json({ data: result })
 }
 
 export async function POST(request: NextRequest) {

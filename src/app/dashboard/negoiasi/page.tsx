@@ -12,7 +12,25 @@ const s: Record<string, { label: string; v: 'secondary' | 'warning' | 'success' 
 }
 
 export default async function NegoiasiPage() {
-  const { data, error } = await supabase.from('negoiasi').select('*, quotation!quotation_id(nomor)').order('created_at', { ascending: false })
+  const { data, error } = await supabase.from('negoiasi').select('*, quotation!quotation_id(id, nomor, pic_customer_id, customer!customer_id(id, nama, kode))').order('tanggal', { ascending: false })
+
+  const picIds = (data ?? []).map(n => n.quotation?.pic_customer_id).filter(Boolean) as string[]
+  const picMap: Record<string, string> = {}
+  if (picIds.length > 0) {
+    const { data: pics } = await supabase.from('customer_pic').select('id, nama').in('id', picIds)
+    if (pics) {
+      for (const p of pics) picMap[p.id] = p.nama
+    }
+  }
+
+  const statusPriority: Record<string, number> = { draft: 1, approved: 2, rejected: 3 }
+  ;(data ?? []).sort((a, b) => {
+    const pa = statusPriority[a.status] ?? 99
+    const pb = statusPriority[b.status] ?? 99
+    if (pa !== pb) return pa - pb
+    return new Date(b.tanggal).getTime() - new Date(a.tanggal).getTime()
+  })
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -25,14 +43,18 @@ export default async function NegoiasiPage() {
       <div className="rounded-lg border bg-card"><Table><TableHeader><TableRow>
         <TableHead>Nomor</TableHead>
         <TableHead>Quotation</TableHead>
+        <TableHead>Customer</TableHead>
+        <TableHead>PIC</TableHead>
         <TableHead>Tanggal</TableHead>
         <TableHead>Status</TableHead>
         <TableHead className="text-right">Aksi</TableHead>
       </TableRow></TableHeader><TableBody>
-        {data.map((item: { id: string; nomor: string; quotation: { nomor: string } | null; tanggal: string; status: string }) => (
+        {data.map((item: { id: string; nomor: string; quotation: { nomor: string; pic_customer_id: string | null; customer: { nama: string } | null } | null; tanggal: string; status: string }) => (
           <TableRow key={item.id}>
             <TableCell className="font-medium">{item.nomor}</TableCell>
             <TableCell className="font-medium">{item.quotation?.nomor ?? '-'}</TableCell>
+            <TableCell className="font-medium">{item.quotation?.customer?.nama ?? '-'}</TableCell>
+            <TableCell className="font-medium">{picMap[item.quotation?.pic_customer_id ?? ''] ?? '-'}</TableCell>
             <TableCell className="font-medium">{new Date(item.tanggal).toLocaleDateString('id-ID')}</TableCell>
             <TableCell><Badge variant={s[item.status]?.v ?? 'outline'}>{s[item.status]?.label ?? item.status}</Badge></TableCell>
             <TableCell className="text-right"><Button variant="ghost" size="sm" asChild><Link href={`/dashboard/negoiasi/${item.id}`}><Eye className="h-4 w-4" /><span className="sr-only">Detail</span></Link></Button><Button variant="ghost" size="sm" asChild><Link href={`/dashboard/negoiasi/${item.id}/edit`}><Pencil className="h-4 w-4" /><span className="sr-only">Edit</span></Link></Button></TableCell>

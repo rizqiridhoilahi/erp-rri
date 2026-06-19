@@ -13,9 +13,15 @@ const s: Record<string, { label: string; v: 'secondary' | 'warning' | 'success' 
 }
 
 export default async function CustomerPoPage() {
-  const { data, error } = await supabase.from('customer_po').select('*, customer!customer_id(nama, kode), customer_po_item(id, jumlah, harga_satuan, barang!barang_id(nama, satuan))').order('tanggal', { ascending: false }).order('created_at', { ascending: false })
-  const { data: soData } = await supabase.from('sales_order').select('customer_po_id, nomor, status')
-  const soByPoId = new Map(soData?.map(s => [s.customer_po_id, s]) ?? [])
+  const { data, error } = await supabase.from('customer_po').select('*, customer!customer_id(nama, kode), customer_pic!pic_customer_id(nama), customer_po_item(id, jumlah, harga_satuan, barang!barang_id(nama, satuan))').order('tanggal', { ascending: false }).order('created_at', { ascending: false })
+
+  const statusPriority: Record<string, number> = { draft: 1, confirmed: 2, cancelled: 3 }
+  ;(data ?? []).sort((a, b) => {
+    const pa = statusPriority[a.status] ?? 99
+    const pb = statusPriority[b.status] ?? 99
+    if (pa !== pb) return pa - pb
+    return new Date(b.tanggal).getTime() - new Date(a.tanggal).getTime()
+  })
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -27,30 +33,28 @@ export default async function CustomerPoPage() {
         <Button asChild className="mt-4"><Link href="/dashboard/customer-po/tambah">Buat PO Pertama</Link></Button></div> :
       <div className="rounded-lg border bg-card"><Table><TableHeader><TableRow>
         <TableHead>Nomor</TableHead>
-        <TableHead>Customer</TableHead>
         <TableHead>PO Customer</TableHead>
+        <TableHead>Customer</TableHead>
+        <TableHead>PIC</TableHead>
         <TableHead>Tgl</TableHead>
         <TableHead>Status</TableHead>
-        <TableHead>SO</TableHead>
         <TableHead>Item Barang</TableHead>
         <TableHead className="text-right">Total</TableHead>
         <TableHead className="text-right">Aksi</TableHead>
       </TableRow></TableHeader><TableBody>
-        {data.map((item) => {
-          const so = soByPoId.get(item.id)
-          return (
+        {data.map((item) => (
           <TableRow key={item.id}>
             <TableCell className="font-medium">{item.nomor}</TableCell>
-            <TableCell className="font-medium">{item.customer?.nama}</TableCell>
             <TableCell className="font-medium">{item.nomor_po_customer ?? '-'}</TableCell>
+            <TableCell className="font-medium">{item.customer?.nama}</TableCell>
+            <TableCell className="font-medium">{item.customer_pic?.nama ?? '-'}</TableCell>
             <TableCell className="font-medium">{new Date(item.tanggal).toLocaleDateString('id-ID')}</TableCell>
             <TableCell><Badge variant={s[item.status]?.v ?? 'outline'}>{s[item.status]?.label ?? item.status}</Badge></TableCell>
-            <TableCell>{so ? <Badge variant="secondary">{so.nomor}</Badge> : '-'}</TableCell>
             <TableCell><ItemsPopover items={(item.customer_po_item ?? []).map((i: { id: string; jumlah: number; harga_satuan: number | null; barang: { nama: string; satuan: string | null } | null }) => ({ id: i.id, nama: i.barang?.nama ?? '-', satuan: i.barang?.satuan ?? '-', jumlah: i.jumlah, harga_satuan: i.harga_satuan }))} /></TableCell>
             <TableCell className="text-right font-medium text-primary">Rp {((item.customer_po_item ?? []).reduce((sum: number, i: { jumlah: number; harga_satuan: number | null }) => sum + (i.jumlah || 0) * (i.harga_satuan || 0), 0)).toLocaleString('id-ID')}</TableCell>
             <TableCell className="text-right space-x-1"><Button variant="ghost" size="sm" asChild><Link href={`/dashboard/customer-po/${item.id}`}><Eye className="h-4 w-4" /></Link></Button><Button variant="ghost" size="sm" asChild><Link href={`/dashboard/customer-po/${item.id}/edit`}><Pencil className="h-4 w-4" /></Link></Button></TableCell>
           </TableRow>
-        )})}
+        ))}
       </TableBody></Table></div>}
     </div>
   )
