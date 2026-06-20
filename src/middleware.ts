@@ -2,9 +2,16 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { checkRateLimit } from '@/lib/utils/rate-limit'
 
+const STATIC_FILE = /\.(png|jpg|jpeg|gif|svg|ico|webp|mp4|webm|pdf|docx?|xlsx?|txt|css|js)$/i
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
   const host = request.headers.get('host') ?? ''
+
+  // Skip rewrite for static files so /public assets keep serving correctly
+  if (STATIC_FILE.test(pathname)) {
+    return NextResponse.next()
+  }
 
   // Host detection: pt-rri.com → rewrite to public-pages/
   if (host === 'pt-rri.com' || host === 'www.pt-rri.com') {
