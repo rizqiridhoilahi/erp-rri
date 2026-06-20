@@ -75,8 +75,13 @@ export const id = {
     items: [
       {
         quote: 'RRI telah menjadi mitra strategis yang andal dalam penyediaan bahan baku dan logistik untuk operasional kami.',
-        name: 'Budi Santoso',
-        role: 'Procurement Manager',
+        name: 'Triasih Kusmalinda',
+        role: 'Procurement & Coordination, PT. Bhumi Jepara Service',
+      },
+      {
+        quote: 'Profesionalisme dan ketepatan waktu RRI dalam pengiriman barang sangat mendukung kelancaran rantai pasok perusahaan kami. Kualitas pelayanan yang konsisten membuat kami percaya sebagai mitra utama.',
+        name: 'Muhammad Rafiud Aljabar',
+        role: 'CEO, PT. Emerald Global Trading',
       },
     ],
   },

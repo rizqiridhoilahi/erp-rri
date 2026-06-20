@@ -17,7 +17,7 @@ function LocaleSwitcherInner() {
   return (
     <button
       onClick={toggleLang}
-      className="flex items-center gap-1.5 text-[12px] font-medium text-[#0000ff] hover:opacity-70 transition-opacity uppercase tracking-wider font-[family-name:var(--font-body)]"
+      className="flex items-center gap-1.5 text-[12px] font-semibold text-[#0000ff] hover:opacity-70 transition-opacity uppercase tracking-wider font-[family-name:var(--font-heading)]"
       aria-label="Switch language"
     >
       {current === 'id' ? (

@@ -77,8 +77,13 @@ export const en: Dictionary = {
     items: [
       {
         quote: 'RRI has been a reliable strategic partner in providing raw materials and logistics for our operations.',
-        name: 'Budi Santoso',
-        role: 'Procurement Manager',
+        name: 'Triasih Kusmalinda',
+        role: 'Procurement & Coordination, PT. Bhumi Jepara Service',
+      },
+      {
+        quote: 'RRI\'s professionalism and timely deliveries have greatly supported the smooth operation of our supply chain. Their consistent service quality makes them our trusted partner.',
+        name: 'Muhammad Rafiud Aljabar',
+        role: 'CEO, PT. Emerald Global Trading',
       },
     ],
   },

@@ -22,32 +22,32 @@ export function PublicNavbar() {
           <img
             src="/logo/logo-rri-bg-transparan.png"
             alt="PT RRI"
-            className="h-[33px] w-auto"
+            className="h-[70px] w-auto"
           />
           </Link>
 
         <div className="hidden md:flex items-center gap-8">
           <Link
             href="/"
-            className="font-medium text-[14px] text-[#0000ff] hover:opacity-70 transition-opacity duration-200 uppercase tracking-wider font-[family-name:var(--font-body)]"
+            className="font-semibold text-[14px] text-[#0000ff] hover:opacity-70 transition-opacity duration-200 uppercase tracking-wider font-[family-name:var(--font-heading)]"
           >
             {dict.nav.beranda}
           </Link>
           <Link
             href="/tentang-kami"
-            className="font-medium text-[14px] text-[#0000ff] hover:opacity-70 transition-opacity duration-200 uppercase tracking-wider font-[family-name:var(--font-body)]"
+            className="font-semibold text-[14px] text-[#0000ff] hover:opacity-70 transition-opacity duration-200 uppercase tracking-wider font-[family-name:var(--font-heading)]"
           >
             {dict.nav.tentangKami}
           </Link>
           <Link
             href="/layanan"
-            className="font-medium text-[14px] text-[#0000ff] hover:opacity-70 transition-opacity duration-200 uppercase tracking-wider font-[family-name:var(--font-body)]"
+            className="font-semibold text-[14px] text-[#0000ff] hover:opacity-70 transition-opacity duration-200 uppercase tracking-wider font-[family-name:var(--font-heading)]"
           >
             {dict.nav.layanan}
           </Link>
           <Link
             href="/katalog"
-            className="font-medium text-[14px] text-[#0000ff] hover:opacity-70 transition-opacity duration-200 uppercase tracking-wider font-[family-name:var(--font-body)]"
+            className="font-semibold text-[14px] text-[#0000ff] hover:opacity-70 transition-opacity duration-200 uppercase tracking-wider font-[family-name:var(--font-heading)]"
           >
             {dict.nav.katalog}
           </Link>
@@ -55,13 +55,13 @@ export function PublicNavbar() {
             <>
               <Link
                 href="/inquiry"
-                className="font-medium text-[14px] text-[#0000ff] hover:opacity-70 transition-opacity duration-200 uppercase tracking-wider font-[family-name:var(--font-body)]"
+                className="font-semibold text-[14px] text-[#0000ff] hover:opacity-70 transition-opacity duration-200 uppercase tracking-wider font-[family-name:var(--font-heading)]"
               >
                 {dict.auth.cart}
               </Link>
               <Link
                 href="/quick-order"
-                className="font-medium text-[14px] text-[#0000ff] hover:opacity-70 transition-opacity duration-200 uppercase tracking-wider font-[family-name:var(--font-body)]"
+                className="font-semibold text-[14px] text-[#0000ff] hover:opacity-70 transition-opacity duration-200 uppercase tracking-wider font-[family-name:var(--font-heading)]"
               >
                 {dict.auth.quickOrder}
               </Link>
@@ -78,7 +78,7 @@ export function PublicNavbar() {
               </span>
               <button
                 onClick={handleLogout}
-                className="text-[14px] font-medium text-red-500 hover:text-red-700 transition-colors uppercase tracking-wider font-[family-name:var(--font-body)] cursor-pointer"
+                className="text-[14px] font-semibold text-red-500 hover:text-red-700 transition-colors uppercase tracking-wider font-[family-name:var(--font-heading)] cursor-pointer"
               >
                 {dict.auth.logoutButton}
               </button>
@@ -87,13 +87,13 @@ export function PublicNavbar() {
             <>
               <Link
                 href="/customer-login"
-                className="hidden md:inline-flex text-[14px] font-medium text-[#0000ff] hover:opacity-70 transition-opacity uppercase tracking-wider font-[family-name:var(--font-body)]"
+                className="hidden md:inline-flex text-[14px] font-semibold text-[#0000ff] hover:opacity-70 transition-opacity uppercase tracking-wider font-[family-name:var(--font-heading)]"
               >
                 {dict.nav.login}
               </Link>
               <Link
                 href="/customer-register"
-                className="bg-[#0000ff] text-white px-6 py-2.5 rounded-lg font-bold text-[14px] hover:bg-[#0001bb] transition-all duration-200 font-[family-name:var(--font-body)]"
+                className="bg-[#0000ff] text-white px-6 py-2.5 rounded-lg font-bold text-[14px] hover:bg-[#0001bb] transition-all duration-200 font-[family-name:var(--font-heading)]"
               >
                 {dict.nav.daftar}
               </Link>

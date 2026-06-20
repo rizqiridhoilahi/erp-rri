@@ -149,7 +149,7 @@ export function LandingContent() {
       <section ref={statsRef} className="relative z-20 -mt-16 max-w-[1280px] mx-auto px-[40px]">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-gradient-to-r from-[#343DFF]/30 via-[#0000FF]/20 to-[#343DFF]/30 rounded-xl overflow-hidden shadow-2xl shadow-[#0B1528]/30">
           {stats.map((stat, i) => (
-            <div key={i} className="flex flex-col items-center text-center space-y-3 bg-[#0B1528]/95 backdrop-blur-xl p-8">
+            <div key={i} className="flex flex-col items-center text-center space-y-3 bg-[#0B1528]/60 backdrop-blur-xl p-8">
               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#343DFF] to-[#0000FF] flex items-center justify-center">
                 <svg className={`w-5 h-5 text-white ${statsInView ? 'stat-visible' : ''}`} style={{ animationDelay: `${i * 100}ms` }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                   {stat.icon === 'check-circle' && <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />}
@@ -267,20 +267,20 @@ export function LandingContent() {
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8">
             {[
               { src: '/image/client/BJP.png', alt: 'BJP' },
-              { src: '/image/client/BJS.jpeg', alt: 'BJS' },
-              { src: '/image/client/EGT.png', alt: 'EGT' },
-              { src: '/image/client/kpjb.png', alt: 'KPJB' },
+              { src: '/image/client/BJS.png', alt: 'BJS' },
               { src: '/image/client/MKP.png', alt: 'MKP' },
+              { src: '/image/client/kpjb.png', alt: 'KPJB' },
+              { src: '/image/client/EGT.png', alt: 'EGT' },
             ].map((logo, i) => (
               <div
                 key={i}
-                className={`h-28 rounded-2xl bg-gradient-to-br from-[#f8fafc] to-white border border-[#e2e8f0] flex items-center justify-center p-6 hover:border-[#343DFF]/30 hover:shadow-lg hover:shadow-[#343DFF]/5 hover:scale-105 transition-all duration-300 ${klienVisible ? 'logo-placeholder' : 'opacity-0'}`}
+                className={`h-28 rounded-2xl bg-gradient-to-br from-[#f8fafc] to-white border border-[#e2e8f0] shadow-md shadow-[#0B1528]/5 flex items-center justify-center p-2 hover:border-[#343DFF]/30 hover:shadow-lg hover:shadow-[#343DFF]/5 hover:scale-105 transition-all duration-300 ${klienVisible ? 'logo-placeholder' : 'opacity-0'}`}
                 style={{ animationDelay: `${i * 150}ms` }}
               >
                 <img
                   src={logo.src}
                   alt={logo.alt}
-                  className="max-h-full max-w-full object-contain grayscale hover:grayscale-0 transition-all duration-500"
+                  className="max-h-full max-w-full object-contain"
                 />
               </div>
             ))}
@@ -302,7 +302,7 @@ export function LandingContent() {
                 className={`relative ${testimonialVisible ? 'reveal-visible' : 'reveal'}`}
               >
                 <div className="absolute -top-3 -left-3 text-[#343DFF]/10 z-10">
-                  <svg className="w-16 h-16" fill="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-10 h-10" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10H14.017zM0 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151C7.546 6.068 5.983 8.789 5.983 11H10v10H0z" />
                   </svg>
                 </div>
