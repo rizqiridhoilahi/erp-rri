@@ -133,7 +133,9 @@ export function KatalogDetailContent() {
                     className="max-h-[400px] w-full object-contain"
                   />
                 ) : (
-                  <span className="material-symbols-outlined text-[#94A3B8] text-[64px]">inventory_2</span>
+                  <svg className="w-16 h-16 text-[#94A3B8]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg>
                 )}
               </div>
               {images.length > 1 && (

@@ -121,7 +121,7 @@ export function KatalogContent() {
                     <Link
                       key={product.id}
                       href={`/katalog/${product.id}${lang !== 'id' ? `?lang=${lang}` : ''}`}
-                      className="group glass-card rounded-xl overflow-hidden hover:translate-y-[-4px] transition-all duration-300"
+                      className="group rounded-2xl bg-white shadow-lg shadow-[#0B1528]/5 border border-[#e2e8f0] overflow-hidden hover:shadow-xl hover:shadow-[#0B1528]/10 hover:-translate-y-1.5 transition-all duration-300"
                     >
                       <div className="h-48 bg-[#f0f2f5] flex items-center justify-center overflow-hidden">
                         {primaryImage ? (
@@ -131,7 +131,9 @@ export function KatalogContent() {
                             className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
                           />
                         ) : (
-                          <span className="material-symbols-outlined text-[#94A3B8] text-[48px]">inventory_2</span>
+                          <svg className="w-12 h-12 text-[#94A3B8]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                            </svg>
                         )}
                       </div>
                       <div className="p-5">
