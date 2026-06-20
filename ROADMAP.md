@@ -1050,14 +1050,19 @@ Customer retur barang
 | LP-11 | **Navbar refinements** — backdrop-blur, hover states, Lucide hamburger, `cursor-pointer` | ✅ Done | `public-navbar.tsx` |
 | LP-12 | **Lint + Build pass** — 0 errors, 203 static pages | ✅ Done | — |
 
-## 🔵 BLOCKED — Fase 3 (Portal Dashboard, DNS, Deploy)
+## 🟢 DONE — DNS, Deploy, Hero Video
 | # | Task | Status | Notes |
 |---|------|--------|-------|
-| F3-1 | **Cloudflare DNS records** — A `pt-rri.com` → `76.76.21.21`, CNAME `www` → `cname.vercel-dns.com` | ⏳ Blocked | User to apply in Cloudflare dashboard |
-| F3-2 | **`vercel deploy --prod`** | ⏳ Blocked | Run after DNS + user confirmation |
-| F3-3 | **Portal Dashboard for customers** — SPH history, DO tracking, invoices | ⏳ Pending | Awaiting deploy |
-| F3-4 | **Client logo slider** — replace placeholders with real assets | ⏳ Pending | Awaiting assets from user |
-| F3-5 | **Aerial hero video** — replace gradient with real footage | ⏳ Pending | Awaiting assets from user |
+| F3-1 | **Cloudflare DNS records** — A `pt-rri.com` → `76.76.21.21`, CNAME `www` → `cname.vercel-dns.com` | ✅ Done | Applied by user |
+| F3-2 | **`vercel deploy --prod`** | ✅ Done | Run by user |
+| LP-13 | **Hero video background** — downloaded Pixabay container port aerial, compressed to 720p (6.6 MB), integrated as `<video>` background with gradient overlay | ✅ Done | `public/video/hero-industrial.mp4`, `landing-content.tsx` |
+
+## 🔵 PENDING — Remaining Items
+| # | Task | Status | Notes |
+|---|------|--------|-------|
+| F3-3 | **Portal Dashboard for customers** — SPH history, DO tracking, invoices | ⏳ Pending | Next phase |
+| F3-4 | **Client logo slider** — replace placeholders with real assets | ⏳ Pending | User to provide logos, store in R2 `dokumen/logo-klien/` |
+| F3-5 | **Logo upload API** — create endpoint for client logo management | ⏳ Pending | When logos are ready |
 
 ### Design System (Applied)
 - **Pattern:** Enterprise Gateway — Hero → Stats → Services → Trust → Logos → Testimonial → CTA

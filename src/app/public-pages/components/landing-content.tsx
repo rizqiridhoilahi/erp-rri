@@ -95,12 +95,24 @@ export function LandingContent() {
   return (
     <>
       <section className="relative min-h-screen flex items-center overflow-hidden bg-[#0B1528]">
-        <div className="absolute inset-0 z-0 diagonal-grid">
-          <div className="absolute inset-0 bg-gradient-to-r from-[#0B1528]/80 via-transparent to-[#0B1528]/60" />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0B1528] via-transparent to-[#0B1528]/30" />
-          <div className="hero-circle top-[-10%] left-[-5%] w-[500px] h-[500px] bg-[#343DFF]" />
-          <div className="hero-circle bottom-[10%] right-[-5%] w-[400px] h-[400px] bg-[#0000FF]" />
-          <div className="hero-circle top-[40%] right-[20%] w-[300px] h-[300px] bg-[#343DFF]" />
+        <div className="absolute inset-0 z-0">
+          <video
+            autoPlay
+            muted
+            loop
+            playsInline
+            className="absolute inset-0 w-full h-full object-cover"
+            preload="metadata"
+          >
+            <source src="/video/hero-industrial.mp4" type="video/mp4" />
+          </video>
+          <div className="absolute inset-0 diagonal-grid">
+            <div className="absolute inset-0 bg-gradient-to-r from-[#0B1528]/85 via-[#0B1528]/40 to-[#0B1528]/70" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#0B1528]/90 via-transparent to-[#0B1528]/30" />
+            <div className="hero-circle top-[-10%] left-[-5%] w-[500px] h-[500px] bg-[#343DFF]" />
+            <div className="hero-circle bottom-[10%] right-[-5%] w-[400px] h-[400px] bg-[#0000FF]" />
+            <div className="hero-circle top-[40%] right-[20%] w-[300px] h-[300px] bg-[#343DFF]" />
+          </div>
         </div>
         <div className="relative z-10 max-w-[1280px] mx-auto px-[40px] w-full pt-32 pb-20">
           <div className="max-w-3xl space-y-8">
