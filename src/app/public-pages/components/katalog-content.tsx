@@ -32,6 +32,7 @@ export function KatalogContent() {
   const [products, setProducts] = useState<ProductItem[]>([])
   const [categories, setCategories] = useState<Array<{ id: string; nama: string }>>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [selectedCategory, setSelectedCategory] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
   const [page, setPage] = useState(1)
@@ -41,6 +42,7 @@ export function KatalogContent() {
     let cancelled = false
     ;(async () => {
       setLoading(true)
+      setError(null)
       const params = new URLSearchParams()
       params.set('page', String(page))
       params.set('limit', '12')
@@ -49,13 +51,24 @@ export function KatalogContent() {
 
       try {
         const r = await fetch(`/api/v1/public/products?${params.toString()}`)
+        if (!r.ok) {
+          throw new Error(`API error: ${r.status} ${r.statusText}`)
+        }
         const res = await r.json()
         if (cancelled) return
+        if (!res.data) {
+          throw new Error('Invalid API response format')
+        }
         const d = res.data as ProductsResponse
         setProducts(d.items)
         setCategories(d.categories)
         setTotalPages(d.totalPages)
-      } catch {} finally {
+      } catch (err) {
+        if (!cancelled) {
+          console.error('Failed to fetch products:', err)
+          setError(err instanceof Error ? err.message : 'Gagal memuat produk')
+        }
+      } finally {
         if (!cancelled) setLoading(false)
       }
     })()
@@ -64,15 +77,16 @@ export function KatalogContent() {
 
   return (
     <>
-      <section className="relative h-[300px] flex items-center overflow-hidden bg-[#0B1528]">
-        <div className="absolute inset-0 bg-gradient-to-r from-[#0B1528] via-transparent to-[#0B1528]/40" />
-        <div className="relative z-10 max-w-[1280px] mx-auto px-[40px] w-full">
-          <h1 className="text-[48px] font-bold text-white font-[family-name:var(--font-heading)]">
+      <section className="relative h-[150px] flex items-center justify-center overflow-hidden bg-[#0B1528]">
+        <div className="absolute inset-0 opacity-40 bg-[radial-gradient(circle_at_50%_50%,#343DFF_0%,transparent_50%)]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#0B1528]/60" />
+        <div className="relative z-10 text-center max-w-4xl px-4">
+          <span className="inline-block text-[#343dff] text-[11px] tracking-[0.2em] mb-2 uppercase font-[family-name:var(--font-body)] font-medium">
+            Produk Unggulan
+          </span>
+          <h1 className="text-[28px] font-bold text-white leading-tight font-[family-name:var(--font-heading)]">
             {dict.katalog.title}
           </h1>
-          <p className="text-[18px] text-[#b9c8de] mt-4 max-w-xl font-[family-name:var(--font-body)]">
-            {dict.katalog.subtitle}
-          </p>
         </div>
       </section>
 
@@ -103,6 +117,10 @@ export function KatalogContent() {
           {loading ? (
             <div className="flex items-center justify-center py-20">
               <Loader2 className="h-8 w-8 animate-spin text-[#0000ff]" />
+            </div>
+          ) : error ? (
+            <div className="text-center py-20">
+              <p className="text-[#DC2626] text-[16px] font-[family-name:var(--font-body)]">{error}</p>
             </div>
           ) : products.length === 0 ? (
             <div className="text-center py-20">

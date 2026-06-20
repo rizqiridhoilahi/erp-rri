@@ -2,18 +2,29 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { getDictionary } from '@/lib/i18n'
 import { LocaleSwitcher } from './locale-switcher'
 import { useCustomerAuth } from '@/lib/hooks/use-customer-auth'
 
 export function PublicNavbar() {
   const [mobileOpen, setMobileOpen] = useState(false)
+  const pathname = usePathname()
   const dict = getDictionary('id')
   const { isLoggedIn, profile, logout } = useCustomerAuth()
 
   const handleLogout = () => {
     logout()
   }
+
+  const navLinks = [
+    { href: '/', label: dict.nav.beranda },
+    { href: '/tentang-kami', label: dict.nav.tentangKami },
+    { href: '/layanan', label: dict.nav.layanan },
+    { href: '/katalog', label: dict.nav.katalog },
+  ]
+
+  const isActive = (href: string) => pathname === href
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-outline-variant/20">
@@ -26,42 +37,39 @@ export function PublicNavbar() {
           />
           </Link>
 
-        <div className="hidden md:flex items-center gap-8">
-          <Link
-            href="/"
-            className="font-semibold text-[14px] text-[#0000ff] hover:opacity-70 transition-opacity duration-200 uppercase tracking-wider font-[family-name:var(--font-heading)]"
-          >
-            {dict.nav.beranda}
-          </Link>
-          <Link
-            href="/tentang-kami"
-            className="font-semibold text-[14px] text-[#0000ff] hover:opacity-70 transition-opacity duration-200 uppercase tracking-wider font-[family-name:var(--font-heading)]"
-          >
-            {dict.nav.tentangKami}
-          </Link>
-          <Link
-            href="/layanan"
-            className="font-semibold text-[14px] text-[#0000ff] hover:opacity-70 transition-opacity duration-200 uppercase tracking-wider font-[family-name:var(--font-heading)]"
-          >
-            {dict.nav.layanan}
-          </Link>
-          <Link
-            href="/katalog"
-            className="font-semibold text-[14px] text-[#0000ff] hover:opacity-70 transition-opacity duration-200 uppercase tracking-wider font-[family-name:var(--font-heading)]"
-          >
-            {dict.nav.katalog}
-          </Link>
+        <div className="hidden md:flex items-center gap-2">
+          {navLinks.map(link => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className={`px-3 py-1.5 rounded-lg text-[14px] font-semibold uppercase tracking-wider font-[family-name:var(--font-heading)] transition-all duration-200 ${
+                isActive(link.href)
+                  ? 'bg-[#CA8A04] text-white'
+                  : 'text-[#0000ff] hover:bg-[#CA8A04] hover:text-white'
+              }`}
+            >
+              {link.label}
+            </Link>
+          ))}
           {isLoggedIn && (
             <>
               <Link
                 href="/inquiry"
-                className="font-semibold text-[14px] text-[#0000ff] hover:opacity-70 transition-opacity duration-200 uppercase tracking-wider font-[family-name:var(--font-heading)]"
+                className={`px-3 py-1.5 rounded-lg text-[14px] font-semibold uppercase tracking-wider font-[family-name:var(--font-heading)] transition-all duration-200 ${
+                  isActive('/inquiry') || isActive('/inquiry/konfirmasi') || pathname.startsWith('/inquiry')
+                    ? 'bg-[#CA8A04] text-white'
+                    : 'text-[#0000ff] hover:bg-[#CA8A04] hover:text-white'
+                }`}
               >
                 {dict.auth.cart}
               </Link>
               <Link
                 href="/quick-order"
-                className="font-semibold text-[14px] text-[#0000ff] hover:opacity-70 transition-opacity duration-200 uppercase tracking-wider font-[family-name:var(--font-heading)]"
+                className={`px-3 py-1.5 rounded-lg text-[14px] font-semibold uppercase tracking-wider font-[family-name:var(--font-heading)] transition-all duration-200 ${
+                  isActive('/quick-order')
+                    ? 'bg-[#CA8A04] text-white'
+                    : 'text-[#0000ff] hover:bg-[#CA8A04] hover:text-white'
+                }`}
               >
                 {dict.auth.quickOrder}
               </Link>
@@ -118,14 +126,24 @@ export function PublicNavbar() {
       {mobileOpen && (
         <div className="md:hidden bg-white/95 backdrop-blur-md border-t border-outline-variant/20 px-[40px] py-4">
           <div className="flex flex-col gap-4">
-            <Link href="/" className="text-[#0000ff] font-medium hover:opacity-70 transition-opacity" onClick={() => setMobileOpen(false)}>{dict.nav.beranda}</Link>
-            <Link href="/tentang-kami" className="text-[#0000ff] font-medium hover:opacity-70 transition-opacity" onClick={() => setMobileOpen(false)}>{dict.nav.tentangKami}</Link>
-            <Link href="/layanan" className="text-[#0000ff] font-medium hover:opacity-70 transition-opacity" onClick={() => setMobileOpen(false)}>{dict.nav.layanan}</Link>
-            <Link href="/katalog" className="text-[#0000ff] font-medium hover:opacity-70 transition-opacity" onClick={() => setMobileOpen(false)}>{dict.nav.katalog}</Link>
+            {navLinks.map(link => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`px-3 py-2 rounded-lg text-[14px] font-semibold uppercase tracking-wider font-[family-name:var(--font-heading)] transition-all duration-200 ${
+                  isActive(link.href)
+                    ? 'bg-[#CA8A04] text-white'
+                    : 'text-[#0000ff] hover:bg-[#CA8A04] hover:text-white'
+                }`}
+                onClick={() => setMobileOpen(false)}
+              >
+                {link.label}
+              </Link>
+            ))}
             {isLoggedIn ? (
               <>
-                <Link href="/inquiry" className="text-[#0000ff] font-medium hover:opacity-70 transition-opacity" onClick={() => setMobileOpen(false)}>{dict.auth.cart}</Link>
-                <Link href="/quick-order" className="text-[#0000ff] font-medium hover:opacity-70 transition-opacity" onClick={() => setMobileOpen(false)}>{dict.auth.quickOrder}</Link>
+                <Link href="/inquiry" onClick={() => setMobileOpen(false)} className={`px-3 py-2 rounded-lg text-[14px] font-semibold uppercase tracking-wider font-[family-name:var(--font-heading)] transition-all duration-200 ${isActive('/inquiry') || pathname.startsWith('/inquiry') ? 'bg-[#CA8A04] text-white' : 'text-[#0000ff] hover:bg-[#CA8A04] hover:text-white'}`}>{dict.auth.cart}</Link>
+                <Link href="/quick-order" onClick={() => setMobileOpen(false)} className={`px-3 py-2 rounded-lg text-[14px] font-semibold uppercase tracking-wider font-[family-name:var(--font-heading)] transition-all duration-200 ${isActive('/quick-order') ? 'bg-[#CA8A04] text-white' : 'text-[#0000ff] hover:bg-[#CA8A04] hover:text-white'}`}>{dict.auth.quickOrder}</Link>
                 <button onClick={() => { handleLogout(); setMobileOpen(false) }} className="text-red-500 font-medium text-left hover:text-red-700 transition-colors cursor-pointer">{dict.auth.logoutButton}</button>
               </>
             ) : (
