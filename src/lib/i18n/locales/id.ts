@@ -46,11 +46,45 @@ export const id = {
       desc: 'Solusi pengadaan khusus suku cadang industri dengan jaringan supplier global yang terverifikasi.',
     },
   },
+  keunggulan: {
+    title: 'Mengapa Memilih RRI',
+    subtitle: 'Komitmen kami terhadap kualitas dan keandalan.',
+    kualitas: {
+      title: 'Kualitas Terjamin',
+      desc: 'Setiap produk melalui proses inspeksi mutu ketat sebelum dikirimkan ke pelanggan.',
+    },
+    tepatWaktu: {
+      title: 'Tepat Waktu',
+      desc: 'Komitmen pengiriman sesuai jadwal yang disepakati dengan tingkat ketepatan 98%.',
+    },
+    jaringan: {
+      title: 'Jaringan Global',
+      desc: 'Terhubung dengan supplier terverifikasi dari berbagai negara untuk solusi pengadaan terbaik.',
+    },
+    pengalaman: {
+      title: 'Berpengalaman',
+      desc: 'Lebih dari 14 tahun melayani kebutuhan industri di Indonesia dengan reputasi terpercaya.',
+    },
+  },
+  klien: {
+    title: 'Mitra & Klien Kami',
+    subtitle: 'Dipercaya oleh berbagai perusahaan terkemuka di Indonesia.',
+  },
+  testimonial: {
+    title: 'Apa Kata Klien Kami',
+    items: [
+      {
+        quote: 'RRI telah menjadi mitra strategis yang andal dalam penyediaan bahan baku dan logistik untuk operasional kami.',
+        name: 'Budi Santoso',
+        role: 'Procurement Manager',
+      },
+    ],
+  },
   katalog: {
     title: 'Katalog Produk',
     subtitle: 'Jelajahi produk berkualitas tinggi untuk kebutuhan industri Anda.',
-    accessLocked: '🔒 Akses terkunci. Silakan login.',
-    addToSph: '➕ Tambah ke Daftar SPH',
+    accessLocked: 'Akses terkunci. Silakan login.',
+    addToSph: 'Tambah ke Daftar SPH',
     detail: 'Detail Produk',
     spesifikasi: 'Spesifikasi Teknis',
     sku: 'Kode SKU',

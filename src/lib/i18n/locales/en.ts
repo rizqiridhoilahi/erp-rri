@@ -48,11 +48,45 @@ export const en: Dictionary = {
       desc: 'Specialized spare parts procurement solutions with a verified global supplier network.',
     },
   },
+  keunggulan: {
+    title: 'Why Choose RRI',
+    subtitle: 'Our commitment to quality and reliability.',
+    kualitas: {
+      title: 'Guaranteed Quality',
+      desc: 'Every product undergoes rigorous quality inspection before delivery to customers.',
+    },
+    tepatWaktu: {
+      title: 'On-Time Delivery',
+      desc: 'Commitment to delivery according to agreed schedules with 98% accuracy rate.',
+    },
+    jaringan: {
+      title: 'Global Network',
+      desc: 'Connected with verified suppliers from various countries for optimal procurement solutions.',
+    },
+    pengalaman: {
+      title: 'Experienced',
+      desc: 'Over 14 years serving industrial needs in Indonesia with a trusted reputation.',
+    },
+  },
+  klien: {
+    title: 'Our Partners & Clients',
+    subtitle: 'Trusted by leading companies across Indonesia.',
+  },
+  testimonial: {
+    title: 'What Our Clients Say',
+    items: [
+      {
+        quote: 'RRI has been a reliable strategic partner in providing raw materials and logistics for our operations.',
+        name: 'Budi Santoso',
+        role: 'Procurement Manager',
+      },
+    ],
+  },
   katalog: {
     title: 'Product Catalog',
     subtitle: 'Explore high-quality products for your industrial needs.',
-    accessLocked: '🔒 Access locked. Please login.',
-    addToSph: '➕ Add to SPH List',
+    accessLocked: 'Access locked. Please login.',
+    addToSph: 'Add to SPH List',
     detail: 'Product Detail',
     spesifikasi: 'Technical Specifications',
     sku: 'SKU Code',

@@ -1009,3 +1009,60 @@ Customer retur barang
 - **Harga beli**: manual input per item (tidak otomatis dari master barang)
 - **Margin**: hanya tampil di detail page (internal), tidak di PDF customer
 - **Auto-sales**: tidak diubah (margin/overhead internal, tidak di-propagate ke SO/DO/Invoice)
+
+## 🟢 DONE — B2B Private Catalog Portal Fase 1 (Foundation)
+| # | Task | Status | File |
+|---|------|--------|------|
+| F0-1 | **Fix `useSearchParams` build error** — wrap `LocaleSwitcher` in its own `<Suspense>` | ✅ Done | `public-navbar.tsx` |
+| F0-2 | **Delete old `with-dictionary.tsx`** — replace with individual page content components | ✅ Done | — |
+| F0-3 | **Each public page wraps content in `<Suspense>`** | ✅ Done | `page.tsx` files |
+| F1-1 | **Catalog toggle in Dashboard** — `is_published_to_catalog`, `deskripsi_katalog`, `spesifikasi_teknis` on `barang` | ✅ Done | `barang.ts`, API routes, forms |
+| F1-2 | **Multiple image upload** — `barang_gambar` API + `BarangImageGallery` component | ✅ Done | `src/app/api/v1/master/barang/[id]/gambar/route.ts`, `src/components/barang-image-gallery.tsx` |
+| F1-3 | **Katalog grid page** — public API + search/filter + 3-column glass-card grid | ✅ Done | `public-pages/katalog/` |
+| F1-4 | **Katalog detail page** — thumbnail gallery, spesifikasi table, cart buttons | ✅ Done | `public-pages/katalog/[id]/` |
+
+## 🟢 DONE — B2B Private Catalog Portal Fase 2 (Auth + Cart + Inquiry)
+| # | Task | Status | File |
+|---|------|--------|------|
+| F2-1 | **Customer register API + page** — Supabase Auth + `customer_profiles` (pending) | ✅ Done | `api/v1/public/auth/register`, `customer-register/` |
+| F2-2 | **Customer login/logout/me API + login page** — JWT in localStorage | ✅ Done | `api/v1/public/auth/login`, `customer-login/` |
+| F2-3 | **Dashboard review registrasi** — approve/reject customer profiles | ✅ Done | `dashboard/master/customer-profiles/` |
+| F2-4 | **Quick Order page** — multi-row product lookup | ✅ Done | `public-pages/quick-order/` |
+| F2-5 | **Inquiry Cart API + page** — CRUD cart, qty controls, submit → SPH | ✅ Done | `api/v1/public/cart`, `public-pages/inquiry/` |
+| F2-6 | **Navbar session-aware** — company name + logout; cart & quick order for logged-in | ✅ Done | `public-navbar.tsx` |
+| F2-7 | **i18n auth keys** — added to id.ts + en.ts | ✅ Done | `locales/id.ts`, `locales/en.ts` |
+| F2-8 | **Migration 0064** — create tables: `barang_gambar`, `customer_profiles`, `customer_inquiry_cart` + barang columns | ✅ Done | `drizzle/0064_*.sql` |
+| F2-9 | **Domain setup Vercel** — `pt-rri.com`, `www.pt-rri.com` added to project | ✅ Done | Vercel Dashboard |
+
+## 🟢 DONE — Landing Page Premium Redesign
+| # | Task | Status | File |
+|---|------|--------|------|
+| LP-1 | **CSS utility classes** — diagonal grid, hero circles, stat counter, scroll reveal, shimmer | ✅ Done | `globals.css` |
+| LP-2 | **i18n keys baru** — `keunggulan`, `klien`, `testimonial` sections | ✅ Done | `locales/id.ts`, `locales/en.ts` |
+| LP-3 | **Hero premium** — navy gradient + diagonal grid + floating blur circles + larger heading + dual CTAs | ✅ Done | `landing-content.tsx` |
+| LP-4 | **Stats bar** — Lucide icons + animated counters on scroll reveal | ✅ Done | `landing-content.tsx` |
+| LP-5 | **Layanan cards** — Lucide icons (replacing Material Symbols), clickable with arrow | ✅ Done | `landing-content.tsx` |
+| LP-6 | **Keunggulan RRI** — 4 trust badges: Quality, On-Time, Global Network, Experience | ✅ Done | `landing-content.tsx` |
+| LP-7 | **Client Logos placeholder** — grayscale logo grid with hover effects | ✅ Done | `landing-content.tsx` |
+| LP-8 | **Testimonial section** — quote card with avatar + star rating | ✅ Done | `landing-content.tsx` |
+| LP-9 | **CTA section enhanced** — dual CTAs with glow effect | ✅ Done | `landing-content.tsx` |
+| LP-10 | **Footer enhanced** — 4-column grid + social icons (LinkedIn, Email) + richer links | ✅ Done | `public-footer.tsx` |
+| LP-11 | **Navbar refinements** — backdrop-blur, hover states, Lucide hamburger, `cursor-pointer` | ✅ Done | `public-navbar.tsx` |
+| LP-12 | **Lint + Build pass** — 0 errors, 203 static pages | ✅ Done | — |
+
+## 🔵 BLOCKED — Fase 3 (Portal Dashboard, DNS, Deploy)
+| # | Task | Status | Notes |
+|---|------|--------|-------|
+| F3-1 | **Cloudflare DNS records** — A `pt-rri.com` → `76.76.21.21`, CNAME `www` → `cname.vercel-dns.com` | ⏳ Blocked | User to apply in Cloudflare dashboard |
+| F3-2 | **`vercel deploy --prod`** | ⏳ Blocked | Run after DNS + user confirmation |
+| F3-3 | **Portal Dashboard for customers** — SPH history, DO tracking, invoices | ⏳ Pending | Awaiting deploy |
+| F3-4 | **Client logo slider** — replace placeholders with real assets | ⏳ Pending | Awaiting assets from user |
+| F3-5 | **Aerial hero video** — replace gradient with real footage | ⏳ Pending | Awaiting assets from user |
+
+### Design System (Applied)
+- **Pattern:** Enterprise Gateway — Hero → Stats → Services → Trust → Logos → Testimonial → CTA
+- **Style:** Trust & Authority + Social Proof
+- **Colors:** Navy `#0B1528`, Blue `#0000FF`, CTA `#0001bb`
+- **Typography:** Lexend (headings), Inter (body) — existing
+- **Icons:** Lucide SVG (replaced Material Symbols)
+- **Effects:** Scroll reveal, stat counter animation, diagonal grid overlay, floating blur circles, shimmer cards
