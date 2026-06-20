@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
 import { getDictionary } from '@/lib/i18n'
 import { LocaleSwitcher } from './locale-switcher'
 import { useCustomerAuth } from '@/lib/hooks/use-customer-auth'
@@ -19,16 +18,13 @@ export function PublicNavbar() {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-outline-variant/20">
       <nav className="flex justify-between items-center max-w-[1280px] mx-auto px-[40px] h-20">
-        <Link href="/" className="flex items-center gap-3 group shrink-0">
-          <Image
+          <Link href="/" className="flex items-center gap-3 group shrink-0">
+          <img
             src="/logo/logo-rri-bg-transparan.png"
             alt="PT RRI"
-            width={100}
-            height={33}
             className="h-[33px] w-auto"
-            priority
           />
-        </Link>
+          </Link>
 
         <div className="hidden md:flex items-center gap-8">
           <Link

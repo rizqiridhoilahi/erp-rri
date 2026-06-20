@@ -102,13 +102,13 @@ export function LandingContent() {
             loop
             playsInline
             className="absolute inset-0 w-full h-full object-cover"
-            preload="metadata"
+            preload="auto"
           >
             <source src="/video/hero-industrial.mp4" type="video/mp4" />
           </video>
           <div className="absolute inset-0 diagonal-grid">
-            <div className="absolute inset-0 bg-gradient-to-r from-[#0B1528]/70 via-[#0B1528]/20 to-[#0B1528]/50" />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#0B1528]/70 via-transparent to-[#0B1528]/20" />
+            <div className="absolute inset-0 bg-gradient-to-r from-[#0B1528]/30 via-[#0B1528]/5 to-[#0B1528]/20" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#0B1528]/30 via-transparent to-[#0B1528]/10" />
             <div className="hero-circle top-[-10%] left-[-5%] w-[500px] h-[500px] bg-[#343DFF]" />
             <div className="hero-circle bottom-[10%] right-[-5%] w-[400px] h-[400px] bg-[#0000FF]" />
             <div className="hero-circle top-[40%] right-[20%] w-[300px] h-[300px] bg-[#343DFF]" />
