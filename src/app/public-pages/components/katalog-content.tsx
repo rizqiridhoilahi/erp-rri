@@ -77,14 +77,11 @@ export function KatalogContent() {
 
   return (
     <>
-      <section className="relative h-[150px] flex items-center justify-center overflow-hidden bg-[#0B1528]">
+      <section className="relative h-[100px] flex items-center justify-center overflow-hidden bg-[#0B1528]">
         <div className="absolute inset-0 opacity-40 bg-[radial-gradient(circle_at_50%_50%,#343DFF_0%,transparent_50%)]" />
         <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#0B1528]/60" />
         <div className="relative z-10 text-center max-w-4xl px-4">
-          <span className="inline-block text-[#343dff] text-[11px] tracking-[0.2em] mb-2 uppercase font-[family-name:var(--font-body)] font-medium">
-            Produk Unggulan
-          </span>
-          <h1 className="text-[28px] font-bold text-white leading-tight font-[family-name:var(--font-heading)]">
+          <h1 className="text-[32px] font-bold text-white font-[family-name:var(--font-heading)]">
             {dict.katalog.title}
           </h1>
         </div>

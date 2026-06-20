@@ -13,6 +13,11 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
+  // Skip rewrite for API routes so public-pages can call them
+  if (pathname.startsWith('/api/')) {
+    return NextResponse.next()
+  }
+
   // Host detection: pt-rri.com → rewrite to public-pages/
   if (host === 'pt-rri.com' || host === 'www.pt-rri.com') {
     const url = new URL('/public-pages' + pathname, request.url)
