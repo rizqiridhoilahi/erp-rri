@@ -17,12 +17,14 @@ import { formatDateTime } from '@/lib/utils/date'
 
 const statusLabel: Record<string, { label: string; variant: 'secondary' | 'warning' | 'success' | 'destructive' | 'outline' }> = {
   draft: { label: 'Draft', variant: 'secondary' },
+  sent: { label: 'Dikirim', variant: 'warning' },
   approved: { label: 'Disetujui', variant: 'success' },
   rejected: { label: 'Ditolak', variant: 'destructive' },
 }
 
 const workflowSteps = [
   { key: 'draft', label: 'Draft' },
+  { key: 'sent', label: 'Dikirim' },
   { key: 'approved', label: 'Disetujui' },
 ]
 
@@ -139,6 +141,20 @@ export default function NegoiasiDetailPage() {
     }
   }
 
+  const handleSent = async () => {
+    if (!id) return
+    setStatusLoading(true)
+    try {
+      await apiFetch(`/api/v1/negoiasi/${id}`, { method: 'PUT', body: JSON.stringify({ status: 'sent' }) })
+      toast.success('Negosiasi telah dikirim! Nomor quotation akan ditandai revisi.')
+      fetchNego()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Gagal mengirim negosiasi')
+    } finally {
+      setStatusLoading(false)
+    }
+  }
+
   const handleReject = async () => {
     if (!id) return
     setStatusLoading(true)
@@ -208,6 +224,14 @@ export default function NegoiasiDetailPage() {
             </Button>
             {data.status === 'draft' && (
               <>
+                <Button
+                  variant="default"
+                  onClick={handleSent}
+                  disabled={statusLoading || !isQtnStatusValid || !!confirmedPO}
+                >
+                  {statusLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <CheckCircle className="h-4 w-4 mr-2" />}
+                  Kirim
+                </Button>
                 <Button
                   variant="default"
                   onClick={handleApprove}
@@ -312,7 +336,7 @@ export default function NegoiasiDetailPage() {
               <p className="text-sm text-muted-foreground">Quotation</p>
               {data.quotation ? (
                 <Link href={`/dashboard/quotation/${data.quotation.id}`} className="font-medium text-primary hover:underline inline-flex items-center gap-1">
-                  {data.quotation.nomor} <Badge variant="outline" className="text-[10px] px-1.5 py-0">{statusLabel[data.quotation.status]?.label ?? data.quotation.status}</Badge>
+                  {data.quotation.nomor}{data.revision > 0 ? `-R${data.revision}` : ''} <Badge variant="outline" className="text-[10px] px-1.5 py-0">{statusLabel[data.quotation.status]?.label ?? data.quotation.status}</Badge>
                   <ExternalLink className="h-3 w-3" />
                 </Link>
               ) : <p className="font-medium text-muted-foreground">-</p>}
@@ -435,6 +459,27 @@ export default function NegoiasiDetailPage() {
           )}
         </CardContent>
       </Card>
+
+      {data.status === 'sent' && (
+        <Card>
+          <CardContent className="pt-6">
+            <h3 className="text-lg font-semibold mb-4">Tindakan Selanjutnya</h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              Negosiasi telah dikirim ke customer. Nomor quotation <strong>{data.quotation?.nomor ?? '-'}</strong> telah ditandai dengan revisi di PDF. Silakan setujui atau tolak setelah mendapat respons customer.
+            </p>
+            <div className="flex gap-3">
+              <Button variant="default" onClick={handleApprove} disabled={statusLoading || allItemsRejected}>
+                {statusLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <CheckCircle className="h-4 w-4 mr-2" />}
+                Setujui
+              </Button>
+              <Button variant="destructive" onClick={handleReject} disabled={statusLoading}>
+                {statusLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <XCircle className="h-4 w-4 mr-2" />}
+                Tolak
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {data.status === 'approved' && (
         <Card>

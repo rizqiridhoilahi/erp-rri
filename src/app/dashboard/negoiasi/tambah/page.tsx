@@ -71,7 +71,7 @@ export default function TambahNegoiasiPage() {
   }, [form])
 
   useEffect(() => {
-    apiFetch<Array<{ id: string; nomor: string }>>('/api/v1/quotation')
+    apiFetch<Array<{ id: string; nomor: string }>>('/api/v1/quotation?status=sent,proses_negosiasi')
       .then(r => setQtnOpts((r.data ?? []).map(q => ({ value: q.id, label: q.nomor }))))
       .catch(() => toast.error('Gagal memuat data'))
   }, [])

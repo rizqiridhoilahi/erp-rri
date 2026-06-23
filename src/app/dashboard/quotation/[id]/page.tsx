@@ -207,7 +207,8 @@ export default function QuotationDetailPage() {
         const url = URL.createObjectURL(blob)
         const a = document.createElement('a')
         a.href = url
-        a.download = `${data?.nomor ?? id}.pdf`
+        const pdfNomor = data?.nomor ? `${data.nomor}${(data?.revisi ?? 0) > 0 ? `-R${data.revisi}` : ''}` : id
+        a.download = `${pdfNomor}.pdf`
         a.click()
         URL.revokeObjectURL(url)
       }
@@ -250,7 +251,8 @@ export default function QuotationDetailPage() {
         const url = URL.createObjectURL(blob)
         const a = document.createElement('a')
         a.href = url
-        a.download = `APPROVAL-${data?.nomor ?? id}.pdf`
+        const pdfNomor = data?.nomor ? `${data.nomor}${(data?.revisi ?? 0) > 0 ? `-R${data.revisi}` : ''}` : id
+        a.download = `APPROVAL-${pdfNomor}.pdf`
         a.click()
         URL.revokeObjectURL(url)
       }
@@ -333,7 +335,7 @@ export default function QuotationDetailPage() {
                 <Button variant="outline" onClick={() => router.push(`/dashboard/quotation/${id}/edit`)}><Pencil className="h-4 w-4 mr-2" />Edit</Button>
               </>
             )}
-            {(data.status === 'sent' || data.status === 'proses_negosiasi') && (
+            {data.status === 'sent' && (
               <>
                 <Button variant="default" onClick={() => handleStatusChange('approved')} disabled={statusLoading}>
                   {statusLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <CheckCircle className="h-4 w-4 mr-2" />}
@@ -607,7 +609,7 @@ export default function QuotationDetailPage() {
         <CardContent className="pt-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold">Negosiasi</h3>
-            {(data.status === 'sent' || data.status === 'proses_negosiasi') && (
+            {data.status === 'sent' && (
               <Button variant="outline" size="sm" onClick={() => router.push(`/dashboard/negoiasi/tambah?quotation_id=${id}`)}>
                 <MessageSquare className="h-4 w-4 mr-2" />Buat Negosiasi
               </Button>

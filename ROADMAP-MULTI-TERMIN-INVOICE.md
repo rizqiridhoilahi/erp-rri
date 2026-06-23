@@ -19,21 +19,21 @@ Saat ini sistem hanya menghasilkan **1 PDF invoice + 1 PDF kwitansi** per invoic
 
 | Tabel | Field Kunci |
 |-------|------------|
-| `invoice` | `nomor` (RRI-INV-YY-MM-NNNNN), `top`, `customer_id` |
+| `invoice` | `nomor` (RRI-INV-YY-MM-NNNN), `top`, `customer_id` |
 | `invoice_item` | `harga`, `jumlah`, `diskon` — per item barang |
 | `invoice_payment_schedule` | `urutan`, `deskripsi`, `persentase`, `jumlah`, `due_date`, `status` |
 | `payment_term` | `nama` (header) |
 | `payment_term_item` | `urutan`, `deskripsi`, `persentase`, `due_days` |
-| `kwitansi` | `nomor` (RRI-KWT-YY-MM-NNNNN), `invoice_id` |
+| `kwitansi` | `nomor` (RRI-KWT-YY-MM-NNNN), `invoice_id` |
 | `kwitansi_item` | `invoice_item_id`, `jumlah` |
 
 ### Alur Create Invoice Saat Ini (`POST /api/v1/invoice`)
 
 ```
-1. Generate nomor → RRI-INV-YY-MM-NNNNN
+1. Generate nomor → RRI-INV-YY-MM-NNNN
 2. Insert invoice + invoice_item
 3. Auto-create 1 kwitansi for total:
-   - nomor: RRI-KWT-YY-MM-NNNNN (formatChildNumber(inv.nomor, 'KWT'))
+   - nomor: RRI-KWT-YY-MM-NNNN (formatChildNumber(inv.nomor, 'KWT'))
    - kwitansi_item: 1 row per invoice_item, jumlah = item_total
 4. (if customer has payment_term_id)
    - Auto-generate invoice_payment_schedule dari payment_term_item
@@ -221,7 +221,7 @@ if (schedule && schedule.length > 0) {
 }
 ```
 
-**Edge case:** `formatChildNumber` menghasilkan `RRI-KWT-YY-MM-NNNNN` — perlu manual tambah `/I` suffix.
+**Edge case:** `formatChildNumber` menghasilkan `RRI-KWT-YY-MM-NNNN` — perlu manual tambah `/I` suffix.
 
 ---
 

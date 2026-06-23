@@ -43,6 +43,16 @@ export async function POST(request: NextRequest) {
   const parsed = schema.safeParse(body)
   if (!parsed.success) return badRequest(parsed.error.issues.map(e => e.message).join(', '))
 
+  const { data: qtnCheck } = await supabaseAdmin
+    .from('quotation')
+    .select('id, status')
+    .eq('id', parsed.data.quotation_id)
+    .single()
+  if (!qtnCheck) return badRequest('Quotation tidak ditemukan')
+  if (qtnCheck.status !== 'sent' && qtnCheck.status !== 'proses_negosiasi') {
+    return badRequest(`Quotation status '${qtnCheck.status}' tidak bisa dinegosiasikan. Hanya status: sent, proses_negosiasi`)
+  }
+
   const { data: existingPO } = await supabaseAdmin
     .from('customer_po')
     .select('id, nomor')
@@ -51,6 +61,16 @@ export async function POST(request: NextRequest) {
     .limit(1)
   if (existingPO && existingPO.length > 0) {
     return badRequest(`Quotation ini sudah memiliki PO Customer (${existingPO[0].nomor}) yang dikonfirmasi. Tidak bisa membuat negosiasi baru.`)
+  }
+
+  const { data: pendingNego } = await supabaseAdmin
+    .from('negoiasi')
+    .select('id, nomor, status')
+    .eq('quotation_id', parsed.data.quotation_id)
+    .in('status', ['draft', 'sent'])
+    .limit(1)
+  if (pendingNego && pendingNego.length > 0) {
+    return badRequest(`Masih ada negosiasi aktif (${pendingNego[0].nomor}, status: ${pendingNego[0].status}). Selesaikan negosiasi yang ada terlebih dahulu.`)
   }
 
   // Calculate revision number

@@ -7,7 +7,7 @@ const schema = z.object({ status: z.string().optional(), keterangan: z.string().
 type FV = z.input<typeof schema>
 
 const statusOpts = [
-  { value: 'draft', label: 'Draft' }, { value: 'approved', label: 'Disetujui' }, { value: 'rejected', label: 'Ditolak' },
+  { value: 'draft', label: 'Draft' }, { value: 'sent', label: 'Dikirim' }, { value: 'approved', label: 'Disetujui' }, { value: 'rejected', label: 'Ditolak' },
 ]
 
 export default function EditNegoiasiPage() {

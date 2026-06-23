@@ -69,7 +69,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
   if (error) return internalError(error)
   if (!data) return notFound('Negosiasi tidak ditemukan')
 
-  if (body.status === 'approved' || body.status === 'rejected') {
+  if (body.status === 'sent' || body.status === 'approved' || body.status === 'rejected') {
     const { data: qtnCheck } = await supabaseAdmin
       .from('quotation')
       .select('id, status')
@@ -98,7 +98,21 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     }
   }
 
-  if (body.status === 'approved') {
+  if (body.status === 'sent') {
+    const { data: qtn } = await supabaseAdmin
+      .from('quotation')
+      .select('revisi')
+      .eq('id', data.quotation_id)
+      .single()
+
+    await supabaseAdmin
+      .from('quotation')
+      .update({
+        revisi: (qtn?.revisi ?? 0) + 1,
+        updated_at: now,
+      })
+      .eq('id', data.quotation_id)
+  } else if (body.status === 'approved') {
     const { data: negoItems } = await supabaseAdmin
       .from('negoiasi_item')
       .select('quotation_item_id, harga_satuan_baru, diskon_baru, is_rejected')
@@ -188,10 +202,22 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       .update({
         status: 'approved',
         total_harga: totalBaru,
-        revisi: (qtn?.revisi ?? 0) + 1,
         updated_at: now,
       })
       .eq('id', data.quotation_id)
+
+    const { data: qtnRfq } = await supabaseAdmin
+      .from('quotation')
+      .select('rfq_id')
+      .eq('id', data.quotation_id)
+      .single()
+
+    if (qtnRfq?.rfq_id) {
+      await supabaseAdmin
+        .from('rfq_customer')
+        .update({ status: 'closed', updated_at: now })
+        .eq('id', qtnRfq.rfq_id)
+    }
   } else if (body.status === 'rejected') {
     const { data: negoItems } = await supabaseAdmin
       .from('negoiasi_item')

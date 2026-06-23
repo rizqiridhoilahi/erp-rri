@@ -12,6 +12,7 @@ export const dynamic = 'force-dynamic'
 const statusLabel: Record<string, { label: string; variant: 'secondary' | 'warning' | 'success' | 'destructive' | 'outline' }> = {
   draft: { label: 'Draft', variant: 'secondary' },
   sent: { label: 'Terkirim', variant: 'warning' },
+  proses_negosiasi: { label: 'Proses Negosiasi', variant: 'warning' },
   approved: { label: 'Disetujui', variant: 'success' },
   rejected: { label: 'Ditolak', variant: 'destructive' },
   closed: { label: 'Ditutup', variant: 'outline' },
@@ -52,7 +53,7 @@ export default async function QuotationPage() {
     }
   }
 
-  const statusPriority: Record<string, number> = { draft: 1, sent: 2, approved: 3, rejected: 4, closed: 5 }
+  const statusPriority: Record<string, number> = { draft: 1, sent: 2, proses_negosiasi: 2.5, approved: 3, rejected: 4, closed: 5 }
   ;(qtnData ?? []).sort((a, b) => {
     const pa = statusPriority[a.status] ?? 99
     const pb = statusPriority[b.status] ?? 99

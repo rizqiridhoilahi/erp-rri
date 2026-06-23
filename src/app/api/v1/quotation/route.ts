@@ -47,10 +47,21 @@ export async function GET(request: NextRequest) {
   const auth = await verifyAuth(request)
   if (auth.error) return auth.error
 
-  const { data, error } = await supabaseAdmin
+  const { searchParams } = request.nextUrl
+  const statusFilter = searchParams.get('status')
+
+  let query = supabaseAdmin
     .from('quotation')
     .select('*, customer!customer_id(id, nama, kode)')
-    .order('created_at', { ascending: false })
+
+  if (statusFilter) {
+    const statuses = statusFilter.split(',').filter(Boolean)
+    if (statuses.length > 0) {
+      query = query.in('status', statuses)
+    }
+  }
+
+  const { data, error } = await query.order('created_at', { ascending: false })
 
   if (error) return internalError(error)
   return NextResponse.json({ data: data ?? [] })

@@ -15,7 +15,7 @@ const VALID_STATUSES = ['draft', 'sent', 'proses_negosiasi', 'approved', 'reject
 const ALLOWED_TRANSITIONS: Record<string, string[]> = {
   draft: ['sent', 'rejected'],
   sent: ['approved', 'rejected', 'proses_negosiasi'],
-  proses_negosiasi: ['approved', 'rejected'],
+  proses_negosiasi: [],
   approved: ['sent', 'closed'],
   rejected: ['draft'],
   closed: [],
@@ -67,6 +67,10 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     updateData.email_access_token_expires_at = expiresAt
   }
 
+  if (current.status === 'proses_negosiasi' && parsed.data.status === 'sent') {
+    return badRequest('Quotation sedang dalam proses negosiasi. Selesaikan negosiasi terlebih dahulu.')
+  }
+
   const { data, error } = await supabaseAdmin
     .from('quotation')
     .update(updateData)
@@ -79,13 +83,14 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
 
   if (data.rfq_id) {
     const newRfqStatus = parsed.data.status === 'sent' ? 'sent'
+      : parsed.data.status === 'approved' ? 'closed'
       : parsed.data.status === 'closed' ? 'closed'
       : null
 
     if (newRfqStatus) {
       await supabaseAdmin
         .from('rfq_customer')
-        .update({ status: newRfqStatus })
+        .update({ status: newRfqStatus, updated_at: new Date().toISOString() })
         .eq('id', data.rfq_id)
     }
   }

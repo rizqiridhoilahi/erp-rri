@@ -8,7 +8,7 @@ import { ExportButton } from "@/components/export-button"
 export const dynamic = 'force-dynamic'
 
 const s: Record<string, { label: string; v: 'secondary' | 'warning' | 'success' | 'outline' }> = {
-  draft: { label: 'Draft', v: 'secondary' }, approved: { label: 'Disetujui', v: 'success' }, rejected: { label: 'Ditolak', v: 'outline' },
+  draft: { label: 'Draft', v: 'secondary' }, sent: { label: 'Dikirim', v: 'warning' }, approved: { label: 'Disetujui', v: 'success' }, rejected: { label: 'Ditolak', v: 'outline' },
 }
 
 export default async function NegoiasiPage() {
@@ -23,7 +23,7 @@ export default async function NegoiasiPage() {
     }
   }
 
-  const statusPriority: Record<string, number> = { draft: 1, approved: 2, rejected: 3 }
+  const statusPriority: Record<string, number> = { draft: 1, sent: 1.5, approved: 2, rejected: 3 }
   ;(data ?? []).sort((a, b) => {
     const pa = statusPriority[a.status] ?? 99
     const pb = statusPriority[b.status] ?? 99

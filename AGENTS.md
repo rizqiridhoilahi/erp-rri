@@ -88,14 +88,14 @@
 
 ## Important Conventions from PRD
 ### Document Numbering
-- Format: `RRI-{KODE}-{YY}-{MM}-{NNNNN}` (5 digit counter)
+- Format: `RRI-{KODE}-{YY}-{MM}-{NNNN}` (4 digit counter)
 - **Global single counter**: All documents share 1 counter (`GLB`). Only 2 parent entry points (RFQC, DI) call `generateGlobalDocumentNumber(kodeDokumen)` to increment the global counter.
 - **Child documents**: Quotation, Customer PO, Sales Order, DO, Invoice, Kwitansi, etc. copy the parent's number and change prefix via `formatChildNumber(parentNumber, kodeDokumen)`. If no parent, fallback to global counter.
 - Reset automatically at year boundary
 - Implemented via `document_counter` table + `increment_document_counter()` PG function
 - Usage: `import { generateGlobalDocumentNumber, formatChildNumber } from '@/lib/utils/document-number'`
-- `generateGlobalDocumentNumber(kodeDokumen)` → calls `supabase.rpc('increment_document_counter', { p_kode_dokumen: 'GLB', p_tahun, p_bulan })` → returns `RRI-{KODE}-YY-MM-NNNNN`
-- `formatChildNumber(parentNumber, kodeDokumen)` → extracts the running number from parent's format, replaces prefix → `RRI-{KODE}-YY-MM-NNNNN`
+- `generateGlobalDocumentNumber(kodeDokumen)` → calls `supabase.rpc('increment_document_counter', { p_kode_dokumen: 'GLB', p_tahun, p_bulan })` → returns `RRI-{KODE}-YY-MM-NNNN`
+- `formatChildNumber(parentNumber, kodeDokumen)` → extracts the running number from parent's format, replaces prefix → `RRI-{KODE}-YY-MM-NNNN`
 
 ### `all_documents` View
 - **Virtual document entries** (`all_documents` view in PostgreSQL): PDFs generated on-the-fly via API routes, not stored in bucket.
