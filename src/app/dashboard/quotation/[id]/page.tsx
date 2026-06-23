@@ -152,6 +152,7 @@ export default function QuotationDetailPage() {
       }
       const dataRes = await apiFetch<Quotation>(`/api/v1/quotation/${id}`)
       setData(dataRes.data)
+      router.refresh()
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Gagal mengubah status')
     } finally {
