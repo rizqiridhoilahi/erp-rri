@@ -166,6 +166,28 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
             updated_at: now,
           })
           .eq('id', negoItem.quotation_item_id)
+
+        const { data: qtnItem } = await supabaseAdmin
+          .from('quotation_item')
+          .select('id, barang_id, nama_barang, satuan, image_url, harga_satuan, link_produk')
+          .eq('id', negoItem.quotation_item_id)
+          .maybeSingle()
+
+        if (qtnItem && !qtnItem.barang_id && qtnItem.nama_barang) {
+          const newBarang = await createBarangFromRfqItem(
+            qtnItem.nama_barang,
+            qtnItem.satuan,
+            null,
+            qtnItem.image_url,
+            qtnItem.harga_satuan,
+            null,
+            qtnItem.link_produk,
+          )
+          await supabaseAdmin
+            .from('quotation_item')
+            .update({ barang_id: newBarang.id, updated_at: now })
+            .eq('id', negoItem.quotation_item_id)
+        }
       }
     }
 
