@@ -3,9 +3,10 @@ import { z } from 'zod'
 import { supabaseAdmin } from '@/lib/api/supabase-server'
 import { verifyAuth } from '@/lib/api/auth'
 import { verifyAuthWithRole } from '@/lib/api/role-guard'
-import { badRequest, internalError, notFound } from '@/lib/api/errors'
+import { badRequest, conflict, internalError, notFound } from '@/lib/api/errors'
 import { sendEmail } from '@/lib/utils/email'
 import { emailLayout } from '@/lib/email/templates'
+import { sendWhatsapp } from '@/lib/utils/whatsapp'
 
 export async function GET(request: NextRequest) {
   const auth = await verifyAuth(request)
@@ -50,6 +51,10 @@ export async function PUT(request: NextRequest) {
     .single()
 
   if (!profile) return notFound('Profile tidak ditemukan')
+
+  if (parsed.data.action === 'approve' && profile.status_verifikasi === 'approved') {
+    return conflict('Profile sudah disetujui sebelumnya')
+  }
 
   if (parsed.data.action === 'approve') {
     let customerId = parsed.data.customer_id
@@ -112,6 +117,21 @@ export async function PUT(request: NextRequest) {
         referenceType: 'customer-profiles',
         referenceId: parsed.data.id,
       }).catch(err => console.error('Gagal kirim email notifikasi approve:', err))
+    }
+
+    if (profile.no_whatsapp_pic) {
+      await sendWhatsapp(
+        profile.no_whatsapp_pic,
+        `*AKUN PORTAL KLIEN RRI — DISETUJUI*
+
+Yth. ${profile.penanggung_jawab_pic}
+
+Akun portal klien RRI untuk perusahaan *${profile.nama_perusahaan}* telah disetujui.
+
+Anda sekarang dapat masuk ke portal klien menggunakan email dan password yang telah didaftarkan.
+
+Link: https://pt-rri.com/customer-login`,
+      )
     }
   } else {
     const { error: updateError } = await supabaseAdmin

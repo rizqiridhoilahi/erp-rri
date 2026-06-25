@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { BreadcrumbNav, BreadcrumbItem } from "@/components/breadcrumb-nav"
 import { PageHeader } from "@/components/page-header"
 import { TableSkeleton } from "@/components/ui/skeleton"
-import { Check, X, ExternalLink } from "lucide-react"
+import { Check, X, ExternalLink, Loader2 } from "lucide-react"
 import Link from "next/link"
 
 const breadcrumbItems: BreadcrumbItem[] = [
@@ -33,6 +33,7 @@ export default function CustomerProfilesPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [tab, setTab] = useState<'pending' | 'approved' | 'rejected'>('pending')
+  const [processingId, setProcessingId] = useState<string | null>(null)
 
   const fetchData = useCallback(async (status: string) => {
     setLoading(true)
@@ -55,19 +56,33 @@ export default function CustomerProfilesPage() {
   }, [tab, fetchData])
 
   const handleApprove = async (id: string) => {
-    await apiFetch('/api/v1/master/customer-profiles', {
-      method: 'PUT',
-      body: JSON.stringify({ id, action: 'approve' }),
-    })
-    fetchData(tab)
+    setProcessingId(id)
+    try {
+      await apiFetch('/api/v1/master/customer-profiles', {
+        method: 'PUT',
+        body: JSON.stringify({ id, action: 'approve' }),
+      })
+      fetchData(tab)
+    } catch {
+      fetchData(tab)
+    } finally {
+      setProcessingId(null)
+    }
   }
 
   const handleReject = async (id: string) => {
-    await apiFetch('/api/v1/master/customer-profiles', {
-      method: 'PUT',
-      body: JSON.stringify({ id, action: 'reject' }),
-    })
-    fetchData(tab)
+    setProcessingId(id)
+    try {
+      await apiFetch('/api/v1/master/customer-profiles', {
+        method: 'PUT',
+        body: JSON.stringify({ id, action: 'reject' }),
+      })
+      fetchData(tab)
+    } catch {
+      fetchData(tab)
+    } finally {
+      setProcessingId(null)
+    }
   }
 
   const statusBadge = (status: string) => {
@@ -144,11 +159,23 @@ export default function CustomerProfilesPage() {
                       )}
                       {tab === 'pending' && (
                         <>
-                          <Button size="sm" variant="ghost" className="text-green-600" onClick={() => handleApprove(item.id)}>
-                            <Check className="h-4 w-4" />
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="text-green-600"
+                            disabled={processingId === item.id}
+                            onClick={() => handleApprove(item.id)}
+                          >
+                            {processingId === item.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
                           </Button>
-                          <Button size="sm" variant="ghost" className="text-red-600" onClick={() => handleReject(item.id)}>
-                            <X className="h-4 w-4" />
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="text-red-600"
+                            disabled={processingId === item.id}
+                            onClick={() => handleReject(item.id)}
+                          >
+                            {processingId === item.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <X className="h-4 w-4" />}
                           </Button>
                         </>
                       )}
