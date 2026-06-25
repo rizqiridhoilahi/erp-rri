@@ -78,13 +78,22 @@ export function TentangContent() {
     { icon: 'award', title: dict.keunggulan.pengalaman.title, desc: dict.keunggulan.pengalaman.desc },
   ]
 
-  const clientLogos = [
-    { src: '/image/client/BJP.png', alt: 'BJP' },
-    { src: '/image/client/BJS.png', alt: 'BJS' },
-    { src: '/image/client/MKP.png', alt: 'MKP' },
-    { src: '/image/client/kpjb.png', alt: 'KPJB' },
-    { src: '/image/client/EGT.png', alt: 'EGT' },
-  ]
+  const [clientLogos, setClientLogos] = useState<{ src: string; alt: string }[]>([])
+
+  useEffect(() => {
+    fetch('/api/v1/public/client-logo')
+      .then(res => res.json())
+      .then(json => {
+        const items: { src: string; alt: string }[] = (json.data ?? []).map(
+          (item: { file_url: string; alt_text: string }) => ({
+            src: item.file_url,
+            alt: item.alt_text,
+          })
+        )
+        setClientLogos(items)
+      })
+      .catch(() => {})
+  }, [])
 
   const timeline = [
     { year: '2010', title: 'Berdiri', desc: 'PT. Rizki Ridho Ilahi didirikan di Jepara, Jawa Tengah sebagai perusahaan General Supplier & Trading Services.' },

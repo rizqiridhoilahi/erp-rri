@@ -44,7 +44,7 @@ export function LandingContent() {
   const [clientLogos, setClientLogos] = useState<{ src: string; alt: string }[]>([])
 
   useEffect(() => {
-    fetch('/api/v1/system/client-logo?active_only=true')
+    fetch('/api/v1/public/client-logo')
       .then(res => res.json())
       .then(json => {
         const items: { src: string; alt: string }[] = (json.data ?? []).map(
