@@ -54,6 +54,16 @@ export function PublicNavbar() {
           {isLoggedIn && (
             <>
               <Link
+                href="/portal"
+                className={`px-3 py-1.5 rounded-lg text-[14px] font-semibold uppercase tracking-wider font-[family-name:var(--font-heading)] transition-all duration-200 ${
+                  pathname.startsWith('/portal')
+                    ? 'bg-[#CA8A04] text-white'
+                    : 'text-[#0000ff] hover:bg-[#CA8A04] hover:text-white'
+                }`}
+              >
+                {dict.nav.portal}
+              </Link>
+              <Link
                 href="/inquiry"
                 className={`px-3 py-1.5 rounded-lg text-[14px] font-semibold uppercase tracking-wider font-[family-name:var(--font-heading)] transition-all duration-200 ${
                   isActive('/inquiry') || isActive('/inquiry/konfirmasi') || pathname.startsWith('/inquiry')
@@ -142,6 +152,7 @@ export function PublicNavbar() {
             ))}
             {isLoggedIn ? (
               <>
+                <Link href="/portal" onClick={() => setMobileOpen(false)} className={`px-3 py-2 rounded-lg text-[14px] font-semibold uppercase tracking-wider font-[family-name:var(--font-heading)] transition-all duration-200 ${pathname.startsWith('/portal') ? 'bg-[#CA8A04] text-white' : 'text-[#0000ff] hover:bg-[#CA8A04] hover:text-white'}`}>{dict.nav.portal}</Link>
                 <Link href="/inquiry" onClick={() => setMobileOpen(false)} className={`px-3 py-2 rounded-lg text-[14px] font-semibold uppercase tracking-wider font-[family-name:var(--font-heading)] transition-all duration-200 ${isActive('/inquiry') || pathname.startsWith('/inquiry') ? 'bg-[#CA8A04] text-white' : 'text-[#0000ff] hover:bg-[#CA8A04] hover:text-white'}`}>{dict.auth.cart}</Link>
                 <Link href="/quick-order" onClick={() => setMobileOpen(false)} className={`px-3 py-2 rounded-lg text-[14px] font-semibold uppercase tracking-wider font-[family-name:var(--font-heading)] transition-all duration-200 ${isActive('/quick-order') ? 'bg-[#CA8A04] text-white' : 'text-[#0000ff] hover:bg-[#CA8A04] hover:text-white'}`}>{dict.auth.quickOrder}</Link>
                 <button onClick={() => { handleLogout(); setMobileOpen(false) }} className="text-red-500 font-medium text-left hover:text-red-700 transition-colors cursor-pointer">{dict.auth.logoutButton}</button>

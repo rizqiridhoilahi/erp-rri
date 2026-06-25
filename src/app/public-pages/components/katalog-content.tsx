@@ -5,7 +5,8 @@ import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { getDictionary } from '@/lib/i18n'
-import { Loader2 } from 'lucide-react'
+import { PackageOpen } from 'lucide-react'
+import { Skeleton } from '@/components/skeleton'
 
 const cardVariants = {
   hidden: { opacity: 0, y: 20 },
@@ -123,15 +124,27 @@ export function KatalogContent() {
           </div>
 
           {loading ? (
-            <div className="flex items-center justify-center py-20">
-              <Loader2 className="h-8 w-8 animate-spin text-[#0000ff]" />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[1, 2, 3, 4, 5, 6].map(i => (
+                <div key={i} className="rounded-2xl bg-white shadow-lg shadow-[#0B1528]/5 border border-[#e2e8f0] overflow-hidden">
+                  <Skeleton className="h-48 w-full rounded-none" />
+                  <div className="p-5 space-y-3">
+                    <Skeleton className="h-3 w-20" />
+                    <Skeleton className="h-5 w-full" />
+                    <Skeleton className="h-3 w-32" />
+                    <Skeleton className="h-4 w-full" />
+                  </div>
+                </div>
+              ))}
             </div>
           ) : error ? (
-            <div className="text-center py-20">
+            <div className="flex flex-col items-center justify-center py-20">
+              <span className="material-symbols-outlined text-5xl text-[#DC2626] mb-3">error</span>
               <p className="text-[#DC2626] text-[16px] font-[family-name:var(--font-body)]">{error}</p>
             </div>
           ) : products.length === 0 ? (
-            <div className="text-center py-20">
+            <div className="flex flex-col items-center justify-center py-20">
+              <PackageOpen className="h-12 w-12 text-[#94A3B8] mb-3" />
               <p className="text-[#454558] text-[16px] font-[family-name:var(--font-body)]">Belum ada produk yang dipublikasikan.</p>
             </div>
           ) : (

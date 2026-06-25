@@ -6,7 +6,8 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { getDictionary } from '@/lib/i18n'
 import { useCustomerAuth } from '@/lib/hooks/use-customer-auth'
-import { Loader2, ArrowLeft } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
+import { Skeleton } from '@/components/skeleton'
 
 interface ProductImage {
   id: string
@@ -70,9 +71,34 @@ export function KatalogDetailContent() {
 
   if (loading) {
     return (
-      <div className="min-h-[600px] flex items-center justify-center bg-[#f7f9fb]">
-        <Loader2 className="h-8 w-8 animate-spin text-[#0000ff]" />
-      </div>
+      <section className="min-h-[600px] bg-[#f7f9fb] pb-16">
+        <div className="bg-[#f7f9fb] py-8">
+          <div className="max-w-[1280px] mx-auto px-[40px]">
+            <Skeleton className="h-4 w-32" />
+          </div>
+        </div>
+        <div className="max-w-[1280px] mx-auto px-[40px]">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+            <div className="space-y-4">
+              <Skeleton className="h-[400px] w-full rounded-xl" />
+              <div className="flex gap-3">
+                {[1, 2, 3].map(i => <Skeleton key={i} className="w-20 h-20 rounded-lg" />)}
+              </div>
+            </div>
+            <div className="space-y-6">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-4 w-48" />
+              <Skeleton className="h-20 w-full" />
+              <Skeleton className="h-32 w-full rounded-xl" />
+              <div className="flex gap-4 pt-4">
+                <Skeleton className="h-14 flex-1 rounded-lg" />
+                <Skeleton className="h-14 flex-1 rounded-lg" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
     )
   }
 
@@ -80,6 +106,7 @@ export function KatalogDetailContent() {
     return (
       <div className="min-h-[600px] flex items-center justify-center bg-[#f7f9fb]">
         <div className="text-center">
+          <span className="material-symbols-outlined text-5xl text-[#94A3B8] mb-3 block">search_off</span>
           <p className="text-[#454558] text-[16px] mb-4 font-[family-name:var(--font-body)]">{error || 'Produk tidak ditemukan'}</p>
           <Link href={`/katalog${lang !== 'id' ? `?lang=${lang}` : ''}`} className="text-[#0000ff] hover:underline font-[family-name:var(--font-body)]">
             &larr; Kembali ke Katalog

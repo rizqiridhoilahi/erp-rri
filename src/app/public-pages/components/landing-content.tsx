@@ -31,25 +31,32 @@ const cardVariants = {
   visible: { opacity: 1, y: 0 },
 }
 
-const logoVariants = {
-  hidden: { opacity: 0, scale: 0.9 },
-  visible: { opacity: 1, scale: 1 },
-}
-
 const staggerContainer = {
   hidden: {},
   visible: { transition: { staggerChildren: 0.15 } },
-}
-
-const staggerLogos = {
-  hidden: {},
-  visible: { transition: { staggerChildren: 0.1 } },
 }
 
 export function LandingContent() {
   const searchParams = useSearchParams()
   const lang = searchParams.get('lang') ?? 'id'
   const dict = getDictionary(lang)
+
+  const [clientLogos, setClientLogos] = useState<{ src: string; alt: string }[]>([])
+
+  useEffect(() => {
+    fetch('/api/v1/system/client-logo?active_only=true')
+      .then(res => res.json())
+      .then(json => {
+        const items: { src: string; alt: string }[] = (json.data ?? []).map(
+          (item: { file_url: string; alt_text: string }) => ({
+            src: item.file_url,
+            alt: item.alt_text,
+          })
+        )
+        setClientLogos(items)
+      })
+      .catch(() => {})
+  }, [])
 
   const statsRef = useRef<HTMLDivElement | null>(null)
   const [statsInView, setStatsInView] = useState(false)
@@ -345,7 +352,20 @@ export function LandingContent() {
         </div>
       </section>
 
-      <section className="py-24 bg-white">
+      <section className="py-24 bg-white overflow-hidden">
+        <style>{`
+          @keyframes marquee {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+          }
+          .marquee-track {
+            animation: marquee 40s linear infinite;
+            width: fit-content;
+          }
+          .marquee-track:hover {
+            animation-play-state: paused;
+          }
+        `}</style>
         <div className="max-w-[1280px] mx-auto px-[40px]">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -361,25 +381,16 @@ export function LandingContent() {
               {dict.klien.subtitle}
             </p>
           </motion.div>
-          <motion.div
-            variants={staggerLogos}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.2 }}
-            className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8"
-          >
-            {[
-              { src: '/image/client/BJP.png', alt: 'BJP' },
-              { src: '/image/client/BJS.png', alt: 'BJS' },
-              { src: '/image/client/MKP.png', alt: 'MKP' },
-              { src: '/image/client/kpjb.png', alt: 'KPJB' },
-              { src: '/image/client/EGT.png', alt: 'EGT' },
-            ].map((logo, i) => (
-              <motion.div key={i} variants={logoVariants} transition={{ duration: 0.4 }}>
+        </div>
+        <div className="relative">
+          {clientLogos.length > 0 && (
+          <div className="flex marquee-track gap-12 px-6">
+            {[...clientLogos, ...clientLogos].map((logo, i) => (
+              <div key={i} className="shrink-0">
                 <motion.div
-                  whileHover={{ scale: 1.05, borderColor: 'rgba(52,61,255,0.3)' }}
+                  whileHover={{ scale: 1.08, borderColor: 'rgba(52,61,255,0.3)' }}
                   transition={{ duration: 0.3 }}
-                  className="h-28 rounded-2xl bg-gradient-to-br from-[#f8fafc] to-white border border-[#e2e8f0] shadow-md shadow-[#0B1528]/5 flex items-center justify-center p-2"
+                  className="w-48 h-28 rounded-2xl bg-gradient-to-br from-[#f8fafc] to-white border border-[#e2e8f0] shadow-md shadow-[#0B1528]/5 flex items-center justify-center p-4"
                 >
                   <img
                     src={logo.src}
@@ -387,9 +398,10 @@ export function LandingContent() {
                     className="max-h-full max-w-full object-contain"
                   />
                 </motion.div>
-              </motion.div>
+              </div>
             ))}
-          </motion.div>
+          </div>
+          )}
         </div>
       </section>
 

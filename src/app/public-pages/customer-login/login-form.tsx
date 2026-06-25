@@ -59,7 +59,7 @@ export function LoginForm() {
               value={email}
               onChange={e => setEmail(e.target.value)}
               required
-              className="w-full px-4 py-2.5 border border-[#CBD5E1] rounded-lg focus:ring-2 focus:ring-[#0000ff]/20 focus:border-[#0000ff] outline-none font-[family-name:var(--font-body)]"
+              className="w-full px-4 py-2.5 border border-[#CBD5E1] rounded-lg focus:ring-2 focus:ring-[#0000ff]/20 focus:border-[#0000ff] outline-none text-[#0B1528] caret-[#0B1528] font-[family-name:var(--font-body)]"
               placeholder="email@perusahaan.com"
             />
           </div>
@@ -70,7 +70,7 @@ export function LoginForm() {
               value={password}
               onChange={e => setPassword(e.target.value)}
               required
-              className="w-full px-4 py-2.5 border border-[#CBD5E1] rounded-lg focus:ring-2 focus:ring-[#0000ff]/20 focus:border-[#0000ff] outline-none font-[family-name:var(--font-body)]"
+              className="w-full px-4 py-2.5 border border-[#CBD5E1] rounded-lg focus:ring-2 focus:ring-[#0000ff]/20 focus:border-[#0000ff] outline-none text-[#0B1528] caret-[#0B1528] font-[family-name:var(--font-body)]"
               placeholder="Masukkan password"
             />
           </div>

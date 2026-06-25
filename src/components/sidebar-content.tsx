@@ -8,7 +8,7 @@ import {
   Home, Package, Users, Building2, UserCircle, BookOpen,   FileText, FileSpreadsheet, FolderTree, Briefcase, Users2,
   Search, ShoppingCart, Landmark, Receipt, ReceiptText, BookOpenCheck, TrendingUp, TrendingDown,
   PieChart, Banknote, Bot, ScanLine, Lightbulb, MessageSquare, Clock, DollarSign, ShieldCheck, Store, AlertTriangle, ListOrdered, CreditCard,
-  ClipboardList, ClipboardCheck, Bell, Sun, Moon, Mail, LucideIcon, Hash,
+  ClipboardList, ClipboardCheck, Bell, Sun, Moon, Mail, LucideIcon, Hash, Image,
 } from 'lucide-react'
 import { useTheme } from '@/components/theme/theme-provider'
 import { PanduanButton } from '@/components/onboarding/panduan-button'
@@ -123,6 +123,7 @@ const menuItems: MenuItem[] = [
     { href: '/dashboard/system/archive', label: 'Data Archive', icon: Archive },
     { href: '/dashboard/system/profile', label: 'Profil', icon: Settings },
     { href: '/dashboard/system/company', label: 'Company Profile', icon: Building2 },
+    { href: '/dashboard/system/client-logo', label: 'Client Logo', icon: Image },
     { href: '/dashboard/audit-log', label: 'Audit Trail', icon: ClipboardList },
     { href: '/dashboard/notifikasi', label: 'Notifikasi', icon: Bell },
   ]},

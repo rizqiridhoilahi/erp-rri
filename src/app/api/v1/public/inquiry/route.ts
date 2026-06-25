@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { supabaseAdmin } from '@/lib/api/supabase-server'
 import { requireCustomerAuth } from '@/lib/api/public-auth'
 import { badRequest, internalError } from '@/lib/api/errors'
+import { sendWhatsapp, getOwnerWhatsapp } from '@/lib/utils/whatsapp'
 
 const submitSchema = z.object({
   perihal: z.string().optional(),
@@ -90,6 +91,24 @@ export async function POST(request: NextRequest) {
     .from('customer_inquiry_cart')
     .delete()
     .eq('auth_user_id', auth.user!.id)
+
+  const { data: customer } = await supabaseAdmin
+    .from('customer')
+    .select('nama')
+    .eq('id', auth.profile.customer_id)
+    .single()
+
+  const namaCustomer = customer?.nama ?? 'Customer'
+
+  const whatsappNumbers = await getOwnerWhatsapp()
+  whatsappNumbers.push('085640884088')
+  const uniqueNumbers = [...new Set(whatsappNumbers)]
+
+  const waMessage = `🔔 *Inquiry Baru dari Portal*\n\nCustomer: *${namaCustomer}*\nNomor: ${nomor}\nPerihal: ${parsed.data.perihal || 'Permintaan Penawaran dari Portal'}\n\nSilakan proses di dashboard ERP.`
+
+  for (const hp of uniqueNumbers) {
+    await sendWhatsapp(hp, waMessage, auth.user?.id)
+  }
 
   return NextResponse.json({
     data: {

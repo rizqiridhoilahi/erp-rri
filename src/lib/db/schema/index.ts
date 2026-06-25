@@ -101,6 +101,7 @@ import { kontrakItemNotApprove } from "./kontrak-item-not-approve";
 import { barangGambar } from "./barang-gambar";
 import { customerProfiles } from "./customer-profiles";
 import { customerInquiryCart } from "./customer-inquiry-cart";
+import { clientLogo } from "./client-logo";
 
 export {
   users,
@@ -205,4 +206,5 @@ export {
   barangGambar,
   customerProfiles,
   customerInquiryCart,
+  clientLogo,
 };
