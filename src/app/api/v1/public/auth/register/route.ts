@@ -17,13 +17,9 @@ export async function POST(request: NextRequest) {
 
   const { email, password } = parsed.data
 
-  const { data: existingProfile } = await supabaseAdmin
-    .from('customer_profiles')
-    .select('id')
-    .eq('auth_user_id', email)
-    .maybeSingle()
-
-  if (existingProfile) {
+  const { data: usersData } = await supabaseAdmin.auth.admin.listUsers()
+  const existingUser = usersData?.users?.find(u => u.email?.toLowerCase() === email.toLowerCase())
+  if (existingUser) {
     return conflict('Email sudah terdaftar')
   }
 

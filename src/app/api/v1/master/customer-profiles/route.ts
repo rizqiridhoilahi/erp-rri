@@ -4,6 +4,8 @@ import { supabaseAdmin } from '@/lib/api/supabase-server'
 import { verifyAuth } from '@/lib/api/auth'
 import { verifyAuthWithRole } from '@/lib/api/role-guard'
 import { badRequest, internalError, notFound } from '@/lib/api/errors'
+import { sendEmail } from '@/lib/utils/email'
+import { emailLayout } from '@/lib/email/templates'
 
 export async function GET(request: NextRequest) {
   const auth = await verifyAuth(request)
@@ -77,6 +79,40 @@ export async function PUT(request: NextRequest) {
       .eq('id', parsed.data.id)
 
     if (updateError) return internalError(updateError)
+
+    const { data: pic } = await supabaseAdmin
+      .from('customer_pic')
+      .select('email')
+      .eq('nama', profile.penanggung_jawab_pic)
+      .maybeSingle()
+    const picEmail = pic?.email
+
+    if (picEmail) {
+      const html = emailLayout(`
+        <p>Yth. <strong>${profile.penanggung_jawab_pic}</strong>,</p>
+        <p>Akun portal klien RRI untuk perusahaan <strong>${profile.nama_perusahaan}</strong> telah disetujui.</p>
+        <p>Anda sekarang dapat masuk ke portal klien menggunakan email dan password yang telah didaftarkan.</p>
+        <p style="margin-top:20px">
+          <a href="https://pt-rri.com/customer-login" style="display:inline-block;background:#0000ff;color:#fff;padding:12px 32px;border-radius:8px;text-decoration:none;font-weight:bold">
+            Masuk ke Portal
+          </a>
+        </p>
+        <p style="margin-top:20px;color:#64748B;font-size:14px">
+          Email: ${picEmail}<br>
+          Perusahaan: ${profile.nama_perusahaan}
+        </p>
+      `, 'Akun Disetujui')
+
+      await sendEmail({
+        to: picEmail,
+        toNama: profile.penanggung_jawab_pic,
+        cc: [{ email: 'marzuqi@pt-rri.com', name: 'Mohamad Marzuqi' }],
+        subject: 'Akun Portal Klien RRI — Disetujui',
+        html,
+        referenceType: 'customer-profiles',
+        referenceId: parsed.data.id,
+      }).catch(err => console.error('Gagal kirim email notifikasi approve:', err))
+    }
   } else {
     const { error: updateError } = await supabaseAdmin
       .from('customer_profiles')

@@ -69,7 +69,7 @@ export async function sendEmailViaBrevo(params: SendBrevoEmailParams) {
   const rawSender = (await getBrevoSenderEmail())?.trim()
   const fromEmail = rawSender || (await getCompanyEmail())
   const senderName = await getBrevoSenderName()
-  const fromName = (await getCompanySenderName()) ?? senderName ?? 'ERP RRI'
+  const fromName = senderName ?? (await getCompanySenderName()) ?? 'ERP RRI'
 
   let status: string
   let errorMessage: string | null = null
