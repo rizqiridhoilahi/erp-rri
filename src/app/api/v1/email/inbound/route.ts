@@ -47,6 +47,24 @@ function decodeQpIfPresent(text: string): string {
   return text
 }
 
+function decodeBase64IfPresent(text: string): string {
+  if (!text || text.length < 20) return text
+  const stripped = text.replace(/[\s\r\n]+/g, '')
+  if (!/^[A-Za-z0-9+/]*={0,2}$/.test(stripped)) return text
+  if (stripped.length % 4 !== 0) return text
+  try {
+    const decoded = atob(stripped)
+    let printable = 0
+    for (let i = 0; i < decoded.length; i++) {
+      const code = decoded.charCodeAt(i)
+      if (code >= 32 && code <= 126) printable++
+      if (code === 9 || code === 10 || code === 13) printable++
+    }
+    if (printable / decoded.length > 0.7) return decoded
+  } catch { /* ignore */ }
+  return text
+}
+
 const attachmentSchema = z.object({
   key: z.string(),
   fileName: z.string(),
@@ -182,7 +200,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Insert into email_log
-    const decodedBody = emailBody ? decodeQpIfPresent(emailBody) : null
+    const decodedBody = emailBody ? decodeBase64IfPresent(decodeQpIfPresent(emailBody)) : null
     const { data, error } = await supabaseAdmin
       .from("email_log")
       .insert({

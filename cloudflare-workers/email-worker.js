@@ -287,7 +287,10 @@ function parseMultipart(body, boundary) {
     // Decode partBody based on content-transfer-encoding (for inline text parts)
     if (ce === 'base64') {
       try {
-        const binary = atob(partBody.replace(/[\r\n\s]/g, ''))
+        // Strip trailing boundary markers (e.g. "\r\n--_000_...") which poison atob()
+        const boundaryIdx = partBody.indexOf('\r\n--')
+        const cleanBody = boundaryIdx >= 0 ? partBody.substring(0, boundaryIdx) : partBody
+        const binary = atob(cleanBody.replace(/[\r\n\s]/g, ''))
         const bytes = new Uint8Array(binary.length)
         for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i)
         partBody = new TextDecoder().decode(bytes)
