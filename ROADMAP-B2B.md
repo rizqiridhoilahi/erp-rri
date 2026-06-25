@@ -52,7 +52,7 @@
 | F1-2 | **Dashboard: multiple images upload** — Uploader `barang_gambar` di form barang, set primary, urutkan, hapus | 🔴 Critical | ✅ Done |
 | F1-3 | **Katalog grid page** — `public-pages/katalog/page.tsx` — grid 3 kolom, card premium, price hidden. Login gate: locked vs "Tambah ke SPH" | 🟡 High | ✅ Done |
 | F1-4 | **Katalog detail page** — `public-pages/katalog/[id]/page.tsx` — galeri gambar + magnifier zoom, spesifikasi teknis, SKU, tombol "Tambahkan ke Keranjang Inquiry" | 🟡 High | ✅ Done |
-| F1-5 | **Framer Motion** — untuk micro-interactions (card hover scale-105, smooth shadow) — library sudah terinstall | 🟢 Medium | ✅ Done |
+| F1-5 | **Framer Motion** — untuk micro-interactions (card hover scale-105, smooth shadow) — ✅ **Terimplementasi** di landing, tentang, katalog, layanan, detail katalog (whileHover, whileInView, stagger) | 🟢 Medium | ✅ Done |
 
 ---
 

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useSearchParams, useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { motion } from 'framer-motion'
 import { getDictionary } from '@/lib/i18n'
 import { useCustomerAuth } from '@/lib/hooks/use-customer-auth'
 import { Loader2, ArrowLeft } from 'lucide-react'
@@ -125,7 +126,13 @@ export function KatalogDetailContent() {
         <div className="max-w-[1280px] mx-auto px-[40px]">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             <div className="space-y-4">
-              <div className="bg-white rounded-xl border border-[#c5c4db]/20 p-6 flex items-center justify-center min-h-[400px]">
+              <motion.div
+                key={selectedImage}
+                initial={{ opacity: 0.6 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.3 }}
+                className="bg-white rounded-xl border border-[#c5c4db]/20 p-6 flex items-center justify-center min-h-[400px]"
+              >
                 {selectedImage ? (
                   <img
                     src={selectedImage}
@@ -137,19 +144,22 @@ export function KatalogDetailContent() {
                       <path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                     </svg>
                 )}
-              </div>
+              </motion.div>
               {images.length > 1 && (
                 <div className="flex gap-3 overflow-x-auto pb-2">
                   {images.map((url, idx) => (
-                    <button
+                    <motion.button
                       key={idx}
                       onClick={() => setSelectedImage(url)}
-                      className={`flex-shrink-0 w-20 h-20 rounded-lg border-2 overflow-hidden transition-all ${
-                        selectedImage === url ? 'border-[#0000ff]' : 'border-[#c5c4db]/30 hover:border-[#0000ff]/50'
+                      whileHover={{ borderColor: '#0000ff' }}
+                      whileTap={{ scale: 0.95 }}
+                      transition={{ duration: 0.2 }}
+                      className={`flex-shrink-0 w-20 h-20 rounded-lg border-2 overflow-hidden ${
+                        selectedImage === url ? 'border-[#0000ff]' : 'border-[#c5c4db]/30'
                       }`}
                     >
                       <img src={url} alt={`${product.nama} ${idx + 1}`} className="w-full h-full object-contain" />
-                    </button>
+                    </motion.button>
                   ))}
                 </div>
               )}
@@ -215,7 +225,7 @@ export function KatalogDetailContent() {
               )}
 
               <div className="flex gap-4 pt-4">
-                <button
+                <motion.button
                   onClick={() => {
                     if (!isLoggedIn) { router.push('/customer-login'); return }
                     ;(async () => {
@@ -231,11 +241,14 @@ export function KatalogDetailContent() {
                     })()
                   }}
                   disabled={addingToCart}
-                  className="flex-1 px-6 py-4 bg-[#0000ff] text-white font-bold rounded-lg hover:opacity-90 transition-all disabled:opacity-50 font-[family-name:var(--font-body)]"
+                  whileHover={{ opacity: 0.9 }}
+                  whileTap={{ scale: 0.98 }}
+                  transition={{ duration: 0.2 }}
+                  className="flex-1 px-6 py-4 bg-[#0000ff] text-white font-bold rounded-lg disabled:opacity-50 font-[family-name:var(--font-body)]"
                 >
                   {addingToCart ? 'Memproses...' : dict.katalog.addToSph}
-                </button>
-                <button
+                </motion.button>
+                <motion.button
                   onClick={() => {
                     if (!isLoggedIn) { router.push('/customer-login'); return }
                     ;(async () => {
@@ -250,10 +263,13 @@ export function KatalogDetailContent() {
                     })()
                   }}
                   disabled={addingToCart}
-                  className="flex-1 px-6 py-4 border border-[#0000ff] text-[#0000ff] font-bold rounded-lg hover:bg-[#0000ff]/5 transition-all disabled:opacity-50 font-[family-name:var(--font-body)]"
+                  whileHover={{ backgroundColor: 'rgba(0,0,255,0.05)' }}
+                  whileTap={{ scale: 0.98 }}
+                  transition={{ duration: 0.2 }}
+                  className="flex-1 px-6 py-4 border border-[#0000ff] text-[#0000ff] font-bold rounded-lg disabled:opacity-50 font-[family-name:var(--font-body)]"
                 >
                   {dict.katalog.addToCart}
-                </button>
+                </motion.button>
               </div>
             </div>
           </div>

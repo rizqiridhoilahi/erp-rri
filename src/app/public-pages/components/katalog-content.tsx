@@ -3,8 +3,19 @@
 import { useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import { motion } from 'framer-motion'
 import { getDictionary } from '@/lib/i18n'
 import { Loader2 } from 'lucide-react'
+
+const cardVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0 },
+}
+
+const staggerGrid = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.08 } },
+}
 
 interface ProductItem {
   id: string
@@ -125,7 +136,13 @@ export function KatalogContent() {
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <motion.div
+                variants={staggerGrid}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, amount: 0.05 }}
+                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+              >
                 {products.map((product) => {
                   const kategoriNama = Array.isArray(product.kategori_barang)
                     ? product.kategori_barang[0]?.nama
@@ -133,48 +150,56 @@ export function KatalogContent() {
                   const primaryImage = product.image_url
 
                   return (
-                    <Link
-                      key={product.id}
-                      href={`/katalog/${product.id}${lang !== 'id' ? `?lang=${lang}` : ''}`}
-                      className="group rounded-2xl bg-white shadow-lg shadow-[#0B1528]/5 border border-[#e2e8f0] overflow-hidden hover:shadow-xl hover:shadow-[#0B1528]/10 hover:-translate-y-1.5 transition-all duration-300"
-                    >
-                      <div className="h-48 bg-[#f0f2f5] flex items-center justify-center overflow-hidden">
-                        {primaryImage ? (
-                          <img
-                            src={primaryImage}
-                            alt={product.nama}
-                            className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
-                          />
-                        ) : (
-                          <svg className="w-12 h-12 text-[#94A3B8]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                            </svg>
-                        )}
-                      </div>
-                      <div className="p-5">
-                        {kategoriNama && (
-                          <span className="text-[11px] uppercase tracking-wider text-[#0000ff] font-medium font-[family-name:var(--font-body)]">
-                            {kategoriNama}
-                          </span>
-                        )}
-                        <h3 className="text-[16px] font-semibold text-[#191c1e] mt-1 mb-2 font-[family-name:var(--font-heading)]">
-                          {product.nama}
-                        </h3>
-                        <div className="flex items-center gap-3 text-[12px] text-[#94A3B8] font-[family-name:var(--font-body)]">
-                          <span>{product.kode}</span>
-                          <span>&bull;</span>
-                          <span>{product.satuan}</span>
-                        </div>
-                        {product.deskripsi_katalog && (
-                          <p className="text-[13px] text-[#454558] mt-2 line-clamp-2 font-[family-name:var(--font-body)]">
-                            {product.deskripsi_katalog}
-                          </p>
-                        )}
-                      </div>
-                    </Link>
+                    <motion.div key={product.id} variants={cardVariants} transition={{ duration: 0.4 }}>
+                      <motion.div
+                        whileHover={{ y: -6, boxShadow: '0 20px 25px -5px rgba(11,21,40,0.1), 0 10px 10px -5px rgba(11,21,40,0.04)' }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        <Link
+                          href={`/katalog/${product.id}${lang !== 'id' ? `?lang=${lang}` : ''}`}
+                          className="block rounded-2xl bg-white shadow-lg shadow-[#0B1528]/5 border border-[#e2e8f0] overflow-hidden group"
+                        >
+                          <motion.div className="h-48 bg-[#f0f2f5] flex items-center justify-center overflow-hidden">
+                            {primaryImage ? (
+                              <motion.img
+                                src={primaryImage}
+                                alt={product.nama}
+                                className="w-full h-full object-contain"
+                                whileHover={{ scale: 1.08 }}
+                                transition={{ duration: 0.4 }}
+                              />
+                            ) : (
+                              <svg className="w-12 h-12 text-[#94A3B8]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                                </svg>
+                            )}
+                          </motion.div>
+                          <div className="p-5">
+                            {kategoriNama && (
+                              <span className="text-[11px] uppercase tracking-wider text-[#0000ff] font-medium font-[family-name:var(--font-body)]">
+                                {kategoriNama}
+                              </span>
+                            )}
+                            <h3 className="text-[16px] font-semibold text-[#191c1e] mt-1 mb-2 font-[family-name:var(--font-heading)]">
+                              {product.nama}
+                            </h3>
+                            <div className="flex items-center gap-3 text-[12px] text-[#94A3B8] font-[family-name:var(--font-body)]">
+                              <span>{product.kode}</span>
+                              <span>&bull;</span>
+                              <span>{product.satuan}</span>
+                            </div>
+                            {product.deskripsi_katalog && (
+                              <p className="text-[13px] text-[#454558] mt-2 line-clamp-2 font-[family-name:var(--font-body)]">
+                                {product.deskripsi_katalog}
+                              </p>
+                            )}
+                          </div>
+                        </Link>
+                      </motion.div>
+                    </motion.div>
                   )
                 })}
-              </div>
+              </motion.div>
 
               {totalPages > 1 && (
                 <div className="flex justify-center gap-2 mt-10">
