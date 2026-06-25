@@ -7,7 +7,8 @@ import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Upload, X } from 'lucide-react';
+import imageCompression from 'browser-image-compression';
 import { useUnsavedChanges } from '@/hooks/use-unsaved-changes';
 import { ConfirmLeaveDialog } from '@/components/confirm-leave-dialog';
 import { toast } from 'sonner';
@@ -37,13 +38,15 @@ export default function EditBarangPage() {
   const router = useRouter();
   const pathname = usePathname();
   const id = pathname.split('/').at(-2);
-  const { register, handleSubmit, formState: { errors, isDirty }, reset, watch, setValue } = useForm<BarangFormValues>({ resolver: zodResolver(barangSchema) });
+  const { register, handleSubmit, formState: { errors, isDirty }, reset, watch, setValue } = useForm<BarangFormValues>({ resolver: zodResolver(barangSchema), shouldFocusError: false });
   const { confirmLeave, showDialog, handleConfirm, handleCancel } = useUnsavedChanges(isDirty);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [kategoriOptions, setKategoriOptions] = useState<Array<{ value: string; label: string }>>([]);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageUploading, setImageUploading] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -79,6 +82,42 @@ export default function EditBarangPage() {
     }
     finally { setLoading(false); }
   };
+
+  const handlePickImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file || !id) return
+    const allowed = ['image/jpeg', 'image/png', 'image/webp']
+    if (!allowed.includes(file.type)) { toast.error('Hanya JPG, PNG, atau WebP'); return }
+    if (file.size > 5 * 1024 * 1024) { toast.error('Maksimal 5MB'); return }
+    setImagePreview(URL.createObjectURL(file))
+    if (e.target) e.target.value = ''
+
+    setImageUploading(true)
+    try {
+      const compressed = await imageCompression(file, {
+        maxSizeMB: 1,
+        maxWidthOrHeight: 1920,
+        useWebWorker: true,
+        fileType: 'image/webp',
+      })
+      const formData = new FormData()
+      formData.append('file', compressed, 'foto-1.webp')
+      const res = await apiFetch<{ fileUrl: string }>(`/api/v1/master/barang/${id}/image`, {
+        method: 'POST',
+        body: formData,
+      })
+      if (res.data?.fileUrl) {
+        setValue('image_url', res.data.fileUrl)
+        toast.success('Gambar berhasil diupload!')
+      }
+      if (imagePreview) URL.revokeObjectURL(imagePreview)
+      setImagePreview(null)
+    } catch {
+      toast.error('Gagal mengupload gambar')
+    } finally {
+      setImageUploading(false)
+    }
+  }
 
   if (isLoading) return <div className="min-h-[200px] flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /><p className="ml-3 text-muted-foreground">Memuat data...</p></div>;
 
@@ -133,12 +172,44 @@ export default function EditBarangPage() {
         </div>
 
         <div className="space-y-3">
-          <label className="block text-sm font-medium">Galeri Foto Barang</label>
-          {id && <BarangImageGallery barangId={id} />}
+          <label className="block text-sm font-medium">Gambar Utama</label>
+          <div
+            className="relative flex flex-col items-center justify-center rounded-lg border-2 border-dashed p-6 transition-colors cursor-pointer bg-muted/30 hover:bg-muted/50"
+            onClick={() => document.getElementById('barang-edit-image-input')?.click()}
+          >
+            {imageUploading ? (
+              <div className="flex flex-col items-center gap-2">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                <p className="text-sm text-muted-foreground">Mengupload...</p>
+              </div>
+            ) : imagePreview ? (
+              <div className="relative w-full">
+                <img src={imagePreview} alt="Preview" className="max-h-40 mx-auto rounded object-contain" />
+                <button
+                  type="button"
+                  className="absolute top-1 right-1 bg-background/80 rounded-full p-1 hover:bg-background"
+                  onClick={(e) => { e.stopPropagation(); if (imagePreview) URL.revokeObjectURL(imagePreview); setImagePreview(null) }}
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            ) : (
+              <>
+                <Upload className="h-8 w-8 mb-2 text-muted-foreground" />
+                <p className="text-sm font-medium">Klik untuk upload foto barang</p>
+                <p className="text-xs text-muted-foreground mt-1">JPG, PNG, WebP — maks. 5MB, 1920px</p>
+              </>
+            )}
+            <input id="barang-edit-image-input" type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={handlePickImage} />
+          </div>
           <div>
             <label className="block text-xs text-muted-foreground mb-1">Atau URL manual gambar utama</label>
             <input type="text" {...register('image_url')} placeholder="https://..." className="w-full px-3 py-2 border rounded-md text-xs focus:outline-none focus-visible:ring-3 focus-visible:ring-ring" />
           </div>
+        </div>
+        <div className="space-y-3">
+          <label className="block text-sm font-medium">Galeri Foto Barang (tambahan)</label>
+          {id && <BarangImageGallery barangId={id} />}
         </div>
 
         <div className="space-y-2 mb-4">

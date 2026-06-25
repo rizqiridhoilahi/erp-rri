@@ -114,7 +114,7 @@ Example:
 
 export default function TambahBarangPage() {
   const router = useRouter();
-  const form = useForm<BarangFormValues>({ resolver: zodResolver(barangSchema) });
+  const form = useForm<BarangFormValues>({ resolver: zodResolver(barangSchema), shouldFocusError: false });
   const { confirmLeave, showDialog, handleConfirm, handleCancel } = useUnsavedChanges(form.formState.isDirty);
   const [loading, setLoading] = useState(false);
   const [kategoriOptions, setKategoriOptions] = useState<Array<{ value: string; label: string }>>([]);
@@ -287,10 +287,13 @@ export default function TambahBarangPage() {
       })
       const formData = new FormData()
       formData.append('file', compressed, 'foto-1.webp')
-      await apiFetch(`/api/v1/master/barang/${barangId}/image`, {
+      const res = await apiFetch<{ fileUrl: string }>(`/api/v1/master/barang/${barangId}/image`, {
         method: 'POST',
         body: formData,
       })
+      if (res.data?.fileUrl) {
+        form.setValue('image_url', res.data.fileUrl)
+      }
     } catch { /* image optional, skip silently */ }
     finally { setImageUploading(false) }
   }
@@ -317,7 +320,7 @@ export default function TambahBarangPage() {
     setLoading(true);
     const toastId = toast.loading('Menyimpan barang...');
     try {
-      const res = await apiFetch<{ id: string }>('/api/v1/master/barang', { method: 'POST', body: JSON.stringify({ ...data, image_url: '' }) });
+      const res = await apiFetch<{ id: string }>('/api/v1/master/barang', { method: 'POST', body: JSON.stringify(data) });
       toast.success('Barang berhasil ditambahkan!', { id: toastId });
       form.reset();
       const newId = res.data?.id
