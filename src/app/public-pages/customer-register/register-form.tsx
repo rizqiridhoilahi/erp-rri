@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
 
 interface PicData {
@@ -22,11 +22,12 @@ export function RegisterForm() {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [lookupState, setLookupState] = useState<LookupState>('idle')
   const [picData, setPicData] = useState<PicData | null>(null)
-  const lookupTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const isValidEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim())
 
   const doLookup = async (value: string) => {
     const trimmed = value.trim()
-    if (!trimmed || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+    if (!trimmed || !isValidEmail(trimmed)) {
       setLookupState('idle')
       setPicData(null)
       return
@@ -56,21 +57,14 @@ export function RegisterForm() {
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
     setEmail(value)
-
-    if (lookupTimer.current) {
-      clearTimeout(lookupTimer.current)
-    }
-
     if (lookupState !== 'idle' && lookupState !== 'loading') {
       setLookupState('idle')
       setPicData(null)
     }
   }
 
-  const handleEmailBlur = () => {
-    if (email.trim()) {
-      doLookup(email)
-    }
+  const handleVerify = () => {
+    doLookup(email)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -158,22 +152,31 @@ export function RegisterForm() {
                 type="email"
                 value={email}
                 onChange={handleEmailChange}
-                onBlur={handleEmailBlur}
                 required
                 className="w-full px-4 py-2.5 border border-[#CBD5E1] rounded-lg focus:ring-2 focus:ring-[#0000ff]/20 focus:border-[#0000ff] outline-none text-[#0B1528] caret-[#0B1528] font-[family-name:var(--font-body)] pr-10"
                 placeholder="email@perusahaan.com"
               />
-              {lookupState === 'loading' && (
-                <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                  <div className="w-4 h-4 border-2 border-[#0000ff] border-t-transparent rounded-full animate-spin" />
-                </div>
-              )}
               {lookupState === 'found' && (
                 <div className="absolute right-3 top-1/2 -translate-y-1/2">
                   <span className="text-green-500 text-lg">✓</span>
                 </div>
               )}
             </div>
+            <button
+              type="button"
+              onClick={handleVerify}
+              disabled={!email.trim() || !isValidEmail(email) || lookupState === 'loading'}
+              className="mt-2 w-full bg-[#0000ff] text-white py-2 rounded-lg font-semibold text-sm hover:opacity-90 transition-all disabled:opacity-50 font-[family-name:var(--font-body)]"
+            >
+              {lookupState === 'loading' ? (
+                <span className="flex items-center justify-center gap-2">
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  Memverifikasi...
+                </span>
+              ) : (
+                'Verifikasi Email'
+              )}
+            </button>
           </div>
 
           {lookupState === 'not_found' && (
@@ -272,12 +275,6 @@ export function RegisterForm() {
                 {loading ? 'Memproses...' : 'Daftar Sekarang'}
               </button>
             </>
-          )}
-
-          {lookupState === 'idle' && (
-            <p className="text-center text-xs text-[#94A3B8] font-[family-name:var(--font-body)]">
-              Masukkan email PIC lalu klik di luar field untuk verifikasi.
-            </p>
           )}
         </form>
 

@@ -52,8 +52,7 @@ export async function POST(request: NextRequest) {
     )
   }
 
-  const customerArr = pic.customer as { nama: string; alamat: string }[] | null
-  const customer = customerArr?.[0]
+  const customer = pic.customer as unknown as { nama: string; alamat: string } | null
 
   const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
     email,

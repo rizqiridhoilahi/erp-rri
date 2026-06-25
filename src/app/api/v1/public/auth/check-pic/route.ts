@@ -33,8 +33,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ data: null })
   }
 
-  const customerArr = pic.customer as { nama: string; alamat: string }[] | null
-  const customer = customerArr?.[0]
+  const customer = pic.customer as unknown as { nama: string; alamat: string } | null
 
   return NextResponse.json({
     data: {
