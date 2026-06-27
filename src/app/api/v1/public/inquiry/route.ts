@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
 
   const { data: cartItems, error: cartError } = await supabaseAdmin
     .from('customer_inquiry_cart')
-    .select('*, barang:barang_id(id, nama, kode, satuan)')
+    .select('*, barang:barang_id(id, nama, kode, satuan, image_url)')
     .eq('auth_user_id', auth.user!.id)
     .order('created_at', { ascending: true })
 
@@ -32,16 +32,24 @@ export async function POST(request: NextRequest) {
   const year = tgl.getFullYear()
   const month = tgl.getMonth() + 1
 
-  const { data: counterResult } = await supabaseAdmin.rpc('increment_document_counter', {
-    p_kode_dokumen: 'GLB',
+  const { data: counter } = await supabaseAdmin.rpc('increment_global_counter', {
     p_tahun: year,
     p_bulan: month,
   })
 
-  const runningNumber = String(counterResult ?? 1).padStart(5, '0')
+  const runningNumber = String(counter ?? 1).padStart(4, '0')
   const monthStr = String(month).padStart(2, '0')
   const yearStr = String(year).slice(-2)
   const nomor = `RRI-RFQC-${yearStr}-${monthStr}-${runningNumber}`
+
+  const { data: customer } = await supabaseAdmin
+    .from('customer')
+    .select('nama, kode')
+    .eq('id', auth.profile.customer_id)
+    .single()
+
+  const nomorRfqCustomer = `RFQ-${customer?.kode}-${yearStr}-${monthStr}-${runningNumber}`
+  const namaCustomer = customer?.nama ?? 'Customer'
 
   const recordId = crypto.randomUUID()
   const now = tgl.toISOString()
@@ -51,6 +59,7 @@ export async function POST(request: NextRequest) {
     .insert({
       id: recordId,
       nomor,
+      nomor_rfq_customer: nomorRfqCustomer,
       customer_id: auth.profile.customer_id,
       tanggal: now,
       perihal: parsed.data.perihal || 'Permintaan Penawaran dari Portal',
@@ -70,6 +79,7 @@ export async function POST(request: NextRequest) {
     nama_barang: item.barang?.nama ?? null,
     jumlah: item.quantity,
     satuan: item.barang?.satuan ?? null,
+    image_url: item.barang?.image_url ?? null,
     keterangan: item.catatan_spesifik ?? null,
     urutan: idx + 1,
     created_at: now,
@@ -90,14 +100,6 @@ export async function POST(request: NextRequest) {
     .delete()
     .eq('auth_user_id', auth.user!.id)
 
-  const { data: customer } = await supabaseAdmin
-    .from('customer')
-    .select('nama')
-    .eq('id', auth.profile.customer_id)
-    .single()
-
-  const namaCustomer = customer?.nama ?? 'Customer'
-
   const whatsappNumbers = await getOwnerWhatsapp()
   whatsappNumbers.push('085640884088')
   const uniqueNumbers = [...new Set(whatsappNumbers)]
@@ -112,6 +114,7 @@ export async function POST(request: NextRequest) {
     data: {
       message: 'Inquiry berhasil dikirim',
       nomor,
+      nomor_rfq_customer: nomorRfqCustomer,
       rfq_id: recordId,
     },
   }, { status: 201 })

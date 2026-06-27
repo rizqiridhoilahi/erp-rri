@@ -48,9 +48,10 @@ export function InquiryCartContent() {
   const [submitting, setSubmitting] = useState(false)
   const [perihal, setPerihal] = useState('')
   const [keterangan, setKeterangan] = useState('')
-  const [success, setSuccess] = useState<{ nomor: string } | null>(null)
+  const [success, setSuccess] = useState<{ nomor: string; nomor_rfq_customer: string } | null>(null)
   const [error, setError] = useState('')
   const [imageErrors, setImageErrors] = useState<Set<number>>(new Set())
+  const [perihalError, setPerihalError] = useState(false)
 
   const fetchCart = async () => {
     if (!token) return
@@ -97,6 +98,7 @@ export function InquiryCartContent() {
 
   const handleSubmit = async () => {
     if (!token) return
+    if (!perihal.trim()) { setPerihalError(true); return }
     setError('')
     setSubmitting(true)
     try {
@@ -156,20 +158,41 @@ export function InquiryCartContent() {
             <CheckCircle className="h-8 w-8 text-emerald-600" />
           </div>
           <h1 className="text-2xl font-bold text-[#0F172A] mb-2 font-['Rubik']">Inquiry Terkirim!</h1>
-          <div className="bg-[#F8FAFC] rounded-xl p-4 mb-4">
-            <p className="text-sm text-[#475569] mb-1 font-['Nunito_Sans']">Nomor SPH</p>
-            <p className="text-xl font-bold text-[#0F172A] font-['Rubik']">{success.nomor}</p>
+          <div className="bg-[#F8FAFC] rounded-xl p-4 mb-4 space-y-3 text-left">
+            <div>
+              <label className="block text-xs text-[#475569] mb-1 font-['Nunito_Sans']">Nomor RFQC</label>
+              <input
+                readOnly
+                value={success.nomor}
+                className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-[#0F172A] font-['Nunito_Sans'] cursor-default"
+              />
+            </div>
+            <div>
+              <label className="block text-xs text-[#475569] mb-1 font-['Nunito_Sans']">Nomor RFQC Ref</label>
+              <input
+                readOnly
+                value={success.nomor_rfq_customer}
+                className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-[#0F172A] font-['Nunito_Sans'] cursor-default"
+              />
+            </div>
           </div>
           <p className="text-[#475569] mb-8 text-sm font-['Nunito_Sans']">
             Tim kami akan memproses permintaan Anda dan menghubungi melalui WhatsApp.
           </p>
-          <div className="flex gap-3 justify-center">
+          <div className="flex flex-col gap-3">
             <Link
               href="/katalog"
               className="inline-flex items-center gap-2 bg-[#0369A1] text-white px-6 py-3 rounded-xl font-bold hover:bg-[#0284C7] transition-all duration-200 shadow-sm hover:shadow-md font-['Nunito_Sans'] cursor-pointer"
             >
               <ShoppingCart className="h-4 w-4" />
               Lanjut Belanja
+            </Link>
+            <Link
+              href="/public-pages/portal/sph-history"
+              className="inline-flex items-center justify-center gap-2 text-[#0369A1] text-sm font-semibold hover:underline font-['Nunito_Sans']"
+            >
+              <FileText className="h-4 w-4" />
+              Lihat Status Inquiry →
             </Link>
           </div>
         </div>
@@ -278,13 +301,19 @@ export function InquiryCartContent() {
               </h2>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-[#0F172A] mb-1.5 font-['Nunito_Sans']">Perihal</label>
+                  <label className="block text-sm font-medium text-[#0F172A] mb-1.5 font-['Nunito_Sans']">Perihal <span className="text-red-500">*</span></label>
                   <input
+                    required
                     value={perihal}
-                    onChange={e => setPerihal(e.target.value)}
-                    className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#0369A1]/20 focus:border-[#0369A1] outline-none transition-all duration-150 font-['Nunito_Sans'] placeholder:text-slate-400"
+                    onChange={e => { setPerihal(e.target.value); setPerihalError(false) }}
+                    className={`w-full px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-[#0369A1]/20 outline-none transition-all duration-150 font-['Nunito_Sans'] placeholder:text-slate-400 ${
+                      perihalError ? 'border-red-400 focus:ring-red-200' : 'border-slate-200 focus:border-[#0369A1]'
+                    }`}
                     placeholder="Permintaan Penawaran untuk..."
                   />
+                  {perihalError && (
+                    <p className="text-xs text-red-500 mt-1 font-['Nunito_Sans']">Perihal wajib diisi</p>
+                  )}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-[#0F172A] mb-1.5 font-['Nunito_Sans']">Keterangan Tambahan</label>
@@ -308,7 +337,7 @@ export function InquiryCartContent() {
               </div>
               <button
                 onClick={handleSubmit}
-                disabled={submitting}
+                disabled={submitting || !perihal.trim()}
                 className="inline-flex items-center gap-2 bg-[#0369A1] text-white px-8 py-3 rounded-xl font-bold hover:bg-[#0284C7] transition-all duration-200 disabled:opacity-50 shadow-sm hover:shadow-md font-['Nunito_Sans'] cursor-pointer"
               >
                 {submitting ? (

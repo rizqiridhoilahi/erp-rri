@@ -7,6 +7,7 @@ import { badRequest, conflict, internalError, notFound } from '@/lib/api/errors'
 import { sendEmail } from '@/lib/utils/email'
 import { emailLayout } from '@/lib/email/templates'
 import { sendWhatsapp } from '@/lib/utils/whatsapp'
+import { generateCustomerAutoKode } from '@/lib/utils/barang-auto-create'
 
 export async function GET(request: NextRequest) {
   const auth = await verifyAuth(request)
@@ -60,19 +61,30 @@ export async function PUT(request: NextRequest) {
     let customerId = parsed.data.customer_id || profile.customer_id
 
     if (!customerId) {
-      const { data: newCustomer } = await supabaseAdmin
+      const { data: existingCustomer } = await supabaseAdmin
         .from('customer')
-        .insert({
-          nama: profile.nama_perusahaan,
-          kode: `CUST-${profile.nama_perusahaan.slice(0, 4).toUpperCase()}-${Date.now().toString(36).toUpperCase()}`,
-          alamat: profile.alamat_perusahaan,
-          kontak: profile.no_whatsapp_pic,
-        })
-        .select()
-        .single()
+        .select('id')
+        .ilike('nama', profile.nama_perusahaan)
+        .maybeSingle()
 
-      if (!newCustomer) return internalError('Gagal membuat customer')
-      customerId = newCustomer.id
+      if (existingCustomer) {
+        customerId = existingCustomer.id
+      } else {
+        const autoKode = await generateCustomerAutoKode()
+        const { data: newCustomer } = await supabaseAdmin
+          .from('customer')
+          .insert({
+            nama: profile.nama_perusahaan,
+            kode: autoKode,
+            alamat: profile.alamat_perusahaan,
+            kontak: profile.no_whatsapp_pic,
+          })
+          .select()
+          .single()
+
+        if (!newCustomer) return internalError('Gagal membuat customer')
+        customerId = newCustomer.id
+      }
     }
 
     const { error: updateError } = await supabaseAdmin

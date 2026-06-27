@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { supabaseAdmin } from '@/lib/api/supabase-server'
 import { badRequest, conflict, internalError } from '@/lib/api/errors'
+import { generateCustomerAutoKode } from '@/lib/utils/barang-auto-create'
 
 const registerSchema = z.object({
   email: z.string().email('Email tidak valid'),
@@ -88,21 +89,33 @@ export async function POST(request: NextRequest) {
       return internalError(profileError)
     }
   } else {
-    const customerKode = `CALON-${crypto.randomUUID().slice(0, 8).toUpperCase()}`
-    const customerIdGen = crypto.randomUUID()
-
-    const { error: customerError } = await supabaseAdmin
+    const { data: existingCustomer } = await supabaseAdmin
       .from('customer')
-      .insert({
-        id: customerIdGen,
-        kode: customerKode,
-        nama: nama_perusahaan!,
-        alamat: alamat_perusahaan!,
-      })
+      .select('id, kode')
+      .ilike('nama', nama_perusahaan!)
+      .maybeSingle()
 
-    if (customerError) {
-      await supabaseAdmin.auth.admin.deleteUser(authData.user.id)
-      return internalError(customerError)
+    let customerIdGen: string
+
+    if (existingCustomer) {
+      customerIdGen = existingCustomer.id
+    } else {
+      const autoKode = await generateCustomerAutoKode()
+      customerIdGen = crypto.randomUUID()
+
+      const { error: customerError } = await supabaseAdmin
+        .from('customer')
+        .insert({
+          id: customerIdGen,
+          kode: autoKode,
+          nama: nama_perusahaan!,
+          alamat: alamat_perusahaan!,
+        })
+
+      if (customerError) {
+        await supabaseAdmin.auth.admin.deleteUser(authData.user.id)
+        return internalError(customerError)
+      }
     }
 
     customerId = customerIdGen
