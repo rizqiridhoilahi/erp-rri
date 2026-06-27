@@ -35,8 +35,8 @@ export async function requireCustomerAuth(request: NextRequest) {
     return { user: null, profile: null, error: forbidden('Akun belum terdaftar sebagai customer') }
   }
 
-  if (result.profile.status_verifikasi !== 'approved') {
-    return { user: null, profile: null, error: forbidden('Akun menunggu persetujuan admin') }
+  if (result.profile.status_verifikasi === 'rejected') {
+    return { user: null, profile: null, error: forbidden('Akun Anda telah ditolak. Silakan hubungi admin.') }
   }
 
   return result

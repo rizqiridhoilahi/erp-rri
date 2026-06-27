@@ -23,6 +23,11 @@ export function RegisterForm() {
   const [lookupState, setLookupState] = useState<LookupState>('idle')
   const [picData, setPicData] = useState<PicData | null>(null)
 
+  const [manualPicName, setManualPicName] = useState('')
+  const [manualPicPhone, setManualPicPhone] = useState('')
+  const [manualNamaPerusahaan, setManualNamaPerusahaan] = useState('')
+  const [manualAlamatPerusahaan, setManualAlamatPerusahaan] = useState('')
+
   const isValidEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim())
 
   const doLookup = async (value: string) => {
@@ -71,8 +76,8 @@ export function RegisterForm() {
     e.preventDefault()
     setError('')
 
-    if (lookupState !== 'found' || !picData) {
-      setError('Verifikasi email PIC terlebih dahulu')
+    if (lookupState !== 'found' && lookupState !== 'not_found') {
+      setError('Verifikasi email terlebih dahulu')
       return
     }
 
@@ -81,12 +86,31 @@ export function RegisterForm() {
       return
     }
 
+    if (lookupState === 'not_found') {
+      if (!manualPicName.trim() || !manualPicPhone.trim() || !manualNamaPerusahaan.trim() || !manualAlamatPerusahaan.trim()) {
+        setError('Semua data perusahaan wajib diisi')
+        return
+      }
+    }
+
     setLoading(true)
     try {
+      const body: Record<string, unknown> = {
+        email: email.trim().toLowerCase(),
+        password,
+      }
+
+      if (lookupState === 'not_found') {
+        body.nama_perusahaan = manualNamaPerusahaan.trim()
+        body.alamat_perusahaan = manualAlamatPerusahaan.trim()
+        body.pic_name = manualPicName.trim()
+        body.pic_phone = manualPicPhone.trim()
+      }
+
       const res = await fetch('/api/v1/public/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.trim().toLowerCase(), password }),
+        body: JSON.stringify(body),
       })
       const json = await res.json()
       if (!res.ok) {
@@ -110,18 +134,23 @@ export function RegisterForm() {
           </div>
           <h1 className="text-2xl font-bold text-[#0B1528] mb-2 font-[family-name:var(--font-heading)]">Registrasi Berhasil</h1>
           <p className="text-[#64748B] mb-4 font-[family-name:var(--font-body)]">
-            Akun Anda sedang menunggu persetujuan admin. Kami akan mengirimkan notifikasi ke email <strong>{email}</strong> setelah akun diaktifkan.
+            Akun Anda berhasil dibuat. Silakan login untuk mulai menggunakan layanan kami.
           </p>
           {picData && (
             <p className="text-sm text-[#64748B] mb-6 font-[family-name:var(--font-body)]">
               PIC: <strong>{picData.nama_pic}</strong> &mdash; {picData.nama_perusahaan}
             </p>
           )}
+          {lookupState === 'not_found' && (
+            <p className="text-sm text-[#64748B] mb-6 font-[family-name:var(--font-body)]">
+              Perusahaan: <strong>{manualNamaPerusahaan}</strong>
+            </p>
+          )}
           <Link
             href="/customer-login"
             className="inline-block bg-[#0000ff] text-white px-8 py-3 rounded-lg font-bold hover:opacity-90 transition-all font-[family-name:var(--font-body)]"
           >
-            Kembali ke Login
+            Lanjut ke Login
           </Link>
         </div>
       </div>
@@ -133,7 +162,7 @@ export function RegisterForm() {
       <div className="max-w-lg w-full bg-white rounded-2xl shadow-lg p-8">
         <h1 className="text-2xl font-bold text-[#0B1528] mb-1 font-[family-name:var(--font-heading)]">Daftar Akun</h1>
         <p className="text-[#64748B] text-sm mb-6 font-[family-name:var(--font-body)]">
-          Masukkan email PIC Anda untuk memulai pendaftaran.
+          Masukkan email Anda untuk memulai pendaftaran.
         </p>
 
         {error && (
@@ -145,7 +174,7 @@ export function RegisterForm() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-[#0B1528] mb-1 font-[family-name:var(--font-body)]">
-              Email PIC <span className="text-red-500">*</span>
+              Email <span className="text-red-500">*</span>
             </label>
             <div className="relative">
               <input
@@ -156,7 +185,7 @@ export function RegisterForm() {
                 className="w-full px-4 py-2.5 border border-[#CBD5E1] rounded-lg focus:ring-2 focus:ring-[#0000ff]/20 focus:border-[#0000ff] outline-none text-[#0B1528] caret-[#0B1528] font-[family-name:var(--font-body)] pr-10"
                 placeholder="email@perusahaan.com"
               />
-              {lookupState === 'found' && (
+              {(lookupState === 'found') && (
                 <div className="absolute right-3 top-1/2 -translate-y-1/2">
                   <span className="text-green-500 text-lg">✓</span>
                 </div>
@@ -179,63 +208,117 @@ export function RegisterForm() {
             </button>
           </div>
 
-          {lookupState === 'not_found' && (
-            <div className="bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 rounded-lg text-sm font-[family-name:var(--font-body)]">
-              Email PIC tidak ditemukan. Hubungi admin perusahaan Anda untuk didaftarkan sebagai PIC terlebih dahulu.
+          {picData && lookupState === 'found' && (
+            <div className="border border-[#E2E8F0] rounded-lg p-4 space-y-3 bg-[#F8FAFC]">
+              <h3 className="text-sm font-semibold text-[#0B1528] font-[family-name:var(--font-heading)]">
+                Data Perusahaan &mdash; Verifikasi Otomatis
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-[#64748B] mb-0.5 font-[family-name:var(--font-body)]">
+                    Nama PIC
+                  </label>
+                  <input
+                    value={picData.nama_pic}
+                    readOnly
+                    className="w-full px-3 py-2 bg-white border border-[#E2E8F0] rounded-lg text-[#0B1528] text-sm font-[family-name:var(--font-body)] cursor-default"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-[#64748B] mb-0.5 font-[family-name:var(--font-body)]">
+                    No. WhatsApp PIC
+                  </label>
+                  <input
+                    value={picData.no_hp}
+                    readOnly
+                    className="w-full px-3 py-2 bg-white border border-[#E2E8F0] rounded-lg text-[#0B1528] text-sm font-[family-name:var(--font-body)] cursor-default"
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-xs font-medium text-[#64748B] mb-0.5 font-[family-name:var(--font-body)]">
+                    Nama Perusahaan
+                  </label>
+                  <input
+                    value={picData.nama_perusahaan}
+                    readOnly
+                    className="w-full px-3 py-2 bg-white border border-[#E2E8F0] rounded-lg text-[#0B1528] text-sm font-[family-name:var(--font-body)] cursor-default"
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-xs font-medium text-[#64748B] mb-0.5 font-[family-name:var(--font-body)]">
+                    Alamat Perusahaan
+                  </label>
+                  <textarea
+                    value={picData.alamat_perusahaan}
+                    readOnly
+                    rows={2}
+                    className="w-full px-3 py-2 bg-white border border-[#E2E8F0] rounded-lg text-[#0B1528] text-sm font-[family-name:var(--font-body)] resize-none cursor-default"
+                  />
+                </div>
+              </div>
             </div>
           )}
 
-          {picData && lookupState === 'found' && (
-            <>
-              <div className="border border-[#E2E8F0] rounded-lg p-4 space-y-3 bg-[#F8FAFC]">
-                <h3 className="text-sm font-semibold text-[#0B1528] font-[family-name:var(--font-heading)]">
-                  Data Perusahaan &mdash; Verifikasi Otomatis
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-medium text-[#64748B] mb-0.5 font-[family-name:var(--font-body)]">
-                      Nama PIC
-                    </label>
-                    <input
-                      value={picData.nama_pic}
-                      readOnly
-                      className="w-full px-3 py-2 bg-white border border-[#E2E8F0] rounded-lg text-[#0B1528] text-sm font-[family-name:var(--font-body)] cursor-default"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-[#64748B] mb-0.5 font-[family-name:var(--font-body)]">
-                      No. WhatsApp PIC
-                    </label>
-                    <input
-                      value={picData.no_hp}
-                      readOnly
-                      className="w-full px-3 py-2 bg-white border border-[#E2E8F0] rounded-lg text-[#0B1528] text-sm font-[family-name:var(--font-body)] cursor-default"
-                    />
-                  </div>
-                  <div className="md:col-span-2">
-                    <label className="block text-xs font-medium text-[#64748B] mb-0.5 font-[family-name:var(--font-body)]">
-                      Nama Perusahaan
-                    </label>
-                    <input
-                      value={picData.nama_perusahaan}
-                      readOnly
-                      className="w-full px-3 py-2 bg-white border border-[#E2E8F0] rounded-lg text-[#0B1528] text-sm font-[family-name:var(--font-body)] cursor-default"
-                    />
-                  </div>
-                  <div className="md:col-span-2">
-                    <label className="block text-xs font-medium text-[#64748B] mb-0.5 font-[family-name:var(--font-body)]">
-                      Alamat Perusahaan
-                    </label>
-                    <textarea
-                      value={picData.alamat_perusahaan}
-                      readOnly
-                      rows={2}
-                      className="w-full px-3 py-2 bg-white border border-[#E2E8F0] rounded-lg text-[#0B1528] text-sm font-[family-name:var(--font-body)] resize-none cursor-default"
-                    />
-                  </div>
+          {lookupState === 'not_found' && (
+            <div className="border border-[#E2E8F0] rounded-lg p-4 space-y-3 bg-blue-50">
+              <h3 className="text-sm font-semibold text-[#0B1528] font-[family-name:var(--font-heading)]">
+                Data Perusahaan Baru
+              </h3>
+              <p className="text-xs text-[#64748B] font-[family-name:var(--font-body)]">
+                Email tidak ditemukan sebagai PIC. Silakan isi data perusahaan Anda untuk mendaftar sebagai customer baru.
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="md:col-span-2">
+                  <label className="block text-xs font-medium text-[#64748B] mb-0.5 font-[family-name:var(--font-body)]">
+                    Nama Perusahaan <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    value={manualNamaPerusahaan}
+                    onChange={e => setManualNamaPerusahaan(e.target.value)}
+                    className="w-full px-3 py-2 bg-white border border-[#CBD5E1] rounded-lg text-[#0B1528] text-sm font-[family-name:var(--font-body)] focus:ring-2 focus:ring-[#0000ff]/20 focus:border-[#0000ff] outline-none"
+                    placeholder="Nama perusahaan Anda"
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-xs font-medium text-[#64748B] mb-0.5 font-[family-name:var(--font-body)]">
+                    Alamat Perusahaan <span className="text-red-500">*</span>
+                  </label>
+                  <textarea
+                    value={manualAlamatPerusahaan}
+                    onChange={e => setManualAlamatPerusahaan(e.target.value)}
+                    rows={2}
+                    className="w-full px-3 py-2 bg-white border border-[#CBD5E1] rounded-lg text-[#0B1528] text-sm font-[family-name:var(--font-body)] focus:ring-2 focus:ring-[#0000ff]/20 focus:border-[#0000ff] outline-none resize-none"
+                    placeholder="Alamat lengkap perusahaan"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-[#64748B] mb-0.5 font-[family-name:var(--font-body)]">
+                    Nama PIC <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    value={manualPicName}
+                    onChange={e => setManualPicName(e.target.value)}
+                    className="w-full px-3 py-2 bg-white border border-[#CBD5E1] rounded-lg text-[#0B1528] text-sm font-[family-name:var(--font-body)] focus:ring-2 focus:ring-[#0000ff]/20 focus:border-[#0000ff] outline-none"
+                    placeholder="Nama penanggung jawab"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-[#64748B] mb-0.5 font-[family-name:var(--font-body)]">
+                    No. WhatsApp PIC <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    value={manualPicPhone}
+                    onChange={e => setManualPicPhone(e.target.value)}
+                    className="w-full px-3 py-2 bg-white border border-[#CBD5E1] rounded-lg text-[#0B1528] text-sm font-[family-name:var(--font-body)] focus:ring-2 focus:ring-[#0000ff]/20 focus:border-[#0000ff] outline-none"
+                    placeholder="08xxxxxxxxxx"
+                  />
                 </div>
               </div>
+            </div>
+          )}
 
+          {(lookupState === 'found' || lookupState === 'not_found') && (
+            <>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-[#0B1528] mb-1 font-[family-name:var(--font-body)]">

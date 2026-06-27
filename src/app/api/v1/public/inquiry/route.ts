@@ -14,8 +14,6 @@ export async function POST(request: NextRequest) {
   const auth = await requireCustomerAuth(request)
   if (auth.error) return auth.error
 
-  if (!auth.profile?.customer_id) return badRequest('Akun belum memiliki data customer. Hubungi admin.')
-
   const body = await request.json().catch(() => null)
 
   const parsed = submitSchema.safeParse(body ?? {})

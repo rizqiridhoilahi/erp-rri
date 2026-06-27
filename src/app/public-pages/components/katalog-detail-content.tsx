@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { getDictionary } from '@/lib/i18n'
 import { useCustomerAuth } from '@/lib/hooks/use-customer-auth'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, ShoppingCart, CheckCircle } from 'lucide-react'
 import { Skeleton } from '@/components/skeleton'
 
 interface ProductImage {
@@ -287,82 +287,55 @@ export function KatalogDetailContent() {
               )}
 
               {actionFeedback && (
-                <div className="bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 rounded-lg text-[14px] font-[family-name:var(--font-body)]">
-                  {actionFeedback}
+                <div className="flex items-center justify-between bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3">
+                  <div className="flex items-center gap-2 text-emerald-800 text-[14px] font-[family-name:var(--font-body)]">
+                    <CheckCircle className="h-5 w-5 flex-shrink-0" />
+                    {actionFeedback}
+                  </div>
+                  <Link
+                    href="/inquiry"
+                    className="text-[13px] font-semibold text-emerald-700 hover:text-emerald-900 underline font-[family-name:var(--font-body)]"
+                  >
+                    Lihat Keranjang →
+                  </Link>
                 </div>
               )}
-              <div className="flex gap-4">
-                <motion.button
-                  onClick={async () => {
-                    setActionFeedback('')
-                    if (!isLoggedIn) { router.push('/customer-login'); return }
-                    if (profile?.status_verifikasi !== 'approved') {
-                      setActionFeedback('Akun Anda belum disetujui admin. Silakan tunggu konfirmasi.')
+              <motion.button
+                onClick={async () => {
+                  setActionFeedback('')
+                  if (!isLoggedIn) { router.push('/customer-login'); return }
+                  if (profile?.status_verifikasi !== 'approved') {
+                    setActionFeedback('Akun Anda belum disetujui admin. Silakan tunggu konfirmasi.')
+                    return
+                  }
+                  setAddingToCart(true)
+                  try {
+                    const res = await fetch('/api/v1/public/cart', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                      body: JSON.stringify({ barang_id: product.id, quantity: 1 }),
+                    })
+                    if (!res.ok) {
+                      const err = await res.json().catch(() => ({ error: 'Gagal menambahkan' }))
+                      setActionFeedback(err.error || 'Gagal menambahkan ke keranjang')
                       return
                     }
-                    setAddingToCart(true)
-                    try {
-                      const res = await fetch('/api/v1/public/cart', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-                        body: JSON.stringify({ barang_id: product.id, quantity: 1 }),
-                      })
-                      if (!res.ok) {
-                        const err = await res.json().catch(() => ({ error: 'Gagal menambahkan' }))
-                        setActionFeedback(err.error || 'Gagal menambahkan ke keranjang')
-                        return
-                      }
-                      router.push('/inquiry')
-                    } catch {
-                      setActionFeedback('Terjadi kesalahan jaringan')
-                    } finally {
-                      setAddingToCart(false)
-                    }
-                  }}
-                  disabled={addingToCart}
-                  whileHover={{ opacity: 0.9 }}
-                  whileTap={{ scale: 0.98 }}
-                  transition={{ duration: 0.2 }}
-                  className="flex-1 px-6 py-4 bg-[#0000ff] text-white font-bold rounded-lg disabled:opacity-50 font-[family-name:var(--font-body)]"
-                >
-                  {addingToCart ? 'Memproses...' : dict.katalog.addToSph}
-                </motion.button>
-                <motion.button
-                  onClick={async () => {
-                    setActionFeedback('')
-                    if (!isLoggedIn) { router.push('/customer-login'); return }
-                    if (profile?.status_verifikasi !== 'approved') {
-                      setActionFeedback('Akun Anda belum disetujui admin. Silakan tunggu konfirmasi.')
-                      return
-                    }
-                    setAddingToCart(true)
-                    try {
-                      const res = await fetch('/api/v1/public/cart', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-                        body: JSON.stringify({ barang_id: product.id, quantity: 1 }),
-                      })
-                      if (!res.ok) {
-                        const err = await res.json().catch(() => ({ error: 'Gagal menambahkan' }))
-                        setActionFeedback(err.error || 'Gagal menambahkan ke keranjang')
-                        return
-                      }
-                      setActionFeedback('Berhasil ditambahkan ke keranjang inquiry')
-                    } catch {
-                      setActionFeedback('Terjadi kesalahan jaringan')
-                    } finally {
-                      setAddingToCart(false)
-                    }
-                  }}
-                  disabled={addingToCart}
-                  whileHover={{ backgroundColor: 'rgba(0,0,255,0.05)' }}
-                  whileTap={{ scale: 0.98 }}
-                  transition={{ duration: 0.2 }}
-                  className="flex-1 px-6 py-4 border border-[#0000ff] text-[#0000ff] font-bold rounded-lg disabled:opacity-50 font-[family-name:var(--font-body)]"
-                >
-                  {dict.katalog.addToCart}
-                </motion.button>
-              </div>
+                    setActionFeedback('Berhasil ditambahkan ke keranjang inquiry')
+                  } catch {
+                    setActionFeedback('Terjadi kesalahan jaringan')
+                  } finally {
+                    setAddingToCart(false)
+                  }
+                }}
+                disabled={addingToCart}
+                whileHover={{ opacity: 0.9 }}
+                whileTap={{ scale: 0.98 }}
+                transition={{ duration: 0.2 }}
+                className="w-full px-6 py-4 bg-[#0000ff] text-white font-bold rounded-lg flex items-center justify-center gap-2 disabled:opacity-50 font-[family-name:var(--font-body)] cursor-pointer"
+              >
+                <ShoppingCart className="h-5 w-5" />
+                {addingToCart ? 'Memproses...' : dict.katalog.addToCart}
+              </motion.button>
             </div>
           </div>
         </div>

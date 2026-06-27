@@ -41,8 +41,8 @@ export async function POST(request: NextRequest) {
     .eq('auth_user_id', data.user.id)
     .maybeSingle()
 
-  if (profile && profile.status_verifikasi !== 'approved') {
-    return forbidden('Akun belum disetujui. Silakan hubungi admin.')
+  if (profile && profile.status_verifikasi === 'rejected') {
+    return forbidden('Akun Anda telah ditolak. Silakan hubungi admin.')
   }
 
   return NextResponse.json({

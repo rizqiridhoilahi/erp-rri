@@ -6,6 +6,10 @@ import { badRequest, conflict, internalError } from '@/lib/api/errors'
 const registerSchema = z.object({
   email: z.string().email('Email tidak valid'),
   password: z.string().min(8, 'Password minimal 8 karakter'),
+  nama_perusahaan: z.string().optional(),
+  alamat_perusahaan: z.string().optional(),
+  pic_name: z.string().optional(),
+  pic_phone: z.string().optional(),
 })
 
 export async function POST(request: NextRequest) {
@@ -15,7 +19,7 @@ export async function POST(request: NextRequest) {
   const parsed = registerSchema.safeParse(body)
   if (!parsed.success) return badRequest(parsed.error.issues.map(i => i.message).join(', '))
 
-  const { email, password } = parsed.data
+  const { email, password, nama_perusahaan, alamat_perusahaan, pic_name, pic_phone } = parsed.data
 
   const { data: usersData } = await supabaseAdmin.auth.admin.listUsers()
   const existingUser = usersData?.users?.find(u => u.email?.toLowerCase() === email.toLowerCase())
@@ -42,13 +46,10 @@ export async function POST(request: NextRequest) {
   }
 
   if (!pic) {
-    return NextResponse.json(
-      { error: 'Email PIC tidak ditemukan. Hubungi admin perusahaan Anda untuk didaftarkan sebagai PIC.' },
-      { status: 400 }
-    )
+    if (!nama_perusahaan || !alamat_perusahaan || !pic_name || !pic_phone) {
+      return badRequest('Data perusahaan wajib diisi: nama_perusahaan, alamat_perusahaan, pic_name, pic_phone')
+    }
   }
-
-  const customer = pic.customer as unknown as { nama: string; alamat: string } | null
 
   const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
     email,
@@ -63,23 +64,68 @@ export async function POST(request: NextRequest) {
     return internalError(authError)
   }
 
-  const { error: profileError } = await supabaseAdmin
-    .from('customer_profiles')
-    .insert({
-      auth_user_id: authData.user.id,
-      customer_id: pic.customer_id,
-      nama_perusahaan: customer?.nama ?? '',
-      penanggung_jawab_pic: pic.nama,
-      no_whatsapp_pic: pic.no_hp,
-      alamat_perusahaan: customer?.alamat ?? '',
-      npwp_perusahaan: null,
-      status_verifikasi: 'pending',
-    })
+  let customerId: string | null = null
 
-  if (profileError) {
-    await supabaseAdmin.auth.admin.deleteUser(authData.user.id)
-    return internalError(profileError)
+  if (pic) {
+    const customer = pic.customer as unknown as { nama: string; alamat: string } | null
+    customerId = pic.customer_id
+
+    const { error: profileError } = await supabaseAdmin
+      .from('customer_profiles')
+      .insert({
+        auth_user_id: authData.user.id,
+        customer_id: customerId,
+        nama_perusahaan: customer?.nama ?? '',
+        penanggung_jawab_pic: pic.nama,
+        no_whatsapp_pic: pic.no_hp,
+        alamat_perusahaan: customer?.alamat ?? '',
+        npwp_perusahaan: null,
+        status_verifikasi: 'approved',
+      })
+
+    if (profileError) {
+      await supabaseAdmin.auth.admin.deleteUser(authData.user.id)
+      return internalError(profileError)
+    }
+  } else {
+    const customerKode = `CALON-${crypto.randomUUID().slice(0, 8).toUpperCase()}`
+    const customerIdGen = crypto.randomUUID()
+
+    const { error: customerError } = await supabaseAdmin
+      .from('customer')
+      .insert({
+        id: customerIdGen,
+        kode: customerKode,
+        nama: nama_perusahaan!,
+        alamat: alamat_perusahaan!,
+      })
+
+    if (customerError) {
+      await supabaseAdmin.auth.admin.deleteUser(authData.user.id)
+      return internalError(customerError)
+    }
+
+    customerId = customerIdGen
+
+    const { error: profileError } = await supabaseAdmin
+      .from('customer_profiles')
+      .insert({
+        auth_user_id: authData.user.id,
+        customer_id: customerId,
+        nama_perusahaan: nama_perusahaan!,
+        penanggung_jawab_pic: pic_name!,
+        no_whatsapp_pic: pic_phone!,
+        alamat_perusahaan: alamat_perusahaan!,
+        npwp_perusahaan: null,
+        status_verifikasi: 'approved',
+      })
+
+    if (profileError) {
+      await supabaseAdmin.auth.admin.deleteUser(authData.user.id)
+      await supabaseAdmin.from('customer').delete().eq('id', customerIdGen)
+      return internalError(profileError)
+    }
   }
 
-  return NextResponse.json({ data: { message: 'Registrasi berhasil. Menunggu persetujuan admin.' } }, { status: 201 })
+  return NextResponse.json({ data: { message: 'Registrasi berhasil' } }, { status: 201 })
 }

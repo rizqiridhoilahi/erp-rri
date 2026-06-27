@@ -91,11 +91,10 @@ export const en: Dictionary = {
     title: 'Product Catalog',
     subtitle: 'Explore high-quality products for your industrial needs.',
     accessLocked: 'Access locked. Please login.',
-    addToSph: 'Add to SPH List',
+    addToCart: 'Add to Cart',
     detail: 'Product Detail',
     spesifikasi: 'Technical Specifications',
     sku: 'SKU Code',
-    addToCart: 'Add to Inquiry Cart',
   },
   auth: {
     loginTitle: 'Login',

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { getDictionary } from '@/lib/i18n'
@@ -9,9 +9,24 @@ import { useCustomerAuth } from '@/lib/hooks/use-customer-auth'
 
 export function PublicNavbar() {
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [cartCount, setCartCount] = useState<number | null>(null)
   const pathname = usePathname()
   const dict = getDictionary('id')
-  const { isLoggedIn, profile, logout } = useCustomerAuth()
+  const { isLoggedIn, token, profile, logout } = useCustomerAuth()
+
+  useEffect(() => {
+    if (!isLoggedIn || !token) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setCartCount(null)
+      return
+    }
+    fetch('/api/v1/public/cart', {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(r => r.json())
+      .then(d => setCartCount(Array.isArray(d.data) ? d.data.length : 0))
+      .catch(() => setCartCount(0))
+  }, [isLoggedIn, token])
 
   const handleLogout = () => {
     logout()
@@ -65,13 +80,18 @@ export function PublicNavbar() {
               </Link>
               <Link
                 href="/inquiry"
-                className={`px-3 py-1.5 rounded-lg text-[14px] font-semibold uppercase tracking-wider font-[family-name:var(--font-heading)] transition-all duration-200 ${
+                className={`relative px-3 py-1.5 rounded-lg text-[14px] font-semibold uppercase tracking-wider font-[family-name:var(--font-heading)] transition-all duration-200 ${
                   isActive('/inquiry') || isActive('/inquiry/konfirmasi') || pathname.startsWith('/inquiry')
                     ? 'bg-[#CA8A04] text-white'
                     : 'text-[#0000ff] hover:bg-[#CA8A04] hover:text-white'
                 }`}
               >
                 {dict.auth.cart}
+                {cartCount !== null && cartCount > 0 && (
+                  <span className="absolute -top-1 -right-2 bg-red-500 text-white text-[10px] font-bold min-w-[17px] h-[17px] flex items-center justify-center rounded-full leading-none">
+                    {cartCount > 99 ? '99+' : cartCount}
+                  </span>
+                )}
               </Link>
               <Link
                 href="/quick-order"
@@ -153,7 +173,14 @@ export function PublicNavbar() {
             {isLoggedIn ? (
               <>
                 <Link href="/portal" onClick={() => setMobileOpen(false)} className={`px-3 py-2 rounded-lg text-[14px] font-semibold uppercase tracking-wider font-[family-name:var(--font-heading)] transition-all duration-200 ${pathname.startsWith('/portal') ? 'bg-[#CA8A04] text-white' : 'text-[#0000ff] hover:bg-[#CA8A04] hover:text-white'}`}>{dict.nav.portal}</Link>
-                <Link href="/inquiry" onClick={() => setMobileOpen(false)} className={`px-3 py-2 rounded-lg text-[14px] font-semibold uppercase tracking-wider font-[family-name:var(--font-heading)] transition-all duration-200 ${isActive('/inquiry') || pathname.startsWith('/inquiry') ? 'bg-[#CA8A04] text-white' : 'text-[#0000ff] hover:bg-[#CA8A04] hover:text-white'}`}>{dict.auth.cart}</Link>
+                <Link href="/inquiry" onClick={() => setMobileOpen(false)} className={`relative px-3 py-2 rounded-lg text-[14px] font-semibold uppercase tracking-wider font-[family-name:var(--font-heading)] transition-all duration-200 ${isActive('/inquiry') || pathname.startsWith('/inquiry') ? 'bg-[#CA8A04] text-white' : 'text-[#0000ff] hover:bg-[#CA8A04] hover:text-white'}`}>
+                  {dict.auth.cart}
+                  {cartCount !== null && cartCount > 0 && (
+                    <span className="absolute -top-1 -right-2 bg-red-500 text-white text-[10px] font-bold min-w-[17px] h-[17px] flex items-center justify-center rounded-full leading-none">
+                      {cartCount > 99 ? '99+' : cartCount}
+                    </span>
+                  )}
+                </Link>
                 <Link href="/quick-order" onClick={() => setMobileOpen(false)} className={`px-3 py-2 rounded-lg text-[14px] font-semibold uppercase tracking-wider font-[family-name:var(--font-heading)] transition-all duration-200 ${isActive('/quick-order') ? 'bg-[#CA8A04] text-white' : 'text-[#0000ff] hover:bg-[#CA8A04] hover:text-white'}`}>{dict.auth.quickOrder}</Link>
                 <button onClick={() => { handleLogout(); setMobileOpen(false) }} className="text-red-500 font-medium text-left hover:text-red-700 transition-colors cursor-pointer">{dict.auth.logoutButton}</button>
               </>

@@ -89,11 +89,10 @@ export const id = {
     title: 'Katalog Produk',
     subtitle: 'Jelajahi produk berkualitas tinggi untuk kebutuhan industri Anda.',
     accessLocked: 'Akses terkunci. Silakan login.',
-    addToSph: 'Tambah ke Daftar SPH',
+    addToCart: 'Tambah ke Keranjang',
     detail: 'Detail Produk',
     spesifikasi: 'Spesifikasi Teknis',
     sku: 'Kode SKU',
-    addToCart: 'Tambahkan ke Keranjang Inquiry',
   },
   auth: {
     loginTitle: 'Masuk',

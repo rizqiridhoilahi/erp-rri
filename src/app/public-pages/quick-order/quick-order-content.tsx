@@ -4,8 +4,18 @@ import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useCustomerAuth } from '@/lib/hooks/use-customer-auth'
 import Link from 'next/link'
-import Image from 'next/image'
 import * as XLSX from 'xlsx'
+import {
+  ShoppingCart,
+  Upload,
+  Loader2,
+  AlertCircle,
+  CheckCircle2,
+  Plus,
+  X,
+  Package,
+  Search,
+} from 'lucide-react'
 
 interface ProductLookup {
   id: string
@@ -136,15 +146,30 @@ export function QuickOrderContent() {
     }
   }
 
-  if (authLoading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="h-8 w-8 text-[#0369A1] animate-spin" />
+          <p className="text-sm text-[#64748B] font-[family-name:var(--font-body)]">Memuat...</p>
+        </div>
+      </div>
+    )
+  }
 
   if (!isLoggedIn) {
     return (
       <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center px-4 pt-20">
         <div className="max-w-md w-full bg-white rounded-2xl shadow-lg p-8 text-center">
+          <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
+            <ShoppingCart className="h-8 w-8 text-[#0369A1]" />
+          </div>
           <h1 className="text-2xl font-bold text-[#0B1528] mb-2 font-[family-name:var(--font-heading)]">Pesanan Cepat</h1>
           <p className="text-[#64748B] mb-6 font-[family-name:var(--font-body)]">Silakan login untuk menggunakan fitur pesanan cepat.</p>
-          <Link href="/customer-login" className="inline-block bg-[#0000ff] text-white px-8 py-3 rounded-lg font-bold hover:opacity-90 transition-all font-[family-name:var(--font-body)]">
+          <Link
+            href="/customer-login"
+            className="inline-block bg-[#0369A1] text-white px-8 py-3 rounded-lg font-bold hover:opacity-90 transition-all font-[family-name:var(--font-body)]"
+          >
             Masuk
           </Link>
         </div>
@@ -156,11 +181,17 @@ export function QuickOrderContent() {
     return (
       <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center px-4 pt-20">
         <div className="max-w-md w-full bg-white rounded-2xl shadow-lg p-8 text-center">
-          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <span className="text-green-600 text-3xl">✓</span>
+          <div className="w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-4">
+            <CheckCircle2 className="h-8 w-8 text-emerald-600" />
           </div>
           <h1 className="text-2xl font-bold text-[#0B1528] mb-2 font-[family-name:var(--font-heading)]">Berhasil!</h1>
-          <p className="text-[#64748B] font-[family-name:var(--font-body)]">Semua item ditambahkan ke keranjang inquiry. Mengarahkan...</p>
+          <p className="text-[#64748B] mb-4 font-[family-name:var(--font-body)]">
+            Semua item ditambahkan ke keranjang inquiry.
+          </p>
+          <div className="flex items-center justify-center gap-2 text-sm text-[#64748B] font-[family-name:var(--font-body)]">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            Mengarahkan ke halaman inquiry...
+          </div>
         </div>
       </div>
     )
@@ -175,17 +206,26 @@ export function QuickOrderContent() {
         </p>
 
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4 text-sm">{error}</div>
+          <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4 text-sm font-[family-name:var(--font-body)]">
+            <AlertCircle className="h-4 w-4 flex-shrink-0" />
+            {error}
+          </div>
         )}
 
-        <div className="bg-white rounded-xl shadow-sm p-4 mb-6 border-2 border-dashed border-[#CBD5E1]">
-          <label className="flex items-center gap-3 cursor-pointer hover:bg-[#F8FAFC] transition-colors rounded-lg p-2">
-            <span className="material-symbols-outlined text-[#0000ff] text-2xl">upload_file</span>
-            <div className="flex-1">
-              <p className="text-sm font-semibold text-[#0B1528] font-[family-name:var(--font-body)]">Upload Excel</p>
-              <p className="text-xs text-[#64748B] font-[family-name:var(--font-body)]">Upload file .xlsx dengan kolom: kode barang, quantity</p>
+        <div className="bg-white rounded-xl shadow-sm mb-6 border-2 border-dashed border-[#CBD5E1] transition-colors duration-200 hover:border-[#0369A1] hover:bg-blue-50/30">
+          <label className="flex items-center gap-4 p-5 cursor-pointer rounded-xl">
+            <div className="w-10 h-10 rounded-lg bg-[#0369A1]/10 flex items-center justify-center flex-shrink-0">
+              <Upload className="h-5 w-5 text-[#0369A1]" />
             </div>
-            <span className="text-xs text-[#0000ff] font-semibold font-[family-name:var(--font-body)]">Pilih File</span>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-[#0B1528] font-[family-name:var(--font-body)]">Upload Excel</p>
+              <p className="text-xs text-[#64748B] font-[family-name:var(--font-body)]">
+                Upload file .xlsx dengan kolom: kode barang, quantity
+              </p>
+            </div>
+            <span className="text-xs font-semibold bg-[#0369A1] text-white px-4 py-2 rounded-lg hover:opacity-90 transition-opacity font-[family-name:var(--font-body)]">
+              Pilih File
+            </span>
             <input
               type="file"
               accept=".xlsx,.xls"
@@ -198,66 +238,98 @@ export function QuickOrderContent() {
         <p className="text-xs text-[#64748B] mb-3 font-[family-name:var(--font-body)]">Atau masukkan manual:</p>
 
         <div className="space-y-3 mb-6">
-          {rows.map((row) => (
-            <div key={row.id} className="bg-white rounded-xl shadow-sm p-4">
-              <div className="flex items-center gap-3">
-                <div className="flex-1">
+          {rows.map((row, idx) => (
+            <div key={row.id} className="bg-white rounded-xl shadow-sm p-4 transition-shadow duration-200 hover:shadow-md">
+              <div className="flex items-start gap-3">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-xs text-[#94A3B8] font-semibold font-[family-name:var(--font-body)]">#{idx + 1}</span>
+                  </div>
                   <input
                     value={row.kode}
                     onChange={e => handleKodeChange(row.id, e.target.value)}
-                    placeholder="Kode barang..."
-                    className="w-full px-4 py-2.5 border border-[#CBD5E1] rounded-lg focus:ring-2 focus:ring-[#0000ff]/20 focus:border-[#0000ff] outline-none font-[family-name:var(--font-body)]"
+                    placeholder="Masukkan kode barang..."
+                    className="w-full px-4 py-2.5 border border-[#CBD5E1] rounded-lg focus:ring-2 focus:ring-[#0369A1]/20 focus:border-[#0369A1] outline-none text-sm font-[family-name:var(--font-body)] transition-shadow duration-200"
                   />
-                  {lookingUp[row.id] && <p className="text-xs text-[#64748B] mt-1">Mencari...</p>}
+                  {lookingUp[row.id] && (
+                    <div className="flex items-center gap-1.5 mt-2 text-xs text-[#64748B] font-[family-name:var(--font-body)]">
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                      Mencari produk...
+                    </div>
+                  )}
                   {!lookingUp[row.id] && lookups[row.id] && (
-                    <div className="flex items-center gap-2 mt-2 p-2 bg-[#F8FAFC] rounded-lg">
-                      <div className="w-8 h-8 rounded bg-[#F1F5F9] overflow-hidden flex-shrink-0">
+                    <div className="flex items-center gap-3 mt-2 p-2.5 bg-[#F8FAFC] rounded-lg border border-[#E2E8F0]">
+                      <div className="w-9 h-9 rounded-lg bg-[#F1F5F9] overflow-hidden flex-shrink-0 flex items-center justify-center">
                         {lookups[row.id]!.image_url ? (
-                          <Image src={lookups[row.id]!.image_url || ''} alt="" width={32} height={32} className="object-cover" />
-                        ) : null}
+                          <div
+                            className="w-full h-full bg-cover bg-center rounded-lg"
+                            style={{ backgroundImage: `url(${lookups[row.id]!.image_url})` }}
+                          />
+                        ) : (
+                          <Package className="h-4 w-4 text-[#94A3B8]" />
+                        )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-[#0B1528] truncate">{lookups[row.id]!.nama}</p>
-                        <p className="text-xs text-[#64748B]">{lookups[row.id]!.kode} | {lookups[row.id]!.satuan}</p>
+                        <p className="text-sm font-medium text-[#0B1528] truncate font-[family-name:var(--font-body)]">{lookups[row.id]!.nama}</p>
+                        <p className="text-xs text-[#64748B] font-[family-name:var(--font-body)]">{lookups[row.id]!.kode} &middot; {lookups[row.id]!.satuan}</p>
                       </div>
+                      <Search className="h-4 w-4 text-emerald-500 flex-shrink-0" />
                     </div>
                   )}
                   {!lookingUp[row.id] && row.kode && !lookups[row.id] && (
-                    <p className="text-xs text-red-500 mt-1">Produk tidak ditemukan</p>
+                    <div className="flex items-center gap-1.5 mt-2 text-xs text-red-500 font-[family-name:var(--font-body)]">
+                      <AlertCircle className="h-3 w-3" />
+                      Produk tidak ditemukan
+                    </div>
                   )}
                 </div>
-                <div>
-                  <input
-                    type="number"
-                    min={1}
-                    value={row.qty}
-                    onChange={e => setRows(prev => prev.map(r => r.id === row.id ? { ...r, qty: parseInt(e.target.value) || 1 } : r))}
-                    className="w-20 px-3 py-2.5 border border-[#CBD5E1] rounded-lg focus:ring-2 focus:ring-[#0000ff]/20 focus:border-[#0000ff] outline-none text-center font-[family-name:var(--font-body)]"
-                  />
+                <div className="flex items-start gap-2 pt-5">
+                  <div>
+                    <input
+                      type="number"
+                      min={1}
+                      inputMode="numeric"
+                      value={row.qty}
+                      onChange={e => setRows(prev => prev.map(r => r.id === row.id ? { ...r, qty: parseInt(e.target.value) || 1 } : r))}
+                      className="w-20 px-3 py-2.5 border border-[#CBD5E1] rounded-lg focus:ring-2 focus:ring-[#0369A1]/20 focus:border-[#0369A1] outline-none text-center text-sm font-[family-name:var(--font-body)] transition-shadow duration-200"
+                    />
+                  </div>
+                  {rows.length > 1 && (
+                    <button
+                      onClick={() => removeRow(row.id)}
+                      className="p-2 text-[#94A3B8] hover:text-red-500 hover:bg-red-50 rounded-lg transition-all duration-200 cursor-pointer"
+                      aria-label="Hapus baris"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  )}
                 </div>
-                {rows.length > 1 && (
-                  <button onClick={() => removeRow(row.id)} className="text-red-500 hover:text-red-700 p-2">
-                    <span>✕</span>
-                  </button>
-                )}
               </div>
             </div>
           ))}
         </div>
 
-        <div className="flex gap-3">
+        <div className="flex flex-col sm:flex-row gap-3">
           <button
             onClick={addRow}
-            className="px-6 py-3 border-2 border-[#0000ff] text-[#0000ff] rounded-lg font-bold hover:bg-[#0000ff]/5 transition-all font-[family-name:var(--font-body)]"
+            className="flex items-center justify-center gap-2 px-6 py-3 border-2 border-[#0369A1] text-[#0369A1] rounded-lg font-bold hover:bg-[#0369A1]/5 transition-all duration-200 font-[family-name:var(--font-body)] cursor-pointer"
           >
-            + Tambah Baris
+            <Plus className="h-4 w-4" />
+            Tambah Baris
           </button>
           <button
             onClick={handleAddAllToCart}
             disabled={adding || rows.some(r => !lookups[r.id]?.ditemukan)}
-            className="flex-1 bg-[#0000ff] text-white py-3 rounded-lg font-bold hover:opacity-90 transition-all disabled:opacity-50 font-[family-name:var(--font-body)]"
+            className="flex-1 flex items-center justify-center gap-2 bg-[#0369A1] text-white py-3 rounded-lg font-bold hover:opacity-90 transition-all disabled:opacity-50 font-[family-name:var(--font-body)] cursor-pointer"
           >
-            {adding ? 'Menambahkan...' : `Tambah ${rows.length} Item ke Keranjang`}
+            {adding ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Menambahkan...
+              </>
+            ) : (
+              `Tambah ${rows.length} Item ke Keranjang`
+            )}
           </button>
         </div>
 
