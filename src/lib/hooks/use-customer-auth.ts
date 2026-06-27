@@ -15,6 +15,7 @@ export function useCustomerAuth() {
   const [token, setToken] = useState<string | null>(null)
   const [profile, setProfile] = useState<CustomerProfile | null>(null)
   const [loading, setLoading] = useState(true)
+  const [profileLoading, setProfileLoading] = useState(true)
 
   useEffect(() => {
     ;(async () => {
@@ -46,34 +47,41 @@ export function useCustomerAuth() {
     }
   }, [])
 
+  const fetchProfile = useCallback(async (t: string) => {
+    setProfileLoading(true)
+    try {
+      const res = await fetch('/api/v1/public/auth/me', {
+        headers: { Authorization: `Bearer ${t}` },
+      })
+      if (!res.ok) {
+        const refreshed = await tryRefresh()
+        if (!refreshed) {
+          localStorage.removeItem('customer_token')
+          localStorage.removeItem('customer_refresh_token')
+          setToken(null)
+          setProfile(null)
+        }
+        return
+      }
+      const json = await res.json()
+      setProfile(json.data.profile)
+    } catch {
+      setProfile(null)
+    } finally {
+      setProfileLoading(false)
+    }
+  }, [tryRefresh])
+
   useEffect(() => {
     if (!token) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setProfileLoading(false)
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setProfile(null)
       return
     }
-    ;(async () => {
-      try {
-        const res = await fetch('/api/v1/public/auth/me', {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-        if (!res.ok) {
-          const refreshed = await tryRefresh()
-          if (!refreshed) {
-            localStorage.removeItem('customer_token')
-            localStorage.removeItem('customer_refresh_token')
-            setToken(null)
-            setProfile(null)
-          }
-          return
-        }
-        const json = await res.json()
-        setProfile(json.data.profile)
-      } catch {
-        setProfile(null)
-      }
-    })()
-  }, [token, tryRefresh])
+    fetchProfile(token)
+  }, [token, fetchProfile])
 
   const logout = useCallback(() => {
     fetch('/api/v1/public/auth/logout', { method: 'POST' }).catch(() => {})
@@ -83,5 +91,5 @@ export function useCustomerAuth() {
     setProfile(null)
   }, [])
 
-  return { token, profile, loading, logout, isLoggedIn: !!token && !!profile }
+  return { token, profile, loading, profileLoading, logout, isLoggedIn: !!token && !!profile }
 }

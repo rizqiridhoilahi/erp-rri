@@ -22,7 +22,22 @@ export async function GET(request: NextRequest) {
 
   if (error) return internalError(error)
 
-  return NextResponse.json({ data: items ?? [] })
+  const enriched = await Promise.all((items ?? []).map(async (item) => {
+    let imageUrl = item.barang?.image_url ?? null
+    if (!imageUrl && item.barang_id) {
+      const { data: primaryGambar } = await supabaseAdmin
+        .from('barang_gambar')
+        .select('url')
+        .eq('barang_id', item.barang_id)
+        .order('urutan', { ascending: true })
+        .limit(1)
+        .maybeSingle()
+      if (primaryGambar?.url) imageUrl = primaryGambar.url
+    }
+    return { ...item, barang: { ...item.barang, image_url: imageUrl } }
+  }))
+
+  return NextResponse.json({ data: enriched })
 }
 
 export async function POST(request: NextRequest) {

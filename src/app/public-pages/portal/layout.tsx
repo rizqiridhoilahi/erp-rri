@@ -7,7 +7,7 @@ import { PortalSidebar } from './components/sidebar'
 import { PortalTopbar } from './components/topbar'
 
 export default function PortalLayout({ children }: { children: ReactNode }) {
-  const { isLoggedIn, loading } = useCustomerAuth()
+  const { isLoggedIn, loading, profileLoading } = useCustomerAuth()
   const router = useRouter()
   const [mounted, setMounted] = useState(false)
 
@@ -16,14 +16,14 @@ export default function PortalLayout({ children }: { children: ReactNode }) {
     return () => clearTimeout(timeout)
   }, [])
 
-  const shouldRedirect = mounted && !loading && !isLoggedIn
+  const shouldRedirect = mounted && !loading && !profileLoading && !isLoggedIn
   useEffect(() => {
     if (shouldRedirect) {
       router.replace('/customer-login')
     }
   }, [shouldRedirect, router])
 
-  if (!mounted || loading) {
+  if (!mounted || loading || profileLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC]">
         <div className="flex flex-col items-center gap-3">
