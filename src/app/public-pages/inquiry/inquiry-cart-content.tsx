@@ -306,7 +306,7 @@ export function InquiryCartContent() {
                     required
                     value={perihal}
                     onChange={e => { setPerihal(e.target.value); setPerihalError(false) }}
-                    className={`w-full px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-[#0369A1]/20 outline-none transition-all duration-150 font-['Nunito_Sans'] placeholder:text-slate-400 ${
+                    className={`w-full px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-[#0369A1]/20 outline-none transition-all duration-150 font-['Nunito_Sans'] text-[#0F172A] caret-[#0F172A] placeholder:text-slate-400 ${
                       perihalError ? 'border-red-400 focus:ring-red-200' : 'border-slate-200 focus:border-[#0369A1]'
                     }`}
                     placeholder="Permintaan Penawaran untuk..."
@@ -321,7 +321,7 @@ export function InquiryCartContent() {
                     value={keterangan}
                     onChange={e => setKeterangan(e.target.value)}
                     rows={3}
-                    className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#0369A1]/20 focus:border-[#0369A1] outline-none transition-all duration-150 font-['Nunito_Sans'] placeholder:text-slate-400 resize-none"
+                    className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#0369A1]/20 focus:border-[#0369A1] outline-none transition-all duration-150 font-['Nunito_Sans'] text-[#0F172A] caret-[#0F172A] placeholder:text-slate-400 resize-none"
                     placeholder="Informasi tambahan untuk tim kami..."
                   />
                 </div>

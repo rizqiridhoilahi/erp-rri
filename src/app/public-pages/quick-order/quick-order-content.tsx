@@ -249,7 +249,7 @@ export function QuickOrderContent() {
                     value={row.kode}
                     onChange={e => handleKodeChange(row.id, e.target.value)}
                     placeholder="Masukkan kode barang..."
-                    className="w-full px-4 py-2.5 border border-[#CBD5E1] rounded-lg focus:ring-2 focus:ring-[#0369A1]/20 focus:border-[#0369A1] outline-none text-sm font-[family-name:var(--font-body)] transition-shadow duration-200"
+                    className="w-full px-4 py-2.5 border border-[#CBD5E1] rounded-lg focus:ring-2 focus:ring-[#0369A1]/20 focus:border-[#0369A1] outline-none text-sm text-[#0F172A] caret-[#0F172A] font-[family-name:var(--font-body)] transition-shadow duration-200"
                   />
                   {lookingUp[row.id] && (
                     <div className="flex items-center gap-1.5 mt-2 text-xs text-[#64748B] font-[family-name:var(--font-body)]">
@@ -291,7 +291,7 @@ export function QuickOrderContent() {
                       inputMode="numeric"
                       value={row.qty}
                       onChange={e => setRows(prev => prev.map(r => r.id === row.id ? { ...r, qty: parseInt(e.target.value) || 1 } : r))}
-                      className="w-20 px-3 py-2.5 border border-[#CBD5E1] rounded-lg focus:ring-2 focus:ring-[#0369A1]/20 focus:border-[#0369A1] outline-none text-center text-sm font-[family-name:var(--font-body)] transition-shadow duration-200"
+                      className="w-20 px-3 py-2.5 border border-[#CBD5E1] rounded-lg focus:ring-2 focus:ring-[#0369A1]/20 focus:border-[#0369A1] outline-none text-center text-sm text-[#0F172A] caret-[#0F172A] font-[family-name:var(--font-body)] transition-shadow duration-200"
                     />
                   </div>
                   {rows.length > 1 && (

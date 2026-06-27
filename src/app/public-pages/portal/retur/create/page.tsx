@@ -170,7 +170,7 @@ export default function CreateReturPage() {
             <select
               value={selectedDoId}
               onChange={e => setSelectedDoId(e.target.value)}
-              className="w-full px-4 py-2.5 border border-[#CBD5E1] rounded-lg focus:ring-2 focus:ring-[#0000ff]/20 focus:border-[#0000ff] outline-none font-[family-name:var(--font-body)]"
+              className="w-full px-4 py-2.5 border border-[#CBD5E1] rounded-lg focus:ring-2 focus:ring-[#0000ff]/20 focus:border-[#0000ff] outline-none text-[#0F172A] font-[family-name:var(--font-body)]"
             >
               <option value="">-- Pilih DO --</option>
               {dos.map(doItem => (
@@ -203,7 +203,7 @@ export default function CreateReturPage() {
                           max={maxQty}
                           value={ri?.jumlah ?? 0}
                           onChange={e => updateReturItem(item.barang_id, 'jumlah', Math.min(Math.max(0, parseInt(e.target.value) || 0), maxQty))}
-                          className="w-20 px-3 py-2 border border-[#CBD5E1] rounded-lg text-center text-sm font-[family-name:var(--font-body)]"
+                          className="w-20 px-3 py-2 border border-[#CBD5E1] rounded-lg text-center text-sm text-[#0F172A] caret-[#0F172A] font-[family-name:var(--font-body)]"
                         />
                       </div>
                     </div>
@@ -212,7 +212,7 @@ export default function CreateReturPage() {
                         value={ri.keterangan}
                         onChange={e => updateReturItem(item.barang_id, 'keterangan', e.target.value)}
                         placeholder="Alasan retur (opsional)"
-                        className="w-full px-3 py-2 border border-[#CBD5E1] rounded-lg text-sm mt-2 font-[family-name:var(--font-body)]"
+                        className="w-full px-3 py-2 border border-[#CBD5E1] rounded-lg text-sm mt-2 text-[#0F172A] caret-[#0F172A] font-[family-name:var(--font-body)]"
                       />
                     )}
                   </div>
@@ -231,7 +231,7 @@ export default function CreateReturPage() {
                 onChange={e => setKeterangan(e.target.value)}
                 placeholder="Catatan tambahan (opsional)"
                 rows={3}
-                className="w-full px-4 py-2.5 border border-[#CBD5E1] rounded-lg focus:ring-2 focus:ring-[#0000ff]/20 focus:border-[#0000ff] outline-none font-[family-name:var(--font-body)]"
+                className="w-full px-4 py-2.5 border border-[#CBD5E1] rounded-lg focus:ring-2 focus:ring-[#0000ff]/20 focus:border-[#0000ff] outline-none text-[#0F172A] caret-[#0F172A] font-[family-name:var(--font-body)]"
               />
             </div>
             <div>
@@ -240,7 +240,7 @@ export default function CreateReturPage() {
                 type="file"
                 accept="image/*"
                 onChange={e => setSelectedFile(e.target.files?.[0] ?? null)}
-                className="w-full text-sm font-[family-name:var(--font-body)]"
+                className="w-full text-sm text-[#0F172A] font-[family-name:var(--font-body)]"
               />
               <p className="text-xs text-[#64748B] mt-1">Upload foto barang yang akan diretur (opsional).</p>
             </div>
