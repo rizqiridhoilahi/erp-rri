@@ -28,7 +28,7 @@ export function LoginForm() {
       }
       localStorage.setItem('customer_token', json.data.access_token)
       localStorage.setItem('customer_refresh_token', json.data.refresh_token)
-      router.push('/')
+      router.push('/portal')
       router.refresh()
     } catch {
       setError('Terjadi kesalahan. Silakan coba lagi.')

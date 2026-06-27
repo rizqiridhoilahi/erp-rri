@@ -57,7 +57,7 @@ export function PortalSidebar() {
 
       <div className="px-3 py-6 border-t border-white/10 space-y-1">
         <Link
-          href="/portal"
+          href="/portal/settings"
           className="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm text-[#b9c8de] hover:text-white hover:bg-white/10 transition-all"
         >
           <span className="material-symbols-outlined text-[20px]">settings</span>

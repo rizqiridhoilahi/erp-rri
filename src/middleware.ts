@@ -18,8 +18,8 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // Host detection: pt-rri.com → rewrite to public-pages/
-  if (host === 'pt-rri.com' || host === 'www.pt-rri.com') {
+  // Host detection: pt-rri.com or localhost → rewrite to public-pages/
+  if (host === 'pt-rri.com' || host === 'www.pt-rri.com' || host === 'localhost:3000') {
     const url = new URL('/public-pages' + pathname, request.url)
     url.search = request.nextUrl.search
     return NextResponse.rewrite(url)

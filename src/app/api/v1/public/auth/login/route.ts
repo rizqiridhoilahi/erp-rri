@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { createClient } from '@supabase/supabase-js'
-import { badRequest, unauthorized, internalError } from '@/lib/api/errors'
+import { supabaseAdmin } from '@/lib/api/supabase-server'
+import { badRequest, unauthorized, forbidden, internalError } from '@/lib/api/errors'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -32,6 +33,16 @@ export async function POST(request: NextRequest) {
       return unauthorized('Email atau password salah')
     }
     return internalError(error)
+  }
+
+  const { data: profile } = await supabaseAdmin
+    .from('customer_profiles')
+    .select('status_verifikasi')
+    .eq('auth_user_id', data.user.id)
+    .maybeSingle()
+
+  if (profile && profile.status_verifikasi !== 'approved') {
+    return forbidden('Akun belum disetujui. Silakan hubungi admin.')
   }
 
   return NextResponse.json({

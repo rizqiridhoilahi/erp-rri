@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
       customer_id: auth.profile.customer_id,
       tanggal: now,
       perihal: parsed.data.perihal || 'Permintaan Penawaran dari Portal',
-      status: 'draft',
+      status: 'pending',
       keterangan: parsed.data.keterangan ?? null,
       created_at: now,
       updated_at: now,

@@ -57,7 +57,7 @@ export async function PUT(request: NextRequest) {
   }
 
   if (parsed.data.action === 'approve') {
-    let customerId = parsed.data.customer_id
+    let customerId = parsed.data.customer_id || profile.customer_id
 
     if (!customerId) {
       const { data: newCustomer } = await supabaseAdmin

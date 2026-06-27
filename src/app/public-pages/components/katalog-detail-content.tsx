@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useSearchParams, useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
@@ -37,12 +37,15 @@ export function KatalogDetailContent() {
   const dict = getDictionary(lang)
 
   const router = useRouter()
-  const { isLoggedIn, token } = useCustomerAuth()
+  const { isLoggedIn, token, profile } = useCustomerAuth()
   const [product, setProduct] = useState<ProductDetail | null>(null)
   const [loading, setLoading] = useState(true)
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [addingToCart, setAddingToCart] = useState(false)
+  const [actionFeedback, setActionFeedback] = useState('')
+  const imageContainerRef = useRef<HTMLDivElement>(null)
+  const [zoom, setZoom] = useState({ show: false, x: 0, y: 0, bgX: 0, bgY: 0 })
 
   useEffect(() => {
     if (!id) return
@@ -122,7 +125,7 @@ export function KatalogDetailContent() {
     if (g.url && !images.includes(g.url)) images.push(g.url)
   }
   if (product.image_url && !images.includes(product.image_url)) {
-    product.image_url && images.push(product.image_url)
+    images.push(product.image_url)
   }
 
   const kategoriNama = Array.isArray(product.kategori_barang)
@@ -158,18 +161,50 @@ export function KatalogDetailContent() {
                 initial={{ opacity: 0.6 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.3 }}
-                className="bg-white rounded-xl border border-[#c5c4db]/20 p-6 flex items-center justify-center min-h-[400px]"
+                className="bg-white rounded-xl border border-[#c5c4db]/20 p-0 overflow-hidden min-h-[400px]"
+                ref={imageContainerRef}
               >
                 {selectedImage ? (
-                  <img
-                    src={selectedImage}
-                    alt={product.nama}
-                    className="max-h-[400px] w-full object-contain"
-                  />
+                  <div
+                    className="relative w-full min-h-[400px] cursor-crosshair"
+                    onMouseMove={(e) => {
+                      const rect = imageContainerRef.current?.getBoundingClientRect()
+                      if (!rect) return
+                      const x = ((e.clientX - rect.left) / rect.width) * 100
+                      const y = ((e.clientY - rect.top) / rect.height) * 100
+                      setZoom({ show: true, x: e.clientX - rect.left, y: e.clientY - rect.top, bgX: x, bgY: y })
+                    }}
+                    onMouseEnter={() => setZoom(z => ({ ...z, show: true }))}
+                    onMouseLeave={() => setZoom(z => ({ ...z, show: false }))}
+                  >
+                    <img
+                      src={selectedImage}
+                      alt={product.nama}
+                      className="w-full h-full min-h-[400px] object-contain"
+                      draggable={false}
+                    />
+                    {zoom.show && (
+                      <div
+                        className="absolute pointer-events-none border-2 border-[#0000ff]/30 rounded-full"
+                        style={{
+                          width: 120,
+                          height: 120,
+                          left: zoom.x - 60,
+                          top: zoom.y - 60,
+                          backgroundImage: `url(${selectedImage})`,
+                          backgroundSize: '250%',
+                          backgroundPosition: `${zoom.bgX}% ${zoom.bgY}%`,
+                          boxShadow: '0 0 0 9999px rgba(0,0,0,0.3)',
+                        }}
+                      />
+                    )}
+                  </div>
                 ) : (
-                  <svg className="w-16 h-16 text-[#94A3B8]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                    </svg>
+                  <div className="flex items-center justify-center min-h-[400px]">
+                    <svg className="w-16 h-16 text-[#94A3B8]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                      </svg>
+                  </div>
                 )}
               </motion.div>
               {images.length > 1 && (
@@ -251,21 +286,38 @@ export function KatalogDetailContent() {
                 </div>
               )}
 
-              <div className="flex gap-4 pt-4">
+              {actionFeedback && (
+                <div className="bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 rounded-lg text-[14px] font-[family-name:var(--font-body)]">
+                  {actionFeedback}
+                </div>
+              )}
+              <div className="flex gap-4">
                 <motion.button
-                  onClick={() => {
+                  onClick={async () => {
+                    setActionFeedback('')
                     if (!isLoggedIn) { router.push('/customer-login'); return }
-                    ;(async () => {
-                      setAddingToCart(true)
-                      try {
-                        await fetch('/api/v1/public/cart', {
-                          method: 'POST',
-                          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-                          body: JSON.stringify({ barang_id: product.id, quantity: 1 }),
-                        })
-                        router.push('/inquiry')
-                      } catch {} finally { setAddingToCart(false) }
-                    })()
+                    if (profile?.status_verifikasi !== 'approved') {
+                      setActionFeedback('Akun Anda belum disetujui admin. Silakan tunggu konfirmasi.')
+                      return
+                    }
+                    setAddingToCart(true)
+                    try {
+                      const res = await fetch('/api/v1/public/cart', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                        body: JSON.stringify({ barang_id: product.id, quantity: 1 }),
+                      })
+                      if (!res.ok) {
+                        const err = await res.json().catch(() => ({ error: 'Gagal menambahkan' }))
+                        setActionFeedback(err.error || 'Gagal menambahkan ke keranjang')
+                        return
+                      }
+                      router.push('/inquiry')
+                    } catch {
+                      setActionFeedback('Terjadi kesalahan jaringan')
+                    } finally {
+                      setAddingToCart(false)
+                    }
                   }}
                   disabled={addingToCart}
                   whileHover={{ opacity: 0.9 }}
@@ -276,18 +328,31 @@ export function KatalogDetailContent() {
                   {addingToCart ? 'Memproses...' : dict.katalog.addToSph}
                 </motion.button>
                 <motion.button
-                  onClick={() => {
+                  onClick={async () => {
+                    setActionFeedback('')
                     if (!isLoggedIn) { router.push('/customer-login'); return }
-                    ;(async () => {
-                      setAddingToCart(true)
-                      try {
-                        await fetch('/api/v1/public/cart', {
-                          method: 'POST',
-                          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-                          body: JSON.stringify({ barang_id: product.id, quantity: 1 }),
-                        })
-                      } catch {} finally { setAddingToCart(false) }
-                    })()
+                    if (profile?.status_verifikasi !== 'approved') {
+                      setActionFeedback('Akun Anda belum disetujui admin. Silakan tunggu konfirmasi.')
+                      return
+                    }
+                    setAddingToCart(true)
+                    try {
+                      const res = await fetch('/api/v1/public/cart', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                        body: JSON.stringify({ barang_id: product.id, quantity: 1 }),
+                      })
+                      if (!res.ok) {
+                        const err = await res.json().catch(() => ({ error: 'Gagal menambahkan' }))
+                        setActionFeedback(err.error || 'Gagal menambahkan ke keranjang')
+                        return
+                      }
+                      setActionFeedback('Berhasil ditambahkan ke keranjang inquiry')
+                    } catch {
+                      setActionFeedback('Terjadi kesalahan jaringan')
+                    } finally {
+                      setAddingToCart(false)
+                    }
                   }}
                   disabled={addingToCart}
                   whileHover={{ backgroundColor: 'rgba(0,0,255,0.05)' }}

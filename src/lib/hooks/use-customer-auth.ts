@@ -24,11 +24,32 @@ export function useCustomerAuth() {
     })()
   }, [])
 
+  const tryRefresh = useCallback(async () => {
+    const rt = localStorage.getItem('customer_refresh_token')
+    if (!rt) return false
+    try {
+      const res = await fetch('/api/v1/public/auth/refresh', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refresh_token: rt }),
+      })
+      if (!res.ok) return false
+      const json = await res.json()
+      localStorage.setItem('customer_token', json.data.access_token)
+      if (json.data.refresh_token) {
+        localStorage.setItem('customer_refresh_token', json.data.refresh_token)
+      }
+      setToken(json.data.access_token)
+      return true
+    } catch {
+      return false
+    }
+  }, [])
+
   useEffect(() => {
     if (!token) {
-      ;(async () => {
-        setProfile(null)
-      })()
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setProfile(null)
       return
     }
     ;(async () => {
@@ -37,10 +58,13 @@ export function useCustomerAuth() {
           headers: { Authorization: `Bearer ${token}` },
         })
         if (!res.ok) {
-          localStorage.removeItem('customer_token')
-          localStorage.removeItem('customer_refresh_token')
-          setToken(null)
-          setProfile(null)
+          const refreshed = await tryRefresh()
+          if (!refreshed) {
+            localStorage.removeItem('customer_token')
+            localStorage.removeItem('customer_refresh_token')
+            setToken(null)
+            setProfile(null)
+          }
           return
         }
         const json = await res.json()
@@ -49,9 +73,10 @@ export function useCustomerAuth() {
         setProfile(null)
       }
     })()
-  }, [token])
+  }, [token, tryRefresh])
 
   const logout = useCallback(() => {
+    fetch('/api/v1/public/auth/logout', { method: 'POST' }).catch(() => {})
     localStorage.removeItem('customer_token')
     localStorage.removeItem('customer_refresh_token')
     setToken(null)
