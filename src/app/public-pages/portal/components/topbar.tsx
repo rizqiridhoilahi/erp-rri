@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { Bell, LogOut } from 'lucide-react'
 import { useCustomerAuth } from '@/lib/hooks/use-customer-auth'
 
 export function PortalTopbar() {
@@ -17,7 +18,7 @@ export function PortalTopbar() {
 
       <div className="flex items-center gap-4">
         <button className="p-2 hover:bg-[#eceef0]/50 rounded-full transition-all text-[#454558]">
-          <span className="material-symbols-outlined text-[22px]">notifications</span>
+          <Bell className="w-[22px] h-[22px]" />
         </button>
         <div className="h-8 w-px bg-[#c5c4db]/30 mx-1"></div>
         <div className="relative">
@@ -45,7 +46,7 @@ export function PortalTopbar() {
                   onClick={() => logout()}
                   className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
                 >
-                  <span className="material-symbols-outlined text-[20px]">logout</span>
+                  <LogOut className="w-5 h-5" />
                   Logout
                 </button>
               </div>

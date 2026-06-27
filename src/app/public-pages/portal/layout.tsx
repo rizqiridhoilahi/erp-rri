@@ -75,7 +75,7 @@ export default function PortalLayout({ children }: { children: ReactNode }) {
       <PortalSidebar />
       <PortalTopbar />
       <main className="pt-16 lg:pl-64 min-h-screen">
-        <div className="px-4 lg:px-10 py-6 max-w-[1280px] mx-auto">
+        <div className="px-4 lg:px-10 py-6 pb-8 max-w-[1280px] mx-auto">
           {children}
         </div>
       </main>

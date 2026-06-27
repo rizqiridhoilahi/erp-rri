@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { ChevronRight, Undo2, ChevronUp, ChevronDown, Waypoints, Check, Clock, Truck, CheckCheck } from 'lucide-react'
 import { getDictionary } from '@/lib/i18n'
 import { useCustomerAuth } from '@/lib/hooks/use-customer-auth'
 import { Skeleton } from '@/components/skeleton'
@@ -24,6 +25,13 @@ interface ReturEntry {
   keterangan: string | null
   delivery_order: { nomor: string } | null
   items: ReturItem[]
+}
+
+const stepIconMap: Record<string, React.ElementType> = {
+  check: Check,
+  pending: Clock,
+  local_shipping: Truck,
+  done_all: CheckCheck,
 }
 
 export default function PortalReturPage() {
@@ -86,7 +94,7 @@ export default function PortalReturPage() {
         <div>
           <nav className="flex items-center gap-2 text-xs text-[#555e75] mb-2">
             <span>{dict.portal.dashboard}</span>
-            <span className="material-symbols-outlined text-[14px]">chevron_right</span>
+            <ChevronRight className="w-3.5 h-3.5" />
             <span className="text-[#0001bb] font-medium">{dict.portal.retur}</span>
           </nav>
           <h1 className="text-2xl font-bold text-[#0B1528] font-[family-name:var(--font-heading)]">{dict.portal.retur}</h1>
@@ -112,7 +120,7 @@ export default function PortalReturPage() {
         </div>
       ) : returs.length === 0 ? (
         <div className="bg-white/80 backdrop-blur-[12px] border border-[#c5c4db]/30 rounded-xl p-12 text-center shadow-sm">
-          <span className="material-symbols-outlined text-5xl text-[#757589] mb-3">assignment_return</span>
+          <Undo2 className="w-12 h-12 text-[#757589] mx-auto mb-3" />
           <p className="text-sm text-[#64748B] font-[family-name:var(--font-body)]">{dict.portal.noDocuments}</p>
         </div>
       ) : (
@@ -137,9 +145,11 @@ export default function PortalReturPage() {
                 </div>
                 <div className="flex items-center gap-3">
                   {statusBadge(retur.status)}
-                  <span className="material-symbols-outlined text-[#757589]">
-                    {selectedRetur?.id === retur.id ? 'expand_less' : 'expand_more'}
-                  </span>
+                  {selectedRetur?.id === retur.id ? (
+                    <ChevronUp className="w-5 h-5 text-[#757589]" />
+                  ) : (
+                    <ChevronDown className="w-5 h-5 text-[#757589]" />
+                  )}
                 </div>
               </button>
 
@@ -188,11 +198,12 @@ export default function PortalReturPage() {
                     <div>
                       <div className="bg-white border border-[#c5c4db]/30 rounded-xl p-5 sticky top-24">
                         <h4 className="text-sm font-semibold text-[#0B1528] mb-6 flex items-center gap-2 font-[family-name:var(--font-heading)]">
-                          <span className="material-symbols-outlined text-[#0001bb]">timeline</span>
+                          <Waypoints className="w-5 h-5 text-[#0001bb]" />
                           {dict.portal.returnProgress}
                         </h4>
                         <div className="relative space-y-8 pl-2">
                           {stepConfig.map((step, idx) => {
+                            const StepIcon = stepIconMap[step.icon]
                             const currentStep = statusToStep(retur.status)
                             const isActive = idx <= currentStep
                             const isLast = idx === stepConfig.length - 1
@@ -206,9 +217,7 @@ export default function PortalReturPage() {
                                     ? 'bg-[#0001bb] border-[#e0e0ff] shadow-md'
                                     : 'bg-[#c5c4db] border-white shadow-sm'
                                 }`}>
-                                  <span className="material-symbols-outlined text-white text-[12px]" style={{ fontVariationSettings: "'FILL' 1" }}>
-                                    {step.icon}
-                                  </span>
+                                  <StepIcon className="w-3 h-3 text-white" />
                                 </div>
                                 <div className={`-mt-0.5 ${isActive ? '' : 'opacity-40'}`}>
                                   <p className={`text-sm font-semibold ${isActive ? 'text-[#0001bb]' : 'text-[#0B1528]'} font-[family-name:var(--font-body)]`}>

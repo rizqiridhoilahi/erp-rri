@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { ChevronRight, FileText, Download, ChevronLeft } from 'lucide-react'
 import { getDictionary } from '@/lib/i18n'
 import { useCustomerAuth } from '@/lib/hooks/use-customer-auth'
 import { Skeleton, SkeletonTableRow } from '@/components/skeleton'
@@ -112,7 +113,7 @@ export default function PortalDokumenPage() {
         <div>
           <nav className="flex items-center gap-2 text-xs text-[#555e75] mb-2">
             <span>{dict.portal.dashboard}</span>
-            <span className="material-symbols-outlined text-[14px]">chevron_right</span>
+            <ChevronRight className="w-3.5 h-3.5" />
             <span className="text-[#0001bb] font-medium">{dict.portal.dokumen}</span>
           </nav>
           <h1 className="text-2xl font-bold text-[#0B1528] font-[family-name:var(--font-heading)]">{dict.portal.dokumen}</h1>
@@ -180,7 +181,7 @@ export default function PortalDokumenPage() {
           </div>
         ) : !data || data.documents.length === 0 ? (
           <div className="flex flex-col items-center justify-center p-12 text-center">
-            <span className="material-symbols-outlined text-5xl text-[#757589] mb-3">description</span>
+            <FileText className="w-12 h-12 text-[#757589] mb-3" />
             <p className="text-sm text-[#64748B] font-[family-name:var(--font-body)]">{dict.portal.noDocuments}</p>
           </div>
         ) : (
@@ -223,7 +224,7 @@ export default function PortalDokumenPage() {
                           className="p-1.5 rounded-full hover:bg-[#f2f4f6] text-[#555e75] transition-colors"
                           title="Download"
                         >
-                          <span className="material-symbols-outlined text-[18px]">download</span>
+                          <Download className="w-[18px] h-[18px]" />
                         </button>
                       </div>
                     </td>
@@ -245,7 +246,7 @@ export default function PortalDokumenPage() {
                 disabled={page === 1}
                 className="p-1.5 rounded-lg border border-[#c5c4db] hover:bg-white transition-colors disabled:opacity-30"
               >
-                <span className="material-symbols-outlined text-[18px]">chevron_left</span>
+                <ChevronLeft className="w-[18px] h-[18px]" />
               </button>
               <span className="px-2 text-sm text-[#555e75] font-[family-name:var(--font-body)]">{page}</span>
               <button
@@ -253,7 +254,7 @@ export default function PortalDokumenPage() {
                 disabled={!data.hasMore}
                 className="p-1.5 rounded-lg border border-[#c5c4db] hover:bg-white transition-colors disabled:opacity-30"
               >
-                <span className="material-symbols-outlined text-[18px]">chevron_right</span>
+                <ChevronRight className="w-[18px] h-[18px]" />
               </button>
             </div>
           </div>

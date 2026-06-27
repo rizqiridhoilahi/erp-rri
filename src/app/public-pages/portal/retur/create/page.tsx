@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { ChevronRight } from 'lucide-react'
 import { useCustomerAuth } from '@/lib/hooks/use-customer-auth'
 
 interface DOOption {
@@ -145,7 +146,7 @@ export default function CreateReturPage() {
     <div>
       <div className="flex items-center gap-2 text-xs text-[#555e75] mb-4">
         <button onClick={() => router.push('/portal/retur')} className="hover:text-[#0001bb]">Retur</button>
-        <span className="material-symbols-outlined text-[14px]">chevron_right</span>
+        <ChevronRight className="w-3.5 h-3.5" />
         <span className="text-[#0001bb] font-medium">Buat Retur Baru</span>
       </div>
 

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { FileSearch, FileText, ShieldCheck, Undo2 } from 'lucide-react'
 import { getDictionary } from '@/lib/i18n'
 import { useCustomerAuth } from '@/lib/hooks/use-customer-auth'
 import { Skeleton, SkeletonCard } from '@/components/skeleton'
@@ -98,9 +99,9 @@ export default function PortalDashboardPage() {
   const statusColor = data.profile.status_verifikasi === 'approved' ? 'text-green-600 bg-green-50' : 'text-yellow-600 bg-yellow-50'
 
   const quickActions = [
-    { href: '/portal/dokumen', icon: 'description', label: dict.portal.viewDocuments },
-    { href: '/portal/sph-history', icon: 'request_quote', label: dict.portal.viewSphHistory },
-    { href: '/portal/retur', icon: 'assignment_return', label: dict.portal.submitReturn },
+    { href: '/portal/dokumen', icon: FileText, label: dict.portal.viewDocuments },
+    { href: '/portal/sph-history', icon: FileSearch, label: dict.portal.viewSphHistory },
+    { href: '/portal/retur', icon: Undo2, label: dict.portal.submitReturn },
   ]
 
   return (
@@ -123,7 +124,7 @@ export default function PortalDashboardPage() {
         <div className="bg-white/80 backdrop-blur-[12px] border border-[#c5c4db]/30 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
           <div className="flex justify-between items-start mb-4">
             <div className="w-12 h-12 rounded-lg bg-[#0001bb]/10 flex items-center justify-center text-[#0001bb]">
-              <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>request_quote</span>
+              <FileSearch className="w-6 h-6" />
             </div>
           </div>
           <h3 className="text-xs uppercase tracking-wider text-[#555e75] mb-1 font-[family-name:var(--font-body)]">{dict.portal.activeRfq}</h3>
@@ -134,7 +135,7 @@ export default function PortalDashboardPage() {
         <div className="bg-white/80 backdrop-blur-[12px] border border-[#c5c4db]/30 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
           <div className="flex justify-between items-start mb-4">
             <div className="w-12 h-12 rounded-lg bg-[#283648]/10 flex items-center justify-center text-[#283648]">
-              <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>description</span>
+              <FileText className="w-6 h-6" />
             </div>
           </div>
           <h3 className="text-xs uppercase tracking-wider text-[#555e75] mb-1 font-[family-name:var(--font-body)]">{dict.portal.readyDocuments}</h3>
@@ -145,7 +146,7 @@ export default function PortalDashboardPage() {
         <div className="bg-white/80 backdrop-blur-[12px] border border-[#c5c4db]/30 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
           <div className="flex justify-between items-start mb-4">
             <div className="w-12 h-12 rounded-lg bg-green-100 flex items-center justify-center text-green-700">
-              <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>verified_user</span>
+              <ShieldCheck className="w-6 h-6" />
             </div>
           </div>
           <h3 className="text-xs uppercase tracking-wider text-[#555e75] mb-1 font-[family-name:var(--font-body)]">{dict.portal.accountStatus}</h3>
@@ -185,18 +186,21 @@ export default function PortalDashboardPage() {
         <div className="bg-white/80 backdrop-blur-[12px] border border-[#c5c4db]/30 rounded-xl p-6 shadow-sm">
           <h2 className="text-lg font-bold text-[#0B1528] mb-4 font-[family-name:var(--font-heading)]">{dict.portal.quickActions}</h2>
           <div className="space-y-3">
-            {quickActions.map(action => (
-              <Link
-                key={action.href}
-                href={action.href}
-                className="flex items-center gap-3 p-3 rounded-lg bg-[#f2f4f6] hover:bg-[#e0e3e5] transition-colors group"
-              >
-                <span className="material-symbols-outlined text-[#0001bb]">{action.icon}</span>
-                <span className="text-sm font-medium text-[#0B1528] font-[family-name:var(--font-body)] group-hover:text-[#0001bb] transition-colors">
-                  {action.label}
-                </span>
-              </Link>
-            ))}
+            {quickActions.map(action => {
+              const Icon = action.icon
+              return (
+                <Link
+                  key={action.href}
+                  href={action.href}
+                  className="flex items-center gap-3 p-3 rounded-lg bg-[#f2f4f6] hover:bg-[#e0e3e5] transition-colors group"
+                >
+                  <Icon className="w-5 h-5 text-[#0001bb]" />
+                  <span className="text-sm font-medium text-[#0B1528] font-[family-name:var(--font-body)] group-hover:text-[#0001bb] transition-colors">
+                    {action.label}
+                  </span>
+                </Link>
+              )
+            })}
           </div>
         </div>
       </div>
