@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, FileText, FileSearch, Undo2 } from 'lucide-react'
+import { LayoutDashboard, FileText, FileSearch, Undo2, ShoppingCart } from 'lucide-react'
 import { getDictionary } from '@/lib/i18n'
 import { LocaleSwitcher } from './locale-switcher'
 import { useCustomerAuth } from '@/lib/hooks/use-customer-auth'
@@ -143,15 +143,16 @@ export function PublicNavbar() {
               </div>
               <Link
                 href="/inquiry"
-                className={`relative px-3 py-1.5 rounded-lg text-[14px] font-semibold uppercase tracking-wider font-[family-name:var(--font-heading)] transition-all duration-200 ${
-                  isActive('/inquiry') || isActive('/inquiry/konfirmasi') || pathname.startsWith('/inquiry')
-                    ? 'bg-[#CA8A04] text-white'
+                className={`relative p-2 rounded-lg transition-all duration-200 ${
+                  isActive('/inquiry') || pathname.startsWith('/inquiry')
+                    ? 'text-white bg-[#CA8A04]'
                     : 'text-[#0000ff] hover:bg-[#CA8A04] hover:text-white'
                 }`}
+                title={dict.auth.cart}
               >
-                {dict.auth.cart}
+                <ShoppingCart className="w-5 h-5" />
                 {cartCount !== null && cartCount > 0 && (
-                  <span className="absolute -top-1 -right-2 bg-red-500 text-white text-[10px] font-bold min-w-[17px] h-[17px] flex items-center justify-center rounded-full leading-none">
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold min-w-[17px] h-[17px] flex items-center justify-center rounded-full leading-none">
                     {cartCount > 99 ? '99+' : cartCount}
                   </span>
                 )}
@@ -251,6 +252,7 @@ export function PublicNavbar() {
                   )
                 })}
                 <Link href="/inquiry" onClick={() => setMobileOpen(false)} className={`relative px-3 py-2 rounded-lg text-[14px] font-semibold uppercase tracking-wider font-[family-name:var(--font-heading)] transition-all duration-200 ${isActive('/inquiry') || pathname.startsWith('/inquiry') ? 'bg-[#CA8A04] text-white' : 'text-[#0000ff] hover:bg-[#CA8A04] hover:text-white'}`}>
+                  <ShoppingCart className="w-4 h-4 inline-block -mt-0.5 mr-1.5" />
                   {dict.auth.cart}
                   {cartCount !== null && cartCount > 0 && (
                     <span className="absolute -top-1 -right-2 bg-red-500 text-white text-[10px] font-bold min-w-[17px] h-[17px] flex items-center justify-center rounded-full leading-none">

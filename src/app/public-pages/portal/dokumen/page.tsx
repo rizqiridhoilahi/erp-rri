@@ -22,24 +22,6 @@ interface DokumenData {
   hasMore: boolean
 }
 
-function openFile(url: string, filename: string, token: string) {
-  if (url.startsWith('/api/')) {
-    const win = window.open('', '_blank')
-    if (!win) return
-    win.document.write('Loading...')
-    fetch(url, { headers: { Authorization: `Bearer ${token}` } })
-      .then(res => res.blob())
-      .then(blob => {
-        const blobUrl = URL.createObjectURL(blob)
-        win.location.href = blobUrl
-        setTimeout(() => URL.revokeObjectURL(blobUrl), 60000)
-      })
-      .catch(() => win.close())
-  } else {
-    window.open(url, '_blank')
-  }
-}
-
 function downloadFile(url: string, filename: string, token: string) {
   if (url.startsWith('/api/')) {
     fetch(url, { headers: { Authorization: `Bearer ${token}` } })
@@ -114,7 +96,7 @@ export default function PortalDokumenPage() {
           <nav className="flex items-center gap-2 text-xs text-[#555e75] mb-2">
             <span>{dict.portal.dashboard}</span>
             <ChevronRight className="w-3.5 h-3.5" />
-            <span className="text-[#0001bb] font-medium">{dict.portal.dokumen}</span>
+            <span className="text-[#1E40AF] font-medium">{dict.portal.dokumen}</span>
           </nav>
           <h1 className="text-2xl font-bold text-[#0B1528] font-[family-name:var(--font-heading)]">{dict.portal.dokumen}</h1>
           <p className="text-sm text-[#64748B] font-[family-name:var(--font-body)] mt-1">{dict.portal.readyDocumentsDesc}</p>
@@ -123,19 +105,19 @@ export default function PortalDokumenPage() {
 
       {data?.stats && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <div className="bg-white/80 backdrop-blur-[12px] border border-[#c5c4db]/30 rounded-xl p-4 shadow-sm border-l-4 border-l-[#0001bb]">
+          <div className="bg-white/80 backdrop-blur-[12px] border border-[#c5c4db]/30 rounded-xl p-4 shadow-sm border-l-4 hover:scale-[1.02] transition-all duration-200 cursor-pointer border-l-[#1E40AF]">
             <p className="text-xs text-[#555e75] uppercase tracking-wider font-semibold font-[family-name:var(--font-body)]">{dict.portal.totalOutstanding}</p>
             <p className="text-2xl font-bold text-[#0B1528] mt-1 font-[family-name:var(--font-heading)]">{data.stats.total}</p>
           </div>
-          <div className="bg-white/80 backdrop-blur-[12px] border border-[#c5c4db]/30 rounded-xl p-4 shadow-sm border-l-4 border-l-green-500">
+          <div className="bg-white/80 backdrop-blur-[12px] border border-[#c5c4db]/30 rounded-xl p-4 shadow-sm border-l-4 hover:scale-[1.02] transition-all duration-200 cursor-pointer border-l-green-500">
             <p className="text-xs text-[#555e75] uppercase tracking-wider font-semibold font-[family-name:var(--font-body)]">{dict.portal.sph}</p>
             <p className="text-2xl font-bold text-[#0B1528] mt-1 font-[family-name:var(--font-heading)]">{data.stats.sph}</p>
           </div>
-          <div className="bg-white/80 backdrop-blur-[12px] border border-[#c5c4db]/30 rounded-xl p-4 shadow-sm border-l-4 border-l-blue-500">
+          <div className="bg-white/80 backdrop-blur-[12px] border border-[#c5c4db]/30 rounded-xl p-4 shadow-sm border-l-4 hover:scale-[1.02] transition-all duration-200 cursor-pointer border-l-[#1E40AF]">
             <p className="text-xs text-[#555e75] uppercase tracking-wider font-semibold font-[family-name:var(--font-body)]">{dict.portal.po}</p>
             <p className="text-2xl font-bold text-[#0B1528] mt-1 font-[family-name:var(--font-heading)]">{data.stats.po}</p>
           </div>
-          <div className="bg-white/80 backdrop-blur-[12px] border border-[#c5c4db]/30 rounded-xl p-4 shadow-sm border-l-4 border-l-[#CA8A04]">
+          <div className="bg-white/80 backdrop-blur-[12px] border border-[#c5c4db]/30 rounded-xl p-4 shadow-sm border-l-4 hover:scale-[1.02] transition-all duration-200 cursor-pointer border-l-[#D97706]">
             <p className="text-xs text-[#555e75] uppercase tracking-wider font-semibold font-[family-name:var(--font-body)]">{dict.portal.invoice}</p>
             <p className="text-2xl font-bold text-[#0B1528] mt-1 font-[family-name:var(--font-heading)]">{data.stats.invoice}</p>
           </div>
@@ -149,10 +131,10 @@ export default function PortalDokumenPage() {
               <button
                 key={tab.key}
                 onClick={() => { setActiveTab(tab.key); setPage(1) }}
-                className={`px-4 py-1.5 rounded-md text-xs font-semibold transition-all font-[family-name:var(--font-body)] ${
+                className={`px-4 py-1.5 rounded-md text-xs font-semibold transition-all font-[family-name:var(--font-body)] cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#1E40AF]/20 ${
                   activeTab === tab.key
-                    ? 'bg-white shadow-sm text-[#0001bb]'
-                    : 'text-[#555e75] hover:text-[#0001bb]'
+                    ? 'bg-white shadow-sm text-[#1E40AF]'
+                    : 'text-[#555e75] hover:text-[#1E40AF]'
                 }`}
               >
                 {tab.label}
@@ -183,11 +165,18 @@ export default function PortalDokumenPage() {
           <div className="flex flex-col items-center justify-center p-12 text-center">
             <FileText className="w-12 h-12 text-[#757589] mb-3" />
             <p className="text-sm text-[#64748B] font-[family-name:var(--font-body)]">{dict.portal.noDocuments}</p>
+            <a
+              href="/public-pages/portal"
+              className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-[#1E40AF] hover:underline transition-all font-[family-name:var(--font-body)]"
+            >
+              {dict.portal.dashboard}
+              <ChevronRight className="w-3.5 h-3.5" />
+            </a>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
-              <thead>
+              <thead className="sticky top-0 z-10">
                 <tr className="bg-[#f2f4f6] border-b border-[#c5c4db]/50">
                   <th className="px-6 py-3 text-xs uppercase tracking-wider text-[#0B1528] font-semibold font-[family-name:var(--font-body)]">{dict.portal.documentNumber}</th>
                   <th className="px-6 py-3 text-xs uppercase tracking-wider text-[#0B1528] font-semibold font-[family-name:var(--font-body)]">{dict.portal.documentType}</th>
@@ -199,7 +188,7 @@ export default function PortalDokumenPage() {
               <tbody className="divide-y divide-[#c5c4db]/20">
                 {data.documents.map((doc) => (
                   <tr key={doc.id} className="hover:bg-[#f2f4f6]/30 transition-colors">
-                    <td className="px-6 py-4 text-sm font-medium text-[#0001bb] font-[family-name:var(--font-body)]">{doc.nomor}</td>
+                    <td className="px-6 py-4 text-sm font-medium text-[#1E40AF] font-[family-name:var(--font-body)]">{doc.nomor}</td>
                     <td className="px-6 py-4">
                       <span className={`px-2 py-0.5 rounded text-xs font-semibold ${
                         doc.type === 'SPH' ? 'bg-green-50 text-green-700' :
@@ -212,21 +201,13 @@ export default function PortalDokumenPage() {
                     </td>
                     <td className="px-6 py-4">{statusBadge(doc.status)}</td>
                     <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => openFile(doc.pdfUrl!, `${doc.nomor}.pdf`, token!)}
-                          className="text-[#0001bb] text-sm font-semibold hover:underline font-[family-name:var(--font-body)]"
-                        >
-                          {dict.portal.download}
-                        </button>
-                        <button
-                          onClick={() => downloadFile(doc.pdfUrl!, `${doc.nomor}.pdf`, token!)}
-                          className="p-1.5 rounded-full hover:bg-[#f2f4f6] text-[#555e75] transition-colors"
-                          title="Download"
-                        >
-                          <Download className="w-[18px] h-[18px]" />
-                        </button>
-                      </div>
+                      <button
+                        onClick={() => downloadFile(doc.pdfUrl!, `${doc.nomor}.pdf`, token!)}
+                        className="p-2 rounded-full hover:bg-[#1E40AF]/10 text-[#555e75] hover:text-[#1E40AF] transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#1E40AF]/20"
+                        title="Download PDF"
+                      >
+                        <Download className="w-[18px] h-[18px]" />
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -244,7 +225,7 @@ export default function PortalDokumenPage() {
               <button
                 onClick={() => setPage(p => Math.max(1, p - 1))}
                 disabled={page === 1}
-                className="p-1.5 rounded-lg border border-[#c5c4db] hover:bg-white transition-colors disabled:opacity-30"
+                className="p-1.5 rounded-lg border border-[#c5c4db] hover:bg-white transition-colors disabled:opacity-30 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#1E40AF]/20"
               >
                 <ChevronLeft className="w-[18px] h-[18px]" />
               </button>
@@ -252,7 +233,7 @@ export default function PortalDokumenPage() {
               <button
                 onClick={() => setPage(p => p + 1)}
                 disabled={!data.hasMore}
-                className="p-1.5 rounded-lg border border-[#c5c4db] hover:bg-white transition-colors disabled:opacity-30"
+                className="p-1.5 rounded-lg border border-[#c5c4db] hover:bg-white transition-colors disabled:opacity-30 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#1E40AF]/20"
               >
                 <ChevronRight className="w-[18px] h-[18px]" />
               </button>

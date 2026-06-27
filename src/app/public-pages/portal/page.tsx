@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { FileSearch, FileText, ShieldCheck, Undo2 } from 'lucide-react'
+import { FileSearch, FileText, ShieldCheck, Undo2, CheckCircle, Clock, ArrowRight, FileQuestion } from 'lucide-react'
 import { getDictionary } from '@/lib/i18n'
 import { useCustomerAuth } from '@/lib/hooks/use-customer-auth'
 import { Skeleton, SkeletonCard } from '@/components/skeleton'
@@ -89,19 +89,21 @@ export default function PortalDashboardPage() {
 
   if (error || !data) {
     return (
-      <div className="text-center py-20">
+      <div role="alert" aria-live="assertive" className="text-center py-20">
         <p className="text-red-500 font-[family-name:var(--font-body)]">{error || 'Gagal memuat data'}</p>
       </div>
     )
   }
 
-  const statusLabel = data.profile.status_verifikasi === 'approved' ? '✅ Terverifikasi' : '⏳ Menunggu Verifikasi'
-  const statusColor = data.profile.status_verifikasi === 'approved' ? 'text-green-600 bg-green-50' : 'text-yellow-600 bg-yellow-50'
+  const isApproved = data.profile.status_verifikasi === 'approved'
+  const StatusIcon = isApproved ? CheckCircle : Clock
+  const statusLabel = isApproved ? 'Terverifikasi' : 'Menunggu Verifikasi'
+  const statusColor = isApproved ? 'text-green-600 bg-green-50' : 'text-yellow-600 bg-yellow-50'
 
   const quickActions = [
-    { href: '/portal/dokumen', icon: FileText, label: dict.portal.viewDocuments },
-    { href: '/portal/sph-history', icon: FileSearch, label: dict.portal.viewSphHistory },
-    { href: '/portal/retur', icon: Undo2, label: dict.portal.submitReturn },
+    { href: '/portal/dokumen', icon: FileText, label: dict.portal.viewDocuments, color: '#1E40AF' },
+    { href: '/portal/sph-history', icon: FileSearch, label: dict.portal.viewSphHistory, color: '#059669' },
+    { href: '/portal/retur', icon: Undo2, label: dict.portal.submitReturn, color: '#D97706' },
   ]
 
   return (
@@ -115,15 +117,16 @@ export default function PortalDashboardPage() {
             {dict.portal.subtitle}
           </p>
         </div>
-        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${statusColor} font-[family-name:var(--font-body)]`}>
+        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${statusColor} font-[family-name:var(--font-body)]`}>
+          <StatusIcon className="w-3.5 h-3.5" />
           {statusLabel}
         </span>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="bg-white/80 backdrop-blur-[12px] border border-[#c5c4db]/30 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
+        <div className="bg-white/80 backdrop-blur-[12px] border border-[#c5c4db]/30 rounded-xl p-6 shadow-sm hover:shadow-md hover:scale-[1.02] transition-all duration-200 cursor-pointer">
           <div className="flex justify-between items-start mb-4">
-            <div className="w-12 h-12 rounded-lg bg-[#0001bb]/10 flex items-center justify-center text-[#0001bb]">
+            <div className="w-12 h-12 rounded-lg bg-[#1E40AF]/10 flex items-center justify-center text-[#1E40AF]">
               <FileSearch className="w-6 h-6" />
             </div>
           </div>
@@ -132,9 +135,9 @@ export default function PortalDashboardPage() {
           <p className="text-xs text-[#555e75] mt-1 font-[family-name:var(--font-body)]">{dict.portal.activeRfqDesc}</p>
         </div>
 
-        <div className="bg-white/80 backdrop-blur-[12px] border border-[#c5c4db]/30 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
+        <div className="bg-white/80 backdrop-blur-[12px] border border-[#c5c4db]/30 rounded-xl p-6 shadow-sm hover:shadow-md hover:scale-[1.02] transition-all duration-200 cursor-pointer">
           <div className="flex justify-between items-start mb-4">
-            <div className="w-12 h-12 rounded-lg bg-[#283648]/10 flex items-center justify-center text-[#283648]">
+            <div className="w-12 h-12 rounded-lg bg-[#059669]/10 flex items-center justify-center text-[#059669]">
               <FileText className="w-6 h-6" />
             </div>
           </div>
@@ -143,29 +146,39 @@ export default function PortalDashboardPage() {
           <p className="text-xs text-[#555e75] mt-1 font-[family-name:var(--font-body)]">{dict.portal.readyDocumentsDesc}</p>
         </div>
 
-        <div className="bg-white/80 backdrop-blur-[12px] border border-[#c5c4db]/30 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
+        <div className="bg-white/80 backdrop-blur-[12px] border border-[#c5c4db]/30 rounded-xl p-6 shadow-sm hover:shadow-md hover:scale-[1.02] transition-all duration-200 cursor-pointer">
           <div className="flex justify-between items-start mb-4">
-            <div className="w-12 h-12 rounded-lg bg-green-100 flex items-center justify-center text-green-700">
+            <div className="w-12 h-12 rounded-lg bg-[#D97706]/10 flex items-center justify-center text-[#D97706]">
               <ShieldCheck className="w-6 h-6" />
             </div>
           </div>
           <h3 className="text-xs uppercase tracking-wider text-[#555e75] mb-1 font-[family-name:var(--font-body)]">{dict.portal.accountStatus}</h3>
           <p className="text-3xl font-bold text-[#0B1528] font-[family-name:var(--font-heading)]">
-            {data.profile.status_verifikasi === 'approved' ? 'Aktif' : 'Pending'}
+            {isApproved ? 'Aktif' : 'Pending'}
           </p>
           <p className="text-xs text-[#555e75] mt-1 font-[family-name:var(--font-body)]">{dict.portal.accountStatusDesc}</p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-        <div className="lg:col-span-2 bg-white/80 backdrop-blur-[12px] border border-[#c5c4db]/30 rounded-xl p-6 shadow-sm">
+        <div className="lg:col-span-2 bg-white/80 backdrop-blur-[12px] border border-[#c5c4db]/30 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
           <h2 className="text-lg font-bold text-[#0B1528] mb-4 font-[family-name:var(--font-heading)]">{dict.portal.recentActivity}</h2>
           {data.recentRfqs.length === 0 ? (
-            <p className="text-sm text-[#64748B] font-[family-name:var(--font-body)]">{dict.portal.noRecentActivity}</p>
+            <div className="flex flex-col items-center py-8">
+              <FileQuestion className="w-12 h-12 text-[#c5c4db] mb-3" />
+              <p className="text-sm text-[#64748B] mb-4 font-[family-name:var(--font-body)]">{dict.portal.noRecentActivity}</p>
+              <Link
+                href="/inquiry"
+                className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#1E40AF] hover:text-[#1E3A8A] transition-colors font-[family-name:var(--font-body)]"
+              >
+                Ajukan Inquiry
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
           ) : (
             <div className="space-y-3">
               {data.recentRfqs.map((rfq) => (
-                <div key={rfq.id} className="flex items-center justify-between p-3 bg-[#f2f4f6] rounded-lg">
+                <div key={rfq.id} className="flex items-center justify-between p-3 bg-[#f2f4f6] rounded-lg hover:bg-[#e0e3e5] transition-colors cursor-pointer">
                   <div>
                     <p className="text-sm font-medium text-[#0B1528] font-[family-name:var(--font-body)]">{rfq.nomor}</p>
                     <p className="text-xs text-[#64748B] font-[family-name:var(--font-body)]">{new Date(rfq.createdAt).toLocaleDateString('id-ID')}</p>
@@ -192,12 +205,18 @@ export default function PortalDashboardPage() {
                 <Link
                   key={action.href}
                   href={action.href}
-                  className="flex items-center gap-3 p-3 rounded-lg bg-[#f2f4f6] hover:bg-[#e0e3e5] transition-colors group"
+                  className="flex items-center gap-3 p-4 rounded-xl bg-white border border-[#c5c4db]/40 hover:border-[#c5c4db] shadow-sm hover:shadow-md transition-all duration-200 group"
                 >
-                  <Icon className="w-5 h-5 text-[#0001bb]" />
-                  <span className="text-sm font-medium text-[#0B1528] font-[family-name:var(--font-body)] group-hover:text-[#0001bb] transition-colors">
+                  <div
+                    className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 transition-colors duration-200"
+                    style={{ backgroundColor: `${action.color}15`, color: action.color }}
+                  >
+                    <Icon className="w-5 h-5" />
+                  </div>
+                  <span className="flex-1 text-sm font-semibold text-[#0B1528] font-[family-name:var(--font-body)] group-hover:text-[#1E40AF] transition-colors">
                     {action.label}
                   </span>
+                  <ArrowRight className="w-4 h-4 text-[#c5c4db] group-hover:text-[#1E40AF] group-hover:translate-x-0.5 transition-all duration-200" />
                 </Link>
               )
             })}

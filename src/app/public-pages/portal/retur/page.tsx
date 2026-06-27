@@ -95,7 +95,7 @@ export default function PortalReturPage() {
           <nav className="flex items-center gap-2 text-xs text-[#555e75] mb-2">
             <span>{dict.portal.dashboard}</span>
             <ChevronRight className="w-3.5 h-3.5" />
-            <span className="text-[#0001bb] font-medium">{dict.portal.retur}</span>
+            <span className="text-[#1E40AF] font-medium">{dict.portal.retur}</span>
           </nav>
           <h1 className="text-2xl font-bold text-[#0B1528] font-[family-name:var(--font-heading)]">{dict.portal.retur}</h1>
           <p className="text-sm text-[#64748B] font-[family-name:var(--font-body)] mt-1">
@@ -122,6 +122,13 @@ export default function PortalReturPage() {
         <div className="bg-white/80 backdrop-blur-[12px] border border-[#c5c4db]/30 rounded-xl p-12 text-center shadow-sm">
           <Undo2 className="w-12 h-12 text-[#757589] mx-auto mb-3" />
           <p className="text-sm text-[#64748B] font-[family-name:var(--font-body)]">{dict.portal.noDocuments}</p>
+          <a
+            href="/public-pages/portal"
+            className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-[#1E40AF] hover:underline transition-all font-[family-name:var(--font-body)]"
+          >
+            {dict.portal.dashboard}
+            <ChevronRight className="w-3.5 h-3.5" />
+          </a>
         </div>
       ) : (
         <div className="space-y-4">
@@ -130,13 +137,13 @@ export default function PortalReturPage() {
               key={retur.id}
               className="bg-white/80 backdrop-blur-[12px] border border-[#c5c4db]/30 rounded-xl overflow-hidden shadow-sm"
             >
-              <button
-                onClick={() => setSelectedRetur(selectedRetur?.id === retur.id ? null : retur)}
-                className="w-full flex items-center justify-between p-5 hover:bg-[#f2f4f6]/50 transition-colors cursor-pointer"
+                <button
+                  onClick={() => setSelectedRetur(selectedRetur?.id === retur.id ? null : retur)}
+                  className="w-full flex items-center justify-between p-5 hover:bg-[#f2f4f6]/50 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#1E40AF]/20"
               >
                 <div className="flex items-center gap-4">
                   <div>
-                    <p className="text-sm font-semibold text-[#0001bb] font-[family-name:var(--font-body)]">{retur.nomor}</p>
+                    <p className="text-sm font-semibold text-[#1E40AF] font-[family-name:var(--font-body)]">{retur.nomor}</p>
                     <p className="text-xs text-[#64748B] font-[family-name:var(--font-body)]">
                       {new Date(retur.tanggal).toLocaleDateString('id-ID')}
                       {retur.delivery_order && ` — DO: ${retur.delivery_order.nomor}`}
@@ -198,7 +205,7 @@ export default function PortalReturPage() {
                     <div>
                       <div className="bg-white border border-[#c5c4db]/30 rounded-xl p-5 sticky top-24">
                         <h4 className="text-sm font-semibold text-[#0B1528] mb-6 flex items-center gap-2 font-[family-name:var(--font-heading)]">
-                          <Waypoints className="w-5 h-5 text-[#0001bb]" />
+                          <Waypoints className="w-5 h-5 text-[#1E40AF]" />
                           {dict.portal.returnProgress}
                         </h4>
                         <div className="relative space-y-8 pl-2">
@@ -210,17 +217,17 @@ export default function PortalReturPage() {
                             return (
                               <div key={step.key} className="relative flex items-start gap-4">
                                 {!isLast && (
-                                  <div className={`absolute left-[11px] top-6 bottom-[-2rem] w-[2px] ${isActive ? 'bg-[#0000ff]' : 'bg-[#c5c4db]'}`} />
+                                  <div className={`absolute left-[11px] top-6 bottom-[-2rem] w-[2px] ${isActive ? 'bg-[#1E40AF]' : 'bg-[#c5c4db]'}`} />
                                 )}
                                 <div className={`z-10 w-6 h-6 rounded-full flex items-center justify-center border-4 shrink-0 ${
                                   isActive
-                                    ? 'bg-[#0001bb] border-[#e0e0ff] shadow-md'
+                                    ? 'bg-[#1E40AF] border-[#e0e0ff] shadow-md'
                                     : 'bg-[#c5c4db] border-white shadow-sm'
                                 }`}>
                                   <StepIcon className="w-3 h-3 text-white" />
                                 </div>
                                 <div className={`-mt-0.5 ${isActive ? '' : 'opacity-40'}`}>
-                                  <p className={`text-sm font-semibold ${isActive ? 'text-[#0001bb]' : 'text-[#0B1528]'} font-[family-name:var(--font-body)]`}>
+                                  <p className={`text-sm font-semibold ${isActive ? 'text-[#1E40AF]' : 'text-[#0B1528]'} font-[family-name:var(--font-body)]`}>
                                     {step.label}
                                   </p>
                                   <p className="text-xs text-[#555e75] mt-0.5 font-[family-name:var(--font-body)]">
@@ -245,15 +252,15 @@ export default function PortalReturPage() {
       )}
 
       <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-white/80 backdrop-blur-[12px] border-l-4 border-l-[#0001bb] rounded-xl p-5 shadow-sm">
+        <div className="bg-white/80 backdrop-blur-[12px] border-l-4 border-l-[#1E40AF] rounded-xl p-5 shadow-sm hover:scale-[1.02] transition-all duration-200 cursor-pointer">
           <h5 className="text-sm font-bold text-[#0B1528] mb-2 font-[family-name:var(--font-heading)]">{dict.portal.returnPolicy}</h5>
           <p className="text-xs text-[#555e75] font-[family-name:var(--font-body)]">{dict.portal.returnPolicyDesc}</p>
         </div>
-        <div className="bg-white/80 backdrop-blur-[12px] border-l-4 border-l-[#0001bb] rounded-xl p-5 shadow-sm">
+        <div className="bg-white/80 backdrop-blur-[12px] border-l-4 border-l-[#1E40AF] rounded-xl p-5 shadow-sm hover:scale-[1.02] transition-all duration-200 cursor-pointer">
           <h5 className="text-sm font-bold text-[#0B1528] mb-2 font-[family-name:var(--font-heading)]">{dict.portal.instantCredits}</h5>
           <p className="text-xs text-[#555e75] font-[family-name:var(--font-body)]">{dict.portal.instantCreditsDesc}</p>
         </div>
-        <div className="bg-white/80 backdrop-blur-[12px] border-l-4 border-l-[#0001bb] rounded-xl p-5 shadow-sm">
+        <div className="bg-white/80 backdrop-blur-[12px] border-l-4 border-l-[#1E40AF] rounded-xl p-5 shadow-sm hover:scale-[1.02] transition-all duration-200 cursor-pointer">
           <h5 className="text-sm font-bold text-[#0B1528] mb-2 font-[family-name:var(--font-heading)]">{dict.portal.freeLogistics}</h5>
           <p className="text-xs text-[#555e75] font-[family-name:var(--font-body)]">{dict.portal.freeLogisticsDesc}</p>
         </div>
