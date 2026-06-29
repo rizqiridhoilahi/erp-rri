@@ -189,7 +189,6 @@ export function DeliveryOrderPDF({ data }: { data: DOData }): ReactElement {
       )
     ),
 
-    H(Text, { style: styles.bodyText }, 'Harap diterima dengan baik Barang-barang dibawah Ini:'),
   )
 
   const footerView = H(View, { style: styles.footer, fixed: true },
@@ -245,6 +244,10 @@ export function DeliveryOrderPDF({ data }: { data: DOData }): ReactElement {
 
       return H(Page, { key: pageIdx, size: 'A4', style: styles.page },
         headerView,
+
+        pageItems.length > 0
+          ? H(Text, { style: styles.bodyText }, 'Harap diterima dengan baik Barang-barang dibawah Ini:')
+          : null,
 
         H(View, { style: styles.table },
           H(View, { style: styles.tableHeader }, ...tableHeaderRow),
