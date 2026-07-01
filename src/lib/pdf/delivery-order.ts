@@ -137,6 +137,7 @@ export function DeliveryOrderPDF({ data }: { data: DOData }): ReactElement {
 
   const itemSlices = getItemSlices(data.items.length, data.itemsPerPage, 20, 20)
   const totalPages = itemSlices.length || 1
+  const totalDocPages = totalPages + 1
 
   const tableHeaderRow = [
     v(H(Text, { style: styles.tableHeaderCell }, 'No'), { width: 25, padding: 4, borderRightWidth: 1, borderRightColor: '#000', ...COL_BORDER }),
@@ -236,7 +237,6 @@ export function DeliveryOrderPDF({ data }: { data: DOData }): ReactElement {
 
   return H(Document, null,
     ...Array.from({ length: totalPages }, (_, pageIdx) => {
-      const isLastPage = pageIdx === totalPages - 1
       const pageItemCount = itemSlices[pageIdx]
       const startIdx = itemSlices.slice(0, pageIdx).reduce((a, b) => a + b, 0)
       const pageItems = data.items.slice(startIdx, startIdx + pageItemCount)
@@ -262,11 +262,15 @@ export function DeliveryOrderPDF({ data }: { data: DOData }): ReactElement {
           }),
         ),
 
-        isLastPage ? signatureBlock : null,
-
         footerView,
-        H(Text, { style: styles.pageNum }, `Page ${pageNumber} of ${totalPages}`)
+        H(Text, { style: styles.pageNum }, `Page ${pageNumber} of ${totalDocPages}`)
       )
-    })
+    }),
+    H(Page, { key: 'closing', size: 'A4', style: styles.page },
+      headerView,
+      signatureBlock,
+      footerView,
+      H(Text, { style: styles.pageNum }, `Page ${totalDocPages} of ${totalDocPages}`)
+    )
   )
 }

@@ -151,7 +151,7 @@ export function InvoicePDF({ data }: { data: InvoiceData }) {
 
   const itemSlices = getItemSlices(data.items.length, data.itemsPerPage)
   const totalPages = itemSlices.length || 1
-  const hasClosingPage = data.scheduleItems && data.scheduleItems.length > 0
+  const hasClosingPage = (data.scheduleItems && data.scheduleItems.length > 0) || totalPages === 1
   const totalDocPages = hasClosingPage ? totalPages + 1 : totalPages
 
   const v = (child: any, style: any) => H(View, { style: { justifyContent: 'center', ...style } }, child)
