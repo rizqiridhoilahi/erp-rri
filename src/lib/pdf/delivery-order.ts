@@ -28,8 +28,8 @@ const styles = StyleSheet.create({
   colonText: { fontSize: 11, width: 10 },
   valueText: { fontSize: 11 },
   bodyText: { fontSize: 11, marginBottom: 8, textAlign: 'justify' },
-  penutupText: { fontSize: 11, marginTop: 14 },
-  signatureSection: { marginTop: 16, flexDirection: 'row', justifyContent: 'space-between' },
+  penutupText: { fontSize: 11, marginTop: 8 },
+  signatureSection: { marginTop: 10, flexDirection: 'row', justifyContent: 'space-between' },
   signatureBox: { width: '45%', alignItems: 'center' },
   signatureTitle: { fontSize: 11, marginBottom: 2 },
   signatureCompany: { fontSize: 11, fontWeight: 'bold', marginBottom: 2 },
@@ -137,7 +137,9 @@ export function DeliveryOrderPDF({ data }: { data: DOData }): ReactElement {
 
   const itemSlices = getItemSlices(data.items.length, data.itemsPerPage, 20, 20)
   const totalPages = itemSlices.length || 1
-  const totalDocPages = totalPages + 1
+  const lastPageItems = itemSlices[itemSlices.length - 1] ?? 0
+  const needClosingPage = lastPageItems > 5
+  const totalDocPages = needClosingPage ? totalPages + 1 : totalPages
 
   const tableHeaderRow = [
     v(H(Text, { style: styles.tableHeaderCell }, 'No'), { width: 25, padding: 4, borderRightWidth: 1, borderRightColor: '#000', ...COL_BORDER }),
@@ -241,6 +243,7 @@ export function DeliveryOrderPDF({ data }: { data: DOData }): ReactElement {
       const startIdx = itemSlices.slice(0, pageIdx).reduce((a, b) => a + b, 0)
       const pageItems = data.items.slice(startIdx, startIdx + pageItemCount)
       const pageNumber = pageIdx + 1
+      const isLastPage = pageIdx === totalPages - 1
 
       return H(Page, { key: pageIdx, size: 'A4', style: styles.page },
         headerView,
@@ -262,15 +265,17 @@ export function DeliveryOrderPDF({ data }: { data: DOData }): ReactElement {
           }),
         ),
 
+        isLastPage && !needClosingPage ? signatureBlock : null,
+
         footerView,
         H(Text, { style: styles.pageNum }, `Page ${pageNumber} of ${totalDocPages}`)
       )
     }),
-    H(Page, { key: 'closing', size: 'A4', style: styles.page },
+    needClosingPage ? H(Page, { key: 'closing', size: 'A4', style: styles.page },
       headerView,
       signatureBlock,
       footerView,
       H(Text, { style: styles.pageNum }, `Page ${totalDocPages} of ${totalDocPages}`)
-    )
+    ) : null,
   )
 }
