@@ -47,7 +47,7 @@ const styles = StyleSheet.create({
   tableCellLast: { fontSize: 9, padding: 4, textAlign: 'right' },
   tableCellCenter: { fontSize: 9, padding: 4, textAlign: 'center', borderRightWidth: 1, borderRightColor: '#000' },
   tableCellCenterLast: { fontSize: 9, padding: 4, textAlign: 'center' },
-  infoSection: { fontSize: 11, marginTop: 8, marginBottom: 12 },
+  infoSection: { fontSize: 11, marginTop: 8, marginBottom: 2 },
   infoRow: { flexDirection: 'row', marginBottom: 2 },
   infoLabel: { width: 100 },
   infoValue: { flex: 1 },
