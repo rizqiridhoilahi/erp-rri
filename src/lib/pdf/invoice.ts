@@ -308,7 +308,7 @@ export function InvoicePDF({ data }: { data: InvoiceData }) {
 
       return H(Page, { key: pageIdx, size: 'A4', style: styles.page, wrap: true },
         headerSection,
-        pageIdx === 0 ? docInfoSection : null,
+        docInfoSection,
         pageIdx === 0 ? alamatSection : null,
         pageIdx === 0 ? bodySection : null,
 
