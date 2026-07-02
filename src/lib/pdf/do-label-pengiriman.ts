@@ -281,7 +281,7 @@ function getBidangLines(bidangUsaha: string | null): string[] {
   return [singleLine]
 }
 
-function singleLabel(data: LabelData, key: string): ReactElement {
+function singleLabel(data: LabelData, key: string, showDoRef = true): ReactElement {
   const H = createEl
   const c = data.company
   const pic = data.pic
@@ -311,7 +311,7 @@ function singleLabel(data: LabelData, key: string): ReactElement {
 
     H(View, { style: styles.titleSection },
       H(Text, { style: styles.titleText }, 'LABEL PENGIRIMAN'),
-      H(Text, { style: styles.doRef }, `${data.do_nomor} · ${formatDate(data.tanggal)}`),
+      showDoRef ? H(Text, { style: styles.doRef }, `${data.do_nomor} · ${formatDate(data.tanggal)}`) : null,
     ),
 
     H(View, { style: styles.recipientBox },
@@ -434,7 +434,7 @@ export function DOLabelPengirimanPDF({ data, row, col }: PDFProps): ReactElement
         ...renderPositions.map(({ r, c }) => {
           const pos = qpos(r, c)
           return H(View, { key: `q-${r}-${c}`, style: { ...styles.quadrant, ...pos } },
-            singleLabel(data, `${r}-${c}`),
+            singleLabel(data, `${r}-${c}`, !showAll),
           )
         }),
 
