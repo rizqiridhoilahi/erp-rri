@@ -62,11 +62,12 @@ const styles = StyleSheet.create({
     height: '25%',
     padding: 6,
   },
-  bidangUsahaSection: {
-    marginBottom: 2,
+  companyBidangWrap: {
+    alignItems: 'flex-end',
   },
-  bidangUsahaLine: {
+  companyBidang: {
     fontSize: 3.5,
+    fontWeight: 'bold',
     color: COLORS.foreground,
   },
   accentBar: {
@@ -82,23 +83,23 @@ const styles = StyleSheet.create({
     marginBottom: 3,
   },
   logo: {
-    width: 16,
-    height: 16,
-    marginRight: 4,
+    width: 32,
+    height: 32,
+    marginRight: 6,
     objectFit: 'contain',
   },
   logoPlaceholder: {
-    width: 16,
-    height: 16,
+    width: 32,
+    height: 32,
     backgroundColor: COLORS.primary,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 4,
+    marginRight: 6,
     borderRadius: 2,
   },
   logoPlaceholderText: {
     color: '#fff',
-    fontSize: 8,
+    fontSize: 14,
     fontWeight: 'bold',
   },
   companyInfo: {
@@ -156,35 +157,35 @@ const styles = StyleSheet.create({
     marginBottom: 0.5,
   },
   recipientCompanyName: {
-    fontSize: 6.5,
+    fontSize: 6,
     fontWeight: 'bold',
     color: '#0000FF',
     marginBottom: 0.5,
   },
   recipientLine: {
-    fontSize: 4,
+    fontSize: 5,
     color: COLORS.foreground,
     marginBottom: 0.3,
   },
   senderSection: {
     borderTopWidth: 0.5,
-    borderTopColor: '#ccc',
+    borderTopColor: COLORS.primary,
     paddingTop: 2,
   },
   senderLabel: {
-    fontSize: 3.5,
+    fontSize: 4,
     fontWeight: 'bold',
     color: COLORS.foreground,
     letterSpacing: 0.5,
     marginBottom: 0.5,
   },
   senderName: {
-    fontSize: 5,
+    fontSize: 6,
     fontWeight: 'bold',
     color: '#0000FF',
   },
   senderDetail: {
-    fontSize: 4,
+    fontSize: 5,
     color: COLORS.foreground,
   },
 })
@@ -298,14 +299,6 @@ function singleLabel(data: LabelData, key: string): ReactElement {
   return H(View, { key, style: { flex: 1 } },
     H(View, { style: styles.accentBar }),
 
-    bidangLines.length > 0
-      ? H(View, { style: styles.bidangUsahaSection },
-          ...bidangLines.map((line, i) =>
-            H(Text, { key: i, style: styles.bidangUsahaLine }, line)
-          ),
-        )
-      : null,
-
     H(View, { style: styles.headerRow },
       c.company_logo_url
         ? H(Image, { src: c.company_logo_url, style: styles.logo })
@@ -316,6 +309,13 @@ function singleLabel(data: LabelData, key: string): ReactElement {
         H(Text, { style: styles.companyName }, c.company_nama || 'PT. RIZQI RIDHO ILAHI'),
         H(Text, { style: styles.companyDetail }, c.company_alamat || ''),
         H(Text, { style: styles.companyDetail }, `${c.company_no_hp || ''}${c.company_no_hp && c.company_email ? ' · ' : ''}${c.company_email || ''}`),
+        bidangLines.length > 0
+          ? H(View, { style: styles.companyBidangWrap },
+              ...bidangLines.map((line, i) =>
+                H(Text, { key: i, style: styles.companyBidang }, line)
+              ),
+            )
+          : null,
       ),
     ),
 
