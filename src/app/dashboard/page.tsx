@@ -76,10 +76,11 @@ export default async function DashboardPage() {
     allInvoices,
     thisYearInvoices,
     lastYearInvoices,
-    paidThisMonthInvoices,
-    paidThisYearInvoices,
+    paymentBulanIni,
+    paymentTahunIni,
+    allPayments,
   ] = await Promise.all([
-    supabase.from('invoice').select('*').in('status', ['sent', 'overdue']),
+    supabase.from('invoice').select('*').in('status', ['sent', 'overdue', 'partial']),
     supabase.from('customer').select('*', { count: 'exact', head: true }).eq('is_active', true),
     supabase.from('karyawan').select('*', { count: 'exact', head: true }).eq('is_active', true),
     supabase.from('quotation').select('*', { count: 'exact', head: true }).eq('status', 'sent'),
@@ -89,7 +90,7 @@ export default async function DashboardPage() {
     supabase.from('purchase_order').select('*', { count: 'exact', head: true }).in('status', ['draft', 'sent']),
     supabase.from('purchase_receiving').select('*', { count: 'exact', head: true }).eq('status', 'draft'),
     supabase.from('grn').select('*', { count: 'exact', head: true }).eq('status', 'draft'),
-    supabase.from('invoice').select('id').in('status', ['paid', 'sent']).gte('tanggal', firstDay),
+    supabase.from('invoice').select('id').in('status', ['paid', 'sent', 'partial']).gte('tanggal', firstDay),
     supabase.from('purchase_order').select('*').in('status', ['sent', 'confirmed']),
     supabase.from('stok').select('*'),
     supabase.from('barang').select('*', { count: 'exact', head: true }).eq('is_active', true),
@@ -98,8 +99,8 @@ export default async function DashboardPage() {
     supabase.from('sales_order').select('id, nomor, tanggal, status').order('created_at', { ascending: false }).limit(5),
     supabase.from('invoice').select('id, nomor, tanggal, status').order('created_at', { ascending: false }).limit(5),
     supabase.from('purchase_order').select('id, nomor, tanggal, status').order('created_at', { ascending: false }).limit(5),
-    supabase.from('invoice').select('id').in('status', ['paid', 'sent']).gte('tanggal', lastMonthFirstDay).lte('tanggal', lastMonthLastDay),
-    supabase.from('invoice').select('id, tanggal').in('status', ['paid', 'sent']).gte('tanggal', twelveMonthsAgo).order('tanggal', { ascending: true }),
+    supabase.from('invoice').select('id').in('status', ['paid', 'sent', 'partial']).gte('tanggal', lastMonthFirstDay).lte('tanggal', lastMonthLastDay),
+    supabase.from('invoice').select('id, tanggal').in('status', ['paid', 'sent', 'partial']).gte('tanggal', twelveMonthsAgo).order('tanggal', { ascending: true }),
     supabase.from('rfq_customer').select('*', { count: 'exact', head: true }).notIn('status', ['closed', 'Dibatalkan']),
     supabase.from('invoice_item').select('invoice_id, barang_id, harga_satuan, jumlah, diskon'),
     supabase.from('customer').select('id, nama'),
@@ -107,10 +108,11 @@ export default async function DashboardPage() {
     supabase.from('stok').select('barang_id, jumlah'),
     supabase.from('barang').select('id, nama, kategori_id'),
     supabase.from('invoice').select('id, tanggal, status, customer_id').in('status', ['sent', 'paid', 'partial', 'overdue']),
-    supabase.from('invoice').select('id').in('status', ['paid', 'sent']).gte('tanggal', firstDayOfYear),
-    supabase.from('invoice').select('id').in('status', ['paid', 'sent']).gte('tanggal', lastYearFirstDay).lte('tanggal', lastYearLastDay),
-    supabase.from('invoice').select('id').eq('status', 'paid').gte('tanggal', firstDay),
-    supabase.from('invoice').select('id').eq('status', 'paid').gte('tanggal', firstDayOfYear),
+    supabase.from('invoice').select('id').in('status', ['paid', 'sent', 'partial']).gte('tanggal', firstDayOfYear),
+    supabase.from('invoice').select('id').in('status', ['paid', 'sent', 'partial']).gte('tanggal', lastYearFirstDay).lte('tanggal', lastYearLastDay),
+    supabase.from('invoice_payment').select('amount').gte('tanggal', firstDay),
+    supabase.from('invoice_payment').select('amount').gte('tanggal', firstDayOfYear),
+    supabase.from('invoice_payment').select('amount, invoice_id'),
   ])
 
   const invData = (Array.isArray(invoiceItems.data) ? invoiceItems.data : []) as { invoice_id: string; barang_id: string; harga_satuan: number; jumlah: number; diskon?: number }[]
@@ -122,7 +124,9 @@ export default async function DashboardPage() {
   function revenueForIds(invoices: Array<{ id: string }>): number {
     return invoices.reduce((s, inv) => s + (invTotalsByInvoice[inv.id] ?? 0), 0)
   }
-  const totalPiutang = (invoice.data ?? []).reduce((s: number, i) => s + (invTotalsByInvoice[i.id] ?? 0), 0)
+  const arInvoiceIds = new Set((invoice.data ?? []).map(i => i.id))
+  const totalPembayaranAR = (allPayments.data ?? []).reduce((s: number, p: { amount: number; invoice_id: string }) => s + (arInvoiceIds.has(p.invoice_id) ? (p.amount ?? 0) : 0), 0)
+  const totalPiutang = ((invoice.data ?? []).reduce((s: number, i) => s + (invTotalsByInvoice[i.id] ?? 0), 0)) - totalPembayaranAR
   const totalStok = (stoks.data ?? []).reduce((s: number, i) => s + ((i as { jumlah: number }).jumlah ?? 0), 0)
   const lowStockItems = (stoks.data ?? []).filter((s: { jumlah: number }) => s.jumlah <= 0)
   const revenueBulanIni = revenueForIds(thisMonthInvoices.data ?? [])
@@ -131,8 +135,8 @@ export default async function DashboardPage() {
   const revenueTahunIni = revenueForIds(thisYearInvoices.data ?? [])
   const revenueLastYear = revenueForIds(lastYearInvoices.data ?? [])
   const revenueTahunanTrend = revenueLastYear > 0 ? ((revenueTahunIni - revenueLastYear) / revenueLastYear) * 100 : revenueTahunIni > 0 ? 100 : 0
-  const pembayaranBulanIni = revenueForIds(paidThisMonthInvoices.data ?? [])
-  const pembayaranTahunIni = revenueForIds(paidThisYearInvoices.data ?? [])
+  const pembayaranBulanIni = (paymentBulanIni.data ?? []).reduce((s: number, p: { amount: number }) => s + (p.amount ?? 0), 0)
+  const pembayaranTahunIni = (paymentTahunIni.data ?? []).reduce((s: number, p: { amount: number }) => s + (p.amount ?? 0), 0)
   const piutangCount = (invoice.data ?? []).length
   const prCount = pr.count ?? 0; const poCount = po.count ?? 0
   const totalHutang = (poFinance.data ?? []).length
@@ -241,8 +245,8 @@ export default async function DashboardPage() {
          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
             <StatCard label="Revenue Bulan Ini" value={`Rp ${revenueBulanIni.toLocaleString('id-ID')}`} icon={TrendingUp} iconVariant="success" subtitle={`${(thisMonthInvoices.data ?? []).length} invoice`} trend={revenueTrend} trendLabel="vs last month" />
             <StatCard label="Revenue Tahun Ini" value={`Rp ${revenueTahunIni.toLocaleString('id-ID')}`} icon={CalendarRange} iconVariant="primary" subtitle={`${(thisYearInvoices.data ?? []).length} invoice`} trend={revenueTahunanTrend} trendLabel="vs last year" />
-            <StatCard label="Pembayaran Diterima Bulan Ini" value={`Rp ${pembayaranBulanIni.toLocaleString('id-ID')}`} icon={Wallet} iconVariant="success" subtitle={`${(paidThisMonthInvoices.data ?? []).length} invoice lunas`} />
-            <StatCard label="Pembayaran Diterima Tahun Ini" value={`Rp ${pembayaranTahunIni.toLocaleString('id-ID')}`} icon={CalendarRange} iconVariant="success" subtitle={`${(paidThisYearInvoices.data ?? []).length} invoice lunas`} />
+            <StatCard label="Pembayaran Diterima Bulan Ini" value={`Rp ${pembayaranBulanIni.toLocaleString('id-ID')}`} icon={Wallet} iconVariant="success" subtitle={`${(paymentBulanIni.data ?? []).length} pembayaran`} />
+             <StatCard label="Pembayaran Diterima Tahun Ini" value={`Rp ${pembayaranTahunIni.toLocaleString('id-ID')}`} icon={CalendarRange} iconVariant="success" subtitle={`${(paymentTahunIni.data ?? []).length} pembayaran`} />
             <StatCard label="Piutang (AR)" value={`Rp ${totalPiutang.toLocaleString('id-ID')}`} icon={Banknote} iconVariant="warning" subtitle={`${piutangCount} invoice outstanding`} />
             <StatCard label="Hutang (AP)" value={totalHutang} icon={TrendingDown} iconVariant="destructive" subtitle="PO belum lunas" />
          </div>
