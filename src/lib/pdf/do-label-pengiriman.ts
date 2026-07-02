@@ -66,7 +66,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
   companyBidang: {
-    fontSize: 6,
+    fontSize: 5.5,
     fontWeight: 'bold',
     color: COLORS.foreground,
   },
@@ -279,7 +279,8 @@ function sapaan(jk: string | null): string {
 
 function getBidangLines(bidangUsaha: string | null): string[] {
   if (!bidangUsaha) return []
-  return [bidangUsaha.trim()]
+  const singleLine = bidangUsaha.replace(/\n/g, ' · ').replace(/\s+/g, ' ').trim()
+  return [singleLine]
 }
 
 function singleLabel(data: LabelData, key: string): ReactElement {
