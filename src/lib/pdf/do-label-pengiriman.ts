@@ -69,27 +69,20 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: COLORS.foreground,
   },
-  accentBar: {
-    height: 2,
-    backgroundColor: COLORS.primary,
-    marginBottom: 4,
-    marginHorizontal: -6,
-    marginTop: -6,
-  },
   headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 3,
   },
   logo: {
-    width: 32,
-    height: 32,
+    width: 50,
+    height: 50,
     marginRight: 6,
     objectFit: 'contain',
   },
   logoPlaceholder: {
-    width: 32,
-    height: 32,
+    width: 50,
+    height: 50,
     backgroundColor: COLORS.primary,
     justifyContent: 'center',
     alignItems: 'center',
@@ -296,8 +289,6 @@ function singleLabel(data: LabelData, key: string): ReactElement {
   const bidangLines = getBidangLines(c.company_bidang_usaha)
 
   return H(View, { key, style: { flex: 1 } },
-    H(View, { style: styles.accentBar }),
-
     H(View, { style: styles.headerRow },
       c.company_logo_url
         ? H(Image, { src: c.company_logo_url, style: styles.logo })
