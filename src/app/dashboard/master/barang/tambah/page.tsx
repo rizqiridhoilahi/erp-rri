@@ -287,10 +287,7 @@ export default function TambahBarangPage() {
       })
       const formData = new FormData()
       formData.append('file', compressed, 'foto-1.webp')
-      const res = await apiFetch<{ fileUrl: string }>(`/api/v1/master/barang/${barangId}/image`, {
-        method: 'POST',
-        body: formData,
-      })
+      const res = await apiFetchFormData<{ fileUrl: string }>(`/api/v1/master/barang/${barangId}/image`, formData)
       if (res.data?.fileUrl) {
         form.setValue('image_url', res.data.fileUrl)
       }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { apiFetch } from '@/lib/api/client';
+import { apiFetch, apiFetchFormData } from '@/lib/api/client';
 import { useRouter, usePathname } from 'next/navigation';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
@@ -102,10 +102,7 @@ export default function EditBarangPage() {
       })
       const formData = new FormData()
       formData.append('file', compressed, 'foto-1.webp')
-      const res = await apiFetch<{ fileUrl: string }>(`/api/v1/master/barang/${id}/image`, {
-        method: 'POST',
-        body: formData,
-      })
+      const res = await apiFetchFormData<{ fileUrl: string }>(`/api/v1/master/barang/${id}/image`, formData)
       if (res.data?.fileUrl) {
         setValue('image_url', res.data.fileUrl)
         toast.success('Gambar berhasil diupload!')
@@ -187,8 +184,19 @@ export default function EditBarangPage() {
                 <img src={imagePreview} alt="Preview" className="max-h-40 mx-auto rounded object-contain" />
                 <button
                   type="button"
-                  className="absolute top-1 right-1 bg-background/80 rounded-full p-1 hover:bg-background"
+                  className="absolute top-1 right-1 bg-background/80 rounded-full p-1 hover:bg-destructive hover:text-destructive-foreground transition-colors"
                   onClick={(e) => { e.stopPropagation(); if (imagePreview) URL.revokeObjectURL(imagePreview); setImagePreview(null) }}
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            ) : watch('image_url') ? (
+              <div className="relative w-full">
+                <img src={watch('image_url')} alt="Foto barang" className="max-h-40 mx-auto rounded object-contain" />
+                <button
+                  type="button"
+                  className="absolute top-1 right-1 bg-background/80 rounded-full p-1 hover:bg-destructive hover:text-destructive-foreground transition-colors"
+                  onClick={(e) => { e.stopPropagation(); setValue('image_url', '') }}
                 >
                   <X className="h-4 w-4" />
                 </button>
