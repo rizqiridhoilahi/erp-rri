@@ -63,7 +63,6 @@ const styles = StyleSheet.create({
     padding: 6,
   },
   companyBidangWrap: {
-    alignItems: 'flex-end',
   },
   companyBidang: {
     fontSize: 5.5,
@@ -277,6 +276,12 @@ function sapaan(jk: string | null): string {
   return 'Bapak/Ibu'
 }
 
+function formatPhone(phone: string | null | undefined): string {
+  if (!phone) return ''
+  const digits = phone.replace(/\D/g, '')
+  return digits.startsWith('62') ? '0' + digits.slice(2) : digits
+}
+
 function getBidangLines(bidangUsaha: string | null): string[] {
   if (!bidangUsaha) return []
   const singleLine = bidangUsaha.replace(/\n/g, ' · ').replace(/\s+/g, ' ').trim()
@@ -309,7 +314,7 @@ function singleLabel(data: LabelData, key: string): ReactElement {
             )
           : null,
         H(Text, { style: styles.companyDetail }, c.company_alamat || ''),
-        H(Text, { style: styles.companyDetail }, `${c.company_no_hp || ''}${c.company_no_hp && c.company_email ? ' · ' : ''}${c.company_email || ''}`),
+        H(Text, { style: styles.companyDetail }, `${formatPhone(c.company_no_hp)}${c.company_no_hp && c.company_email ? ' · ' : ''}${c.company_email || ''}`),
       ),
     ),
 
@@ -325,14 +330,14 @@ function singleLabel(data: LabelData, key: string): ReactElement {
       ),
       H(Text, { style: styles.recipientCompanyName }, cust.nama),
       H(Text, { style: styles.recipientLine }, cust.alamat || ''),
-      pic.no_hp ? H(Text, { style: styles.recipientLine }, `Telp/WA: ${pic.no_hp}`) : null,
+      pic.no_hp ? H(Text, { style: styles.recipientLine }, `Telp/WA: ${formatPhone(pic.no_hp)}`) : null,
     ),
 
     H(View, { style: styles.senderSection },
       H(Text, { style: styles.senderLabel }, 'PENGIRIM'),
       H(Text, { style: styles.senderName }, c.company_nama || 'PT. RIZQI RIDHO ILAHI'),
       H(Text, { style: styles.senderDetail }, c.company_alamat || ''),
-      H(Text, { style: styles.senderDetail }, `Telp: ${c.company_no_hp || ''}`),
+      H(Text, { style: styles.senderDetail }, `Telp: ${formatPhone(c.company_no_hp)}`),
     ),
   )
 }
