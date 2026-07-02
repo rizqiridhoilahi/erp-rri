@@ -13,11 +13,11 @@ Font.register({
 Font.registerHyphenationCallback((word) => [word])
 
 const COLORS = {
-  primary: '#1E3A5F',
-  accent: '#C8A951',
+  primary: '#0000FF',
+  accent: '#0000FF',
   border: '#333',
   lightBg: '#F8F6F0',
-  muted: '#666',
+  foreground: '#000',
 }
 
 const styles = StyleSheet.create({
@@ -32,21 +32,14 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
-  // Cut lines
   cutH: {
     position: 'absolute',
-    top: '50%',
-    left: 0,
-    width: '100%',
     borderTopWidth: 1,
     borderTopColor: '#bbb',
     borderStyle: 'dashed',
   },
   cutV: {
     position: 'absolute',
-    top: 0,
-    left: '50%',
-    height: '100%',
     borderLeftWidth: 1,
     borderLeftColor: '#bbb',
     borderStyle: 'dashed',
@@ -60,160 +53,160 @@ const styles = StyleSheet.create({
   },
   crosshairText: {
     fontSize: 6,
-    color: '#999',
+    color: '#666',
     lineHeight: 1,
   },
-  // Quadrant container
   quadrant: {
     position: 'absolute',
     width: '50%',
-    height: '50%',
-    padding: 8,
+    height: '25%',
+    padding: 6,
   },
-  // Label content
+  serviceRow: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    marginBottom: 2,
+  },
+  serviceText: {
+    fontSize: 3.5,
+    color: COLORS.foreground,
+    textAlign: 'right',
+  },
   accentBar: {
-    height: 2.5,
-    backgroundColor: COLORS.accent,
-    marginBottom: 5,
-    marginHorizontal: -8,
-    marginTop: -8,
+    height: 2,
+    backgroundColor: COLORS.primary,
+    marginBottom: 4,
+    marginHorizontal: -6,
+    marginTop: -6,
   },
   headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 4,
+    marginBottom: 3,
   },
   logo: {
-    width: 22,
-    height: 22,
-    marginRight: 6,
+    width: 16,
+    height: 16,
+    marginRight: 4,
     objectFit: 'contain',
   },
   logoPlaceholder: {
-    width: 22,
-    height: 22,
+    width: 16,
+    height: 16,
     backgroundColor: COLORS.primary,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 6,
+    marginRight: 4,
     borderRadius: 2,
   },
   logoPlaceholderText: {
     color: '#fff',
-    fontSize: 11,
+    fontSize: 8,
     fontWeight: 'bold',
   },
   companyInfo: {
     flex: 1,
   },
   companyName: {
-    fontSize: 8.5,
+    fontSize: 6.5,
     fontWeight: 'bold',
-    color: COLORS.primary,
-    marginBottom: 1,
+    color: '#0000FF',
+    marginBottom: 0.5,
   },
   companyDetail: {
-    fontSize: 5.5,
-    color: COLORS.muted,
-    marginBottom: 0.5,
+    fontSize: 4.5,
+    color: COLORS.foreground,
+    marginBottom: 0.3,
   },
   titleSection: {
     alignItems: 'center',
-    marginBottom: 5,
+    marginBottom: 4,
     borderBottomWidth: 0.5,
-    borderBottomColor: COLORS.accent,
-    paddingBottom: 3,
+    borderBottomColor: COLORS.primary,
+    paddingBottom: 2,
   },
   titleText: {
-    fontSize: 8,
+    fontSize: 6,
     fontWeight: 'bold',
-    color: COLORS.primary,
-    letterSpacing: 1.5,
+    color: '#0000FF',
+    letterSpacing: 1,
   },
   doRef: {
-    fontSize: 5.5,
-    color: COLORS.muted,
-    marginTop: 1,
+    fontSize: 4.5,
+    color: COLORS.foreground,
+    marginTop: 0.5,
   },
   recipientBox: {
     borderWidth: 1,
     borderColor: COLORS.border,
-    borderRadius: 3,
-    padding: '5 8',
-    marginBottom: 5,
+    borderRadius: 2,
+    padding: '3 6',
+    marginBottom: 4,
     backgroundColor: COLORS.lightBg,
   },
   recipientLabel: {
-    fontSize: 5,
+    fontSize: 4,
     fontWeight: 'bold',
-    color: COLORS.accent,
-    letterSpacing: 1,
-    marginBottom: 2,
+    color: COLORS.foreground,
+    letterSpacing: 0.8,
+    marginBottom: 1,
     textTransform: 'uppercase',
   },
   recipientName: {
-    fontSize: 7.5,
-    fontWeight: 'bold',
-    color: COLORS.primary,
-    marginBottom: 1,
-  },
-  recipientLine: {
     fontSize: 5.5,
-    color: '#444',
+    fontWeight: 'bold',
+    color: '#0000FF',
     marginBottom: 0.5,
   },
+  recipientLine: {
+    fontSize: 4,
+    color: '#444',
+    marginBottom: 0.3,
+  },
   senderSection: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-end',
     borderTopWidth: 0.5,
     borderTopColor: '#ccc',
-    paddingTop: 3,
-  },
-  senderLeft: {
-    flex: 1,
+    paddingTop: 2,
   },
   senderLabel: {
-    fontSize: 4.5,
+    fontSize: 3.5,
     fontWeight: 'bold',
-    color: COLORS.muted,
+    color: COLORS.foreground,
     letterSpacing: 0.5,
-    marginBottom: 1,
+    marginBottom: 0.5,
   },
   senderName: {
-    fontSize: 6,
+    fontSize: 5,
     fontWeight: 'bold',
-    color: COLORS.primary,
+    color: '#0000FF',
   },
   senderDetail: {
-    fontSize: 5,
-    color: COLORS.muted,
-  },
-  stampBox: {
-    width: 28,
-    height: 28,
-    borderWidth: 0.5,
-    borderColor: '#ccc',
-    borderRadius: 2,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  stampPlaceholder: {
     fontSize: 4,
-    color: '#bbb',
-    textAlign: 'center',
+    color: COLORS.foreground,
   },
 })
 
-const QPOS = {
-  '00': { top: 0, left: 0 },
-  '10': { top: 0, left: '50%' },
-  '01': { top: '50%', left: 0 },
-  '11': { top: '50%', left: '50%' },
-} as const
+const QPOS: Record<string, { top: string; left: string }> = {
+  '00': { top: '0%', left: '0%' },
+  '10': { top: '0%', left: '50%' },
+  '01': { top: '25%', left: '0%' },
+  '11': { top: '25%', left: '50%' },
+  '02': { top: '50%', left: '0%' },
+  '12': { top: '50%', left: '50%' },
+  '03': { top: '75%', left: '0%' },
+  '13': { top: '75%', left: '50%' },
+}
+
+const ALL_POSITIONS: { r: number; c: number }[] = [
+  { r: 0, c: 0 }, { r: 0, c: 1 },
+  { r: 1, c: 0 }, { r: 1, c: 1 },
+  { r: 2, c: 0 }, { r: 2, c: 1 },
+  { r: 3, c: 0 }, { r: 3, c: 1 },
+]
 
 interface LabelCompany {
   company_nama: string | null
+  company_bidang_usaha: string | null
   company_alamat: string | null
   company_no_hp: string | null
   company_email: string | null
@@ -284,13 +277,28 @@ function sapaan(jk: string | null): string {
   return 'Bapak/Ibu'
 }
 
+function getBidangLines(bidangUsaha: string | null): string[] {
+  if (!bidangUsaha) return []
+  const lines = bidangUsaha.includes('\n')
+    ? bidangUsaha.split('\n').map(s => s.trim()).filter(Boolean)
+    : bidangUsaha.split(',').map(s => s.trim()).filter(Boolean)
+  return lines
+}
+
 function singleLabel(data: LabelData, key: string): ReactElement {
   const H = createEl
   const c = data.company
   const pic = data.pic
   const cust = data.customer
+  const bidangLines = getBidangLines(c.company_bidang_usaha)
 
   return H(View, { key, style: { flex: 1 } },
+    bidangLines.length > 0
+      ? H(View, { style: styles.serviceRow },
+          H(Text, { style: styles.serviceText }, `Layanan: ${bidangLines.join(', ')}`),
+        )
+      : null,
+
     H(View, { style: styles.accentBar }),
 
     H(View, { style: styles.headerRow },
@@ -322,75 +330,123 @@ function singleLabel(data: LabelData, key: string): ReactElement {
     ),
 
     H(View, { style: styles.senderSection },
-      H(View, { style: styles.senderLeft },
-        H(Text, { style: styles.senderLabel }, 'PENGIRIM'),
-        H(Text, { style: styles.senderName }, c.company_nama || 'PT. RIZQI RIDHO ILAHI'),
-        H(Text, { style: styles.senderDetail }, c.company_alamat || ''),
-        H(Text, { style: styles.senderDetail }, `Telp: ${c.company_no_hp || ''}`),
-      ),
-      H(View, { style: styles.stampBox },
-        H(Text, { style: styles.stampPlaceholder }, '[STEMPEL\nPERUSAHAAN]'),
-      ),
+      H(Text, { style: styles.senderLabel }, 'PENGIRIM'),
+      H(Text, { style: styles.senderName }, c.company_nama || 'PT. RIZQI RIDHO ILAHI'),
+      H(Text, { style: styles.senderDetail }, c.company_alamat || ''),
+      H(Text, { style: styles.senderDetail }, `Telp: ${c.company_no_hp || ''}`),
     ),
   )
+}
+
+interface CutLineH { top: string; left: string; width: string }
+interface CutLineV { top: string; left: string; height: string }
+interface Crosshair { top: string; left: string }
+
+function getCutLines(showAll: boolean, row?: number, col?: number) {
+  const hCuts: CutLineH[] = []
+  const vCuts: CutLineV[] = []
+  const crosshairs: Crosshair[] = []
+
+  if (showAll) {
+    hCuts.push(
+      { top: '25%', left: '0%', width: '100%' },
+      { top: '50%', left: '0%', width: '100%' },
+      { top: '75%', left: '0%', width: '100%' },
+    )
+    vCuts.push({ top: '0%', left: '50%', height: '100%' })
+    crosshairs.push(
+      { top: '0%', left: '50%' },
+      { top: '25%', left: '50%' },
+      { top: '50%', left: '50%' },
+      { top: '75%', left: '50%' },
+      { top: '100%', left: '50%' },
+      { top: '50%', left: '0%' },
+      { top: '50%', left: '100%' },
+    )
+    return { hCuts, vCuts, crosshairs }
+  }
+
+  const r = row!
+  const c = col!
+
+  if (r > 0) {
+    hCuts.push({ top: `${r * 25}%`, left: `${c * 50}%`, width: '50%' })
+  }
+  if (r < 3) {
+    hCuts.push({ top: `${(r + 1) * 25}%`, left: `${c * 50}%`, width: '50%' })
+  }
+
+  if (c > 0) {
+    vCuts.push({ top: `${r * 25}%`, left: `${c * 50}%`, height: '25%' })
+  }
+  if (c < 1) {
+    vCuts.push({ top: `${r * 25}%`, left: `${(c + 1) * 50}%`, height: '25%' })
+  }
+
+  for (const h of hCuts) {
+    crosshairs.push({ top: h.top, left: `${c * 50}%` })
+    crosshairs.push({ top: h.top, left: `${(c + 1) * 50}%` })
+  }
+
+  for (const v of vCuts) {
+    crosshairs.push({ top: `${r * 25}%`, left: v.left })
+    crosshairs.push({ top: `${(r + 1) * 25}%`, left: v.left })
+  }
+
+  const seen = new Set<string>()
+  const deduped = crosshairs.filter(ch => {
+    const key = `${ch.top}-${ch.left}`
+    if (seen.has(key)) return false
+    seen.add(key)
+    return true
+  })
+
+  return { hCuts, vCuts, crosshairs: deduped }
 }
 
 export function DOLabelPengirimanPDF({ data, row, col }: PDFProps): ReactElement {
   const H = createEl
 
   const showAll = row === undefined || col === undefined
-  const renderPositions: { r: number; c: number }[] = showAll
-    ? [{ r: 0, c: 0 }, { r: 0, c: 1 }, { r: 1, c: 0 }, { r: 1, c: 1 }]
-    : [{ r: row!, c: col! }]
+  const renderPositions = showAll ? ALL_POSITIONS : [{ r: row!, c: col! }]
+  const emptyPositions = showAll ? [] : ALL_POSITIONS.filter(p => !(p.r === row && p.c === col))
+  const { hCuts, vCuts, crosshairs } = getCutLines(showAll, row, col)
 
-  function quadrantPos(r: number, c: number) {
-    return QPOS[`${c}${r}` as keyof typeof QPOS] || QPOS['00']
+  function qpos(r: number, c: number) {
+    return QPOS[`${c}${r}`] || QPOS['00']
   }
 
   return H(Document, null,
     H(Page, { size: 'A4', style: styles.page },
       H(View, { style: styles.pageContainer },
 
-        // Cut lines
-        H(View, { style: styles.cutH }),
-        H(View, { style: styles.cutV }),
-
-        // Crosshairs
-        H(View, { key: 'ch-c', style: { ...styles.crosshair, top: '50%', left: '50%', marginTop: -4, marginLeft: -4 } },
-          H(Text, { style: styles.crosshairText }, '+'),
+        ...hCuts.map((h, i) =>
+          H(View, { key: `h-${i}`, style: { ...styles.cutH, top: h.top, left: h.left, width: h.width } })
         ),
-        H(View, { key: 'ch-t', style: { ...styles.crosshair, top: 0, left: '50%', marginLeft: -4 } },
-          H(Text, { style: styles.crosshairText }, '+'),
-        ),
-        H(View, { key: 'ch-b', style: { ...styles.crosshair, top: '100%', left: '50%', marginTop: -8, marginLeft: -4 } },
-          H(Text, { style: styles.crosshairText }, '+'),
-        ),
-        H(View, { key: 'ch-l', style: { ...styles.crosshair, top: '50%', left: 0, marginTop: -4 } },
-          H(Text, { style: styles.crosshairText }, '+'),
-        ),
-        H(View, { key: 'ch-r', style: { ...styles.crosshair, top: '50%', left: '100%', marginTop: -4, marginLeft: -8 } },
-          H(Text, { style: styles.crosshairText }, '+'),
+        ...vCuts.map((v, i) =>
+          H(View, { key: `v-${i}`, style: { ...styles.cutV, top: v.top, left: v.left, height: v.height } })
         ),
 
-        // Quadrants
+        ...crosshairs.map((ch, i) =>
+          H(View, {
+            key: `ch-${i}`,
+            style: { ...styles.crosshair, top: ch.top, left: ch.left, marginTop: -4, marginLeft: -4 },
+          },
+            H(Text, { style: styles.crosshairText }, '+'),
+          )
+        ),
+
         ...renderPositions.map(({ r, c }) => {
-          const pos = quadrantPos(r, c)
+          const pos = qpos(r, c)
           return H(View, { key: `q-${r}-${c}`, style: { ...styles.quadrant, ...pos } },
             singleLabel(data, `${r}-${c}`),
           )
         }),
 
-        // Empty quadrants (when single position selected)
-        ...(!showAll
-          ? ([
-              { r: 0, c: 0 }, { r: 0, c: 1 }, { r: 1, c: 0 }, { r: 1, c: 1 }
-            ].filter(({ r, c }) => !(r === row && c === col))
-             .map(({ r, c }) => {
-               const pos = quadrantPos(r, c)
-               return H(View, { key: `empty-${r}-${c}`, style: { ...styles.quadrant, ...pos } })
-             }))
-          : []
-        ),
+        ...emptyPositions.map(({ r, c }) => {
+          const pos = qpos(r, c)
+          return H(View, { key: `empty-${r}-${c}`, style: { ...styles.quadrant, ...pos } })
+        }),
       ),
     ),
   )

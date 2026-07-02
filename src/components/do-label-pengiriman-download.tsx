@@ -13,10 +13,14 @@ interface Props {
 }
 
 const POSITIONS = [
-  { row: 0, col: 0, label: 'Baris 1 · Kolom 1', quad: 'top-0 left-0' },
-  { row: 0, col: 1, label: 'Baris 1 · Kolom 2', quad: 'top-0 left-1/2' },
-  { row: 1, col: 0, label: 'Baris 2 · Kolom 1', quad: 'top-1/2 left-0' },
-  { row: 1, col: 1, label: 'Baris 2 · Kolom 2', quad: 'top-1/2 left-1/2' },
+  { row: 0, col: 0, label: 'Baris 1 · Kolom 1' },
+  { row: 0, col: 1, label: 'Baris 1 · Kolom 2' },
+  { row: 1, col: 0, label: 'Baris 2 · Kolom 1' },
+  { row: 1, col: 1, label: 'Baris 2 · Kolom 2' },
+  { row: 2, col: 0, label: 'Baris 3 · Kolom 1' },
+  { row: 2, col: 1, label: 'Baris 3 · Kolom 2' },
+  { row: 3, col: 0, label: 'Baris 4 · Kolom 1' },
+  { row: 3, col: 1, label: 'Baris 4 · Kolom 2' },
 ] as const
 
 export function DOLabelPengirimanDownload({ doId, nomor }: Props) {
@@ -93,10 +97,10 @@ export function DOLabelPengirimanDownload({ doId, nomor }: Props) {
                 <div className="w-12 aspect-[1/1.414] border border-muted-foreground/20 rounded-sm relative overflow-hidden bg-card">
                   <div
                     className={cn(
-                      'absolute w-1/2 h-1/2 transition-colors',
-                      p.quad,
+                      'absolute w-1/2 h-1/4 transition-colors',
                       isSelected(p.row, p.col) ? 'bg-primary/20' : 'bg-primary/10',
                     )}
+                    style={{ top: `${p.row * 25}%`, left: `${p.col * 50}%` }}
                   />
                 </div>
                 <span className="text-[10px] text-muted-foreground leading-tight">
@@ -121,7 +125,7 @@ export function DOLabelPengirimanDownload({ doId, nomor }: Props) {
               className="flex-1"
               onClick={() => fetchPDF()}
             >
-              Cetak 4
+              Cetak 8
             </Button>
           </div>
         </div>

@@ -6,7 +6,7 @@ import { notFound, internalError } from '@/lib/api/errors'
 import { DOLabelPengirimanPDF } from '@/lib/pdf/do-label-pengiriman'
 
 const COMPANY_KEYS = [
-  'company_nama', 'company_alamat', 'company_no_hp', 'company_email', 'company_logo_url',
+  'company_nama', 'company_bidang_usaha', 'company_alamat', 'company_no_hp', 'company_email', 'company_logo_url',
 ] as const
 
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -28,7 +28,6 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
 
   const so = doDoc.sales_order as { nomor: string; customer_po_id: string | null; di_id: string | null } | null
 
-  // Company settings
   const { data: settingsRows } = await supabaseAdmin
     .from('site_settings')
     .select('key, value')
@@ -40,7 +39,6 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
     }
   }
 
-  // Resolve customer, PIC, alamat
   let customerNama = '-'
   let customerAlamat: string | null = null
   let picNama: string | null = null
@@ -109,6 +107,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
     },
     company: {
       company_nama: company.company_nama ?? null,
+      company_bidang_usaha: company.company_bidang_usaha ?? null,
       company_alamat: company.company_alamat ?? null,
       company_no_hp: company.company_no_hp ?? null,
       company_email: company.company_email ?? null,
