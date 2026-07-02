@@ -62,15 +62,12 @@ const styles = StyleSheet.create({
     height: '25%',
     padding: 6,
   },
-  serviceRow: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
+  bidangUsahaSection: {
     marginBottom: 2,
   },
-  serviceText: {
+  bidangUsahaLine: {
     fontSize: 3.5,
     color: COLORS.foreground,
-    textAlign: 'right',
   },
   accentBar: {
     height: 2,
@@ -158,9 +155,15 @@ const styles = StyleSheet.create({
     color: '#0000FF',
     marginBottom: 0.5,
   },
+  recipientCompanyName: {
+    fontSize: 6.5,
+    fontWeight: 'bold',
+    color: '#0000FF',
+    marginBottom: 0.5,
+  },
   recipientLine: {
     fontSize: 4,
-    color: '#444',
+    color: COLORS.foreground,
     marginBottom: 0.3,
   },
   senderSection: {
@@ -293,13 +296,15 @@ function singleLabel(data: LabelData, key: string): ReactElement {
   const bidangLines = getBidangLines(c.company_bidang_usaha)
 
   return H(View, { key, style: { flex: 1 } },
+    H(View, { style: styles.accentBar }),
+
     bidangLines.length > 0
-      ? H(View, { style: styles.serviceRow },
-          H(Text, { style: styles.serviceText }, `Layanan: ${bidangLines.join(', ')}`),
+      ? H(View, { style: styles.bidangUsahaSection },
+          ...bidangLines.map((line, i) =>
+            H(Text, { key: i, style: styles.bidangUsahaLine }, line)
+          ),
         )
       : null,
-
-    H(View, { style: styles.accentBar }),
 
     H(View, { style: styles.headerRow },
       c.company_logo_url
@@ -324,7 +329,7 @@ function singleLabel(data: LabelData, key: string): ReactElement {
       H(Text, { style: styles.recipientName },
         `${sapaan(pic.jenis_kelamin)} ${pic.nama}${pic.jabatan ? ` (${pic.jabatan})` : ''}`
       ),
-      H(Text, { style: styles.recipientLine }, cust.nama),
+      H(Text, { style: styles.recipientCompanyName }, cust.nama),
       H(Text, { style: styles.recipientLine }, cust.alamat || ''),
       pic.no_hp ? H(Text, { style: styles.recipientLine }, `Telp/WA: ${pic.no_hp}`) : null,
     ),
