@@ -66,7 +66,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
   companyBidang: {
-    fontSize: 3.5,
+    fontSize: 6,
     fontWeight: 'bold',
     color: COLORS.foreground,
   },
@@ -139,7 +139,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   recipientLabel: {
-    fontSize: 4,
+    fontSize: 6,
     fontWeight: 'bold',
     color: COLORS.foreground,
     letterSpacing: 0.8,
@@ -169,7 +169,7 @@ const styles = StyleSheet.create({
     paddingTop: 2,
   },
   senderLabel: {
-    fontSize: 4,
+    fontSize: 6,
     fontWeight: 'bold',
     color: COLORS.foreground,
     letterSpacing: 0.5,
@@ -279,10 +279,7 @@ function sapaan(jk: string | null): string {
 
 function getBidangLines(bidangUsaha: string | null): string[] {
   if (!bidangUsaha) return []
-  const lines = bidangUsaha.includes('\n')
-    ? bidangUsaha.split('\n').map(s => s.trim()).filter(Boolean)
-    : bidangUsaha.split(',').map(s => s.trim()).filter(Boolean)
-  return lines
+  return [bidangUsaha.trim()]
 }
 
 function singleLabel(data: LabelData, key: string): ReactElement {
