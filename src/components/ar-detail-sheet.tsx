@@ -5,7 +5,18 @@ import Link from "next/link"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
 import { StatusBadge } from "@/components/status-badge"
-import { ChevronRight, Banknote, Wallet, Calendar } from "lucide-react"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { ChevronRight, Banknote, Wallet } from "lucide-react"
+
+interface ScheduleInfo {
+  urutan: number
+  deskripsi: string
+  persentase: number
+  jumlah: number
+  due_date: string | null
+  status: string
+  paid_amount: number
+}
 
 interface ArInvoiceData {
   id: string
@@ -18,6 +29,8 @@ interface ArInvoiceData {
   outstanding: number
   jatuh_tempo: string | null
   aging_hari: number
+  top: string | null
+  schedules: ScheduleInfo[]
 }
 
 interface ArDetailSheetProps {
@@ -41,6 +54,77 @@ function fmtDate(d: string | null): string {
   })
 }
 
+function fmtPct(v: number): string {
+  return v.toFixed(1) + "%"
+}
+
+function TopCell({ schedules, top }: { schedules: ScheduleInfo[]; top: string | null }) {
+  if (schedules.length > 0) {
+    const unpaid = schedules.filter(s => s.status !== 'paid')
+
+    if (unpaid.length === 0) {
+      return <span className="text-xs text-muted-foreground">Lunas</span>
+    }
+
+    return (
+      <Popover>
+        <PopoverTrigger asChild>
+          <div className="flex gap-1 cursor-pointer">
+            {schedules.map((s, i) => (
+              <span
+                key={i}
+                className={`px-1.5 py-0.5 rounded text-[10px] font-medium whitespace-nowrap ${
+                  s.status === 'paid' ? 'bg-success/10 text-success' : 'bg-primary/10 text-primary'
+                }`}
+              >
+                {`T${s.urutan}`}
+              </span>
+            ))}
+          </div>
+        </PopoverTrigger>
+        <PopoverContent className="p-0 w-80" align="start">
+          <div className="p-3 border-b bg-muted/30">
+            <p className="text-sm font-medium">Detail Termin</p>
+          </div>
+          <div className="p-1">
+            <div className="max-h-[200px] overflow-y-auto space-y-1">
+              {schedules.map((s, i) => (
+                <div key={i} className="flex items-center justify-between px-2 py-1.5 rounded hover:bg-muted/50 text-xs">
+                  <div className="flex flex-col">
+                    <span className="font-medium">{`Term ${s.urutan}`}</span>
+                    {s.deskripsi && <span className="text-muted-foreground">{s.deskripsi}</span>}
+                  </div>
+                  <div className="text-right">
+                    <span className={s.status === 'paid' ? 'text-success' : 'text-foreground'}>
+                      {s.status === 'paid' ? 'Lunas' : 'Belum'}
+                    </span>
+                  </div>
+                  <div className="text-right ml-4">
+                    <span className="block font-medium tabular-nums">{fmtCurrency(s.jumlah)}</span>
+                    <span className="block text-muted-foreground">{fmtPct(s.persentase)}</span>
+                  </div>
+                  <div className="text-right ml-4">
+                    <span className="block text-muted-foreground tabular-nums">{fmtDate(s.due_date)}</span>
+                    {s.status === 'paid' && (
+                      <span className="block text-success tabular-nums">{fmtCurrency(s.paid_amount)}</span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </PopoverContent>
+      </Popover>
+    )
+  }
+
+  if (top) {
+    return <span className="text-xs">{top}</span>
+  }
+
+  return <span className="text-xs text-muted-foreground">-</span>
+}
+
 export function ArDetailSheet({ children, invoices, totalPiutang, piutangCount, agingData }: ArDetailSheetProps) {
   const [open, setOpen] = React.useState(false)
 
@@ -50,7 +134,7 @@ export function ArDetailSheet({ children, invoices, totalPiutang, piutangCount, 
         {children}
       </div>
       <Sheet open={open} onOpenChange={setOpen}>
-        <SheetContent side="right" className="w-full sm:max-w-[800px] p-0">
+        <SheetContent side="right" className="w-full sm:max-w-[900px] p-0">
           <SheetHeader className="px-6 py-4 border-b">
             <SheetTitle className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -81,6 +165,7 @@ export function ArDetailSheet({ children, invoices, totalPiutang, piutangCount, 
                     <TableHead className="text-xs uppercase tracking-wider">Customer</TableHead>
                     <TableHead className="text-xs uppercase tracking-wider">No. Invoice</TableHead>
                     <TableHead className="text-xs uppercase tracking-wider text-center">Tgl Invoice</TableHead>
+                    <TableHead className="text-xs uppercase tracking-wider text-center">TOP (Termin)</TableHead>
                     <TableHead className="text-xs uppercase tracking-wider text-center">Jatuh Tempo</TableHead>
                     <TableHead className="text-xs uppercase tracking-wider text-center">Aging (hari)</TableHead>
                     <TableHead className="text-xs uppercase tracking-wider text-right">Total</TableHead>
@@ -92,7 +177,7 @@ export function ArDetailSheet({ children, invoices, totalPiutang, piutangCount, 
                 <TableBody>
                   {invoices.length === 0 && (
                     <TableRow>
-                      <TableCell colSpan={9} className="text-center text-muted-foreground py-8">
+                      <TableCell colSpan={10} className="text-center text-muted-foreground py-8">
                         Tidak ada invoice outstanding
                       </TableCell>
                     </TableRow>
@@ -106,6 +191,9 @@ export function ArDetailSheet({ children, invoices, totalPiutang, piutangCount, 
                         </Link>
                       </TableCell>
                       <TableCell className="text-center whitespace-nowrap">{fmtDate(inv.tanggal)}</TableCell>
+                      <TableCell className="text-center whitespace-nowrap">
+                        <TopCell schedules={inv.schedules} top={inv.top} />
+                      </TableCell>
                       <TableCell className="text-center whitespace-nowrap">{fmtDate(inv.jatuh_tempo)}</TableCell>
                       <TableCell className={`text-center whitespace-nowrap font-semibold tabular-nums ${
                         inv.aging_hari > 0 ? "text-destructive" : "text-success"

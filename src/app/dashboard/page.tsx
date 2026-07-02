@@ -13,6 +13,8 @@ import FinanceDashboard from '@/components/dashboards/finance'
 import { StatusBadge } from '@/components/status-badge'
 import { StatCard } from '@/components/stat-card'
 import { ArDetailSheet } from '@/components/ar-detail-sheet'
+import { RevenueDetailSheet } from '@/components/revenue-detail-sheet'
+import { PaymentDetailSheet } from '@/components/payment-detail-sheet'
 import { RevenueChartCard } from '@/components/revenue-chart-card'
 import { ChartCard } from '@/components/chart-card'
 import { SalesFunnelChart } from '@/components/sales-funnel-chart'
@@ -109,13 +111,13 @@ export default async function DashboardPage() {
     supabase.from('kategori_barang').select('id, nama'),
     supabase.from('stok').select('barang_id, jumlah'),
     supabase.from('barang').select('id, nama, kategori_id'),
-    supabase.from('invoice').select('id, tanggal, status, customer_id').in('status', ['sent', 'paid', 'partial', 'overdue']),
+    supabase.from('invoice').select('id, nomor, tanggal, status, customer_id').in('status', ['sent', 'paid', 'partial', 'overdue']),
     supabase.from('invoice').select('id').in('status', ['paid', 'sent', 'partial']).gte('tanggal', firstDayOfYear),
     supabase.from('invoice').select('id').in('status', ['paid', 'sent', 'partial']).gte('tanggal', lastYearFirstDay).lte('tanggal', lastYearLastDay),
-    supabase.from('invoice_payment').select('amount').gte('tanggal', firstDay),
-    supabase.from('invoice_payment').select('amount').gte('tanggal', firstDayOfYear),
+    supabase.from('invoice_payment').select('id, amount, invoice_id, tanggal, metode').gte('tanggal', firstDay),
+    supabase.from('invoice_payment').select('id, amount, invoice_id, tanggal, metode').gte('tanggal', firstDayOfYear),
     supabase.from('invoice_payment').select('amount, invoice_id'),
-    supabase.from('invoice_payment_schedule').select('invoice_id, due_date, status, paid_amount'),
+    supabase.from('invoice_payment_schedule').select('invoice_id, urutan, deskripsi, persentase, jumlah, due_date, status, paid_amount'),
   ])
 
   const invData = (Array.isArray(invoiceItems.data) ? invoiceItems.data : []) as { invoice_id: string; barang_id: string; harga_satuan: number; jumlah: number; diskon?: number }[]
@@ -142,9 +144,9 @@ export default async function DashboardPage() {
   const pembayaranTahunIni = (paymentTahunIni.data ?? []).reduce((s: number, p: { amount: number }) => s + (p.amount ?? 0), 0)
   const piutangCount = (invoice.data ?? []).length
 
-  const schedByInvoice: Record<string, Array<{ due_date: string | null; status: string; paid_amount: number }>> = {}
+  const schedByInvoice: Record<string, Array<{ urutan: number; deskripsi: string; persentase: number; jumlah: number; due_date: string | null; status: string; paid_amount: number }>> = {}
   for (const s of schedData.data ?? []) {
-    const r = s as { invoice_id: string; due_date: string | null; status: string; paid_amount: number }
+    const r = s as { invoice_id: string; urutan: number; deskripsi: string; persentase: number; jumlah: number; due_date: string | null; status: string; paid_amount: number }
     if (!schedByInvoice[r.invoice_id]) schedByInvoice[r.invoice_id] = []
     schedByInvoice[r.invoice_id].push(r)
   }
@@ -160,10 +162,11 @@ export default async function DashboardPage() {
   const arInvoices = (invoice.data ?? [])
     .map((inv: Record<string, unknown>) => {
       const id = inv.id as string
+      const tanggal = inv.tanggal as string
       const schedules = schedByInvoice[id] ?? []
       const unpaid = schedules.filter(s => s.status !== 'paid')
       const dueDates = unpaid.map(s => s.due_date).filter(Boolean) as string[]
-      const jatuhTempo = dueDates.length > 0 ? dueDates.sort()[0] : null
+      const jatuhTempo = dueDates.length > 0 ? dueDates.sort()[0] : (tanggal || null)
       const total = invTotalsByInvoice[id] ?? 0
       const paid = paymentsByInvoice[id] ?? 0
       const outstanding = Math.max(0, total - paid)
@@ -172,7 +175,7 @@ export default async function DashboardPage() {
       return {
         id,
         nomor: (inv.nomor as string) ?? '-',
-        tanggal: inv.tanggal as string,
+        tanggal,
         customer_nama: localCustMap.get(inv.customer_id as string) || '-',
         status: inv.status as string,
         total,
@@ -180,6 +183,16 @@ export default async function DashboardPage() {
         outstanding,
         jatuh_tempo: jatuhTempo,
         aging_hari: agingHari,
+        top: (inv.top as string) ?? null,
+        schedules: schedules.map(s => ({
+          urutan: s.urutan,
+          deskripsi: s.deskripsi,
+          persentase: s.persentase,
+          jumlah: s.jumlah,
+          due_date: s.due_date,
+          status: s.status,
+          paid_amount: s.paid_amount,
+        })),
       }
     })
     .filter(inv => inv.total > 0)
@@ -215,7 +228,52 @@ export default async function DashboardPage() {
   ]
 
   // Top customers by revenue
-  const allInvData = (Array.isArray(allInvoices.data) ? allInvoices.data : []) as { id: string; customer_id: string; tanggal: string; status: string }[]
+  const allInvData = (Array.isArray(allInvoices.data) ? allInvoices.data : []) as { id: string; nomor: string; customer_id: string; tanggal: string; status: string }[]
+
+  const invoiceNomorMap = new Map(allInvData.map(i => [i.id, i.nomor]))
+  const invoiceCustMap = new Map(allInvData.map(i => [i.id, i.customer_id]))
+
+  const revenueBulanIniDetail = allInvData
+    .filter(i => ['paid', 'sent', 'partial'].includes(i.status) && new Date(i.tanggal) >= new Date(firstDay))
+    .map(i => ({
+      id: i.id,
+      nomor: i.nomor,
+      customer_nama: localCustMap.get(i.customer_id) || '-',
+      tanggal: i.tanggal,
+      total: invTotalsByInvoice[i.id] ?? 0,
+      status: i.status,
+    }))
+    .filter(i => i.total > 0)
+    .sort((a, b) => new Date(b.tanggal).getTime() - new Date(a.tanggal).getTime())
+
+  const revenueTahunIniDetail = allInvData
+    .filter(i => ['paid', 'sent', 'partial'].includes(i.status) && new Date(i.tanggal) >= new Date(firstDayOfYear))
+    .map(i => ({
+      id: i.id,
+      nomor: i.nomor,
+      customer_nama: localCustMap.get(i.customer_id) || '-',
+      tanggal: i.tanggal,
+      total: invTotalsByInvoice[i.id] ?? 0,
+      status: i.status,
+    }))
+    .filter(i => i.total > 0)
+    .sort((a, b) => new Date(b.tanggal).getTime() - new Date(a.tanggal).getTime())
+
+  function enrichPayment(p: { id: string; amount: number; invoice_id: string; tanggal: string; metode: string }) {
+    return {
+      id: p.id,
+      invoice_id: p.invoice_id,
+      invoice_nomor: invoiceNomorMap.get(p.invoice_id) || '-',
+      customer_nama: localCustMap.get(invoiceCustMap.get(p.invoice_id) || '') || '-',
+      tanggal: p.tanggal,
+      amount: p.amount,
+      metode: p.metode,
+    }
+  }
+
+  const paymentBulanIniDetail = (paymentBulanIni.data ?? []).map(enrichPayment)
+  const paymentTahunIniDetail = (paymentTahunIni.data ?? []).map(enrichPayment)
+
   const custMap = new Map((customersData.data ?? []).map((c: { id: string; nama: string }) => [c.id, c.nama]))
   const custRevenue: Record<string, number> = {}
   for (const inv of allInvData) {
@@ -290,10 +348,18 @@ export default async function DashboardPage() {
       <section>
          <h2 className="text-lg font-heading font-semibold tracking-tight mb-3 flex items-center gap-2"><DollarSign className="h-5 w-5 text-muted-foreground" />Revenue & Profit</h2>
          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
-            <StatCard label="Revenue Bulan Ini" value={`Rp ${revenueBulanIni.toLocaleString('id-ID')}`} icon={TrendingUp} iconVariant="success" subtitle={`${(thisMonthInvoices.data ?? []).length} invoice`} trend={revenueTrend} trendLabel="vs last month" />
-            <StatCard label="Revenue Tahun Ini" value={`Rp ${revenueTahunIni.toLocaleString('id-ID')}`} icon={CalendarRange} iconVariant="primary" subtitle={`${(thisYearInvoices.data ?? []).length} invoice`} trend={revenueTahunanTrend} trendLabel="vs last year" />
-            <StatCard label="Pembayaran Diterima Bulan Ini" value={`Rp ${pembayaranBulanIni.toLocaleString('id-ID')}`} icon={Wallet} iconVariant="success" subtitle={`${(paymentBulanIni.data ?? []).length} pembayaran`} />
-             <StatCard label="Pembayaran Diterima Tahun Ini" value={`Rp ${pembayaranTahunIni.toLocaleString('id-ID')}`} icon={CalendarRange} iconVariant="success" subtitle={`${(paymentTahunIni.data ?? []).length} pembayaran`} />
+            <RevenueDetailSheet invoices={revenueBulanIniDetail} totalRevenue={revenueBulanIni} count={revenueBulanIniDetail.length} titleLabel="Revenue Bulan Ini" iconVariant="success">
+              <StatCard label="Revenue Bulan Ini" value={`Rp ${revenueBulanIni.toLocaleString('id-ID')}`} icon={TrendingUp} iconVariant="success" subtitle={`${revenueBulanIniDetail.length} invoice`} trend={revenueTrend} trendLabel="vs last month" />
+            </RevenueDetailSheet>
+            <RevenueDetailSheet invoices={revenueTahunIniDetail} totalRevenue={revenueTahunIni} count={revenueTahunIniDetail.length} titleLabel="Revenue Tahun Ini" iconVariant="primary">
+              <StatCard label="Revenue Tahun Ini" value={`Rp ${revenueTahunIni.toLocaleString('id-ID')}`} icon={CalendarRange} iconVariant="primary" subtitle={`${revenueTahunIniDetail.length} invoice`} trend={revenueTahunanTrend} trendLabel="vs last year" />
+            </RevenueDetailSheet>
+            <PaymentDetailSheet payments={paymentBulanIniDetail} totalPayment={pembayaranBulanIni} count={paymentBulanIniDetail.length} titleLabel="Pembayaran Diterima Bulan Ini" iconVariant="success">
+              <StatCard label="Pembayaran Diterima Bulan Ini" value={`Rp ${pembayaranBulanIni.toLocaleString('id-ID')}`} icon={Wallet} iconVariant="success" subtitle={`${paymentBulanIniDetail.length} pembayaran`} />
+            </PaymentDetailSheet>
+            <PaymentDetailSheet payments={paymentTahunIniDetail} totalPayment={pembayaranTahunIni} count={paymentTahunIniDetail.length} titleLabel="Pembayaran Diterima Tahun Ini" iconVariant="primary">
+              <StatCard label="Pembayaran Diterima Tahun Ini" value={`Rp ${pembayaranTahunIni.toLocaleString('id-ID')}`} icon={CalendarRange} iconVariant="success" subtitle={`${paymentTahunIniDetail.length} pembayaran`} />
+            </PaymentDetailSheet>
             <ArDetailSheet invoices={arInvoices} totalPiutang={totalPiutang} piutangCount={piutangCount} agingData={agingData}>
               <StatCard label="Piutang (AR)" value={`Rp ${totalPiutang.toLocaleString('id-ID')}`} icon={Banknote} iconVariant="warning" subtitle={`${piutangCount} invoice outstanding`} />
             </ArDetailSheet>
