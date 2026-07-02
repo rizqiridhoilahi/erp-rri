@@ -124,23 +124,19 @@ const styles = StyleSheet.create({
     paddingBottom: 2,
   },
   titleText: {
-    fontSize: 6,
+    fontSize: 7,
     fontWeight: 'bold',
-    color: '#0000FF',
+    color: COLORS.foreground,
     letterSpacing: 1,
   },
   doRef: {
-    fontSize: 4.5,
+    fontSize: 6,
+    fontWeight: 'bold',
     color: COLORS.foreground,
     marginTop: 0.5,
   },
   recipientBox: {
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    borderRadius: 2,
-    padding: '3 6',
     marginBottom: 4,
-    backgroundColor: COLORS.lightBg,
   },
   recipientLabel: {
     fontSize: 4,
@@ -307,8 +303,6 @@ function singleLabel(data: LabelData, key: string): ReactElement {
           ),
       H(View, { style: styles.companyInfo },
         H(Text, { style: styles.companyName }, c.company_nama || 'PT. RIZQI RIDHO ILAHI'),
-        H(Text, { style: styles.companyDetail }, c.company_alamat || ''),
-        H(Text, { style: styles.companyDetail }, `${c.company_no_hp || ''}${c.company_no_hp && c.company_email ? ' · ' : ''}${c.company_email || ''}`),
         bidangLines.length > 0
           ? H(View, { style: styles.companyBidangWrap },
               ...bidangLines.map((line, i) =>
@@ -316,6 +310,8 @@ function singleLabel(data: LabelData, key: string): ReactElement {
               ),
             )
           : null,
+        H(Text, { style: styles.companyDetail }, c.company_alamat || ''),
+        H(Text, { style: styles.companyDetail }, `${c.company_no_hp || ''}${c.company_no_hp && c.company_email ? ' · ' : ''}${c.company_email || ''}`),
       ),
     ),
 
