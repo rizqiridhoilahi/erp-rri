@@ -1,7 +1,7 @@
 {
   "name": "ERP RRI",
   "image": "mcr.microsoft.com/devcontainers/javascript-node:20",
-  "postCreateCommand": "sudo apt-get update && sudo apt-get install -y poppler-utils && npm install --legacy-peer-deps",
+  "postCreateCommand": "npm install -g opencode-ai supabase vercel uipro-cli && sudo apt-get update && sudo apt-get install -y poppler-utils && npm install --legacy-peer-deps",
   "forwardPorts": [
     3000
   ],
