@@ -1,11 +1,10 @@
 {
   "name": "ERP RRI",
   "image": "mcr.microsoft.com/devcontainers/javascript-node:20",
-  "features": {
-    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
-  },
   "postCreateCommand": "sudo apt-get update && sudo apt-get install -y poppler-utils && npm install --legacy-peer-deps",
-  "forwardPorts": [3000],
+  "forwardPorts": [
+    3000
+  ],
   "portsAttributes": {
     "3000": {
       "label": "Dev Server",
