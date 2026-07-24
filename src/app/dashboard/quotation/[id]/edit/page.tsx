@@ -206,6 +206,8 @@ export default function EditQuotationPage() {
       setValue(`items.${index}.justification`, String(option.raw.justification ?? ''))
       setValue(`items.${index}.image_url`, String(option.raw.image_url ?? ''))
       setValue(`items.${index}.satuan`, String(option.raw.satuan ?? ''))
+      setValue(`items.${index}.harga_beli`, Number(option.raw.harga_beli_default ?? 0))
+      setValue(`items.${index}.harga_satuan`, Number(option.raw.harga_jual_default ?? 0))
     }
   }
 
@@ -313,11 +315,8 @@ export default function EditQuotationPage() {
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
+          <CardHeader>
             <CardTitle className="text-base">Item Penawaran</CardTitle>
-            <Button type="button" variant="outline" size="sm" onClick={() => append({ barang_id: '', jumlah: 1, harga_satuan: 0, harga_beli: 0, specification: '', justification: '', image_url: '', link_produk: '', satuan: '' })}>
-              <Plus className="h-4 w-4 mr-1" />Tambah Item
-            </Button>
           </CardHeader>
           <CardContent className="space-y-4">
             {fields.map((field, index) => (
@@ -481,9 +480,17 @@ export default function EditQuotationPage() {
                     })()}
                   </div>
               </div>
-            ))}
-          </CardContent>
-        </Card>
+              ))}
+              {fields.length === 0 && (
+                <p className="text-sm text-muted-foreground text-center py-4">Belum ada item. Klik Tambah Item untuk menambahkan.</p>
+              )}
+              <div className="pt-2">
+                <Button type="button" variant="outline" size="sm" onClick={() => append({ barang_id: '', jumlah: 1, harga_satuan: 0, harga_beli: 0, specification: '', justification: '', image_url: '', link_produk: '', satuan: '' })}>
+                  <Plus className="h-4 w-4 mr-1" />Tambah Item
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
 
           {fields.length > 0 && (
             <Card>
