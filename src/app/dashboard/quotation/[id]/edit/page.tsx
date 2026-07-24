@@ -12,8 +12,8 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { DatePicker } from '@/components/ui/date-picker'
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
+import { DocumentSearchCombobox, type SearchOption } from '@/components/ui/document-search-combobox'
 import { Plus, Trash2, ArrowLeft, Loader2, FileText } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -71,22 +71,13 @@ const masaBerlakuOptions = [
   { value: '1 Bulan', label: '1 Bulan' },
 ]
 
-interface BarangOption {
-  value: string
-  label: string
-  satuan: string
-  spesifikasi: string
-  justification: string
-  image_url: string
-}
-
 export default function EditQuotationPage() {
   const router = useRouter()
   const params = useParams()
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [customerOptions, setCustomerOptions] = useState<Array<{ value: string; label: string; alamat?: string }>>([])
-  const [barangData, setBarangData] = useState<BarangOption[]>([])
+  const [barangLabels, setBarangLabels] = useState<Record<string, string>>({})
   const [picOptions, setPicOptions] = useState<Array<{ value: string; label: string }>>([])
   const [rfqOptions, setRfqOptions] = useState<Array<{ value: string; label: string }>>([])
 
@@ -105,18 +96,9 @@ export default function EditQuotationPage() {
 
     Promise.all([
       apiFetch<Array<{ id: string; nama: string; kode: string; alamat?: string }>>('/api/v1/master/customer'),
-      apiFetch<Array<{ id: string; nama: string; kode: string; satuan: string; spesifikasi?: string; justification?: string; image_url?: string }>>('/api/v1/master/barang/dropdown'),
       apiFetch<Array<{ id: string; nomor: string }>>('/api/v1/rfq-customer'),
-    ]).then(([customers, barang, rfqs]) => {
+    ]).then(([customers, rfqs]) => {
       setCustomerOptions((customers.data ?? []).map(c => ({ value: c.id, label: `[${c.kode}] ${c.nama}`, alamat: c.alamat ?? '' })))
-      setBarangData((barang.data ?? []).map(b => ({
-        value: b.id,
-        label: `[${b.kode}] ${b.nama}`,
-        satuan: b.satuan,
-        spesifikasi: b.spesifikasi ?? '',
-        justification: b.justification ?? '',
-        image_url: b.image_url ?? '',
-      })))
       setRfqOptions((rfqs.data ?? []).map(r => ({ value: r.id, label: r.nomor })))
     }).catch(() => toast.error('Gagal memuat data referensi'))
 
@@ -164,6 +146,13 @@ export default function EditQuotationPage() {
             i.barang ? `[${i.barang.kode}] ${i.barang.nama}` : (i.nama_barang || '')
           )
         )
+        const labels: Record<string, string> = {}
+        qtn.items.forEach(i => {
+          if (i.barang_id && i.barang) {
+            labels[i.barang_id] = `[${i.barang.kode}] ${i.barang.nama}`
+          }
+        })
+        setBarangLabels(labels)
         reset({
           customer_id: qtn.customer_id,
           rfq_id: qtn.rfq_id ?? '',
@@ -211,13 +200,12 @@ export default function EditQuotationPage() {
       .catch(() => {})
   }, [selectedCustomerId])
 
-  const handleBarangChange = (index: number, barangId: string) => {
-    const barang = barangData.find(b => b.value === barangId)
-    if (barang) {
-      setValue(`items.${index}.specification`, barang.spesifikasi)
-      setValue(`items.${index}.justification`, barang.justification)
-      setValue(`items.${index}.image_url`, barang.image_url)
-      setValue(`items.${index}.satuan`, barang.satuan)
+  const handleBarangChange = (index: number, barangId: string, option?: SearchOption) => {
+    if (option?.raw) {
+      setValue(`items.${index}.specification`, String(option.raw.spesifikasi ?? ''))
+      setValue(`items.${index}.justification`, String(option.raw.justification ?? ''))
+      setValue(`items.${index}.image_url`, String(option.raw.image_url ?? ''))
+      setValue(`items.${index}.satuan`, String(option.raw.satuan ?? ''))
     }
   }
 
@@ -350,12 +338,28 @@ export default function EditQuotationPage() {
                         {rfqItemLabels[index] || `Item #${index + 1} (dari RFQ)`}
                       </div>
                     ) : (
-                    <select {...register(`items.${index}.barang_id`)}
-                      onChange={(e) => { const v = e.target.value; setValue(`items.${index}.barang_id`, v); handleBarangChange(index, v) }}
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background">
-                      <option value="">Pilih Barang</option>
-                      {barangData.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
-                    </select>
+                      <DocumentSearchCombobox
+                        placeholder="Cari barang..."
+                        emptyMessage="Barang tidak ditemukan"
+                        value={watch(`items.${index}.barang_id`) ?? ''}
+                        onChange={(v) => { setValue(`items.${index}.barang_id`, v) }}
+                        selectedLabel={barangLabels[watch(`items.${index}.barang_id`) ?? '']}
+                        onSearch={async (q: string) => {
+                          const res = await apiFetch<{
+                            items: Array<{ id: string; nama: string; kode: string; satuan: string; spesifikasi?: string; justification?: string; image_url?: string }>
+                          }>(`/api/v1/master/barang?search=${encodeURIComponent(q)}&limit=20`)
+                          return (res.data?.items ?? []).map((b) => ({
+                            value: b.id,
+                            label: `[${b.kode}] ${b.nama}`,
+                            sublabel: b.satuan,
+                            raw: b,
+                          }))
+                        }}
+                        onSelectOption={(option: SearchOption) => {
+                          setBarangLabels((prev) => ({ ...prev, [option.value]: option.label }))
+                          handleBarangChange(index, option.value, option)
+                        }}
+                      />
                     )}
                   </div>
                 </div>

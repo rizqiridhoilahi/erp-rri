@@ -14,6 +14,7 @@ import { DatePicker } from '@/components/ui/date-picker'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select'
+import { DocumentSearchCombobox, type SearchOption } from '@/components/ui/document-search-combobox'
 import { Switch } from '@/components/ui/switch'
 import { Plus, Trash2, ArrowLeft, Loader2, FileText } from 'lucide-react'
 import { toast } from 'sonner'
@@ -63,19 +64,10 @@ const masaBerlakuOptions = [
   { value: '1 Bulan', label: '1 Bulan' },
 ]
 
-interface BarangOption {
-  value: string
-  label: string
-  satuan: string
-  spesifikasi: string
-  justification: string
-  image_url: string
-}
-
 export default function TambahQuotationPage() {
   const router = useRouter()
   const [customerOptions, setCustomerOptions] = useState<Array<{ value: string; label: string; alamat?: string }>>([])
-  const [barangData, setBarangData] = useState<BarangOption[]>([])
+  const [barangLabels, setBarangLabels] = useState<Record<string, string>>({})
   const [picOptions, setPicOptions] = useState<Array<{ value: string; label: string }>>([])
   const [rfqOptions, setRfqOptions] = useState<Array<{ value: string; label: string }>>([])
   const [submitting, setSubmitting] = useState(false)
@@ -113,19 +105,9 @@ export default function TambahQuotationPage() {
     const rfqIdFromUrl = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('rfq_id') : null
     Promise.all([
       apiFetch<Array<{ id: string; nama: string; kode: string; alamat?: string }>>('/api/v1/master/customer'),
-      apiFetch<Array<{ id: string; nama: string; kode: string; satuan: string; spesifikasi?: string; justification?: string; image_url?: string }>>('/api/v1/master/barang/dropdown'),
       apiFetch<Array<{ id: string; nomor: string; nomor_rfq_customer?: string }>>('/api/v1/rfq-customer'),
-    ]).then(([customers, barang, rfqs]) => {
+    ]).then(([customers, rfqs]) => {
       setCustomerOptions((customers.data ?? []).map(c => ({ value: c.id, label: `[${c.kode}] ${c.nama}`, alamat: c.alamat ?? '' })))
-      const bOptions = (barang.data ?? []).map(b => ({
-        value: b.id,
-        label: `[${b.kode}] ${b.nama}`,
-        satuan: b.satuan,
-        spesifikasi: b.spesifikasi ?? '',
-        justification: b.justification ?? '',
-        image_url: b.image_url ?? '',
-      }))
-      setBarangData(bOptions)
       setRfqOptions((rfqs.data ?? []).map(r => ({ value: r.id, label: r.nomor_rfq_customer || r.nomor })))
       if (rfqIdFromUrl) {
         setValue('rfq_id', rfqIdFromUrl)
@@ -215,7 +197,7 @@ export default function TambahQuotationPage() {
           replace(newItems)
 
           setRfqItemLabels(rfq.items.map(item =>
-            item.barang?.nama || item.nama_barang || ''
+            item.barang ? `[${item.barang.kode}] ${item.barang.nama}` : (item.nama_barang || '')
           ))
 
           if (rfq.nomor) {
@@ -226,34 +208,19 @@ export default function TambahQuotationPage() {
           }
 
           setIsRfqLoaded(true)
-
-          newItems.forEach((item, i) => {
-            if (item.barang_id) {
-              const barang = barangData.find(b => b.value === item.barang_id)
-              if (barang) {
-                if (!item.keterangan && barang.spesifikasi) {
-                  setValue(`items.${i}.specification`, barang.spesifikasi)
-                }
-                if (barang.justification) {
-                  setValue(`items.${i}.justification`, barang.justification)
-                }
-              }
-            }
-          })
         })
         .catch(() => toast.error('Gagal memuat data RFQ Customer'))
     }
 
     return () => { cancelled = true }
-  }, [selectedRfqId, customerOptions, barangData, replace, setValue])
+  }, [selectedRfqId, customerOptions, replace, setValue])
 
-  const handleBarangChange = (index: number, barangId: string) => {
-    const barang = barangData.find(b => b.value === barangId)
-    if (barang) {
-      setValue(`items.${index}.specification`, barang.spesifikasi)
-      setValue(`items.${index}.justification`, barang.justification)
-      setValue(`items.${index}.image_url`, barang.image_url)
-      setValue(`items.${index}.satuan`, barang.satuan)
+  const handleBarangChange = (index: number, barangId: string, option?: SearchOption) => {
+    if (option?.raw) {
+      setValue(`items.${index}.specification`, String(option.raw.spesifikasi ?? ''))
+      setValue(`items.${index}.justification`, String(option.raw.justification ?? ''))
+      setValue(`items.${index}.image_url`, String(option.raw.image_url ?? ''))
+      setValue(`items.${index}.satuan`, String(option.raw.satuan ?? ''))
     }
   }
 
@@ -381,10 +348,30 @@ export default function TambahQuotationPage() {
                             <div className="flex h-10 w-full items-center rounded-md border border-input bg-muted/30 px-3 text-sm">{rfqItemLabels[index]}</div>
                           </FormControl>
                         ) : (
-                          <Select onValueChange={(v) => { field.onChange(v); handleBarangChange(index, v) }} value={field.value}>
-                            <FormControl><SelectTrigger><SelectValue placeholder="Pilih Barang" /></SelectTrigger></FormControl>
-                            <SelectContent>{barangData.map(opt => <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>)}</SelectContent>
-                          </Select>
+                          <FormControl>
+                            <DocumentSearchCombobox
+                              placeholder="Cari barang..."
+                              emptyMessage="Barang tidak ditemukan"
+                              value={field.value ?? ''}
+                              onChange={field.onChange}
+                              selectedLabel={barangLabels[field.value ?? '']}
+                              onSearch={async (q: string) => {
+                                const res = await apiFetch<{
+                                  items: Array<{ id: string; nama: string; kode: string; satuan: string; spesifikasi?: string; justification?: string; image_url?: string }>
+                                }>(`/api/v1/master/barang?search=${encodeURIComponent(q)}&limit=20`)
+                                return (res.data?.items ?? []).map((b) => ({
+                                  value: b.id,
+                                  label: `[${b.kode}] ${b.nama}`,
+                                  sublabel: b.satuan,
+                                  raw: b,
+                                }))
+                              }}
+                              onSelectOption={(option: SearchOption) => {
+                                setBarangLabels((prev) => ({ ...prev, [option.value]: option.label }))
+                                handleBarangChange(index, option.value, option)
+                              }}
+                            />
+                          </FormControl>
                         )}
                         <FormMessage />
                       </FormItem>

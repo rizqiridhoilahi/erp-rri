@@ -1,81 +1,52 @@
 # Agent Guidelines for ERP-RRI Repository
 
 ## Essential Commands
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run start` - Start production server
-- `npm run lint` - Run ESLint
-- **IMPORTANT**: Never run `lint` and `build` in parallel — run sequentially (lint first, then build) to avoid VPS RAM/CPU crash
-- Database migrations: Use Drizzle Kit directly (e.g., `npx drizzle-kit generate`)
-- Generate OpenAPI docs: `npx next-openapi-gen generate`
+- `npm run dev` — Start dev server
+- `npm run build` — Production build
+- `npm run lint` — ESLint (flat config, Next.js presets)
+- `npm run test` — Vitest single run
+- `npm run test:watch` — Vitest watch mode
+- **Never run `lint` and `build` in parallel** — sequential only (lint first, then build) to avoid VPS RAM/CPU crash
+- Database migrations: `npx drizzle-kit generate` (schema at `src/lib/db/schema/index.ts`, output to `drizzle/`)
+- OpenAPI docs: `npx next-openapi-gen generate`
 
 ## Deployment Rules
-- **Agent DILARANG menjalankan `vercel deploy` tanpa konfirmasi eksplisit dari user** — deploy hanya dilakukan setelah user menyatakan setuju
-- Build di Vercel hanya stabil via CLI (`npx vercel deploy --prod`), bukan via git push auto-deploy
-- Agent cukup menjalankan `npm run lint` + `npm run build` untuk verifikasi — tidak perlu deploy sendiri
-
-## Technology Stack
-- **Framework**: Next.js 15.5.18 (App Router)
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS
-- **State Management**: Zustand + TanStack React Query
-- **Forms**: React Hook Form + Zod
-- **Database**: Drizzle ORM with Supabase (PostgreSQL)
-- **Authentication**: Supabase Auth
-- **File Storage**: Cloudflare R2 (bucket `erp-documents`, custom domain `files.erp.pt-rri.com`) — migrated from Supabase Storage (bucket `dokumen`)
-- **PDF Generation**: @react-pdf/renderer
+- **Never run `vercel deploy` without explicit user confirmation**
+- Verify with `npm run lint` + `npm run build` only — do not deploy
 
 ## Project Structure
-- `/app` - Next.js App Router pages
-- `/components` - React components
-- `/lib` - Shared library code (database, utils, etc.)
-  - `/db` - Database configuration and schemas
-  - `/utils` - Utility functions
-- `/types` - TypeScript definitions
-- `/public` - Static assets
+All source lives under `src/`:
+```
+src/app/          — Next.js App Router (pages + API routes)
+src/components/   — React components (shadcn/ui patterns)
+src/hooks/        — Custom React hooks
+src/lib/          — Shared libraries
+  api/            — auth.ts, client.ts (apiFetch), errors.ts, supabase-server.ts, role-guard.ts
+  db/schema/      — Drizzle schema (~90 tables)
+  utils/          — Utility functions (document-number, etc.)
+src/types/        — TypeScript definitions
+src/test/         — Test setup and utilities
+```
 
-## Key Configuration Files
-- `next.config.ts` - Next.js configuration (minimal)
-- `postcss.config.mjs` - Tailwind CSS configuration
-- `eslint.config.mjs` - ESLint configuration with Next.js presets
-- `package.json` - Dependencies and scripts
-- `drizzle.config.ts` - Drizzle ORM configuration
+## Key Conventions
 
-## Database Workflow
-1. Database schema located in `/src/lib/db/schema/`
-2. Migrations managed via Drizzle ORM (use `drizzle-kit` CLI directly)
-3. Database client in `/src/lib/db/client.ts`
-4. Required environment variables:
-   - `NEXT_PUBLIC_SUPABASE_URL`
-   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-   - `SUPABASE_SERVICE_ROLE_KEY`
-   - `DATABASE_URL` (optional, for direct database access)
-   - `R2_DOCUMENTS_ENDPOINT` (Cloudflare R2 — dokumen ERP)
-   - `R2_DOCUMENTS_ACCESS_KEY_ID` (Cloudflare R2 — dokumen ERP)
-   - `R2_DOCUMENTS_SECRET_ACCESS_KEY` (Cloudflare R2 — dokumen ERP)
-   - `R2_DOCUMENTS_BUCKET` (Cloudflare R2 — dokumen ERP, value: `erp-documents`)
-   - `R2_ENDPOINT` (Cloudflare R2 — email attachments)
-   - `R2_ACCESS_KEY_ID` (Cloudflare R2 — email attachments)
-   - `R2_SECRET_ACCESS_KEY` (Cloudflare R2 — email attachments)
-   - `R2_BUCKET` (Cloudflare R2 — email attachments)
-   - `BREVO_SMTP_LOGIN` (Brevo SMTP login, e.g. `adfecc001@smtp-brevo.com`)
-   - `BREVO_SMTP_PASSWORD` (Brevo SMTP Master Password)
+### API Routes
+- All under `/api/v1/{module}/route.ts`
+- Every route calls `verifyAuth(request)` — returns `auth.error` on failure
+- DB access via `supabaseAdmin` (service role key) from `@/lib/api/supabase-server`
+- Request validation via Zod schemas
+- **Response format is mandatory**: all handlers must wrap in `{ data: ... }` — client uses `apiFetch<T>()` which expects this shape
 
-## System Dependencies
-- **poppler-utils** (required for AI OCR Kontrak PDF-to-JPEG conversion): `sudo apt-get install -y poppler-utils`
-  - Provides `pdftoppm` binary used by VisionAgent to convert PDF pages to JPEG images before sending to NVIDIA NIM Phi-4 multimodal model
+### Document Numbering
+- Format: `RRI-{KODE}-{YY}-{MM}-{NNNN}`
+- Global single counter shared by all documents via `document_counter` table + `increment_document_counter()` PG function
+- **Only 2 parent entry points** call `generateGlobalDocumentNumber(kodeDokumen)`: RFQC and DI
+- Child documents (Quotation, Customer PO, Sales Order, DO, Invoice, Kwitansi, etc.) use `formatChildNumber(parentNumber, kodeDokumen)` — copies parent's number, changes prefix
+- Import from `@/lib/utils/document-number`
 
-## Development Notes
-- Standard Next.js file-based routing applies
-- Tailwind CSS utility-first approach
-- Components should follow shadcn/ui patterns where applicable
-- API routes should follow `/api/v1/` versioning pattern
-- No special testing framework configured yet (manual/testing approach varies)
-
-### PDF Route Handlers — Critical Rules
-- **Content-Length WAJIB**: Setiap PDF route handler yang mengembalikan PDF blob via `NextResponse(blob)` HARUS menyertakan `'Content-Length': String(blob.size)` di headers. Tanpa ini, Chrome PDF viewer akan loading terus (Firefox tidak masalah).
-- **Lokasi**: Semua PDF route ada di `src/app/api/v1/{modul}/[id]/pdf/route.ts` — total 13 routes sudah diberi Content-Length.
-- Format response:
+### PDF Route Handlers
+- **Content-Length header is mandatory** for PDF blob responses — without it, Chrome hangs loading forever
+- Pattern at `src/app/api/v1/{modul}/[id]/pdf/route.ts`:
   ```typescript
   return new NextResponse(blob, {
     headers: {
@@ -86,98 +57,23 @@
   })
   ```
 
-## Important Conventions from PRD
-### Document Numbering
-- Format: `RRI-{KODE}-{YY}-{MM}-{NNNN}` (4 digit counter)
-- **Global single counter**: All documents share 1 counter (`GLB`). Only 2 parent entry points (RFQC, DI) call `generateGlobalDocumentNumber(kodeDokumen)` to increment the global counter.
-- **Child documents**: Quotation, Customer PO, Sales Order, DO, Invoice, Kwitansi, etc. copy the parent's number and change prefix via `formatChildNumber(parentNumber, kodeDokumen)`. If no parent, fallback to global counter.
-- Reset automatically at year boundary
-- Implemented via `document_counter` table + `increment_document_counter()` PG function
-- Usage: `import { generateGlobalDocumentNumber, formatChildNumber } from '@/lib/utils/document-number'`
-- `generateGlobalDocumentNumber(kodeDokumen)` → calls `supabase.rpc('increment_document_counter', { p_kode_dokumen: 'GLB', p_tahun, p_bulan })` → returns `RRI-{KODE}-YY-MM-NNNN`
-- `formatChildNumber(parentNumber, kodeDokumen)` → extracts the running number from parent's format, replaces prefix → `RRI-{KODE}-YY-MM-NNNN`
-
 ### `all_documents` View
-- **Virtual document entries** (`all_documents` view in PostgreSQL): PDFs generated on-the-fly via API routes, not stored in bucket.
-- Entries use ID prefix `pdf-{modul}-{id}` (e.g., `pdf-quotation-uuid`, `pdf-do-uuid`) to avoid ID collision with real uploaded documents.
-- All virtual entries have `fileurl` pointing to the relative API endpoint (e.g., `/api/v1/quotation/{id}/pdf`).
-- Customer resolution for virtual entries follows the same joins as real uploaded documents.
-- To add a new virtual document type: add a `UNION ALL` to the `all_documents` view migration.
+- Virtual entries (API-generated PDFs) use ID prefix `pdf-{modul}-{id}` and `fileurl` pointing to API endpoint
+- To add a new virtual document type: add `UNION ALL` to the view migration
 
-### PDF Download from Document Management Page
-- **Blob fetch pattern for virtual PDFs**: The Document Management page (`dokumen/page.tsx`) uses `openFile(url, filename)` which detects API routes (starts with `/api/`) and uses blob fetch with auth token: `window.open('')` (anti-popup) → `getAuthToken()` → `fetch(url, {Authorization})` → blob → `URL.createObjectURL()` → `win.location.href = blobUrl`. For public storage URLs, uses `window.open(url)` directly.
-- **Download button**: Each row has a separate Download icon button that uses the same blob fetch pattern and triggers download via `<a download>` click.
-- Office documents (.doc, .docx, .xls, .xlsx, .ppt, .pptx) are opened via Google Docs Viewer: `window.open('https://docs.google.com/viewer?url=...&embedded=true', ...)`
+### Storage (Cloudflare R2)
+- Bucket: `erp-documents` — public at `https://files.erp.pt-rri.com/`
+- Standard path: `dokumen/{modul}/{recordId}/{file.name}` (no timestamp prefix)
+- Email attachments: separate bucket `email-attachments`, path `email-attachments/{emailId}/{uuid}-{filename}`
 
-### Storage Structure
-- Bucket: `erp-documents` (Cloudflare R2)
-- Public URL: `https://files.erp.pt-rri.com/{path}`
-- Standard path pattern: `dokumen/{modul}/{recordId}/{file.name}` (no timestamp prefix, no sub-folders)
-- All paths identical to legacy Supabase Storage — migrated via `scripts/migrate-storage-to-r2.ts`
+### Hybrid Data Pattern
+- Server components (list pages) → direct Supabase queries
+- Client components (forms) → API routes via `apiFetch()`
 
-```
-dokumen/rfq-customer/{id}/{file}
-dokumen/rfq-supplier/{id}/{file}
-dokumen/quotation/{id}/{file}
-dokumen/customer-po/{id}/{file}
-dokumen/kontrak/{id}/{file}
-dokumen/di/{id}/{file}
-dokumen/delivery-order/{id}/{file}               # DO documents
-dokumen/delivery-order/{id}/barang_diterima-{ts}-{file}  # Foto barang diterima (verifikasi kirim)
-dokumen/delivery-order/{id}/surat_jalan-{ts}-{file}      # Foto surat jalan ditandatangani (verifikasi kirim)
-dokumen/invoice/{id}/{file}
-dokumen/grn/{id}/{file}
-dokumen/retur-penjualan/{id}/{file}
-dokumen/retur-pembelian/{id}/{file}
-dokumen/ocr-kontrak/{ts}-{file}         # temp — uses timestamp
-dokumen/temp/rfq-customer/{type}/{ts}-{file}  # temp — uses timestamp
-```
-
-- `avatars/` → User profile images
-- `barang/` → Product images
-- `temporary/` → Auto-deleted after 24 hours
-
-### Email Attachment Storage (Phase 11 ✅ — Cloudflare R2)
-- **Storage**: Cloudflare R2, bucket `email-attachments`
-- **Path convention**: `email-attachments/{emailId}/{uuid}-{originalFileName}`
-- **Upload flow**: Client → minta presigned URL dari API → upload langsung ke R2 (bypass Vercel 4.5 MB body limit) → API ambil dari R2 → kirim via Brevo (≤7 MB base64) atau kirim link download (>7 MB)
-- **Inbound**: Cloudflare Worker upload langsung ke R2 via Worker R2 binding (no size limit)
-
-### Image Processing Pipeline
-1. Client-side validation (type & size)
-2. Compress with `browser-image-compression`
-3. Convert to WebP
-4. Delete existing file if present
-5. Upload to Cloudflare R2 (S3 SDK via `@aws-sdk/client-s3`)
-6. Store public URL in database
-
-### API Structure
-All API endpoints under `/api/v1/`:
-- `/api/v1/master/barang`
-- `/api/v1/master/supplier`
-- `/api/v1/master/customer`
-- `/api/v1/master/pic-customer`
-- `/api/v1/master/coa`
-- `/api/v1/master/kontrak`
-- `/api/v1/master/kategori-barang`
-- `/api/v1/master/jabatan`
-- `/api/v1/master/karyawan`
-- `/api-docs` → Scalar UI (interactive API documentation)
-- `/openapi.json` → Raw OpenAPI spec
-
-### API Architecture
-- **API Layer**: Next.js Route Handlers at `src/app/api/v1/*`
-- **Auth**: Each API route calls `verifyAuth()` to verify Bearer JWT token
-- **DB**: Uses `supabaseAdmin` (service role key) for all DB operations
-- **Validation**: Zod schemas for request body validation
-- **Client**: Frontend uses `apiFetch()` from `@/lib/api/client` which auto-attaches auth token
-- **Docs**: OpenAPI spec auto-generated via `next-openapi-gen` CLI; served via Scalar UI at `/api-docs`
-- **Hybrid Pattern**: Server components (list pages) use direct Supabase for speed; client components (forms) use API routes for safety
-- **Response Format WAJIB**: Semua API route handler HARUS membungkus response di `{ data: ... }`. Client menggunakan `apiFetch<T>()` yang mengharapkan `{ data: T }`. Jangan mengembalikan data langsung di top-level JSON.
+## System Dependencies
+- **poppler-utils** required for AI OCR (PDF-to-JPEG): `sudo apt-get install -y poppler-utils`
 
 ## Workflow
-After completing any changes or implementing a feature, always update:
-1. **PRD.md** — Update relevant sections (tech stack, architecture, modul, API, etc.) to reflect current state
-2. **ROADMAP.md** — Mark completed items as `[x]`, add new items if scope changed
-
-This ensures documentation stays synchronized with the actual codebase.
+After completing changes, update:
+1. `PRD.md` — relevant sections
+2. `ROADMAP.md` — mark completed items `[x]`, add new items if scope changed
