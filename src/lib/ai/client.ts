@@ -19,7 +19,6 @@ export function createNvidiaClient(apiKey?: string) {
   })
 }
 
-export const defaultClient = createNvidiaClient()
 
 export interface ModelParams {
   temperature?: number
